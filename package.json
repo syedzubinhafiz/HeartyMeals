@@ -2,6 +2,7 @@
     "name": "chronicdiet",
     "version": "1.0.0",
     "scripts": {
+      "install": "cd frontend && npm install && cd .. && cd backend && npm install",
       "devFrontend": "cd frontend && npm run dev",
       "devBackend": "cd backend && npm run dev",
       "devf": "cd frontend && npm run dev",
