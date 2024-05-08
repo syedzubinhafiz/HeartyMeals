@@ -16,14 +16,14 @@ export class ExampleController {
     return this.appService.getGoodbye();
   }
 
-  @Get('sum')
+  @Post('sum')
   @ApiQuery({ name: 'a', type: Number })
   @ApiQuery({ name: 'b', type: Number }) 
   getSum(@Query() query: any): number {
     return this.appService.getSum(Number(query.a), Number(query.b));
   }
 
-  @Get(':num')
+  @Post(':num')
   getSquare(@Param('num') num: number): string {
     return this.appService.getSquare(num);
   }

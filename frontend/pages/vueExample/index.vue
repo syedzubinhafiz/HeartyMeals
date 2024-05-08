@@ -94,7 +94,7 @@
                 <p>{{apiOutput?.data?.data}}</p>
             </div> -->
 
-            <p>We can also pass in data into API calls. For example: </p>
+            <p>We can also pass in data into API calls via queries. For example: </p>
             <Input type="number" v-model="apiVal1" placeholder="enter number"/>
             <Input type="number" v-model="apiVal2" placeholder="enter number"/>
             <Button @click.prevent="getExampleAPI2">Post</Button>
@@ -179,7 +179,7 @@ const apiOutput2 = ref("")
 // calls API and stores the result, passing in the variables as input data
 const getExampleAPI2 = async () => {
     let result = await useApi("/examples/sum", {
-        method: "GET",
+        method: "POST",
         params: {
             a: apiVal1.value,
             b: apiVal2.value
