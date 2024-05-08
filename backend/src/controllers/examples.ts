@@ -17,6 +17,8 @@ export class ExampleController {
   }
 
   @Get('sum')
+  @ApiQuery({ name: 'a', type: Number })
+  @ApiQuery({ name: 'b', type: Number }) 
   getSum(@Query() query: any): number {
     return this.appService.getSum(Number(query.a), Number(query.b));
   }
