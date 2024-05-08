@@ -1,13 +1,13 @@
 <template>
     <div class="flex flex-col items-center justify-center p-5 space-y-5">
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Welcome to Nuxt JS</h1>
             <hr>
             <p>Imma try to write some stuff about Nuxt/Vue JS.</p>
             <p> This guide is located in "pages/vueExample/index.vue", which might be helpful as a reference point as this guide mainly showcases the underlying code. Hope it helps!</p>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Layouts</h1>
             <hr>
             <p>Layout are templates that can be found under the "layouts/" folder</p>
@@ -15,7 +15,7 @@
             <p>This page makes use of the baselayout layout, which is defined under "layouts/baselayout.vue" and is applied on this page via the definePageMeta function under the script tag</p>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Components</h1>
             <hr>
             <p>Components are user defined elements. They can be found under the "components/" folder</p>
@@ -30,7 +30,7 @@
             <Input type="number" placeholder="insert number"></Input>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Variable Binding</h1>
             <hr>
             
@@ -60,7 +60,7 @@
             <p>Please check its code under "components/Input.vue" to see how to pass info in and out of a component</p>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Routing</h1>
             <hr>
             <p>Nuxt provides file based routing for pages.</p>
@@ -68,18 +68,18 @@
             
             <p>One way to route to pages is through the NuxtLink element</p>
             <p>We can define pages that are within the same folder, such as the page in the route "/vueExample/examplePage" below:</p>
-            <NuxtLink to="/vueExample/examplePage" class="px-2 py-1 rounded-sm shadow-sm bg-blue-400 text-white w-fit hover:bg-blue-500">Link</NuxtLink>
+            <NuxtLink to="/vueExample/examplePage" class="px-2 py-1 rounded-sm shadow-sm bg-custom-button-green text-white w-fit hover:bg-custom-button-green">Link</NuxtLink>
             
             <p>Another way of routing to pages is via the navigateTo function</p>
             <p>Here's an example of a page within a folder:</p>
-            <button @click.prevent="gotoPage" class="px-2 py-1 rounded-sm shadow-sm bg-blue-400 text-white w-fit hover:bg-blue-500">Button</button>
+            <button @click.prevent="gotoPage" class="px-2 py-1 rounded-sm shadow-sm bg-custom-button-green text-white w-fit hover:bg-custom-button-green">Button</button>
             
             <p>if we need to have a dynamic url (eg for each recipe) we can define the page name in brackets, such as [recipe].vue; an example is shown below:</p>
             <Input v-model="dynamicPageVariable" type="number"/>
-            <button @click.prevent="gotoDynamicPage" class="px-2 py-1 rounded-sm shadow-sm bg-blue-400 text-white w-fit hover:bg-blue-500">Go to page {{ dynamicPageVariable }}</button>
+            <button @click.prevent="gotoDynamicPage" class="px-2 py-1 rounded-sm shadow-sm bg-custom-button-green text-white w-fit hover:bg-custom-button-green">Go to page {{ dynamicPageVariable }}</button>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
             <h1 class="text-2xl font-bold">Interacting with the Backend</h1>
             <hr>
             <p>We are currently using Nest JS to organize data in the backend</p>
@@ -106,7 +106,7 @@
             </div> -->
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
-        <div class="flex flex-col space-y-2 bg-white shadow-md rounded-md w-full p-2">
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
                 <h1 class="text-2xl font-bold">Cookies</h1>
                 <p>Transferring information between pages without involving the backend/database can be done via the useCookie() function</p>
                 <p>The value of the cookies are saved between reloads</p>

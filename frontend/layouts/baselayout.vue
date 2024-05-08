@@ -2,7 +2,7 @@
 
 <template>
 	<!-- the background color of the page is defined here -->
-	<div class="flex min-h-screen flex-col bg-gray-100">
+	<div class="flex min-h-screen flex-col bg-custom-bg-brown">
 		<Header />
 		<slot />
 		<div class="grow"/>
