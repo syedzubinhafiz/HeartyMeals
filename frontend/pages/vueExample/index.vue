@@ -90,9 +90,7 @@
             <div class="bg-gray-100 p-2">
                 <p>{{apiOutput}}</p>
             </div>
-            <!-- <div class="bg-gray-100 p-2">
-                <p>{{apiOutput?.data?.data}}</p>
-            </div> -->
+
 
             <p>We can also pass in data into API calls via queries. For example: </p>
             <Input type="number" v-model="apiVal1" placeholder="enter number"/>
@@ -101,9 +99,16 @@
             <div class="bg-gray-100 p-2">
                 <p>{{apiOutput2}}</p>
             </div>
-            <!-- <div class="bg-gray-100 p-2">
-                <p>{{apiOutput2?.data?.data}}</p>
-            </div> -->
+
+            <p>Data can also be passed through as a json body (check code to see the difference with queries): </p>
+            <Input type="number" v-model="apiVal3" placeholder="enter number"/>
+            <Input type="number" v-model="apiVal4" placeholder="enter number"/>
+            <Input v-model="apiVal5" placeholder="enter string" default="apple"/>
+            <Input v-model="apiVal6" placeholder="enter string" default="banana"/>
+            <Button @click.prevent="getExampleAPI3">Post</Button>
+            <div class="bg-gray-100 p-2">
+                <p>{{apiOutput3}}</p>
+            </div>
         </div>
         <!-- ------------------------------------------------------------------------------------------------------ -->
         <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
@@ -158,7 +163,7 @@ const gotoDynamicPage = async() => {
     navigateTo(`/vueExample/${dynamicPageVariable.value}`);
 }
 
-// stores the result of running GET /example
+// stores the result of running GET /examples
 const apiOutput = ref("")
 
 // calls API and stores the result
@@ -169,11 +174,11 @@ const getExampleAPI = async () => {
     apiOutput.value = result
 }
 
-// input variables for the  POST /example call
+// input variables for the  POST /examples/sum call
 const apiVal1 = ref(0)
 const apiVal2 = ref(0)
 
-// stores the result of running POST /example
+// stores the result of running POST /examples/sum
 const apiOutput2 = ref("")
 
 // calls API and stores the result, passing in the variables as input data
@@ -187,6 +192,30 @@ const getExampleAPI2 = async () => {
     });
     apiOutput2.value = result
 }
+
+// input variables for the  POST /examples/doStuff call
+const apiVal3 = ref(0)
+const apiVal4 = ref(0)
+const apiVal5 = ref("apple")
+const apiVal6 = ref("banana")
+
+// stores the result of running POST /examples/doStuff
+const apiOutput3 = ref("")
+
+// calls API and stores the result, passing in the variables as input data
+const getExampleAPI3 = async () => {
+    let result = await useApi("/examples/doStuff", {
+        method: "POST",
+        body: {
+            num1: apiVal3.value,
+            num2: apiVal4.value,
+            str1: apiVal5.value,
+            str2: apiVal6.value
+        }
+    });
+    apiOutput3.value = result
+}
+
 
 // creates a cookie with a default value
 const exampleCookie = useCookie("exampleCookie",  {
