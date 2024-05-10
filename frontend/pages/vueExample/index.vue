@@ -124,8 +124,11 @@
         <!-- ------------------------------------------------------------------------------------------------------ -->
         <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
         <h1 class="text-2xl font-bold">Additional Components</h1>
-            <SearchBar v-model="searchBarVal" :dataList="searchDataList"/>
+        <SearchBar v-model="searchBarVal" :dataList="searchDataList"/>
+        <ChartBar :data="barChartData" :options="barChartOptions" class="w-1/2"/>
         </div>
+
+        
     </div>
 
 </template>
@@ -231,4 +234,17 @@ const exampleCookie = useCookie("exampleCookie",  {
 const searchBarVal = ref("chicken")
 const searchDataList = ref(["pizza","salad","chicken burger","beef burger","pad thai","nasi lemak","nasi padang","sushi","fried chicken","fried amogus","caesar salad"])
 
+const barChartData = ref({
+    labels: ["Calories", "Protein", "Carbs", "Sodium", "Fats", "Chol"],
+    datasets: [
+        {
+            backgroundColor: "#FFA17A",
+            data: [200, 20, 40, 1, 10, 20],
+        },
+    ],
+});
+
+const barChartOptions = ref({
+    responsive: true,
+});
 </script>
