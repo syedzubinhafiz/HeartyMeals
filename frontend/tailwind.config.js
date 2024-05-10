@@ -14,6 +14,7 @@ export default {
         'custom-bg-green': '#015B59',
         'custom-bg-brown': '#DAC2A8',
         'custom-overlay-brown': '#F3EADA',
+        'custom-overlay-light': '#FFFEF1',
         'custom-button-orange': '#FFA17A',
         'custom-button-green': '#87A98D',
       },

@@ -121,6 +121,11 @@
                 <p class="font-bold">current cookie value:</p>
                 <p>{{ exampleCookie }}</p>
         </div>
+        <!-- ------------------------------------------------------------------------------------------------------ -->
+        <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
+        <h1 class="text-2xl font-bold">Additional Components</h1>
+            <SearchBar v-model="searchBarVal" :dataList="searchDataList"/>
+        </div>
     </div>
 
 </template>
@@ -221,5 +226,9 @@ const getExampleAPI3 = async () => {
 const exampleCookie = useCookie("exampleCookie",  {
     default: () => ({ value: "pineapple" }),
   })
+
+// reference variables for additional components
+const searchBarVal = ref("chicken")
+const searchDataList = ref(["pizza","salad","chicken burger","beef burger","pad thai","nasi lemak","nasi padang","sushi","fried chicken","fried amogus","caesar salad"])
 
 </script>
