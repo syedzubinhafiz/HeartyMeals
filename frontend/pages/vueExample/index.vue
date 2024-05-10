@@ -124,8 +124,16 @@
         <!-- ------------------------------------------------------------------------------------------------------ -->
         <div class="flex flex-col space-y-2 bg-custom-overlay-brown shadow-md rounded-md w-full p-2">
         <h1 class="text-2xl font-bold">Additional Components</h1>
+        <H3>Search Bar</H3>
         <SearchBar v-model="searchBarVal" :dataList="searchDataList"/>
+        <H3>Bar Chart</H3>
         <ChartBar :data="barChartData" :options="barChartOptions" class="w-1/2"/>
+        <H3>Overlays</H3>
+        <Overlay :level="0">
+            <Overlay :level="1" class="h-10"><p>insert components here</p></Overlay>
+            <Overlay :level="2" class="h-10"><p>insert more components here</p></Overlay>
+            <Overlay colour="bg-black" class="h-10"><p class="text-white">insert even more components here</p></Overlay>
+        </Overlay>
         </div>
 
         
@@ -231,7 +239,7 @@ const exampleCookie = useCookie("exampleCookie",  {
   })
 
 // reference variables for additional components
-const searchBarVal = ref("chicken")
+const searchBarVal = ref("")
 const searchDataList = ref(["pizza","salad","chicken burger","beef burger","pad thai","nasi lemak","nasi padang","sushi","fried chicken","fried amogus","caesar salad"])
 
 const barChartData = ref({
