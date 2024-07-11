@@ -13,7 +13,7 @@
                         <Input placeholder="email" v-model="email"></Input>
                         <P class="text-red-500">{{emailErrorText}}</P>
                     </div>
-                    <Button :onclick="onVerify" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Verify</Button>
+                    <Button @click.prevent="onVerify" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Verify</Button>
                 </Overlay>
                 <div class="flex flex-row space-x-2 items-center">
                     <P>Don't have an account?</P>
@@ -35,14 +35,16 @@ definePageMeta({
 	layout: "emptylayout"
 });
 
+const userInfo = useUserInfo()
+
 const email = ref("")
 
 const emailErrorText = ref("")
 
 const onVerify = () => {
-    console.log(email.value)
     emailErrorText.value = ""
-    if(checkEmail()) {
+    let result = userInfo.login(email.value)
+    if(result) {
         navigateTo("/");
     }
     else {
