@@ -16,6 +16,7 @@ export const useUserInfo = () => {
     const login = (email) => {
         let userData = retrieveUserInfo(email)
         if(userData!=null) {
+            userInfo.value = userData
             userCookie.value = userData
             return true
         }
