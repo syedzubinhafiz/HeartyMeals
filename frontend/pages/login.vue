@@ -1,9 +1,9 @@
 <template>
     <div class="flex flex-row min-h-screen">
-        <div class="bg-custom-bg-green grow flex items-center justify-center">
+        <div class="w-1/2 bg-custom-bg-green grow flex items-center justify-center">
             <img src="../assets/img/HeartyMealLoginLogo.png" alt="Hearty Meal">
         </div>
-        <div class="grow flex items-center justify-center">
+        <div class="w-1/2 flex items-center justify-center p-9">
             <div class="space-y-5">
                 <H1 class="">Login to your account</H1>
                 <H2>Welcome back 👋</H2>
@@ -19,6 +19,10 @@
                     <P>Don't have an account?</P>
                     <Button class="bg-transparent hover:bg-transparent shadow-none text-custom-text-orange">Sign up</Button>
                 </div>
+                <Overlay :level="1" class="flex flex-col space-y-5">
+                    <P>The login system currently uses a placeholder verification system that accepts the following emails: bob@gmail.com, kate@gmail.com</P>
+                    <Button @click.prevent="() => {email='bob@gmail.com';onVerify()}">Quick Login</Button>
+                </Overlay>
             </div>
 
         </div>
@@ -50,11 +54,6 @@ const onVerify = () => {
     else {
         emailErrorText.value = "email not registered"
     }
-}
-
-const checkEmail = () => {
-    // tempoaray code for now
-    return email.value=="bob@gmail.com"
 }
 
 </script>
