@@ -1,5 +1,5 @@
 <template>
-    <input class="border w-min" v-model="inputValue" :type="type" :placeholder="placeholder"></input>
+    <input class="border w-min bg-transparent border-gray-500 " v-model="inputValue" :type="type" :placeholder="placeholder"></input>
 </template>
 <script setup>
 defineOptions({

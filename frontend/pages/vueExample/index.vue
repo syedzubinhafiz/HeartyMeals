@@ -134,6 +134,10 @@
             <Overlay :level="2" class="h-10"><p>insert more components here</p></Overlay>
             <Overlay colour="bg-black" class="h-10"><p class="text-white">insert even more components here</p></Overlay>
         </Overlay>
+        <H3>Radio Boxes</H3>
+        <RadioButton name="exampleRadio" :options="['option A','option B','option C']" v-model="radioInput"/>
+        <p>selected value:</p>
+        <p>{{ radioInput }}</p>
         </div>
 
         
@@ -255,4 +259,9 @@ const barChartData = ref({
 const barChartOptions = ref({
     responsive: true,
 });
+
+// radio input 
+const radioInput = ref("")
+
+
 </script>
