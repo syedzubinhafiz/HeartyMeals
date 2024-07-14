@@ -18,6 +18,7 @@ export default {
         'custom-button-orange': '#FFA17A',
         'custom-button-green': '#87A98D',
         'custom-text-orange': '#993300',
+        'custom-sidebar-yellow': '#B8B396'
       },
     },
   },
