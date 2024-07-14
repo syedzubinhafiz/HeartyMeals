@@ -60,9 +60,9 @@
                 </a>
               </li>
               <li class="mb-4">
-                <a href="#" class="flex items-center text-black">
+                <button @click.prevent="useUserInfo().logout(); navigateTo('/login')" class="flex items-center text-black">
                   <i class="bi bi-box-arrow-right mr-2"></i> Log Out
-                </a>
+                </button>
               </li>
             </ul>
           </nav>
