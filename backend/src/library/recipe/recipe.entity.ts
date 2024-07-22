@@ -24,13 +24,16 @@ export class Recipe{
     serving_size: number;
 
     @Column({type: 'json'})
-    nutrition_info: JSON;
+    nutrition_info: object;
     
     
     @Column({type: 'json'})
-    recommended_meal_time: JSON;
+    recommended_meal_time: object;
 
-    @Column({type: 'bool'})
+    @Column({
+        type: 'bool',
+        default: false
+    })
     is_approved: boolean;
 
     @Column({
@@ -40,7 +43,10 @@ export class Recipe{
     })
     visibility: Visibility;
 
-    @Column({type: 'json'})
+    @Column({
+        type: 'json', 
+        default: {}
+    })
     storage_links: JSON
 
     @ManyToOne( ()=> User, user=> user.user_id, {nullable: true} )

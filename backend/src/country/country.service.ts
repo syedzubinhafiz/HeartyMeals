@@ -22,4 +22,8 @@ export class CountryService {
         return await this.countryRepository.save(country);
 
     }
+    
+    async findAll(): Promise<Country[]>{
+        return await this.countryRepository.find();
+    }
 }

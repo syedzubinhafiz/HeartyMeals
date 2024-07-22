@@ -1,6 +1,7 @@
 import { Country } from "src/country/country.entity";
 import { Dietary } from "src/dietary/dietary.entitry";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { UserRole } from "./enum/user-role.enum";
 
 @Entity('user')   
 export class User{
@@ -20,5 +21,12 @@ export class User{
     dietary: Dietary;
 
     @Column({type: "json"})
-    medical_info: JSON
+    medical_info: JSON;
+
+
+    @Column({
+        type: 'enum',
+        enum: UserRole
+    })
+    user_role: UserRole;
 }

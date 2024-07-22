@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RecipeController } from './library/recipe/recipe.controller';
-import { RecipeService } from './library/recipe/recipe.service';
-import { EducationController } from './library/educational/educational.controller';
-import { EducationService } from './library/educational/educational.service';
-import { UserController } from './user/user.controller';
-import { UserService } from './user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DataSource } from 'typeorm';
+
+// Entity imports
 import { User } from './user/user.entity';
 import { UserAllergy } from './allergies/user_allergy.entity';
 import { Country } from './country/country.entity';
@@ -19,14 +17,14 @@ import { RecipeComponent } from './library/recipe/recipe-component/recipe-compon
 import { Recipe } from './library/recipe/recipe.entity';
 import { EducationalContent } from './library/educational/educational.entity';
 import { Storage } from './storage/storage.entity';
-import {ConfigModule, ConfigService} from '@nestjs/config'
-import { DataSource } from 'typeorm';
-import { CountryController } from './country/country.controller';
-import { CountryService } from './country/country.service';
+
+// Module imports
 import { CountryModule } from './country/country.module';
+import { DietaryModule } from './dietary/dietary.module';
+import { CuisineModule } from './cuisine/cuisine.module';
 
-
-
+// Seeder import
+import seedCountry from './country/country.seeder';
 
 @Module({
   imports: [
@@ -60,12 +58,17 @@ import { CountryModule } from './country/country.module';
       inject: [ConfigService],
     }),
     CountryModule,
+    DietaryModule,
+    CuisineModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {  
-  constructor(private dataSource: DataSource){
+export class AppModule {
+  constructor(private dataSource: DataSource) {
     console.log("database data source: ", dataSource.driver.database);
+
+    // seed country data
+    seedCountry(this.dataSource);
   }
 }

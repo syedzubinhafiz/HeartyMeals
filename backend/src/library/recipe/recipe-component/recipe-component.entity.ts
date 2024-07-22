@@ -11,15 +11,12 @@ export class RecipeComponent{
     @PrimaryColumn()
     recipe_id: string 
 
-
     @Column({type: 'integer'})
     amount: number;
-
 
     @ManyToOne( ()=> Component, component=> component.id, {eager: true})
     @JoinColumn({name: 'component_id'})
     component: Component;
-
 
     @ManyToOne(()=> Recipe, recipe=> recipe.id, {eager: true})
     @JoinColumn({name: 'recipe_id'})
