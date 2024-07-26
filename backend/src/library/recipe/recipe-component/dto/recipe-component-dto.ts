@@ -6,7 +6,7 @@ export class RecipeComponentDTO{
 
     @IsNotEmpty()
     @IsString()
-    readonly component_id: string;
+    readonly componentId: string;
 
     @IsNumber()
     readonly amount: number;

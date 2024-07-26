@@ -8,5 +8,5 @@ export class AddCuisineDTO{
 
     @IsNotEmpty()
     @IsString()
-    readonly country_id: string;
+    readonly countryId: string;
 }

@@ -10,7 +10,7 @@ export class Component{
     id: string;
 
     @Column({type: 'varchar'})
-    name: string;
+    name: string;   
 
     @Column({
         type: 'enum',
@@ -18,9 +18,8 @@ export class Component{
     })
     component_type :ComponentType;
 
-    @Column({type: 'json'})
-    nutrition_info: JSON;
-
+    @Column({type: 'jsonb'})
+    nutrition_info: Record<string, any>;
     @Column({
         type: 'enum',
         enum: MeasuringUnit
@@ -30,8 +29,8 @@ export class Component{
     @Column({type: 'integer'})
     amount: number;
 
-    @Column({type:'json'})
-    storage_links: JSON;
+    @Column({type:'jsonb'})
+    storage_links: Record<string, any>; 
 
     @ManyToOne(()=> Cuisine, cuisine=>cuisine.id, {eager: true})
     @JoinColumn({name: 'cuisine_id'})

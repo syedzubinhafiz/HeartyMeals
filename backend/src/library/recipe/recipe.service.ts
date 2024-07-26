@@ -13,45 +13,45 @@ export class RecipeService {
 
     constructor( 
         @InjectRepository(Cuisine)
-        private cuisineRepo: Repository<Cuisine>,
+        private cuisineRepository: Repository<Cuisine>,
         @InjectRepository(Dietary)
-        private dietaryRepo: Repository<Dietary>,
+        private dietaryRepository: Repository<Dietary>,
         @InjectRepository(Recipe)
-        private recipeRepo: Repository<Recipe>
+        private recipeRepository: Repository<Recipe>
     ){}
 
     async addRecipe(user: User|null, recipeDTO: RecipeDTO){
 
-        const newRecipe =  new Recipe();
+        const new_recipe =  new Recipe();
 
-        const cuisineType = await this.cuisineRepo.findOne({
+        const cuisine_type = await this.cuisineRepository.findOne({
             where: {
-                id: recipeDTO.cuisine_id
+                id: recipeDTO.cuisineId
             }
         });
 
-        const dietaryType =  await this.dietaryRepo.findOne({
+        const dietary_type =  await this.dietaryRepository.findOne({
             where: {
-                id: recipeDTO.dietary_id
+                id: recipeDTO.dietaryId
             }
         });
 
-        newRecipe.name =  recipeDTO.name;
-        newRecipe.description = recipeDTO.description;
-        newRecipe.instruction = recipeDTO.instruction;
-        newRecipe.serving_size = recipeDTO.serving_size;
-        newRecipe.nutrition_info = recipeDTO.nutrition_info;
-        newRecipe.recommended_meal_time =  recipeDTO.recommended_meal_time;
-        newRecipe.user = user;
-        newRecipe.cuisine = cuisineType;
-        newRecipe.dietary = dietaryType
+        new_recipe.name =  recipeDTO.name;
+        new_recipe.description = recipeDTO.description;
+        new_recipe.instruction = recipeDTO.instruction;
+        new_recipe.serving_size = recipeDTO.servingSize;
+        new_recipe.nutrition_info = recipeDTO.nutritionInformation;
+        new_recipe.recommended_meal_time =  recipeDTO.mealTimeRecommendation;
+        new_recipe.user = user;
+        new_recipe.cuisine = cuisine_type;
+        new_recipe.dietary = dietary_type
 
         if (user == null){
-            newRecipe.visibility = Visibility.PUBLIC
-            newRecipe.is_approved =  true
+            new_recipe.visibility = Visibility.PUBLIC
+            new_recipe.is_approved =  true
         }
         
-       return await this.recipeRepo.save(newRecipe)
+       return await this.recipeRepository.save(new_recipe)
     }
     
 }

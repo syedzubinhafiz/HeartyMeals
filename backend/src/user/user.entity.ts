@@ -9,16 +9,26 @@ export class User{
     @PrimaryGeneratedColumn('uuid')
     user_id: string;
 
-    @ManyToOne( () => Country, country => country.id, {eager : true})
-    @JoinColumn({name: 'id'})
+    @Column({type: "varchar"})
+    gsh_user_id: string;
+
+    @Column({type: "varchar"})
+    name: string;
+
+    @Column({type: "varchar"})
+    email: string;
+    
+    @ManyToOne( () => Country, country => country.id, {eager : true, nullable: true})
+    @JoinColumn({name: 'country_id'})
     country: Country;
 
-    @Column({type: "integer"})
-    nyha_level: number
-
-    @ManyToOne( () => Dietary, dietary => dietary.id, {eager : true})
+    @ManyToOne( () => Dietary, dietary => dietary.id, {eager : true, nullable: true})
     @JoinColumn({name: 'dietary_id'})
     dietary: Dietary;
+
+    @Column({type: "integer", nullable: true})
+    nyha_level: number
+
 
     @Column({type: "json"})
     medical_info: JSON;
@@ -29,4 +39,6 @@ export class User{
         enum: UserRole
     })
     user_role: UserRole;
+
+    
 }

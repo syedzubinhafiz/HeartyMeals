@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cuisine } from './cuisine.entity';
 import { Repository } from 'typeorm';
@@ -18,16 +18,28 @@ export class CuisineService {
 
     async addCuisine(cuisineInfo: AddCuisineDTO){
 
-        const selected_country = await this.countryRepository.findOneBy({id: cuisineInfo.country_id});
+        const selected_country = await this.countryRepository.findOneBy({id: cuisineInfo.countryId});
 
         if (selected_country == null){
-            return "Selected Country does not exist"
+            throw new HttpException( "Selected Country does not exist", 404);
+        }
+        
+        if (await this.cuisineRepository.findOneBy({name: cuisineInfo.name})){
+            throw new HttpException("Cuisine already exists", 409);
         }
 
-        return await this.cuisineRepository.save({
-            name: cuisineInfo.name,
-            country_id: cuisineInfo.country_id,
-            country:selected_country
-        })
+        try {
+            
+            await this.cuisineRepository.save({
+                name: cuisineInfo.name,
+                country_id: cuisineInfo.countryId,
+                country:selected_country
+            })
+
+        } catch (error) {
+            return new HttpException(error.message, 500);
+        }
+            return new HttpException("Cuisine added successfully", 201);
+        
     }   
 }

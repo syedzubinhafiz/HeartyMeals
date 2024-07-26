@@ -1,4 +1,4 @@
-import { IsEnum, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import { NutritionInfoDTO } from "./nutrition-info-dto";
 import { Type } from "class-transformer";
 import { RecommendedMealTimeDTO } from "./reommended-meal-time-dto";
@@ -14,22 +14,23 @@ export class RecipeDTO{
     @IsString()
     readonly description: string;
 
-    @IsJSON()
-    readonly instruction: JSON;
+    @IsNotEmpty()
+    @IsString({each: true})
+    readonly instruction: string[];
 
+    @IsNotEmpty()
     @IsNumber()
-    readonly serving_size: number;
+    readonly servingSize: number;
 
-    @ValidateIf(o=> o.user_id !== null)
     @IsOptional()
     @ValidateNested()
     @Type(()=> NutritionInfoDTO)
-    readonly nutrition_info?: NutritionInfoDTO = new NutritionInfoDTO();
+    readonly nutritionInformation?: NutritionInfoDTO = new NutritionInfoDTO();
 
     @IsNotEmpty()
     @ValidateNested()
     @Type(()=> RecommendedMealTimeDTO)
-    readonly recommended_meal_time: RecommendedMealTimeDTO;
+    readonly mealTimeRecommendation: RecommendedMealTimeDTO;
     
     @IsOptional()
     @IsEnum(Visibility)
@@ -38,9 +39,9 @@ export class RecipeDTO{
 
     @IsNotEmpty()
     @IsString()
-    readonly cuisine_id: string;
+    readonly cuisineId: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly dietary_id: string;
+    readonly dietaryId: string;
 }

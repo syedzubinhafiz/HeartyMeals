@@ -22,6 +22,9 @@ import { Storage } from './storage/storage.entity';
 import { CountryModule } from './country/country.module';
 import { DietaryModule } from './dietary/dietary.module';
 import { CuisineModule } from './cuisine/cuisine.module';
+import { RecipeModule } from './library/recipe/recipe.module';
+import { UserModule } from './user/user.module';
+import { StorageModule } from './storage/storage.module';
 
 // Seeder import
 import seedCountry from './country/country.seeder';
@@ -60,6 +63,9 @@ import seedCountry from './country/country.seeder';
     CountryModule,
     DietaryModule,
     CuisineModule,
+    RecipeModule,
+    UserModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -69,6 +75,6 @@ export class AppModule {
     console.log("database data source: ", dataSource.driver.database);
 
     // seed country data
-    seedCountry(this.dataSource);
+    seedCountry(this.dataSource); 
   }
 }

@@ -1,5 +1,5 @@
 import { DietaryService } from './dietary.service';
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 
 @Controller('dietary')
 export class DietaryController {
@@ -9,9 +9,7 @@ export class DietaryController {
     ){}
 
     @Post('add')
-    async addDietary(@Body() dietaryName: string){
-        
+    async addDietary(@Body("dietaryName") dietaryName: string){
         return await this.dietaryService.addDietary(dietaryName)
-
     }
 }

@@ -14,6 +14,7 @@ export class RecipeComponent{
     @Column({type: 'integer'})
     amount: number;
 
+    
     @ManyToOne( ()=> Component, component=> component.id, {eager: true})
     @JoinColumn({name: 'component_id'})
     component: Component;

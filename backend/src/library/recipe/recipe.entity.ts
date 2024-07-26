@@ -17,8 +17,8 @@ export class Recipe{
     @Column({type: 'varchar'})
     description: string;
 
-    @Column({type: 'json'})
-    instruction: JSON;
+    @Column('text', { array: true })
+    instruction: string[];
 
     @Column({type: 'integer'})
     serving_size: number;

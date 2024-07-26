@@ -12,27 +12,27 @@ export class RecipeComponentService{
 
     constructor(
         @InjectRepository(Component)
-        private componentRepo: Repository<Component>,
+        private componentRepository: Repository<Component>,
         @InjectRepository(RecipeComponent)
-        private recipeComponentRepo: Repository<RecipeComponent>,
+        private recipeComponentRepository: Repository<RecipeComponent>,
         private commonService: CommonService,
     ){}
 
     async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[]) {
         // Extract all component IDs from the componentList
-        const componentIds = componentList.map(rc => rc.component_id);
+        const component_ids = componentList.map(rc => rc.componentId);
     
         // Fetch all required components in a single query
-        const components = await this.componentRepo.findByIds(componentIds);
+        const components = await this.componentRepository.findByIds(component_ids);
     
         // Create a map of components for quick lookup
-        const componentMap = new Map(components.map(component => [component.id, component]));
+        const component_map = new Map(components.map(component => [component.id, component]));
     
         // Create an array to hold new RecipeComponent instances
-        const newRecipeComponents = componentList.map(recipeComponent => {
-            const component = componentMap.get(recipeComponent.component_id);
+        const new_recipe_components = componentList.map(recipeComponent => {
+            const component = component_map.get(recipeComponent.componentId);
             if (!component) {
-                throw new Error(`Component with ID ${recipeComponent.component_id} not found`);
+                throw new Error(`Component with ID ${recipeComponent.componentId} not found`);
             }
     
             let newAmount = recipeComponent.amount;
@@ -45,7 +45,7 @@ export class RecipeComponentService{
                 );
             }
     
-            return this.recipeComponentRepo.create({
+            return this.recipeComponentRepository.create({
                 component_id: component.id,
                 recipe_id: recipe.id,
                 amount: newAmount,
@@ -55,7 +55,7 @@ export class RecipeComponentService{
         });
     
         // Save all new RecipeComponent instances in a single batch insert
-        await this.recipeComponentRepo.save(newRecipeComponents);
+        await this.recipeComponentRepository.save(new_recipe_components);
 
         return true;
     }
