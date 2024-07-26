@@ -28,6 +28,7 @@ import { StorageModule } from './storage/storage.module';
 
 // Seeder import
 import seedCountry from './country/country.seeder';
+import initialiseFirebase from './storage/firebase.config';
 
 @Module({
   imports: [
@@ -76,5 +77,6 @@ export class AppModule {
 
     // seed country data
     seedCountry(this.dataSource); 
+    initialiseFirebase();
   }
 }

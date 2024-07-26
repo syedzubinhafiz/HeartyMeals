@@ -7,6 +7,7 @@ export class Storage{
     @PrimaryGeneratedColumn('uuid')
     storage_id: string;
 
+    // path
     @Column({type: 'varchar'})
     file_path: string;
 
