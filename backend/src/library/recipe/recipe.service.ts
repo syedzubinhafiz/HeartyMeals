@@ -50,6 +50,8 @@ export class RecipeService {
             new_recipe.visibility = Visibility.PUBLIC
             new_recipe.is_approved =  true
         }
+
+        //TODO: Add image upload logic here
         
        return await this.recipeRepository.save(new_recipe)
     }
