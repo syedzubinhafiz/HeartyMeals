@@ -7,7 +7,7 @@
             <div class="h-0 w-0 border-t-[50vh] border-l-[5vw] border-b-[50vh] border-solid border-t-transparent border-b-transparent border-l-custom-bg-green grow"/>
             <div class="space-y-5 m-9 grow">
                 <H1>Create an account</H1>
-                <Overlay :level="1" class="flex flex-col space-y-5">
+                <Overlay v-if="signupPage==0" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
                         <P><b>Full Name</b></P>
                         <Input placeholder="Full Name" v-model="fullName"></Input>
@@ -22,7 +22,33 @@
                         <P><b>Phone Number</b></P>
                         <Input placeholder="Phone Number" v-model="phoneNumber"></Input>
                     </div>
-                    <Button class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                    <Button @click.prevent="signupPage = 1" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                </Overlay>
+                <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
+                    <div class="space-y-0">
+                        <P><b>Heart Failure Diagnosis</b></P>
+                        <Input placeholder="Diagnosis" v-model="fullName"></Input>
+                        <P><b>Other Conditions</b></P>
+                        <Input placeholder="Enter Input" v-model="fullName"></Input>
+                        <P><b>Recent hospitalization due to heart failure (leave blank if there is no recent hospilization)</b></P>
+                        <Input placeholder="Enter Input" v-model="fullName"></Input>
+                        <P><b>Medical Prescribed</b></P>
+                        <Input placeholder="Medicines" v-model="fullName"></Input>
+                        <P><b>Country</b></P>
+                        <Input placeholder="Country" v-model="fullName"></Input>
+                    </div>
+                    <Button @click.prevent="signupPage = 2" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                </Overlay>
+                <Overlay v-if="signupPage==2" :level="1" class="flex flex-col space-y-5">
+                    <div class="space-y-0">
+                        <P><b>Allergies</b></P>
+                        <Dropdown :options="['Allergy 1','Allergy 2','Allergy 3']"/>
+                        <P><b>Dietary Restriction</b></P>
+                        <Dropdown :options="['Restriction 1','Restriction 2','Restriction 3']"/>
+                        <P><b>Medical Condition</b></P>
+                        <Input placeholder="Medical Condition" v-model="fullName"></Input>
+                    </div>
+                    <Button class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</Button>
                 </Overlay>
             </div>
 
@@ -39,6 +65,8 @@ defineOptions({
 definePageMeta({
 	layout: "emptylayout"
 });
+
+const signupPage = ref(0)
 
 const fullName = ref("")
 const identityNumber = ref("")
