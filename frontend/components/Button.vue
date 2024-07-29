@@ -1,5 +1,5 @@
 <template>
-    <button class="px-2 py-1 rounded-sm shadow-sm bg-custom-button-green text-white w-fit hover:bg-custom-button-green"><slot/></button>
+    <button class="px-2 py-1 rounded-lg shadow-sm bg-custom-button-green text-white w-fit hover:bg-custom-button-green"><slot/></button>
 </template>
 <script setup>
 defineOptions({
