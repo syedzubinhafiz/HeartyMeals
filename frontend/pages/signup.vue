@@ -21,8 +21,12 @@
                         <Input placeholder="Home Address" v-model="homeAddress"></Input>
                         <P><b>Phone Number</b></P>
                         <Input placeholder="Phone Number" v-model="phoneNumber"></Input>
+                        <P><b>Email</b></P>
+                        <Input placeholder="Email" v-model="email"></Input>
+                        <P><b>Password</b></P>
+                        <Input placeholder="Password" v-model="password"></Input>
                     </div>
-                    <Button @click.prevent="signupPage = 1" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                    <ButtonOrange @click.prevent="signupPage = 1" class="w-full">Next -></ButtonOrange>
                 </Overlay>
                 <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
@@ -37,7 +41,7 @@
                         <P><b>Country</b></P>
                         <Input placeholder="Country" v-model="fullName"></Input>
                     </div>
-                    <Button @click.prevent="signupPage = 2" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                    <ButtonOrange @click.prevent="signupPage = 2" class="w-full">Next -></ButtonOrange>
                 </Overlay>
                 <Overlay v-if="signupPage==2" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
@@ -48,7 +52,7 @@
                         <P><b>Medical Condition</b></P>
                         <Input placeholder="Medical Condition" v-model="fullName"></Input>
                     </div>
-                    <Button class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</Button>
+                    <ButtonOrange class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
                 </Overlay>
             </div>
 
@@ -74,4 +78,6 @@ const ethnicity = ref("")
 const gender = ref("")
 const homeAddress = ref("")
 const phoneNumber = ref("")
+const email = ref("")
+const password = ref("")
 </script>
