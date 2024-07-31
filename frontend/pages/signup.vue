@@ -55,7 +55,7 @@
                         <P><b>Are you currently taking any Warfarin?</b></P>
                         <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
-                    <ButtonOrange class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
+                    <ButtonOrange @click.prevent="signUp" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
                 </Overlay>
             </div>
 
@@ -87,4 +87,13 @@ const password = ref("")
 const allergies = ref("")
 const dietaryRestrictions = ref("")
 const warfarin = ref("no")
+
+const userInfo = useUserInfo()
+const signUp = () => {
+    userInfo.validEmailList.value.push(email.value)
+    let result = userInfo.login(email.value)
+    if(result) {
+        navigateTo("/");
+    }
+}
 </script>

@@ -42,7 +42,6 @@ definePageMeta({
 });
 
 const userInfo = useUserInfo()
-
 const email = ref("")
 
 const emailErrorText = ref("")
