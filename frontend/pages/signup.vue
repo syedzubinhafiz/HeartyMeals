@@ -12,8 +12,8 @@
                     <div class="space-y-0">
                         <P><b>Full Name</b></P>
                         <Input placeholder="Full Name" v-model="fullName"></Input>
-                        <P><b>Identity Number</b></P>
-                        <Input placeholder="Identity Number" v-model="identityNumber"></Input>
+                        <P><b>Country</b></P>
+                        <Input placeholder="Country" v-model="country"></Input>
                         <P><b>Ethnicity</b></P>
                         <Input placeholder="Ethnicity" v-model="ethnicity"></Input>
                         <P><b>Gender</b></P>
@@ -27,9 +27,10 @@
                         <P><b>Password</b></P>
                         <Input placeholder="Password" v-model="password"></Input>
                     </div>
-                    <ButtonOrange @click.prevent="signupPage = 1" class="w-full">Next -></ButtonOrange>
+                    <ButtonOrange @click.prevent="signupPage = 2" class="w-full">Next -></ButtonOrange>
                 </Overlay>
-                <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
+                <!-- <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
+                    <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
                     <div class="space-y-0">
                         <P><b>Heart Failure Diagnosis</b></P>
                         <Input placeholder="Diagnosis" v-model="fullName"></Input>
@@ -43,15 +44,16 @@
                         <Input placeholder="Country" v-model="fullName"></Input>
                     </div>
                     <ButtonOrange @click.prevent="signupPage = 2" class="w-full">Next -></ButtonOrange>
-                </Overlay>
+                </Overlay> -->
                 <Overlay v-if="signupPage==2" :level="1" class="flex flex-col space-y-5">
+                    <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
                     <div class="space-y-0">
                         <P><b>Allergies</b></P>
-                        <Dropdown :options="['Allergy 1','Allergy 2','Allergy 3']"/>
+                        <Dropdown :options="['Allergy 1','Allergy 2','Allergy 3']" v-model="allergies"/>
                         <P><b>Dietary Restriction</b></P>
-                        <Dropdown :options="['Restriction 1','Restriction 2','Restriction 3']"/>
-                        <P><b>Medical Condition</b></P>
-                        <Input placeholder="Medical Condition" v-model="fullName"></Input>
+                        <Dropdown :options="['Restriction 1','Restriction 2','Restriction 3']" v-model="dietaryRestrictions"/>
+                        <P><b>Are you currently taking any Warfarin?</b></P>
+                        <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
                     <ButtonOrange class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
                 </Overlay>
@@ -74,11 +76,15 @@ definePageMeta({
 const signupPage = ref(0)
 
 const fullName = ref("")
-const identityNumber = ref("")
+const country = ref("")
 const ethnicity = ref("")
 const gender = ref("")
 const homeAddress = ref("")
 const phoneNumber = ref("")
 const email = ref("")
 const password = ref("")
+
+const allergies = ref("")
+const dietaryRestrictions = ref("")
+const warfarin = ref("no")
 </script>
