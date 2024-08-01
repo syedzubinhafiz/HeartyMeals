@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Storage } from './storage.entity';
 import { StorageType } from './storage.enum';
 import { Repository } from 'typeorm';
-import { getStorage, getDownloadURL } from 'firebase-admin/storage'
+import { getStorage } from 'firebase-admin/storage'
+import { createWriteStream, promises as fs } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class StorageService {
@@ -24,42 +26,47 @@ export class StorageService {
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]) : undefined;
     }
 
-    uploadFile(userId, recipeId, file : Express.Multer.File){        
+    async uploadFile(userId, recipeId, file : Express.Multer.File){     
+        // data validation
+        if (!this.pathValidation(userId, recipeId, file)){
+            return "bad path";
+        }
+
+        var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
+        if (file_extension == undefined){
+            return "bad file extension";
+        }   
+
+        // validation check to see what type of upload it is for and to prepare the path
+        var path = ``;
+        if (userId != null){
+            // upload is for user 
+            if (recipeId != null){
+                // upload custom recipe photo
+                path = `user/${userId}/${recipeId}`;
+            }
+            else {
+                // upload user photo
+                path = `user/${userId}/profile_picture`;
+            }
+        }
+        else {
+            // upload for official recipe
+            path = `official_recipe/${recipeId}`;
+        }
+
+
         if (process.env.DEBUG === "true")  {
-            // data validation
-            if (!this.pathValidation(userId, recipeId, file)){
-                return "bad path";
-            }
-
-            var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
-            if (file_extension == undefined){
-                return "bad file extension";
-            }
-
             // get the bucket
             const bucket = getStorage().bucket();
 
+            // get file name
             const file_name = file.originalname;
-            // validation check to see what type of upload it is for and to prepare the path
-            var path = ``;
-            if (userId != null){
-                // upload is for user 
-                if (recipeId != null){
-                    // upload custom recipe photo
-                    path = `user/${userId}/${recipeId}/${file_name}`;
-                }
-                else {
-                    // upload user photo
-                    path = `user/${userId}/profile_picture/${file_name}`;
-                }
-            }
-            else {
-                // upload for official recipe
-                path = `official_recipe/${recipeId}/${file_name}`;
-            }
 
+            // path to bucket
+            const bucket_path = `${path}/${file_name}`;
             // upload data to firebase
-            const file_upload = bucket.file(`${path}`);
+            const file_upload = bucket.file(`${bucket_path}`);
             const stream = file_upload.createWriteStream({
                 metadata: {
                     contentType: file.mimetype,
@@ -72,7 +79,6 @@ export class StorageService {
                     reject(error);
                 });
                 stream.on('finish', () => {
-                    // TODO: update to actual path in the future
                     const image_url = `https://storage.googleapis.com/${bucket.name}/${path}`;
                     resolve(image_url);
                 })
@@ -85,10 +91,10 @@ export class StorageService {
                     // This code runs if the promise is resolved
                     console.log("Upload successful:", image_url);
 
-                    // TODO: save the path to database?
+                    // save to database
                     const new_storage = new Storage();
 
-                    new_storage.file_path = path;
+                    new_storage.file_path = bucket_path;
                     new_storage.type = file_extension;
                     new_storage.size = file.size;
 
@@ -103,7 +109,42 @@ export class StorageService {
             return upload_promise;
         }
         else {
-            console.log("It works. Source: trust me bro");
+            // save to local directory
+            // create a new folder called "uploaded" inside storage
+            var fs = require('fs');
+            var dir = join(__dirname, '../../src/storage/uploaded/', path,'/');
+            
+            if (!fs.existsSync(dir)){
+                fs.mkdirSync(dir, { recursive: true });
+            }
+
+            const uploaded_path = join(dir, file.originalname);
+            // Create a write stream
+            const writeStream = createWriteStream(uploaded_path);
+
+            // Write the file stream to the new location
+            writeStream.write(file.buffer);
+
+            // Close the stream
+            writeStream.end();
+
+            // Handle stream events
+            writeStream.on('finish', async () => {
+                console.log('File saved successfully.');
+                const new_storage = new Storage();
+
+                new_storage.file_path = uploaded_path;
+                new_storage.type = file_extension;
+                new_storage.size = file.size;
+
+                await this.storageRepository.save(new_storage);
+            });
+
+            writeStream.on('error', (err) => {
+                console.error('Error saving file:', err);
+            });
+
+            return { message: 'File uploaded and saved successfully', file };
         }
     }
 
@@ -116,17 +157,28 @@ export class StorageService {
             return e;
         }
 
+        if (process.env.DEBUG === "true")  {
+            // get the storage
+            const bucket = getStorage().bucket();
+            
+            // delete in firebase
+            const file_download = bucket.file(`${entry.file_path}`)
+            file_download.delete();
+        }
+        else {
+            try {
+                // Check if the file exists
+                await fs.access(entry.file_path);
+                
+                // Delete the file
+                await fs.unlink(entry.file_path);
         
-        // get the storage
-        const bucket = getStorage().bucket();
-        
-        // delete in firebase
-        const file_download = bucket.file(`${entry.file_path}`)
-        file_download.delete();
+              } catch (error) {
+                return { message: 'File not found'}
+              }
+        }
         // delete in database
         await this.storageRepository.delete(entry);
-
-        // successfully deleted
         return true;
     }
 
