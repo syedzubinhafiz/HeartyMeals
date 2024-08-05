@@ -4,9 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 
 @Injectable()
-export class EducationService {
+export class EducationalService {
     constructor(
         @InjectRepository(EducationalContent)
-        private storageRepository: Repository<EducationalContent>
+        private educatinoalContentRepository: Repository<EducationalContent>
     ){}
+
+
+    async uploadContent(){
+
+    }
 }
