@@ -13,7 +13,7 @@ export class StorageController {
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
-        return this.storageService.uploadFile(data["userId"], data["recipeId"], file);
+        return this.storageService.uploadFile(data["userId"], data["recipeId"], data["eduId"], file);
     }
 
     @Post('delete')

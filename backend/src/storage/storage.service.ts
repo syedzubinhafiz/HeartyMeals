@@ -15,8 +15,11 @@ export class StorageService {
         private storageRepository: Repository<Storage>
     ){}
 
-    pathValidation(userId, recipeId, file){
-        return !(userId == null && recipeId == null) && !(file == null || file.size <= 0);
+    pathValidation(userId, recipeId, eduId, file){
+        // check if all ids are null (no specific path)
+        // check if both userId and educationalId is not null (either one must be null else will have path conflict)
+        // last check if the file is empty or no file is uploaded
+        return !(userId == null && recipeId == null && eduId == null) && !((userId != null || recipeId != null) && eduId != null) && !(file == null || file.size <= 0);
     }
 
     // match the file extension type to the enum available 
@@ -26,12 +29,13 @@ export class StorageService {
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]) : undefined;
     }
 
-    async uploadFile(userId, recipeId, file : Express.Multer.File){     
+    async uploadFile(userId, recipeId, eduId, file : Express.Multer.File){     
         // data validation
-        if (!this.pathValidation(userId, recipeId, file)){
+        if (!this.pathValidation(userId, recipeId, eduId, file)){
             return "bad path";
         }
 
+        // check if file extension can be stored
         var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
         if (file_extension == undefined){
             return "bad file extension";
@@ -51,8 +55,15 @@ export class StorageService {
             }
         }
         else {
-            // upload for official recipe
-            path = `official_recipe/${recipeId}`;
+            if (recipeId != null){
+                // upload for official recipe
+                path = `official_recipe/${recipeId}`;
+            }
+            else {
+                // upload is for educational content
+                path = `educational_content/${eduId}`;
+            }
+
         }
 
 
