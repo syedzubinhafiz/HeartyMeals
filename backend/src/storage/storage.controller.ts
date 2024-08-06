@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { StorageService } from './storage.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('storage')
 export class StorageController {
@@ -8,8 +8,8 @@ export class StorageController {
     constructor(private storageService: StorageService){}
 
     @Post('upload')
-    @UseInterceptors(FileInterceptor('file'))
-    upload(@Body('data') payload: string, @UploadedFile() file: Express.Multer.File){
+    @UseInterceptors(FilesInterceptor('file'))
+    upload(@Body('data') payload: string, @UploadedFiles() file: Array<Express.Multer.File>){
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
