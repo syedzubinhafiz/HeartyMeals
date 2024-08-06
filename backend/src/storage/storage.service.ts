@@ -15,11 +15,11 @@ export class StorageService {
         private storageRepository: Repository<Storage>
     ){}
 
-    pathValidation(userId, recipeId, eduId, file){
+    pathValidation(userId, recipeId, eduId, files: Array<Express.Multer.File>){
         // check if all ids are null (no specific path)
         // check if both userId and educationalId is not null (either one must be null else will have path conflict)
         // last check if the file is empty or no file is uploaded
-        return !(userId == null && recipeId == null && eduId == null) && !((userId != null || recipeId != null) && eduId != null) && !(file == null || file.size <= 0);
+        return !(userId == null && recipeId == null && eduId == null) && !((userId != null || recipeId != null) && eduId != null) && !(files.length > 0 || files != null);
     }
 
     // match the file extension type to the enum available 
@@ -29,17 +29,11 @@ export class StorageService {
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]) : undefined;
     }
 
-    async uploadFile(userId, recipeId, eduId, file : Express.Multer.File){     
+    async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
         // data validation
-        if (!this.pathValidation(userId, recipeId, eduId, file)){
+        if (!this.pathValidation(userId, recipeId, eduId, files)){
             return "bad path";
         }
-
-        // check if file extension can be stored
-        var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
-        if (file_extension == undefined){
-            return "bad file extension";
-        }   
 
         // validation check to see what type of upload it is for and to prepare the path
         var path = ``;
@@ -70,54 +64,61 @@ export class StorageService {
         if (process.env.DEBUG === "true")  {
             // get the bucket
             const bucket = getStorage().bucket();
+            files.forEach(file => {
+                // get file name
+                const file_name = file.originalname;
+                
+                // get file extension
+                var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
+                if (file_extension == undefined){
+                    return "bad file extension";
+                }   
 
-            // get file name
-            const file_name = file.originalname;
-
-            // path to bucket
-            const bucket_path = `${path}/${file_name}`;
-            // upload data to firebase
-            const file_upload = bucket.file(`${bucket_path}`);
-            const stream = file_upload.createWriteStream({
-                metadata: {
-                    contentType: file.mimetype,
-                }
-            });
-
-            // create a promise to handle the upload
-            const upload_promise = new Promise((resolve, reject) => {
-                stream.on('error', (error) => {
-                    reject(error);
-                });
-                stream.on('finish', () => {
-                    const image_url = `https://storage.googleapis.com/${bucket.name}/${path}`;
-                    resolve(image_url);
-                })
-                stream.end(file.buffer);
-            });
-
-            
-            upload_promise
-                .then(async (image_url) => {
-                    // This code runs if the promise is resolved
-                    console.log("Upload successful:", image_url);
-
-                    // save to database
-                    const new_storage = new Storage();
-
-                    new_storage.file_path = bucket_path;
-                    new_storage.type = file_extension;
-                    new_storage.size = file.size;
-
-                    await this.storageRepository.save(new_storage);
-                })
-                .catch((error) => {
-                    // This code runs if the promise is rejected
-                    console.error("Upload failed:", error);
+                // path to bucket
+                const bucket_path = `${path}/${file_name}`;
+                // upload data to firebase
+                const file_upload = bucket.file(`${bucket_path}`);
+                const stream = file_upload.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype,
+                    }
                 });
 
-            // return promise
-            return upload_promise;
+                // create a promise to handle the upload
+                const upload_promise = new Promise((resolve, reject) => {
+                    stream.on('error', (error) => {
+                        reject(error);
+                    });
+                    stream.on('finish', () => {
+                        const image_url = `https://storage.googleapis.com/${bucket.name}/${path}`;
+                        resolve(image_url);
+                    })
+                    stream.end(file.buffer);
+                });
+
+                
+                upload_promise
+                    .then(async (image_url) => {
+                        // This code runs if the promise is resolved
+                        console.log("Upload successful:", image_url);
+
+                        // save to database
+                        const new_storage = new Storage();
+
+                        new_storage.file_path = bucket_path;
+                        new_storage.type = file_extension;
+                        new_storage.size = file.size;
+
+                        await this.storageRepository.save(new_storage);
+                    })
+                    .catch((error) => {
+                        // This code runs if the promise is rejected
+                        console.error("Upload failed:", error);
+                    });
+
+                // return promise
+                return upload_promise;
+            });
         }
         else {
             // save to local directory
@@ -129,33 +130,40 @@ export class StorageService {
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            const uploaded_path = join(dir, file.originalname);
-            // Create a write stream
-            const writeStream = createWriteStream(uploaded_path);
+            files.forEach(file => {
+                // get file extension
+                var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
+                if (file_extension == undefined){
+                    return "bad file extension";
+                }
+                
+                const uploaded_path = join(dir, file.originalname);
+                // Create a write stream
+                const writeStream = createWriteStream(uploaded_path);
 
-            // Write the file stream to the new location
-            writeStream.write(file.buffer);
+                // Write the file stream to the new location
+                writeStream.write(file.buffer);
 
-            // Close the stream
-            writeStream.end();
+                // Close the stream
+                writeStream.end();
 
-            // Handle stream events
-            writeStream.on('finish', async () => {
-                console.log('File saved successfully.');
-                const new_storage = new Storage();
+                // Handle stream events
+                writeStream.on('finish', async () => {
+                    console.log('File saved successfully.');
+                    const new_storage = new Storage();
 
-                new_storage.file_path = uploaded_path;
-                new_storage.type = file_extension;
-                new_storage.size = file.size;
+                    new_storage.file_path = uploaded_path;
+                    new_storage.type = file_extension;
+                    new_storage.size = file.size;
 
-                await this.storageRepository.save(new_storage);
+                    await this.storageRepository.save(new_storage);
+                });
+
+                writeStream.on('error', (err) => {
+                    console.error('Error saving file:', err);
+                });                
             });
-
-            writeStream.on('error', (err) => {
-                console.error('Error saving file:', err);
-            });
-
-            return { message: 'File uploaded and saved successfully', file };
+            return { message: 'All files uploaded and saved successfully.' };
         }
     }
 
