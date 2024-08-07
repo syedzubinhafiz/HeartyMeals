@@ -12,6 +12,6 @@ export class EducationController {
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
-        return this.educationalContentService.uploadContent();
+        return this.educationalContentService.uploadContent(data["userId"], data["eduId"], data["text"], file);
     }
 }
