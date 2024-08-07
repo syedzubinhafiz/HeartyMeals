@@ -6,36 +6,37 @@ import { Repository } from 'typeorm';
 import { getStorage } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class StorageService {
 
     constructor(
         @InjectRepository(Storage)
-        private storageRepository: Repository<Storage>
+        private storageRepository: Repository<Storage>,
+        private commonService: CommonService
     ){}
 
-    pathValidation(userId, recipeId, eduId, files: Array<Express.Multer.File>){
-        // check if all ids are null (no specific path)
-        // check if both userId and educationalId is not null (either one must be null else will have path conflict)
-        // last check if the file is empty or no file is uploaded
-        return !(userId == null && recipeId == null && eduId == null) && !((userId != null || recipeId != null) && eduId != null) && !(files.length > 0 || files != null);
-    }
-
-    // match the file extension type to the enum available 
-    fileExtensionValidation<T>(enumObj: T, value: string): T[keyof T] | undefined {
+    /**
+     * Method to get the correct file extension
+     * @param enumObj StorageType
+     * @param value 
+     * @returns available file extension, or undefined
+     */
+    fileExtensionValidation<T>(value: string){
         var splitted = value.split("/");
-        const enumValues = Object.values(enumObj);
-        return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]) : undefined;
+        const enumValues = Object.values(StorageType);
+        return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
     }
 
-    async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
-        // data validation
-        if (!this.pathValidation(userId, recipeId, eduId, files)){
-            return "bad path";
-        }
-
-        // validation check to see what type of upload it is for and to prepare the path
+    /**
+     * Method to prepare path for file upload
+     * @param userId - user id
+     * @param recipeId - recipe id
+     * @param eduId - educational content id
+     * @returns a path that the file will upload to
+     */
+    pathPreparation(userId, recipeId, eduId){
         var path = ``;
         if (userId != null){
             // upload is for user 
@@ -59,6 +60,17 @@ export class StorageService {
             }
 
         }
+        return path;
+    }
+
+    async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
+        // data validation
+        if (!this.commonService.pathValidation(userId, recipeId, eduId)){
+            return "bad path";
+        }
+
+        // validation check to see what type of upload it is for and to prepare the path
+        var path = this.pathPreparation(userId, recipeId, eduId);
 
 
         if (process.env.DEBUG === "true")  {
@@ -69,7 +81,7 @@ export class StorageService {
                 const file_name = file.originalname;
                 
                 // get file extension
-                var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
+                var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
                     return "bad file extension";
                 }   
@@ -132,7 +144,7 @@ export class StorageService {
 
             files.forEach(file => {
                 // get file extension
-                var file_extension = this.fileExtensionValidation(StorageType, file.mimetype);
+                var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
                     return "bad file extension";
                 }
