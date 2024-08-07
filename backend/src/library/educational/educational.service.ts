@@ -3,13 +3,15 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { CommonService } from 'src/common/common.service';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class EducationalService {
     constructor(
         @InjectRepository(EducationalContent)
         private educatinoalContentRepository: Repository<EducationalContent>,
-        private commonService: CommonService
+        private commonService: CommonService,
+        private storageService: StorageService
     ){}
 
 
@@ -28,7 +30,7 @@ export class EducationalService {
 
         // call the upload method 
         // by passing the data to the method 
-
+        this.storageService.uploadFile(null, null, eduId, files);
         // then save the data to db
     }
 
