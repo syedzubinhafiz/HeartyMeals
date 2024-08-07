@@ -29,6 +29,7 @@ import { StorageModule } from './storage/storage.module';
 // Seeder import
 import seedCountry from './country/country.seeder';
 import initialiseFirebase from './storage/firebase.config';
+import { EducationalModule } from './library/educational/educational.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import initialiseFirebase from './storage/firebase.config';
     RecipeModule,
     UserModule,
     StorageModule,
+    EducationalModule,
   ],
   controllers: [AppController],
   providers: [AppService],

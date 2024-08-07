@@ -1,11 +1,34 @@
 import { MeasuringUnit } from "src/library/recipe/component/measuring-unit.enum";
-import { UserService } from "src/user/user.service";
+import { User } from "src/user/user.entity";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 
 export class CommonService{
+
+    constructor(
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
+    ){}
 
     convertUnits(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit, newAmount: number): number{
 
         return 0
+    }
+
+    async isAdmin(userId){
+        try {
+            var entry = await this.userRepository.findOneBy({name: userId});
+        }
+        catch (e){
+            return e
+        }
+
+        const role = entry.user_role;
+        if (role === "Admin"){
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -38,5 +61,6 @@ export class CommonService{
         // or saves as user custom recipe photos/videos
         // or saves as official recipe photos/videos
         // or educational content photos/videos
+        return true;
     }
 }
