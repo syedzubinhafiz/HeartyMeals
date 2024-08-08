@@ -25,9 +25,14 @@ import { CuisineModule } from './cuisine/cuisine.module';
 import { RecipeModule } from './library/recipe/recipe.module';
 import { UserModule } from './user/user.module';
 import { StorageModule } from './storage/storage.module';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 
 // Seeder import
 import seedCountry from './country/country.seeder';
+import { Type } from 'class-transformer';
+import { getTypeOrmConfig } from './db/config';
 
 @Module({
   imports: [
@@ -36,30 +41,10 @@ import seedCountry from './country/country.seeder';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('HF_NUTRITION_HOST'),
-        port: configService.get<number>('HF_NUTRITION_PORT'),
-        username: configService.get<string>('HF_NUTRITION_USERNAME'),
-        password: configService.get<string>('HF_NUTRITION_PASSWORD'),
-        database: configService.get<string>('HF_NUTRITION_DATABASE'),
-        entities: [
-          User,
-          Country,
-          Dietary,
-          UserAllergy,
-          FoodCategory,
-          Cuisine,
-          Recipe,
-          EducationalContent,
-          Storage,
-          RecipeComponent,
-          Component,
-        ],
-        synchronize: true,
-      }),
+      useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
       inject: [ConfigService],
     }),
+    AuthModule,
     CountryModule,
     DietaryModule,
     CuisineModule,
@@ -67,8 +52,8 @@ import seedCountry from './country/country.seeder';
     UserModule,
     StorageModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, AuthController],
+  providers: [AppService, AuthService],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {

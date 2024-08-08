@@ -1,20 +1,20 @@
 import { Country } from "src/country/country.entity";
 import { Dietary } from "src/dietary/dietary.entitry";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserRole } from "./enum/user-role.enum";
 import { Gender } from "./enum/gender.enum";
 
 @Entity('user')   
 export class User{
 
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn({type: "uuid"} )
     user_id: string;
 
     @Column({type: "varchar"})
-    gsh_user_id: string;
+    first_name: string;
 
     @Column({type: "varchar"})
-    name: string;
+    last_name: string;
 
     @Column({type: "varchar"})
     email: string; 

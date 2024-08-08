@@ -1,8 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Headers, Get } from '@nestjs/common';
 import { CreatUserDTO } from './dto/create-user-dto';
 import { UserService } from './user.service';
 import { UserRole } from './enum/user-role.enum';
 import { CreatAdminDTO } from './dto/create-admin-dto';
+
 
 @Controller('user')
 export class UserController {
@@ -25,4 +26,10 @@ export class UserController {
     async createNewDietitian(@Body() payload: CreatAdminDTO){
         return await this.userService.createNewAdmin(payload, UserRole.DIETITIAN)
     }
+
+    @Get('verify')
+    async verifyUser(@Headers() headers) {
+        const authHeader = headers.authorization;
+        return await this.userService.verifyUser(authHeader);
+  }
 }
