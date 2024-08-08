@@ -39,44 +39,34 @@ export class StorageService {
             // get the bucket
             const bucket = getStorage().bucket();
             var return_json = {};
-            files.forEach((file, index) => {
-                // get file name
-                const file_name = file.originalname;
-                
-                // get file extension
-                var file_extension = this.fileExtensionValidation(file.mimetype);
-                if (file_extension == undefined){
-                    return "bad file extension";
-                }   
+            
+            const upload_promises = files.map((file, index) => {
 
-                // path to bucket
-                const bucket_path = `${path}/${file_name}`;
-                // upload data to firebase
-                const file_upload = bucket.file(`${bucket_path}`);
-                const stream = file_upload.createWriteStream({
-                    metadata: {
-                        contentType: file.mimetype,
-                    }
-                });
+                return new Promise<String>(async (resolve, reject) => {
+                    // get file name
+                    const file_name = file.originalname;
+                    
+                    // get file extension
+                    var file_extension = this.fileExtensionValidation(file.mimetype);
+                    if (file_extension == undefined){
+                        return "bad file extension";
+                    }   
 
-                // create a promise to handle the upload
-                const upload_promise = new Promise((resolve, reject) => {
+                    // path to bucket
+                    const bucket_path = `${path}/${file_name}`;
+                    // upload data to firebase
+                    const file_upload = bucket.file(`${bucket_path}`);
+                    const stream = file_upload.createWriteStream({
+                        metadata: {
+                            contentType: file.mimetype,
+                        }
+                    });
+
+
                     stream.on('error', (error) => {
                         reject(error);
                     });
-                    stream.on('finish', () => {
-                        const image_url = `https://storage.googleapis.com/${bucket.name}/${path}`;
-                        resolve(image_url);
-                    })
-                    stream.end(file.buffer);
-                });
-
-                
-                upload_promise
-                    .then(async (image_url) => {
-                        // This code runs if the promise is resolved
-                        console.log("Upload successful:", image_url);
-
+                    stream.on('finish', async () => {
                         // save to database
                         const new_storage = new Storage();
 
@@ -84,16 +74,19 @@ export class StorageService {
                         new_storage.type = file_extension;
                         new_storage.size = file.size;
 
-                        const storage_id = await this.storageRepository.save(new_storage);
-                        return_json[`file${index}`] = storage_id;
+                        try {
+                            const storage_object = await this.storageRepository.save(new_storage);
+                            return_json[`file${index}`] = storage_object.storage_id;
+                            resolve(storage_object.storage_id);
+                        }
+                        catch (e) {
+                            reject(e);
+                        }
                     })
-                    .catch((error) => {
-                        // This code runs if the promise is rejected
-                        console.error("Upload failed:", error);
-                    });
-
-                // return promise
+                    stream.end(file.buffer);
+                })
             });
+            await Promise.all(upload_promises);
             return return_json;
         }
         else {

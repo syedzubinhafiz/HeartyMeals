@@ -8,12 +8,12 @@ export class StorageController {
     constructor(private storageService: StorageService){}
 
     @Post('upload')
-    @UseInterceptors(FilesInterceptor('file'))
-    upload(@Body('data') payload: string, @UploadedFiles() file: Array<Express.Multer.File>){
+    @UseInterceptors(FilesInterceptor('files[]'))
+    upload(@Body('data') payload: string, @UploadedFiles() files: Array<Express.Multer.File>){
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
-        return this.storageService.uploadFile(data["userId"], data["recipeId"], data["eduId"], file);
+        return this.storageService.uploadFile(data["userId"], data["recipeId"], data["eduId"], files);
     }
 
     @Post('delete')
