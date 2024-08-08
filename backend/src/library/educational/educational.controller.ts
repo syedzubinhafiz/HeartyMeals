@@ -7,11 +7,11 @@ export class EducationController {
     constructor(private educationalContentService: EducationalService){}
 
     @Post('upload')
-    @UseInterceptors(FilesInterceptor('file'))
-    upload(@Body('data') payload: string, @UploadedFiles() file: Array<Express.Multer.File>){
+    @UseInterceptors(FilesInterceptor('files[]'))
+    upload(@Body('data') payload: string, @UploadedFiles() files: Array<Express.Multer.File>){
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
-        return this.educationalContentService.uploadContent(data["userId"], data["eduId"], data["text"], file);
+        return this.educationalContentService.uploadContent(data["userId"], data["eduId"], data["title"], data["text"], files);
     }
 }
