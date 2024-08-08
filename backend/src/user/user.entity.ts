@@ -1,7 +1,8 @@
 import { Country } from "src/country/country.entity";
 import { Dietary } from "src/dietary/dietary.entitry";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserRole } from "./enum/user-role.enum";
+import { Gender } from "./enum/gender.enum";
 
 @Entity('user')   
 export class User{
@@ -16,7 +17,13 @@ export class User{
     name: string;
 
     @Column({type: "varchar"})
-    email: string;
+    email: string; 
+
+    @Column({
+        type: "enum",
+        enum: Gender
+    })
+    gender: Gender;
     
     @ManyToOne( () => Country, country => country.id, {eager : true, nullable: true})
     @JoinColumn({name: 'country_id'})
@@ -39,6 +46,19 @@ export class User{
         enum: UserRole
     })
     user_role: UserRole;
+
+
+  @CreateDateColumn({ type: "timestamp with time zone" })
+  @Column({ nullable: true })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: "timestamp with time zone" })
+  @Column({ nullable: true })
+  updatedAt: Date;
+
+  @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
+  @Column({ nullable: true })
+  deletedAt?: Date;
 
     
 }
