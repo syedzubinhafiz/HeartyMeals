@@ -6,9 +6,12 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+
 @Module({
-    imports: [TypeOrmModule.forFeature([User, Country, Dietary])],
+    imports: [
+        TypeOrmModule.forFeature([User, Country, Dietary])
+    ],
     controllers: [UserController],
-    providers: [UserService],  
+    providers: [UserService, ],  
 })
 export class UserModule {}
