@@ -32,6 +32,10 @@ export class EducationalService {
         // by passing the data to the method 
         this.storageService.uploadFile(null, null, eduId, files);
         // then save the data to db
+        const new_entry = new EducationalContent();
+        new_entry.content = data;
+        new_entry.storage_links = null;
+        new_entry.title = null;
     }
 
     async deleteContent(eduId){
