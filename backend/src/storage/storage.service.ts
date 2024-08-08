@@ -18,51 +18,13 @@ export class StorageService {
     ){}
 
     /**
-     * Method to get the correct file extension
-     * @param enumObj StorageType
-     * @param value 
-     * @returns available file extension, or undefined
-     */
-    fileExtensionValidation<T>(value: string){
-        var splitted = value.split("/");
-        const enumValues = Object.values(StorageType);
-        return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
-    }
-
-    /**
-     * Method to prepare path for file upload
-     * @param userId - user id
+     * Upload file method to the firebase storage and save the entry to database
+     * @param userId - user id 
      * @param recipeId - recipe id
      * @param eduId - educational content id
-     * @returns a path that the file will upload to
+     * @param files - array of files
+     * @returns a json with all the stoarge links 
      */
-    pathPreparation(userId, recipeId, eduId){
-        var path = ``;
-        if (userId != null){
-            // upload is for user 
-            if (recipeId != null){
-                // upload custom recipe photo
-                path = `user/${userId}/${recipeId}`;
-            }
-            else {
-                // upload user photo
-                path = `user/${userId}/profile_picture`;
-            }
-        }
-        else {
-            if (recipeId != null){
-                // upload for official recipe
-                path = `official_recipe/${recipeId}`;
-            }
-            else {
-                // upload is for educational content
-                path = `educational_content/${eduId}`;
-            }
-
-        }
-        return path;
-    }
-
     async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
         // data validation
         if (!this.commonService.pathValidation(userId, recipeId, eduId)){
@@ -76,7 +38,8 @@ export class StorageService {
         if (process.env.DEBUG === "true")  {
             // get the bucket
             const bucket = getStorage().bucket();
-            files.forEach(file => {
+            var return_json = {};
+            files.forEach((file, index) => {
                 // get file name
                 const file_name = file.originalname;
                 
@@ -121,7 +84,8 @@ export class StorageService {
                         new_storage.type = file_extension;
                         new_storage.size = file.size;
 
-                        await this.storageRepository.save(new_storage);
+                        const storage_id = await this.storageRepository.save(new_storage);
+                        return_json[`file${index}`] = storage_id;
                     })
                     .catch((error) => {
                         // This code runs if the promise is rejected
@@ -129,8 +93,8 @@ export class StorageService {
                     });
 
                 // return promise
-                return upload_promise;
             });
+            return return_json;
         }
         else {
             // save to local directory
@@ -175,10 +139,15 @@ export class StorageService {
                     console.error('Error saving file:', err);
                 });                
             });
-            return { message: 'All files uploaded and saved successfully.' };
+            return 'All files uploaded and saved successfully.';
         }
     }
 
+    /**
+     * Delete file method to delete the file from firebase storage and delete the entry from database
+     * @param storageId - storage id to the file
+     * @returns true if file is successfully deleted
+     */
     async deleteFile(storageId){
         // data validation. if storage id is valid it will run, else it will throw error.
         try {
@@ -205,7 +174,7 @@ export class StorageService {
                 await fs.unlink(entry.file_path);
         
               } catch (error) {
-                return { message: 'File not found'}
+                return 'File not found';
               }
         }
         // delete in database
@@ -213,4 +182,49 @@ export class StorageService {
         return true;
     }
 
+    /**
+     * Method to get the correct file extension
+     * @param enumObj StorageType
+     * @param value 
+     * @returns available file extension, or undefined
+     */
+    fileExtensionValidation<T>(value: string){
+        var splitted = value.split("/");
+        const enumValues = Object.values(StorageType);
+        return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
+    }
+
+    /**
+     * Method to prepare path for file upload
+     * @param userId - user id
+     * @param recipeId - recipe id
+     * @param eduId - educational content id
+     * @returns a path that the file will upload to
+     */
+    pathPreparation(userId, recipeId, eduId){
+        var path = ``;
+        if (userId != null){
+            // upload is for user 
+            if (recipeId != null){
+                // upload custom recipe photo
+                path = `user/${userId}/${recipeId}`;
+            }
+            else {
+                // upload user photo
+                path = `user/${userId}/profile_picture`;
+            }
+        }
+        else {
+            if (recipeId != null){
+                // upload for official recipe
+                path = `official_recipe/${recipeId}`;
+            }
+            else {
+                // upload is for educational content
+                path = `educational_content/${eduId}`;
+            }
+
+        }
+        return path;
+    }
 }
