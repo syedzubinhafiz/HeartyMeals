@@ -49,11 +49,18 @@ export class CommonService{
             return false;
         }
 
-        if ((userId != null || recipeId != null) && eduId != null){
-            // educational id and recipe id are not null
-            // multiple path detected
-            // returns multiple path detected, please select a proper path
-            return false;
+        if (userId != null || recipeId != null){
+            // save to user 
+            if (eduId != null){
+                // conflict
+                // educational id and recipe id are not null
+                // multiple path detected
+                // returns multiple path detected, please select a proper path
+                return false;
+            }
+            else {
+                return true;
+            }
         }
 
         // input is clean
