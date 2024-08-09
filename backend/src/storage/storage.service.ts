@@ -166,24 +166,35 @@ export class StorageService {
      * @param path - path to the file in firebase storage
      * @returns a public file link from firebase storage
      */
-    async getFile(path){
-        if (process.env.DEBUG === "true")  {
-            // get file from firebase
-            try {
-                return await getDownloadURL(getStorage().bucket().file(path));
+    async getFileFromPath(path){
+        // get file from firebase
+        try {
+            return await getDownloadURL(getStorage().bucket().file(path));
+        }
+        catch (e){
+            return e;
+        }
+    }
+
+    /**
+     * Get a public file link from firebase storage by retriving entry from databases
+     * @param storageId - storage id to get the path
+     * @returns a public file link from firebase storage
+     */
+    async getFileFromId(storageId){
+        // data validation. if storage id is valid it will run, else it will throw error.
+        try {
+            var entry = await this.storageRepository.findOneBy({storage_id: storageId});
+            if (process.env.DEBUG === "true")  {
+                // get file from firebase
+                return await getDownloadURL(getStorage().bucket().file(entry.file_path));
             }
-            catch (e){
-                return e;
+            else {
+                return `File is at path ${entry.file_path}`;
             }
         }
-        else {
-            try {
-                // Check if the file exists
-                await fs.access(path);
-        
-              } catch (error) {
-                return 'File not found';
-              }
+        catch (e){
+            return e;
         }
     }
 
@@ -198,38 +209,4 @@ export class StorageService {
         const enumValues = Object.values(StorageType);
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
     }
-
-    // /**
-    //  * Method to prepare path for file upload
-    //  * @param userId - user id
-    //  * @param recipeId - recipe id
-    //  * @param eduId - educational content id
-    //  * @returns a path that the file will upload to
-    //  */
-    // pathPreparation(userId, recipeId, eduId){
-    //     var path = ``;
-    //     if (userId != null){
-    //         // upload is for user 
-    //         if (recipeId != null){
-    //             // upload custom recipe photo
-    //             path = `user/${userId}/${recipeId}`;
-    //         }
-    //         else {
-    //             // upload user photo
-    //             path = `user/${userId}/profile_picture`;
-    //         }
-    //     }
-    //     else {
-    //         if (recipeId != null){
-    //             // upload for official recipe
-    //             path = `official_recipe/${recipeId}`;
-    //         }
-    //         else {
-    //             // upload is for educational content
-    //             path = `educational_content/${eduId}`;
-    //         }
-
-    //     }
-    //     return path;
-    // }
 }

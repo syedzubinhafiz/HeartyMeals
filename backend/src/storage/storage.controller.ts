@@ -9,8 +9,8 @@ export class StorageController {
 
     @Post('upload')
     @UseInterceptors(FilesInterceptor('files[]'))
-    upload(@Body() payload, @UploadedFiles() files: Array<Express.Multer.File>){
-        return this.storageService.uploadFile(payload.path, files);
+    upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
+        return this.storageService.uploadFile(JSON.parse(payload).path, files);
     }
 
     @Post('delete')
@@ -18,8 +18,14 @@ export class StorageController {
         return this.storageService.deleteFile(payload.storageId);
     }
 
-    @Get('get')
-    get(@Body() payload){
-        return this.storageService.getFile(payload.path);
+    @Get('get_from_path')
+    get_from_path(@Body() payload){
+        return this.storageService.getFileFromPath(payload.path);
+    }
+
+    @Get('get_from_id')
+    get_from_id(@Body() payload){
+        return this.storageService.getFileFromId(payload.id);
     }
 }
+
