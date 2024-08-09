@@ -1,11 +1,12 @@
 <template>
     <div class="flex flex-row min-h-screen">
-        <div class="w-1/2 bg-custom-bg-green grow flex items-center justify-center">
+        <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
             <img src="../assets/img/HeartyMealLoginLogo.png" alt="Hearty Meal">
         </div>
-        <div class="w-1/2 flex items-center justify-center">
-            <div class="h-0 w-0 border-t-[50vh] border-l-[5vw] border-b-[50vh] border-solid border-t-transparent border-b-transparent border-l-custom-bg-green grow"/>
-            <div class="space-y-5 m-9">
+        <div class="w-3/5 flex items-center justify-center">
+            <img src="../assets/img/GreenCurve.png" class="h-full" alt="Green Curve Decor">
+            <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+            <div class="space-y-5 m-9 z-10">
                 <H1 class="">Login to your account</H1>
                 <H2>Welcome back 👋</H2>
                 <Overlay :level="1" class="flex flex-col space-y-5">
@@ -14,7 +15,7 @@
                         <Input placeholder="email" v-model="email"></Input>
                         <P class="text-red-500">{{emailErrorText}}</P>
                     </div>
-                    <Button @click.prevent="onVerify" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Verify</Button>
+                    <ButtonOrange @click.prevent="onVerify" class="w-full">Verify</ButtonOrange>
                 </Overlay>
                 <div class="flex flex-row space-x-2 items-center">
                     <P>Don't have an account?</P>
@@ -41,7 +42,6 @@ definePageMeta({
 });
 
 const userInfo = useUserInfo()
-
 const email = ref("")
 
 const emailErrorText = ref("")

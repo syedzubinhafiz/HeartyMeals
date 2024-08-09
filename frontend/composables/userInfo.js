@@ -28,17 +28,15 @@ export const useUserInfo = () => {
     const logout = () => {
         userCookie.value = null
     }
+    const validEmailList = useState("validEmails", () => ["bob@gmail.com","kate@gmail.com"] ?? null);
     const retrieveUserInfo = (email) => {
-        // tempoaray code for now; replace with call into backend
-        if(email=="bob@gmail.com") {
-            return {email: "bob@gmail.com"}
-        }
-        else if(email=="kate@gmail.com") {
-            return {email: "kate@gmail.com"}
+        // temporary code for now; replace with call into backend
+        if(validEmailList.value.includes(email)) {
+            return {email: email}
         }
         else {
             return null
         }
     }
-    return {getUserInfo,login,logout}
+    return {getUserInfo,login,logout,validEmailList}
 }

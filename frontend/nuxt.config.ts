@@ -8,4 +8,12 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  runtimeConfig: {
+    public: {
+      greensheartAccountsIssuer: "",
+      greensheartAccountsClientId: "",
+      greensheartAccountsScopes: "",
+      webURL:"",
+    },
+  },
 })
