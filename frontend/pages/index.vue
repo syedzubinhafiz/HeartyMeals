@@ -1,6 +1,6 @@
 <template>
     <div class="flex items-center justify-center">
-        <RecipeOfTheDay recipeName="burger"/>
+        <RecipeOfTheDay recipeName="Nasi Ayam"/>
     </div>
 </template>
 <script setup>
