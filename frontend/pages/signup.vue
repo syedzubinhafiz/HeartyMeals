@@ -10,42 +10,18 @@
                 <H1>Create an account</H1>
                 <Overlay v-if="signupPage==0" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
-                        <P><b>Full Name</b></P>
-                        <Input placeholder="Full Name" v-model="fullName"></Input>
                         <P><b>Country</b></P>
                         <Input placeholder="Country" v-model="country"></Input>
                         <P><b>Ethnicity</b></P>
                         <Input placeholder="Ethnicity" v-model="ethnicity"></Input>
                         <P><b>Gender</b></P>
-                        <RadioButton name="gender" :options="['male','female','other']" v-model="gender"/>
-                        <P><b>Home Address</b></P>
-                        <Input placeholder="Home Address" v-model="homeAddress"></Input>
-                        <P><b>Phone Number</b></P>
-                        <Input placeholder="Phone Number" v-model="phoneNumber"></Input>
-                        <P><b>Email</b></P>
-                        <Input placeholder="Email" v-model="email"></Input>
-                        <P><b>Password</b></P>
-                        <Input placeholder="Password" v-model="password"></Input>
+                        <RadioButton name="Gender" :options="['male','female']" v-model="gender"/>
+                        <P><b>NYHA Classification</b></P>
+                        <Dropdown :options="['I','II','III','IV']" v-model="nyhaClassification"/>
                     </div>
-                    <ButtonOrange @click.prevent="signupPage = 2" class="w-full">Next -></ButtonOrange>
+                    <ButtonOrange @click.prevent="signupPage = 1; console.log(signupPage)" class="w-full">Next -></ButtonOrange>
                 </Overlay>
-                <!-- <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
-                    <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
-                    <div class="space-y-0">
-                        <P><b>Heart Failure Diagnosis</b></P>
-                        <Input placeholder="Diagnosis" v-model="fullName"></Input>
-                        <P><b>Other Conditions</b></P>
-                        <Input placeholder="Enter Input" v-model="fullName"></Input>
-                        <P><b>Recent hospitalization due to heart failure (leave blank if there is no recent hospilization)</b></P>
-                        <Input placeholder="Enter Input" v-model="fullName"></Input>
-                        <P><b>Medical Prescribed</b></P>
-                        <Input placeholder="Medicines" v-model="fullName"></Input>
-                        <P><b>Country</b></P>
-                        <Input placeholder="Country" v-model="fullName"></Input>
-                    </div>
-                    <ButtonOrange @click.prevent="signupPage = 2" class="w-full">Next -></ButtonOrange>
-                </Overlay> -->
-                <Overlay v-if="signupPage==2" :level="1" class="flex flex-col space-y-5">
+                <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
                     <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
                     <div class="space-y-0">
                         <P><b>Allergies</b></P>
@@ -82,7 +58,7 @@ const gender = ref("")
 const homeAddress = ref("")
 const phoneNumber = ref("")
 const email = ref("")
-const password = ref("")
+const nyhaClassification = ref("")
 
 const allergies = ref("")
 const dietaryRestrictions = ref("")
