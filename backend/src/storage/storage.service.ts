@@ -3,42 +3,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Storage } from './storage.entity';
 import { StorageType } from './storage.enum';
 import { Repository } from 'typeorm';
-import { getStorage } from 'firebase-admin/storage'
+import { getStorage, getDownloadURL } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
-import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class StorageService {
 
     constructor(
         @InjectRepository(Storage)
-        private storageRepository: Repository<Storage>,
-        private commonService: CommonService
+        private storageRepository: Repository<Storage>
     ){}
 
     /**
-     * Upload file method to the firebase storage and save the entry to database
-     * @param userId - user id 
-     * @param recipeId - recipe id
-     * @param eduId - educational content id
+     * Method to upload files to the given path
+     * @param path - path to upload file to the firebase storage
      * @param files - array of files
-     * @returns a json with all the stoarge links 
+     * @returns storage_links, JSON object that contains all the storage ids of each file uploaded to cloud and saved in database
      */
-    async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
-        // data validation
-        if (!this.commonService.pathValidation(userId, recipeId, eduId)){
-            return "bad path";
-        }
-
-        // validation check to see what type of upload it is for and to prepare the path
-        var path = this.pathPreparation(userId, recipeId, eduId);
-
-
+    async uploadFile(path, files: Array<Express.Multer.File>){
+        var storage_links = {};
         if (process.env.DEBUG === "true")  {
             // get the bucket
             const bucket = getStorage().bucket();
-            var return_json = {};
             
             const upload_promises = files.map((file, index) => {
 
@@ -49,7 +36,7 @@ export class StorageService {
                     // get file extension
                     var file_extension = this.fileExtensionValidation(file.mimetype);
                     if (file_extension == undefined){
-                        return "bad file extension";
+                        return "File extension not supported";
                     }   
 
                     // path to bucket
@@ -61,7 +48,6 @@ export class StorageService {
                             contentType: file.mimetype,
                         }
                     });
-
 
                     stream.on('error', (error) => {
                         reject(error);
@@ -76,7 +62,7 @@ export class StorageService {
 
                         try {
                             const storage_object = await this.storageRepository.save(new_storage);
-                            return_json[`file${index}`] = storage_object.storage_id;
+                            storage_links[`file${index}`] = storage_object.storage_id;
                             resolve(storage_object.storage_id);
                         }
                         catch (e) {
@@ -87,7 +73,7 @@ export class StorageService {
                 })
             });
             await Promise.all(upload_promises);
-            return return_json;
+            return storage_links;
         }
         else {
             // save to local directory
@@ -99,11 +85,11 @@ export class StorageService {
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            files.forEach(file => {
+            files.forEach((file, index) => {
                 // get file extension
                 var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
-                    return "bad file extension";
+                    return "File extension not supported";
                 }
                 
                 const uploaded_path = join(dir, file.originalname);
@@ -118,21 +104,21 @@ export class StorageService {
 
                 // Handle stream events
                 writeStream.on('finish', async () => {
-                    console.log('File saved successfully.');
                     const new_storage = new Storage();
 
                     new_storage.file_path = uploaded_path;
                     new_storage.type = file_extension;
                     new_storage.size = file.size;
 
-                    await this.storageRepository.save(new_storage);
+                    var storage_id = await this.storageRepository.save(new_storage);
+                    storage_links[`file${index}`] = storage_id;
                 });
 
                 writeStream.on('error', (err) => {
                     console.error('Error saving file:', err);
                 });                
             });
-            return 'All files uploaded and saved successfully.';
+            return storage_links;
         }
     }
 
@@ -166,13 +152,50 @@ export class StorageService {
                 // Delete the file
                 await fs.unlink(entry.file_path);
         
-              } catch (error) {
-                return 'File not found';
+              } catch (e) {
+                return e;
               }
         }
         // delete in database
         await this.storageRepository.delete(entry);
         return true;
+    }
+
+    /**
+     * Get a public file link from firebase storage
+     * @param path - path to the file in firebase storage
+     * @returns a public file link from firebase storage
+     */
+    async getFileFromPath(path){
+        // get file from firebase
+        try {
+            return await getDownloadURL(getStorage().bucket().file(path));
+        }
+        catch (e){
+            return e;
+        }
+    }
+
+    /**
+     * Get a public file link from firebase storage by retriving entry from databases
+     * @param storageId - storage id to get the path
+     * @returns a public file link from firebase storage
+     */
+    async getFileFromId(storageId){
+        // data validation. if storage id is valid it will run, else it will throw error.
+        try {
+            var entry = await this.storageRepository.findOneBy({storage_id: storageId});
+            if (process.env.DEBUG === "true")  {
+                // get file from firebase
+                return await getDownloadURL(getStorage().bucket().file(entry.file_path));
+            }
+            else {
+                return `File is at path ${entry.file_path}`;
+            }
+        }
+        catch (e){
+            return e;
+        }
     }
 
     /**
@@ -185,39 +208,5 @@ export class StorageService {
         var splitted = value.split("/");
         const enumValues = Object.values(StorageType);
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
-    }
-
-    /**
-     * Method to prepare path for file upload
-     * @param userId - user id
-     * @param recipeId - recipe id
-     * @param eduId - educational content id
-     * @returns a path that the file will upload to
-     */
-    pathPreparation(userId, recipeId, eduId){
-        var path = ``;
-        if (userId != null){
-            // upload is for user 
-            if (recipeId != null){
-                // upload custom recipe photo
-                path = `user/${userId}/${recipeId}`;
-            }
-            else {
-                // upload user photo
-                path = `user/${userId}/profile_picture`;
-            }
-        }
-        else {
-            if (recipeId != null){
-                // upload for official recipe
-                path = `official_recipe/${recipeId}`;
-            }
-            else {
-                // upload is for educational content
-                path = `educational_content/${eduId}`;
-            }
-
-        }
-        return path;
     }
 }

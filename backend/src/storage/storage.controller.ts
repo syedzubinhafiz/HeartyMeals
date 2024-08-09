@@ -9,18 +9,23 @@ export class StorageController {
 
     @Post('upload')
     @UseInterceptors(FilesInterceptor('files[]'))
-    upload(@Body('data') payload: string, @UploadedFiles() files: Array<Express.Multer.File>){
-        // parse the data from string to json 
-        const data = JSON.parse(payload);
-
-        return this.storageService.uploadFile(data["userId"], data["recipeId"], data["eduId"], files);
+    upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
+        return this.storageService.uploadFile(JSON.parse(payload).path, files);
     }
 
     @Post('delete')
-    delete(@Body('data') payload: string){
-        // parse the data from string to json 
-        const data = JSON.parse(payload);
+    delete(@Body() payload){
+        return this.storageService.deleteFile(payload.storageId);
+    }
 
-        return this.storageService.deleteFile(data["storageId"]);;
+    @Get('get_from_path')
+    get_from_path(@Body() payload){
+        return this.storageService.getFileFromPath(payload.path);
+    }
+
+    @Get('get_from_id')
+    get_from_id(@Body() payload){
+        return this.storageService.getFileFromId(payload.id);
     }
 }
+
