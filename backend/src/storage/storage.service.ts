@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Storage } from './storage.entity';
 import { StorageType } from './storage.enum';
 import { Repository } from 'typeorm';
-import { getStorage } from 'firebase-admin/storage'
+import { getStorage, getDownloadURL } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
 
@@ -36,7 +36,7 @@ export class StorageService {
                     // get file extension
                     var file_extension = this.fileExtensionValidation(file.mimetype);
                     if (file_extension == undefined){
-                        return "bad file extension";
+                        return "File extension not supported";
                     }   
 
                     // path to bucket
@@ -48,7 +48,6 @@ export class StorageService {
                             contentType: file.mimetype,
                         }
                     });
-
 
                     stream.on('error', (error) => {
                         reject(error);
@@ -90,7 +89,7 @@ export class StorageService {
                 // get file extension
                 var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
-                    return "bad file extension";
+                    return "File extension not supported";
                 }
                 
                 const uploaded_path = join(dir, file.originalname);
@@ -153,8 +152,8 @@ export class StorageService {
                 // Delete the file
                 await fs.unlink(entry.file_path);
         
-              } catch (error) {
-                return 'File not found';
+              } catch (e) {
+                return e;
               }
         }
         // delete in database
@@ -162,29 +161,30 @@ export class StorageService {
         return true;
     }
 
-    
+    /**
+     * Get a public file link from firebase storage
+     * @param path - path to the file in firebase storage
+     * @returns a public file link from firebase storage
+     */
     async getFile(path){
         if (process.env.DEBUG === "true")  {
-            // get the storage
-            const bucket = getStorage().bucket();
-            
-            // delete in firebase
-            const file_download = bucket.file(path)
-            console.log(file_download);
+            // get file from firebase
+            try {
+                return await getDownloadURL(getStorage().bucket().file(path));
+            }
+            catch (e){
+                return e;
+            }
         }
         else {
             try {
                 // Check if the file exists
                 await fs.access(path);
-                
-                // Delete the file
-                await fs.unlink(path);
         
               } catch (error) {
                 return 'File not found';
               }
         }
-        return true;
     }
 
     /**
@@ -199,37 +199,37 @@ export class StorageService {
         return enumValues.includes(splitted[1] as any) ? (splitted[1] as T[keyof T]): undefined
     }
 
-    /**
-     * Method to prepare path for file upload
-     * @param userId - user id
-     * @param recipeId - recipe id
-     * @param eduId - educational content id
-     * @returns a path that the file will upload to
-     */
-    pathPreparation(userId, recipeId, eduId){
-        var path = ``;
-        if (userId != null){
-            // upload is for user 
-            if (recipeId != null){
-                // upload custom recipe photo
-                path = `user/${userId}/${recipeId}`;
-            }
-            else {
-                // upload user photo
-                path = `user/${userId}/profile_picture`;
-            }
-        }
-        else {
-            if (recipeId != null){
-                // upload for official recipe
-                path = `official_recipe/${recipeId}`;
-            }
-            else {
-                // upload is for educational content
-                path = `educational_content/${eduId}`;
-            }
+    // /**
+    //  * Method to prepare path for file upload
+    //  * @param userId - user id
+    //  * @param recipeId - recipe id
+    //  * @param eduId - educational content id
+    //  * @returns a path that the file will upload to
+    //  */
+    // pathPreparation(userId, recipeId, eduId){
+    //     var path = ``;
+    //     if (userId != null){
+    //         // upload is for user 
+    //         if (recipeId != null){
+    //             // upload custom recipe photo
+    //             path = `user/${userId}/${recipeId}`;
+    //         }
+    //         else {
+    //             // upload user photo
+    //             path = `user/${userId}/profile_picture`;
+    //         }
+    //     }
+    //     else {
+    //         if (recipeId != null){
+    //             // upload for official recipe
+    //             path = `official_recipe/${recipeId}`;
+    //         }
+    //         else {
+    //             // upload is for educational content
+    //             path = `educational_content/${eduId}`;
+    //         }
 
-        }
-        return path;
-    }
+    //     }
+    //     return path;
+    // }
 }
