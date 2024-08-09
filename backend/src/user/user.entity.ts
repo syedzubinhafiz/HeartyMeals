@@ -48,17 +48,14 @@ export class User{
     user_role: UserRole;
 
 
-  @CreateDateColumn({ type: "timestamp with time zone" })
-  @Column({ nullable: true })
-  createdAt: Date;
+    @CreateDateColumn({ type: "timestamp with time zone" })
+    createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp with time zone" })
-  @Column({ nullable: true })
-  updatedAt: Date;
+    @UpdateDateColumn({ type: "timestamp with time zone" })
+    updatedAt: Date;
 
-  @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
-  @Column({ nullable: true })
-  deletedAt?: Date;
+    @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
+    deletedAt?: Date;
 
     
 }
