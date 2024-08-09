@@ -1,8 +1,7 @@
-
-
 <template>
     <div class="flex flex-col">
         <div class="flex flex-row justify-between">
+            <img :src="icon" alt="icon" class="w-5 h-5 mr-2"/>
             <P>{{label}}</P>
             <P :style="{color: getBarColor()}">{{value}}/{{maxValue}}mg</P>
         </div>
@@ -32,11 +31,15 @@ const props = defineProps({
 		type: Number,
 		default: 2000,
 	},
+    icon: {
+		type: String,
+		default: "",
+	},
 })
 // Function to return a distinct color based on the label
 const getBarColor = () => {
     const colorMap = {
-        "Calories": "#B8B396", 
+        // "Calories": "#B8B396", 
         "Carbohydrates": "#83BBBE", 
         "Protein": "#87A98D", 
         "Fats": "#ECC474", 
