@@ -13,11 +13,19 @@ export class StorageController {
         // parse the data from string to json 
         const data = JSON.parse(payload);
 
-        return this.storageService.uploadFile(data["userId"], data["recipeId"], data["eduId"], files);
+        return this.storageService.uploadFile(data["path"], files);
     }
 
     @Post('delete')
     delete(@Body('data') payload: string){
+        // parse the data from string to json 
+        const data = JSON.parse(payload);
+
+        return this.storageService.deleteFile(data["storageId"]);;
+    }
+
+    @Get('delete')
+    get(@Body('data') payload: string){
         // parse the data from string to json 
         const data = JSON.parse(payload);
 

@@ -6,39 +6,26 @@ import { Repository } from 'typeorm';
 import { getStorage } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
-import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class StorageService {
 
     constructor(
         @InjectRepository(Storage)
-        private storageRepository: Repository<Storage>,
-        private commonService: CommonService
+        private storageRepository: Repository<Storage>
     ){}
 
     /**
-     * Upload file method to the firebase storage and save the entry to database
-     * @param userId - user id 
-     * @param recipeId - recipe id
-     * @param eduId - educational content id
+     * Method to upload files to the given path
+     * @param path - path to upload file to the firebase storage
      * @param files - array of files
-     * @returns a json with all the stoarge links 
+     * @returns storage_links, JSON object that contains all the storage ids of each file uploaded to cloud and saved in database
      */
-    async uploadFile(userId, recipeId, eduId, files: Array<Express.Multer.File>){     
-        // data validation
-        if (!this.commonService.pathValidation(userId, recipeId, eduId)){
-            return "bad path";
-        }
-
-        // validation check to see what type of upload it is for and to prepare the path
-        var path = this.pathPreparation(userId, recipeId, eduId);
-
-
+    async uploadFile(path, files: Array<Express.Multer.File>){
+        var storage_links = {};
         if (process.env.DEBUG === "true")  {
             // get the bucket
             const bucket = getStorage().bucket();
-            var return_json = {};
             
             const upload_promises = files.map((file, index) => {
 
@@ -76,7 +63,7 @@ export class StorageService {
 
                         try {
                             const storage_object = await this.storageRepository.save(new_storage);
-                            return_json[`file${index}`] = storage_object.storage_id;
+                            storage_links[`file${index}`] = storage_object.storage_id;
                             resolve(storage_object.storage_id);
                         }
                         catch (e) {
@@ -87,7 +74,7 @@ export class StorageService {
                 })
             });
             await Promise.all(upload_promises);
-            return return_json;
+            return storage_links;
         }
         else {
             // save to local directory
@@ -99,7 +86,7 @@ export class StorageService {
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            files.forEach(file => {
+            files.forEach((file, index) => {
                 // get file extension
                 var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
@@ -118,21 +105,21 @@ export class StorageService {
 
                 // Handle stream events
                 writeStream.on('finish', async () => {
-                    console.log('File saved successfully.');
                     const new_storage = new Storage();
 
                     new_storage.file_path = uploaded_path;
                     new_storage.type = file_extension;
                     new_storage.size = file.size;
 
-                    await this.storageRepository.save(new_storage);
+                    var storage_id = await this.storageRepository.save(new_storage);
+                    storage_links[`file${index}`] = storage_id;
                 });
 
                 writeStream.on('error', (err) => {
                     console.error('Error saving file:', err);
                 });                
             });
-            return 'All files uploaded and saved successfully.';
+            return storage_links;
         }
     }
 
@@ -172,6 +159,31 @@ export class StorageService {
         }
         // delete in database
         await this.storageRepository.delete(entry);
+        return true;
+    }
+
+    
+    async getFile(path){
+        if (process.env.DEBUG === "true")  {
+            // get the storage
+            const bucket = getStorage().bucket();
+            
+            // delete in firebase
+            const file_download = bucket.file(path)
+            console.log(file_download);
+        }
+        else {
+            try {
+                // Check if the file exists
+                await fs.access(path);
+                
+                // Delete the file
+                await fs.unlink(path);
+        
+              } catch (error) {
+                return 'File not found';
+              }
+        }
         return true;
     }
 
