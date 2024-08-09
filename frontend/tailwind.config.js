@@ -12,6 +12,7 @@ export default {
     extend: {
       colors: {
         'custom-bg-green': '#015B59',
+        'custom-bg-lightgreen': '#427573',
         'custom-bg-brown': '#DAC2A8',
         'custom-overlay-brown': '#F3EADA',
         'custom-overlay-light': '#FFFEF1',
