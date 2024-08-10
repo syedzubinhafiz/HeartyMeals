@@ -7,9 +7,7 @@
         </div>
         <div class="bg-blue-200 rounded-md h-2 w-full shadow-md">
             <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${getBarColor()};width: ${Math.max(0, Math.min(100, props.value / props.maxValue * 100))}%`"/>
-
         </div>
-
     </div>
     
 </template>
