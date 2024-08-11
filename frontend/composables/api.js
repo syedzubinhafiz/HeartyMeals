@@ -1,11 +1,36 @@
-export const useApi = (request, options) => {
-	return useLazyFetch(request, {
-		baseURL: "http://localhost:3420",
-		server: false,
-		retry: 0, 
-		headers: {
-            ...useRequestURL()
-		},
-		...options,
-	});
-};
+export const useApi = async (request, method) => {
+	let token = await getToken()
+	let result = await useLazyFetch(request, {
+        baseURL: "http://localhost:3001",
+        method: method,
+        headers: {
+            ...useRequestURL(),
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    });
+	if(result.error.value == null) {
+		return result.data.value
+	}
+	else {
+		return result.error.value
+	}
+}
+
+export const getToken = async () => {
+	let result = await useLazyFetch("/token", {
+        baseURL: "https://accounts.greensheart.com/realms/greensheart/protocol/openid-connect",
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            client_id: "greensheart",
+            client_secret: "cPgL1rezoYUXh9zbaMA1EENEDPt7XBnt",
+            grant_type: "password",
+            username: "msus0004@student.monash.edu",
+            password: "123456"
+        }).toString()
+    });
+	return result.data.value.access_token
+}

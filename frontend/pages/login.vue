@@ -24,6 +24,7 @@
                 <Overlay :level="1" class="flex flex-col space-y-5">
                     <P>The login system currently uses a placeholder verification system that accepts the following emails: bob@gmail.com, kate@gmail.com</P>
                     <Button @click.prevent="() => {email='bob@gmail.com';onVerify()}">Quick Login</Button>
+                    <Button @click.prevent="testAPICall">Test API Call</Button>
                 </Overlay>
             </div>
 
@@ -57,4 +58,8 @@ const onVerify = () => {
     }
 }
 
+const testAPICall = async () => {
+    let userData = await useApi("/user/verify","GET")
+    console.log(userData)
+}
 </script>
