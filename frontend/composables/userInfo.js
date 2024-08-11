@@ -1,23 +1,15 @@
 
 export const useUserInfo = () => {
-    const userCookie = useCookie("session", {
-		maxAge: 1 * 24 * 60 * 60,
-		decode: (e) => {
-			return e ? JSON.parse(atob(e)) : null;
-		},
-		encode: (e) => {
-			return e ? btoa(JSON.stringify(e)) : null;
-		},
-	});
+    const userCookie = useCookie("session");
     const userInfo = useState("user", () => userCookie.value ?? null);
     const getUserInfo = () => {
         return userInfo._object.$suser
     }
-    const login = (email) => {
-        let userData = retrieveUserInfo(email)
-        if(userData!=null) {
-            userInfo.value = userData
-            userCookie.value = userData
+    const login = async (email) => {
+        let token = await getToken(email)
+        if(token!=null) {
+            userCookie.value = {email:email,token:token}
+            userInfo.value = await useApi("/user/verify","GET",token=token)
             return true
         }
         else {
@@ -27,16 +19,26 @@ export const useUserInfo = () => {
     }
     const logout = () => {
         userCookie.value = null
+        userInfo.value = null
     }
-    const validEmailList = useState("validEmails", () => ["bob@gmail.com","kate@gmail.com"] ?? null);
-    const retrieveUserInfo = (email) => {
-        // temporary code for now; replace with call into backend
-        if(validEmailList.value.includes(email)) {
-            return {email: email}
-        }
-        else {
-            return null
+
+    const quickLogin = async () => {
+        userCookie.value = {email:"urist@gmail.com",token:"asokdsaodjsaiojdoiadiasjasjdoiadjsdaidjeq8jewqjf"}
+        userInfo.value = {
+            "user_id": "51afc137-6a47-408b-aada-cffe7a9d7a45",
+            "first_name": "Urist",
+            "last_name": "McUser",
+            "email": "urist@gmail.com",
+            "gender": "Female",
+            "nyha_level": null,
+            "medical_info": {},
+            "user_role": "Admin",
+            "createdAt": "2024-08-09T06:33:04.524Z",
+            "updatedAt": "2024-08-09T06:33:04.524Z",
+            "deletedAt": null,
+            "country": null,
+            "dietary": null
         }
     }
-    return {getUserInfo,login,logout,validEmailList}
+    return {userCookie,getUserInfo,login,logout,quickLogin}
 }

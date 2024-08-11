@@ -22,6 +22,6 @@ definePageMeta({
 const onClickButton = async () => {
     navigateTo("/vueExample");
 }
-console.log(useUserInfo().getUserInfo().email)
+console.log(useUserInfo().getUserInfo())
 
 </script>

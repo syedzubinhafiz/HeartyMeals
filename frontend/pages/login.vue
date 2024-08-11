@@ -3,7 +3,7 @@
         <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
             <img src="../assets/img/HeartyMealLoginLogo.png" alt="Hearty Meal">
         </div>
-        <div class="w-3/5 flex items-center justify-center">
+        <div class="w-3/5 flex items-center">
             <img src="../assets/img/GreenCurve.png" class="h-full" alt="Green Curve Decor">
             <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
             <div class="space-y-5 m-9 z-10">
@@ -22,9 +22,8 @@
                     <NuxtLink to="/signup" class="bg-transparent hover:bg-transparent shadow-none text-custom-text-orange">Sign up</NuxtLink>
                 </div>
                 <Overlay :level="1" class="flex flex-col space-y-5">
-                    <P>The login system currently uses a placeholder verification system that accepts the following emails: bob@gmail.com, kate@gmail.com</P>
-                    <Button @click.prevent="() => {email='bob@gmail.com';onVerify()}">Quick Login</Button>
-                    <Button @click.prevent="testAPICall">Test API Call</Button>
+                    <P>Temporary quick login to skip needing to enter an email</P>
+                    <Button @click.prevent="quickLogin">Quick Login</Button>
                 </Overlay>
             </div>
 
@@ -47,9 +46,9 @@ const email = ref("")
 
 const emailErrorText = ref("")
 
-const onVerify = () => {
+const onVerify = async () => {
     emailErrorText.value = ""
-    let result = userInfo.login(email.value)
+    let result = await userInfo.login(email.value)
     if(result) {
         navigateTo("/");
     }
@@ -58,8 +57,9 @@ const onVerify = () => {
     }
 }
 
-const testAPICall = async () => {
-    let userData = await useApi("/user/verify","GET")
-    console.log(userData)
+const quickLogin = async () => {
+    useUserInfo().quickLogin()
+    navigateTo("/")
 }
+
 </script>
