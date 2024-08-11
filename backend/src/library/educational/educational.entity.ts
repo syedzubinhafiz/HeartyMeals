@@ -11,7 +11,7 @@ export class EducationalContent{
     title: string 
     
     @Column({type: 'json'})
-    content: JSON;
+    content: Array<JSON>;
 
     @Column({type: 'json'})
     storage_links: JSON;

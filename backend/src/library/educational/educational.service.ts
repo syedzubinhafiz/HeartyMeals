@@ -13,10 +13,25 @@ export class EducationalService {
     ){}
 
 
-    async uploadContent(title, text, files){
+    async uploadContent(title, content, files){
+        // content that passed in should be like this 
+        // [ <block of text>, <block of image/video>, <block of text>]
+        // first, create and save an entry of educational content object to the database first to obtain the uuid of the object.
+
+        // create a saved_content array []
+        // for each element in the array passed in, create a json object with "type" and " content"
+        // check if it is text or files
+        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
+        // if files, save the type as "files", content as the index of the files in the files array
+
+        // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
+        // update the educational object with storage links and saved_content array
+
+
+
         // then save the data to db
         var new_entry = new EducationalContent();
-        new_entry.content = text;
+        new_entry.content = content;
         new_entry.storage_links = null;
         new_entry.title = title;
         // create an entry with no links first (to get the edu_id for path)
@@ -46,10 +61,23 @@ export class EducationalService {
 
     async deleteContent(eduId){
         // get the entry
+        try {
+            var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
+        }
+        catch (e){
+            return e;
+        }
+
 
         // get the files storage link
         // delete storage link first
+        var storage_links = entry.storage_links;
+        for (const key in storage_links){
+            const link = storage_links[key];
+            await this.storageService.deleteFile(link);
+        }
         
         // delete the entry
+        return await this.educatinoalContentRepository.delete(entry.id);
     }
 }

@@ -111,7 +111,7 @@ export class StorageService {
                     new_storage.size = file.size;
 
                     var storage_id = await this.storageRepository.save(new_storage);
-                    storage_links[`file${index}`] = storage_id;
+                    storage_links[`${index}`] = storage_id;
                 });
 
                 writeStream.on('error', (err) => {
