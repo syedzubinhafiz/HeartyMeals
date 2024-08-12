@@ -54,7 +54,6 @@ export class EducationalService {
                 }
             } 
         });
-        console.log(json_links);
         edu_object.storage_links = json_links;
         return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
     }
