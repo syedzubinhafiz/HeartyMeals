@@ -35,11 +35,11 @@ export class EducationalService {
         new_entry.storage_links = null;
         new_entry.title = title;
         // create an entry with no links first (to get the edu_id for path)
-        const edu_id = await this.educatinoalContentRepository.save(new_entry);
+        const edu_object = await this.educatinoalContentRepository.save(new_entry);
 
         // files CAN be empty if edu content only upload the text first
         // prepare the path first 
-        var path = `${edu_id}`;
+        var path = `${edu_object.id}`;
 
         // call the upload method 
         // by passing the data to the method 
@@ -54,9 +54,9 @@ export class EducationalService {
                 }
             } 
         });
-        edu_id.storage_links = json_links;
-        await this.educatinoalContentRepository.save(edu_id);
-        return edu_id;
+        console.log(json_links);
+        edu_object.storage_links = json_links;
+        return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
     }
 
     async deleteContent(eduId){

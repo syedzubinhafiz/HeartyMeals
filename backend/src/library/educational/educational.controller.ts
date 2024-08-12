@@ -5,27 +5,35 @@ import { EducationalContentDTO } from './dto/edu-content-dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/user.entity';
 import { UserRole } from 'src/user/enum/user-role.enum';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Controller('education')
 export class EducationController {
     constructor(
-        private educationalContentService: EducationalService,
+        @InjectRepository(User)
         private userRepository: Repository<User>,
+        private educationalContentService: EducationalService,
     ){}
 
     @Post('upload')
     @UseInterceptors(FilesInterceptor('files[]'))
-    async upload(@Body('data') payload: EducationalContentDTO, @UploadedFiles() files: Array<Express.Multer.File>){
-        let user = await this.userRepository.findOne({
-            where: {
-                user_id: payload.userId
-            }
-        });
-        
-        if (user.user_role !=  UserRole.ADMIN){
-            return "Error: Must be admin to be able to upload educational content.";
-        }
+    async upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
+        payload = JSON.parse(payload);
+        try {
+            let user = await this.userRepository.findOne({
+                where: {
+                    user_id: payload.userId
+                }
+            });
 
-        return this.educationalContentService.uploadContent(payload.title, payload.content, files);
+            if (user.user_role !=  UserRole.ADMIN){
+                return "Error: Must be admin to be able to upload educational content.";
+            }
+
+            return this.educationalContentService.uploadContent(payload.title, payload.content, files);
+        }
+        catch (e){
+            return e;
+        }
     }
 }
