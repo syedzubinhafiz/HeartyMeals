@@ -10,7 +10,7 @@
                 <H1 class="">Login to your account</H1>
                 <H2>Welcome back 👋</H2>
                 <Overlay :level="1" class="flex flex-col space-y-5">
-                    <ButtonOrange @click.prevent="onVerify" class="w-full">Verify</ButtonOrange>
+                    <ButtonOrange @click.prevent="onVerify" class="w-full">Log In</ButtonOrange>
                 </Overlay>
                 <Overlay :level="1" class="flex flex-col space-y-5">
                     <P>Temporary quick login to skip needing to enter an email</P>
