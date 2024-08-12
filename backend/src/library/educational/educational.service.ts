@@ -68,7 +68,6 @@ export class EducationalService {
             return e;
         }
 
-
         // get the files storage link
         // delete storage link first
         var storage_links = entry.storage_links;

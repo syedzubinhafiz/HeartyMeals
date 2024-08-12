@@ -36,4 +36,9 @@ export class EducationController {
             return e;
         }
     }
+
+    @Post('delete')
+    delete(@Body() payload){
+        return this.educationalContentService.deleteContent(payload.eduId);
+    }
 }
