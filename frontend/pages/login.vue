@@ -38,14 +38,24 @@ const email = ref("")
 const emailErrorText = ref("")
 
 const onVerify = async () => {
-    emailErrorText.value = ""
-    let result = await userInfo.login(email.value)
-    if(result) {
+    // get token; temporary token obtaining function for now
+    useUserInfo().userCookie.value = {token: await getToken()}
+    let userData = await useApi("/user/verify","GET")
+    if(userData.user_id != null) {
+        
         navigateTo("/");
     }
     else {
-        emailErrorText.value = "email not registered"
+        navigateTo("/signup");
     }
+    // emailErrorText.value = ""
+    // let result = await userInfo.login(email.value)
+    // if(result) {
+    //     navigateTo("/");
+    // }
+    // else {
+    //     emailErrorText.value = "email not registered"
+    // }
 }
 
 const quickLogin = async () => {
