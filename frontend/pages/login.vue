@@ -10,17 +10,8 @@
                 <H1 class="">Login to your account</H1>
                 <H2>Welcome back 👋</H2>
                 <Overlay :level="1" class="flex flex-col space-y-5">
-                    <div class="space-y-0">
-                        <P><b>Email</b></P>
-                        <Input placeholder="email" v-model="email"></Input>
-                        <P class="text-red-500">{{emailErrorText}}</P>
-                    </div>
                     <ButtonOrange @click.prevent="onVerify" class="w-full">Verify</ButtonOrange>
                 </Overlay>
-                <div class="flex flex-row space-x-2 items-center">
-                    <P>Don't have an account?</P>
-                    <NuxtLink to="/signup" class="bg-transparent hover:bg-transparent shadow-none text-custom-text-orange">Sign up</NuxtLink>
-                </div>
                 <Overlay :level="1" class="flex flex-col space-y-5">
                     <P>Temporary quick login to skip needing to enter an email</P>
                     <Button @click.prevent="quickLogin">Quick Login</Button>
