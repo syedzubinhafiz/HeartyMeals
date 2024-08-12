@@ -9,7 +9,7 @@
             <i class="bi bi-list text-3xl"></i>
           </button>
           <div class="flex items-center justify-center">
-            <img src="../assets/img/HeartyMealHeaderLogo.png" alt="Hearty Meal" :width="200">
+            <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" :width="200">
           </div>
         </div>
       </div>
