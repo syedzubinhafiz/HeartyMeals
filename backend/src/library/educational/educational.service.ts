@@ -17,6 +17,12 @@ export class EducationalService {
         // content that passed in should be like this 
         // [ <block of text>, <block of image/video>, <block of text>]
         // first, create and save an entry of educational content object to the database first to obtain the uuid of the object.
+        var new_entry = new EducationalContent();
+        new_entry.content = content;
+        new_entry.storage_links = null;
+        new_entry.title = title;
+        // create an entry with no links first (to get the edu_id for path)
+        const edu_object = await this.educatinoalContentRepository.save(new_entry);
 
         // create a saved_content array []
         // for each element in the array passed in, create a json object with "type" and " content"
@@ -26,16 +32,6 @@ export class EducationalService {
 
         // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
         // update the educational object with storage links and saved_content array
-
-
-
-        // then save the data to db
-        var new_entry = new EducationalContent();
-        new_entry.content = content;
-        new_entry.storage_links = null;
-        new_entry.title = title;
-        // create an entry with no links first (to get the edu_id for path)
-        const edu_object = await this.educatinoalContentRepository.save(new_entry);
 
         // files CAN be empty if edu content only upload the text first
         // prepare the path first 
@@ -62,20 +58,34 @@ export class EducationalService {
         // get the entry
         try {
             var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
+
+            // get the files storage link
+            // delete storage link first
+            var storage_links = entry.storage_links;
+            for (const key in storage_links){
+                const link = storage_links[key];
+                await this.storageService.deleteFile(link);
+            }
+            
+            // delete the entry
+            return await this.educatinoalContentRepository.delete(entry.id);
+            }
+        catch (e){
+            return e;
+        }
+    }
+
+    // getContent
+    async getContent(eduId){
+        // get file from repository
+        try {
+            return await this.educatinoalContentRepository.findOneBy({id: eduId});
         }
         catch (e){
             return e;
         }
-
-        // get the files storage link
-        // delete storage link first
-        var storage_links = entry.storage_links;
-        for (const key in storage_links){
-            const link = storage_links[key];
-            await this.storageService.deleteFile(link);
-        }
-        
-        // delete the entry
-        return await this.educatinoalContentRepository.delete(entry.id);
     }
+
+    // editContent
+    async editContent(eduId, title, content, files){}
 }
