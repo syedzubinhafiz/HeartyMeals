@@ -66,10 +66,10 @@ const warfarin = ref("no")
 
 const userInfo = useUserInfo()
 const signUp = () => {
-    userInfo.validEmailList.value.push(email.value)
-    let result = userInfo.login(email.value)
-    if(result) {
-        navigateTo("/");
-    }
+    let result =  userInfo.signup()
+    console.log(result)
+    // if(result) {
+    //     navigateTo("/");
+    // }
 }
 </script>

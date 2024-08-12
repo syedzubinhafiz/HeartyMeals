@@ -24,7 +24,7 @@ export class UserService {
     
     async createNewUser(payload: CreatUserDTO, decodedHeaders: any){
         const new_user = new User();
-
+        console.log(decodedHeaders)
         if (await this.userRepository.findOneBy({user_id:decodedHeaders['sub']})){
             return new HttpException("User already exists", 400);
         }

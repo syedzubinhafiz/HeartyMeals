@@ -21,6 +21,9 @@ export const useUserInfo = () => {
         userCookie.value = null
         userInfo.value = null
     }
+    const signup = () => {
+        useApi("/user/signup","POST")
+    }
 
     const quickLogin = async () => {
         userCookie.value = {email:"urist@gmail.com",token:"asokdsaodjsaiojdoiadiasjasjdoiadjsdaidjeq8jewqjf"}
@@ -40,5 +43,5 @@ export const useUserInfo = () => {
             "dietary": null
         }
     }
-    return {userCookie,getUserInfo,login,logout,quickLogin}
+    return {userCookie,getUserInfo,login,logout,signup,quickLogin}
 }

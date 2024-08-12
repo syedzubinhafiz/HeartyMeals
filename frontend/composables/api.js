@@ -1,5 +1,6 @@
-export const useApi = async (request, method, token) => {
+export const useApi = async (request, method) => {
 	token = token ?? await getToken(useUserInfo().userCookie.value?.email)
+    console.log(token)
 	let result = await useLazyFetch(request, {
         baseURL: "http://localhost:3001",
         method: method,
@@ -19,7 +20,7 @@ export const useApi = async (request, method, token) => {
 	}
 }
 
-export const getToken = async (username) => {
+export const getToken = async () => {
 	let result = await useLazyFetch("/token", {
         baseURL: "https://accounts.greensheart.com/realms/greensheart/protocol/openid-connect",
         method: 'POST',
@@ -30,7 +31,7 @@ export const getToken = async (username) => {
             client_id: "greensheart",
             client_secret: "cPgL1rezoYUXh9zbaMA1EENEDPt7XBnt",
             grant_type: "password",
-            username: username,
+            username: "msus0004@student.monash.edu",
             password: "123456"
         }).toString()
     });
