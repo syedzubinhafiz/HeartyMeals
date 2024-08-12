@@ -1,5 +1,5 @@
 export const useApi = async (request, method) => {
-	token = token ?? await getToken(useUserInfo().userCookie.value?.email)
+	token = useUserInfo().userCookie.value?.token ?? await getToken()
     console.log(token)
 	let result = await useLazyFetch(request, {
         baseURL: "http://localhost:3001",
