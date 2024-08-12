@@ -52,6 +52,7 @@ export class StorageService {
                     stream.on('error', (error) => {
                         reject(error);
                     });
+
                     stream.on('finish', async () => {
                         // save to database
                         const new_storage = new Storage();
@@ -69,6 +70,7 @@ export class StorageService {
                             reject(e);
                         }
                     })
+
                     stream.end(file.buffer);
                 })
             });
@@ -85,7 +87,7 @@ export class StorageService {
                 fs.mkdirSync(dir, { recursive: true });
             }
 
-            files.forEach((file, index) => {
+            const upload_promises = files.map((file, index) => {
                 // get file extension
                 var file_extension = this.fileExtensionValidation(file.mimetype);
                 if (file_extension == undefined){
@@ -96,28 +98,35 @@ export class StorageService {
                 // Create a write stream
                 const writeStream = createWriteStream(uploaded_path);
 
-                // Write the file stream to the new location
-                writeStream.write(file.buffer);
+                return new Promise((resolve, reject) => {
+                    
+                    writeStream.write(file.buffer);
+        
+                    writeStream.on('finish', async () => {
+                        try {
+                            const new_storage = new Storage();
+                            new_storage.file_path = uploaded_path;
+                            new_storage.type = file_extension;
+                            new_storage.size = file.size;
+        
+                            const storage_object = await this.storageRepository.save(new_storage);
+                            storage_links[`file${index}`] = storage_object.storage_id;
+                            resolve(storage_object.storage_id);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+        
+                    writeStream.on('error', (err) => {
+                        console.error('Error saving file:', err);
+                        reject(err);
+                    });
 
-                // Close the stream
-                writeStream.end();
-
-                // Handle stream events
-                writeStream.on('finish', async () => {
-                    const new_storage = new Storage();
-
-                    new_storage.file_path = uploaded_path;
-                    new_storage.type = file_extension;
-                    new_storage.size = file.size;
-
-                    var storage_id = await this.storageRepository.save(new_storage);
-                    storage_links[`${index}`] = storage_id;
+                    writeStream.end();
                 });
-
-                writeStream.on('error', (err) => {
-                    console.error('Error saving file:', err);
-                });                
             });
+        
+            await Promise.all(upload_promises);
             return storage_links;
         }
     }
