@@ -1,5 +1,6 @@
 export const useApi = async (request, method) => {
-        let token = localStorage.getItem("accessToken")
+        let token = getItem("accessToken")
+        console.log(token)
         let result = await useLazyFetch(request, {
         baseURL: "http://localhost:3001",
         method: method,
@@ -18,3 +19,12 @@ export const useApi = async (request, method) => {
 		return result.error
 	}
 }
+
+function getItem(item) {
+    if (process.client) {
+      return localStorage.getItem(item)
+    } else {
+      return undefined
+    }
+  }
+  
