@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Visibility } from "../recipe/visibility.enum";
 
 @Entity('educational_content')
@@ -23,6 +23,13 @@ export class EducationalContent{
         default: Visibility.PUBLIC
     })
     visibility: Visibility;
-    // created at, deleted at, updated at, visibility enum, 
-    // soft delete == deleted at not null + visibility = private
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'now()' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', nullable: true })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
 }
