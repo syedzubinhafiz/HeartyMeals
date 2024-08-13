@@ -5,13 +5,15 @@ import { Dietary } from 'src/dietary/dietary.entitry';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CommonService } from 'src/common/common.service';
+import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Country, Dietary])
+        TypeOrmModule.forFeature([User, Country, Dietary, Ethnicity])
     ],
     controllers: [UserController],
-    providers: [UserService, ],  
+    providers: [UserService, CommonService],  
 })
 export class UserModule {}

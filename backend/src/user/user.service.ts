@@ -7,7 +7,9 @@ import { Repository } from 'typeorm';
 import { Country } from 'src/country/country.entity';
 import { Dietary } from 'src/dietary/dietary.entitry';
 import { UserRole } from './enum/user-role.enum';
-import * as jwt from 'jsonwebtoken';
+import { CommonService } from 'src/common/common.service';
+import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
+import { CreateAdminDTO } from './dto/create-admin-dto';
 
 @Injectable()
 export class UserService {
@@ -18,7 +20,9 @@ export class UserService {
         @InjectRepository(Country)
         private countryRepository: Repository<Country>,
         @InjectRepository(Dietary)
-        private dietaryRepository: Repository<Dietary>
+        private dietaryRepository: Repository<Dietary>,
+        @InjectRepository(Ethnicity)
+        private ethnicityRepository: Repository<Ethnicity>
     ){}
 
     
@@ -38,11 +42,12 @@ export class UserService {
         new_user.first_name =  decodedHeaders['given_name'];
         new_user.last_name = decodedHeaders['family_name'];
         new_user.gender = payload.gender
+        new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
         new_user.medical_info = JSON.parse("{}"); //TODO: replace with actual data from payload
         return await this.userRepository.save(new_user);
     }
 
-    async createNewAdmin(gender:Gender, decodedHeaders: any){
+    async createNewAdmin(payload:CreateAdminDTO, decodedHeaders: any){
 
         if (await this.userRepository.findOneBy({user_id:decodedHeaders['sub']})){
             return new HttpException("User already exists", 400);
@@ -55,7 +60,8 @@ export class UserService {
         new_user.email = decodedHeaders['email'];
         new_user.first_name =  decodedHeaders['given_name'];
         new_user.last_name = decodedHeaders['family_name'];
-        new_user.gender = gender
+        new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
+        new_user.gender = payload.gender
         new_user.country = null;
         new_user.dietary = null;
         new_user.nyha_level = null;
@@ -69,29 +75,12 @@ export class UserService {
         const user = await this.userRepository.findOneBy({user_id:decoded['sub']});
 
         if (user !== null){
-            return user;
+            return true;
         } else {
             return false; 
         }
     }
 
-    decodeHeaders(authHeader: string){
-
-        if (!authHeader) {
-            throw new Error('Authorization header not found');
-        }
-    
-        const token = authHeader.split(' ')[1];
-        if (!token) {
-            throw new Error('Token not found');
-        }
-
-        try {
-            const decoded = jwt.decode(token);
-            return decoded;
-        } catch (error) {
-            throw new Error('Invalid token');
-        }
-    }
+   
 
 }

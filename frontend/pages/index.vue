@@ -1,27 +1,39 @@
 <template>
-    <div class="flex items-center justify-center h-96">
-        <div class="shadow-sm bg-custom-overlay-brown h-40 w-64 rounded-lg flex flex-col items-center justify-center space-y-2">
-            <p class="font-medium text-md">Nuxt JS Guide</p>
-            <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
+    <div class="flex flex-row min-h-screen">
+        <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
+            <img src="../assets/img/HeartyMealLargeLogo.png" alt="Hearty Meal">
+        </div>
+        <div class="w-3/5 flex items-center">
+            <img src="../assets/img/GreenCurve.png" class="h-full" alt="Green Curve Decor">
+            <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+            <div class="space-y-5 m-9 z-10">
+                <H1 class="">Login to your account</H1>
+                <H2>Welcome back 👋</H2>
+                <Overlay :level="1" class="flex flex-col space-y-5">
+                    <ButtonOrange @click.prevent="onVerify" class="w-full">Log In</ButtonOrange>
+                </Overlay>
+                <Overlay :level="1" class="flex flex-col space-y-5">
+                    <P>Temporary quick login to skip needing to enter an email</P>
+                    <Button @click.prevent="quickLogin">Quick Login</Button>
+                </Overlay>
+            </div>
+
         </div>
     </div>
+
 </template>
 <script setup>
-// defines the name of the page
 defineOptions({
 	name: "HomePage",
 });
 
-// this defines the layout that the page uses
-// the page will be wrapped around the selected layout, which are defined in the layouts folder
+
 definePageMeta({
-	layout: "baselayout",
-    middleware: "login-check",
+	layout: "emptylayout"
 });
 
-const onClickButton = async () => {
-    navigateTo("/vueExample");
+const onVerify = () => {
+    navigateTo('/sign-in');
 }
-console.log(useUserInfo().getUserInfo())
 
 </script>

@@ -10,9 +10,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      greensheartAccountsIssuer: "",
-      greensheartAccountsClientId: "",
-      greensheartAccountsScopes: "",
+      greensheartAccountIssuer: "https://accounts.greensheart.com/realms/greensheart",
+      greensheartAccountClientId: "greensheart",
+      greensheartAccountScope: "openid profile email",
       webURL:"",
     },
   },

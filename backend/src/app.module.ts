@@ -5,19 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
-// Entity imports
-import { User } from './user/user.entity';
-import { UserAllergy } from './allergies/user_allergy.entity';
-import { Country } from './country/country.entity';
-import { Cuisine } from './cuisine/cuisine.entity';
-import { Dietary } from './dietary/dietary.entitry';
-import { FoodCategory } from './food-category/foodCategory.entity';
-import { Component } from './library/recipe/component/component.entity';
-import { RecipeComponent } from './library/recipe/recipe-component/recipe-component.entity';
-import { Recipe } from './library/recipe/recipe.entity';
-import { EducationalContent } from './library/educational/educational.entity';
-import { Storage } from './storage/storage.entity';
-
 // Module imports
 import { CountryModule } from './country/country.module';
 import { DietaryModule } from './dietary/dietary.module';
@@ -33,6 +20,8 @@ import { AuthModule } from './auth/auth.module';
 import seedCountry from './country/country.seeder';
 import { Type } from 'class-transformer';
 import { getTypeOrmConfig } from './db/config';
+import { EthnicityModule } from './ethnicity/ethnicity.module';
+import seedEthnicity from './ethnicity/ethnicity.seeder';
 
 @Module({
   imports: [
@@ -51,6 +40,7 @@ import { getTypeOrmConfig } from './db/config';
     RecipeModule,
     UserModule,
     StorageModule,
+    EthnicityModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
@@ -61,5 +51,6 @@ export class AppModule {
 
     // seed country data
     seedCountry(this.dataSource); 
+    seedEthnicity(this.dataSource);
   }
 }

@@ -11,6 +11,7 @@ import { EducationalContent } from '../library/educational/educational.entity';
 import { Storage } from '../storage/storage.entity';
 import { RecipeComponent } from '../library/recipe/recipe-component/recipe-component.entity';
 import { Component } from '../library/recipe/component/component.entity';
+import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 
 export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
   type: 'postgres',
@@ -20,8 +21,8 @@ export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOpt
   password: configService.get<string>('HF_NUTRITION_PASSWORD'),
   database: configService.get<string>('HF_NUTRITION_DATABASE'),
   entities: [
-    User, Country, Dietary, UserAllergy, FoodCategory, Cuisine, Recipe,
-    EducationalContent, Storage, RecipeComponent, Component,
+    Ethnicity, User, Country, Dietary, UserAllergy, FoodCategory, Cuisine, Recipe,
+    EducationalContent, Storage, RecipeComponent, Component
   ],
   synchronize: true,
 });

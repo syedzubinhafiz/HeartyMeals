@@ -40,6 +40,11 @@
 
 </template>
 <script setup>
+
+  definePageMeta({
+    middleware: ["auth"],
+  });
+  
 defineOptions({
 	name: "SignUpPage",
 });

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsEmail, IsEnum} from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsEnum} from "class-validator";
 import { Gender } from "../enum/gender.enum";
 
 export class CreatUserDTO{
@@ -17,4 +17,8 @@ export class CreatUserDTO{
     @IsEnum(Gender)
     @IsNotEmpty()
     readonly gender: Gender;
+
+    @IsString()
+    @IsNotEmpty()
+    readonly ethnicityId: string;
 }
