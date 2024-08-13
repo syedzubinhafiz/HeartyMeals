@@ -1,9 +1,11 @@
 <template>
-    <div class="m-0 p-0" @click="() => {isFocused = true}">
-        <Input type="text" v-model="inputValue" placeholder="Search..." @blur="() => {setFocusWithDelay(false)}"/>
-        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused">
-            <div v-for="item in filterData()" :key="item">
-                <button :onClick="()=>setInputValue(item)">{{ item }}</button>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <div class="m-0 p-0 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
+        <i class="bi bi-search ml-1"></i>
+        <Input type="text" class="border-none outline-none" v-model="inputValue" placeholder="Search..." @blur="() => {setFocusWithDelay(false)}"/>
+        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused && inputValue.length>0">
+            <div v-for="item in filterData()" :key="getID(item)">
+                <button :onClick="()=>setInputValue(getID(item))">{{ getName(item) }}</button>
             </div>
             <div v-if="inputValue && filterData().length==0">
                 <p>No results found!</p>
@@ -50,8 +52,8 @@ function setInputValue(value) {
 
 // filter based on search term
  function filterData() {
-   return props.dataList.filter((item) =>
-        item.toLowerCase().includes(inputValue.value.toLowerCase())
+   return props.dataList.filter((item) => 
+        getName(item).toLowerCase().includes(inputValue.value.toLowerCase())
    );
  }
 
@@ -66,4 +68,20 @@ const setFocusWithDelay = async (focused) => {
     100)
 }
 
+const getName = (item) => {
+    if(typeof item === 'object' && item !== null) {
+        return item.name
+    }
+    else {
+        return item
+    }
+}
+const getID = (item) => {
+    if(typeof item === 'object' && item !== null) {
+        return item.id
+    }
+    else {
+        return item
+    }
+}
  </script>

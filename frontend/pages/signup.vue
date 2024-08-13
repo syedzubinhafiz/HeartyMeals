@@ -11,9 +11,9 @@
                 <Overlay v-if="signupPage==0" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
                         <P><b>Country</b></P>
-                        <Input placeholder="Country" v-model="country"></Input>
+                        <SearchBar :dataList="countryList" v-model="country"/>
                         <P><b>Ethnicity</b></P>
-                        <Input placeholder="Ethnicity" v-model="ethnicity"></Input>
+                        <SearchBar :dataList="ethnicityList" v-model="ethnicity"/>
                         <P><b>Gender</b></P>
                         <RadioButton name="Gender" :options="['male','female']" v-model="gender"/>
                         <P><b>NYHA Classification</b></P>
@@ -63,7 +63,7 @@ const gender = ref("")
 const homeAddress = ref("")
 const phoneNumber = ref("")
 const email = ref("")
-const nyhaClassification = ref("")
+const nyhaClassification = ref("II")
 
 const allergies = ref("")
 const dietaryRestrictions = ref("")
@@ -77,4 +77,12 @@ const signUp = () => {
     //     navigateTo("/");
     // }
 }
+
+const countryList = ref([])
+countryList.value = await useApi('/country','GET')
+console.log(countryList)
+
+const ethnicityList = ref([])
+ethnicityList.value = await useApi('/ethnicity','GET')
+console.log(ethnicityList)
 </script>
