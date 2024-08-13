@@ -43,7 +43,7 @@ export class User{
     nyha_level: number
 
 
-    @Column({type: "json"})
+    @Column({type: "jsonb"})
     medical_info: JSON;
 
 

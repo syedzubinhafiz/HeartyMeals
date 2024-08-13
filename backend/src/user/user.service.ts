@@ -43,7 +43,7 @@ export class UserService {
         new_user.last_name = decodedHeaders['family_name'];
         new_user.gender = payload.gender
         new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
-        new_user.medical_info = JSON.parse("{}"); //TODO: replace with actual data from payload
+        new_user.medical_info = payload.medicalInfo;
         return await this.userRepository.save(new_user);
     }
 
