@@ -12,12 +12,13 @@
                     <div class="space-y-0">
                         <P><b>Country</b></P>
                         <SearchBar :dataList="countryList" v-model="country"/>
+                        <P>country: {{ country }}</P>
                         <P><b>Ethnicity</b></P>
                         <SearchBar :dataList="ethnicityList" v-model="ethnicity"/>
                         <P><b>Gender</b></P>
-                        <RadioButton name="Gender" :options="['male','female']" v-model="gender"/>
+                        <RadioButton name="Gender" :options="['Male','Female']" v-model="gender"/>
                         <P><b>NYHA Classification</b></P>
-                        <Dropdown :options="['I','II','III','IV']" v-model="nyhaClassification"/>
+                        <Dropdown :options="['I','II','III','IV']" :optionValues="[1,2,3,4]" v-model="nyhaClassification"/>
                     </div>
                     <ButtonOrange @click.prevent="signupPage = 1; console.log(signupPage)" class="w-full">Next -></ButtonOrange>
                 </Overlay>
@@ -32,6 +33,7 @@
                         <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
                     <ButtonOrange @click.prevent="signUp" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
+                    <p class="text-red-500">{{ errorMessage }}</p>
                 </Overlay>
             </div>
 
@@ -57,8 +59,8 @@ definePageMeta({
 const signupPage = ref(0)
 
 const fullName = ref("")
-const country = ref("")
-const ethnicity = ref("")
+const country = ref({name:"",id:""})
+const ethnicity = ref({name:"",id:""})
 const gender = ref("")
 const homeAddress = ref("")
 const phoneNumber = ref("")
@@ -70,12 +72,18 @@ const dietaryRestrictions = ref("")
 const warfarin = ref("no")
 
 const userInfo = useUserInfo()
-const signUp = () => {
-    let result =  userInfo.signup()
+
+const errorMessage = ref("")
+const signUp = async () => {
+    errorMessage.value = ""
+    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,"1232bd2d-fb5d-45d8-ab3a-c39da5b0781b",ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
     console.log(result)
-    // if(result) {
-    //     navigateTo("/");
-    // }
+    if(result.value?.statusCode==null && result.status==null) {
+        navigateTo("/temp");
+    }
+    else {
+        errorMessage.value = "sign up failed!"
+    }
 }
 
 const countryList = ref([])

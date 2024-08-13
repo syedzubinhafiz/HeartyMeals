@@ -21,8 +21,16 @@ export const useUserInfo = () => {
         userCookie.value = null
         userInfo.value = null
     }
-    const signup = () => {
-        useApi("/user/signup","POST")
+    const signup = async (gender,countryID,nyhaLevel,dietaryId,ethnicityId,medicalInfo) => {
+        let result = await useApi("/user/signup","POST",{
+            gender: gender,
+            countryId: countryID,
+            nyhaLevel: nyhaLevel,
+            dietaryId: dietaryId,
+            ethnicityId: ethnicityId,
+            medicalInfo: medicalInfo
+        })
+        return result
     }
 
 

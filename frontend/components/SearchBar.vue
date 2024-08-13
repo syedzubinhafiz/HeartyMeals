@@ -5,7 +5,7 @@
         <Input type="text" class="border-none outline-none" v-model="inputValue" placeholder="Search..." @blur="() => {setFocusWithDelay(false)}"/>
         <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused && inputValue.length>0">
             <div v-for="item in filterData()" :key="getID(item)">
-                <button :onClick="()=>setInputValue(getID(item))">{{ getName(item) }}</button>
+                <button :onClick="()=>setValue(item)">{{ getName(item) }}</button>
             </div>
             <div v-if="inputValue && filterData().length==0">
                 <p>No results found!</p>
@@ -30,13 +30,17 @@
 		type: Array,
 		default: [],
 	},
+    modelValueID: {
+        type: String,
+        default: null
+	},
 });
 
 // defineEmits defines a list of functions that can run from the component
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue","update:modelValueID"]);
 
 // computed variable based on the props passed into the component. Has a get and set function
-const inputValue = computed({
+const computedModelValue = computed({
 	get() {
 		return props.modelValue;
 	},
@@ -45,9 +49,30 @@ const inputValue = computed({
 	},
 });
 
+const inputValue = computed({
+	get() {
+		return getName(computedModelValue.value);
+	},
+	set(value) {
+        if(typeof computedModelValue.value === 'object' && computedModelValue.value !== null) {
+            computedModelValue.value.name = value
+            for(let data of props.dataList) {
+                if(getName(data).toLowerCase()==value.toLowerCase()) {
+                    computedModelValue.value.id = getID(data)
+                    return
+                }
+            }
+            computedModelValue.value.id = null
+        }
+        else {
+            computedModelValue.value = value
+        }
+	},
+});
+
 // set input value to selected item
-function setInputValue(value) {
-    inputValue.value = value
+function setValue(value) {
+    computedModelValue.value = value
 }
 
 // filter based on search term
