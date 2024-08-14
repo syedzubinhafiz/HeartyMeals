@@ -6,7 +6,7 @@
         <div class="w-3/5 flex items-center justify-center">
             <img src="../assets/img/GreenCurve.png" class="h-full" alt="Green Curve Decor">
             <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
-            <div class="space-y-5 m-9 grow z-10">
+            <div class="space-y-5 m-9 sm:mx-24 grow z-10">
                 <H1>Create an account</H1>
                 <Overlay v-if="signupPage==0" :level="1" class="flex flex-col space-y-5">
                     <div class="space-y-0">
@@ -20,7 +20,9 @@
                         <P><b>NYHA Classification</b></P>
                         <Dropdown :options="['I','II','III','IV']" :optionValues="[1,2,3,4]" v-model="nyhaClassification"/>
                     </div>
-                    <ButtonOrange @click.prevent="signupPage = 1; console.log(signupPage)" class="w-full">Next -></ButtonOrange>
+                    <div class="w-full flex justify-center">
+                        <ButtonOrange @click.prevent="signupPage = 1; console.log(signupPage)">Next -></ButtonOrange>
+                    </div>
                 </Overlay>
                 <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
                     <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
@@ -32,7 +34,9 @@
                         <P><b>Are you currently taking any Warfarin?</b></P>
                         <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
-                    <ButtonOrange @click.prevent="signUp" class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Sign Up</ButtonOrange>
+                    <div class="w-full flex justify-center">
+                        <ButtonOrange @click.prevent="signUp">Sign Up</ButtonOrange>
+                    </div>
                     <p class="text-red-500">{{ errorMessage }}</p>
                 </Overlay>
             </div>
