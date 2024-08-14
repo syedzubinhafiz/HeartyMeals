@@ -22,7 +22,9 @@ import { Type } from 'class-transformer';
 import { getTypeOrmConfig } from './db/config';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
 import { AllergiesModule } from './allergies/allergies.module';
+import { FoodCategoryModule } from './food-category/food-category.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
+import seedFoodCategory from './food-category/food-category.seeder';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import seedEthnicity from './ethnicity/ethnicity.seeder';
     StorageModule,
     EthnicityModule,
     AllergiesModule,
+    FoodCategoryModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
@@ -54,5 +57,6 @@ export class AppModule {
     // seed country data
     seedCountry(this.dataSource); 
     seedEthnicity(this.dataSource);
+    seedFoodCategory(this.dataSource);
   }
 }
