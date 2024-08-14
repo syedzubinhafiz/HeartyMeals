@@ -4,7 +4,7 @@
             <img src="../assets/img/HeartyMealLargeLogo.png" alt="Hearty Meal">
         </div>
         <div class="w-3/5 flex items-center justify-center">
-            <img src="../assets/img/GreenCurve.png" class="h-full" alt="Green Curve Decor">
+            <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
             <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
             <div class="space-y-5 m-9 sm:mx-24 grow z-10">
                 <H1>Create an account</H1>
