@@ -21,6 +21,7 @@ import seedCountry from './country/country.seeder';
 import { Type } from 'class-transformer';
 import { getTypeOrmConfig } from './db/config';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
+import { AllergiesModule } from './allergies/allergies.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
 
 @Module({
@@ -41,6 +42,7 @@ import seedEthnicity from './ethnicity/ethnicity.seeder';
     UserModule,
     StorageModule,
     EthnicityModule,
+    AllergiesModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
