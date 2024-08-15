@@ -11,9 +11,9 @@
                 <Overlay v-if="signupPage==0" :level="1" class="flex flex-col w-fit p-5 space-y-5">
                     <div class="space-y-0">
                         <P><b>Country</b></P>
-                        <SearchBar :dataList="countryList" v-model="country"/>
+                        <DropdownSearchBar :dataList="countryList" v-model="country"/>
                         <P><b>Ethnicity</b></P>
-                        <SearchBar :dataList="ethnicityList" v-model="ethnicity"/>
+                        <DropdownSearchBar :dataList="ethnicityList" v-model="ethnicity"/>
                         <P><b>Gender</b></P>
                         <RadioButton name="Gender" :options="['Male','Female']" v-model="gender"/>
                         <P><b>NYHA Classification</b></P>
@@ -27,9 +27,9 @@
                     <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
                     <div class="space-y-0">
                         <P><b>Allergies</b></P>
-                        <SearchBar :dataList="allergyList" v-model="allergies"/>
+                        <DropdownSearchBar :dataList="allergyList" v-model="allergies"/>
                         <P><b>Dietary Restriction</b></P>
-                        <SearchBar :dataList="dietList" v-model="dietaryRestrictions"/>
+                        <DropdownSearchBar :dataList="dietList" v-model="dietaryRestrictions"/>
                         <P><b>Are you currently taking any Warfarin?</b></P>
                         <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
