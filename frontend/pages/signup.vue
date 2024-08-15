@@ -36,7 +36,6 @@
                     <div class="w-full flex justify-center">
                         <ButtonOrange @click.prevent="signUp">Sign Up</ButtonOrange>
                     </div>
-                    <p class="text-red-500">{{ errorMessage }}</p>
                 </Overlay>
             </div>
 
@@ -78,13 +77,31 @@ const userInfo = useUserInfo()
 
 const errorMessage = ref("")
 const signUp = async () => {
-    errorMessage.value = ""
     let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,"1232bd2d-fb5d-45d8-ab3a-c39da5b0781b",ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
-    if(result.value?.statusCode==null && result.status==null) {
-        navigateTo("/temp");
+    if(result.isError) {
+        if(process.client) {
+            console.log(result)
+            $toast.open({
+                message: `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`,
+                type: "error",
+                position: "top",
+                duration: 6000,
+            });
+        }
+    }
+    else if(result.value.message != null) {
+        if(process.client) {
+            console.log(result)
+            $toast.open({
+                message: `status code 400: ${result.value.message}`,
+                type: "error",
+                position: "top",
+                duration: 6000,
+            });
+        }
     }
     else {
-        errorMessage.value = "sign up failed!"
+        navigateTo("/temp");
     }
 }
 const countryList = ref([])
@@ -92,9 +109,11 @@ const ethnicityList = ref([])
 
 onMounted(async () => {
     await useApi('/country','GET')
-    countryList.value = await useApi('/country','GET')
-    ethnicityList.value = await useApi('/ethnicity','GET')
+    countryList.value = (await useApi('/country','GET')).value
+    ethnicityList.value = (await useApi('/ethnicity','GET')).value
 })
+const { $toast } = useNuxtApp();
+
 
 
 

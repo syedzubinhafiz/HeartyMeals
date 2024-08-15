@@ -11,10 +11,13 @@ export const useApi = async (request, method,body=null) => {
             'Content-Type': 'application/json',
         }
     });
-	if(result.error.value == null) {
-		return result.data.value
+
+  if(result.error.value == null) {
+    result.data.isError = false
+		return result.data
 	}
 	else {
+    result.error.isError = true
 		return result.error
 	}
 }
