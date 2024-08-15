@@ -8,5 +8,5 @@ export class CreateUserAllergyDTO{
 
     @IsString()
     @IsNotEmpty()
-    readonly foodCatId: string;
+    readonly foodCatName: string;
 }
