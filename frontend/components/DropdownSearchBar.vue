@@ -1,6 +1,6 @@
 <template>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <div class="m-0 p-0 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
+    <div class="m-0 p-1 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
         <Input type="text" class="border-none outline-none" readonly="readonly" v-model="selectedValue" placeholder="Select" @blur="() => {setFocusWithDelay(false)}"/>
         <i class="bi bi-chevron-down mr-2"></i>
         <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused">
