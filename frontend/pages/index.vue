@@ -18,6 +18,7 @@
                     </Overlay>
                     <Overlay :level="1" class="flex flex-col space-y-5">
                         <P>Temporary quick login to skip needing to enter an email</P>
+                        <NuxtLink to="/temp" class="rounded-md shadow-md bg-custom-button-green w-fit text-white p-3">Quicker Login</NuxtLink>
                         <Button @click.prevent="quickLogin">Quick Login</Button>
                     </Overlay>
                 </div>
