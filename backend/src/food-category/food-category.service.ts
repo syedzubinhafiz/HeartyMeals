@@ -16,7 +16,11 @@ export class FoodCategoryService {
         return await this.foodCategoryRepository.find();
     }
 
-    add(newFoodCategory){
-        return this.foodCategoryRepository.save(newFoodCategory);
+    async addFoodCategory(newFoodCategory: string){
+        if (await this.foodCategoryRepository.findOneBy({type: newFoodCategory}) != null) {
+            return "Dietary already Exist."
+        }
+
+        return await this.foodCategoryRepository.save({type: newFoodCategory});
     }
 }
