@@ -23,7 +23,6 @@
 // modelValue takes in the search term while dataList contains the list of searchable strings
  const props = defineProps({
     modelValue: {
-        type: String,
         default: ""
     },
 	dataList: {

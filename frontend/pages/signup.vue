@@ -80,7 +80,6 @@ const errorMessage = ref("")
 const signUp = async () => {
     errorMessage.value = ""
     let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,"1232bd2d-fb5d-45d8-ab3a-c39da5b0781b",ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
-    console.log(result)
     if(result.value?.statusCode==null && result.status==null) {
         navigateTo("/temp");
     }
@@ -88,12 +87,15 @@ const signUp = async () => {
         errorMessage.value = "sign up failed!"
     }
 }
-
 const countryList = ref([])
-countryList.value = await useApi('/country','GET')
-console.log(countryList)
-
 const ethnicityList = ref([])
-ethnicityList.value = await useApi('/ethnicity','GET')
-console.log(ethnicityList)
+
+onMounted(async () => {
+    await useApi('/country','GET')
+    countryList.value = await useApi('/country','GET')
+    ethnicityList.value = await useApi('/ethnicity','GET')
+})
+
+
+
 </script>

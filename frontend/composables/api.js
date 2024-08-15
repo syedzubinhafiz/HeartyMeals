@@ -15,8 +15,6 @@ export const useApi = async (request, method,body=null) => {
 		return result.data.value
 	}
 	else {
-		console.log("API CALL ERROR")
-		console.log(result.error)
 		return result.error
 	}
 }
