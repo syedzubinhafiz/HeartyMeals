@@ -8,13 +8,15 @@ import { FoodCategory } from "src/food-category/foodCategory.entity";
 @Injectable()
 export class UserAllergyService{
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-        @InjectRepository(FoodCategory)
-        private foodCategoryRepository: Repository<FoodCategory>,
         @InjectRepository(UserAllergy)
         private userAllergyRepository: Repository<UserAllergy>,
     ){}
 
-    async createNewUserAllergy(){}
+    async createNewUserAllergy(user: User, foodCat: FoodCategory){
+        const new_user_allergy = new UserAllergy();
+        new_user_allergy.user_id = user.user_id;
+        new_user_allergy.food_cat_id = foodCat.id;
+
+        return await this.userAllergyRepository.save(new_user_allergy);
+    }
 }
