@@ -1,28 +1,41 @@
 <template>
     <div class="flex flex-row min-h-screen">
-        <div class="w-1/2 bg-custom-bg-green grow flex items-center justify-center">
-            <img src="../assets/img/HeartyMealLoginLogo.png" alt="Hearty Meal">
+        <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
+            <img src="../assets/img/HeartyMealLargeLogo.png" alt="Hearty Meal">
         </div>
-        <div class="w-1/2 flex items-center justify-center">
-            <div class="h-0 w-0 border-t-[50vh] border-l-[5vw] border-b-[50vh] border-solid border-t-transparent border-b-transparent border-l-custom-bg-green grow"/>
-            <div class="space-y-5 m-9 grow">
+        <div class="w-3/5 flex items-center justify-center">
+            <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
+            <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+            <div class="space-y-5 m-9 sm:mx-24 grow z-10 flex flex-col items-center">
                 <H1>Create an account</H1>
-                <Overlay :level="1" class="flex flex-col space-y-5">
+                <Overlay v-if="signupPage==0" :level="1" class="flex flex-col w-fit p-5 space-y-5">
                     <div class="space-y-0">
-                        <P><b>Full Name</b></P>
-                        <Input placeholder="Full Name" v-model="fullName"></Input>
-                        <P><b>Identity Number</b></P>
-                        <Input placeholder="Identity Number" v-model="identityNumber"></Input>
+                        <P><b>Country</b></P>
+                        <DropdownSearchBar :dataList="countryList" v-model="country"/>
                         <P><b>Ethnicity</b></P>
-                        <Input placeholder="Ethnicity" v-model="ethnicity"></Input>
+                        <DropdownSearchBar :dataList="ethnicityList" v-model="ethnicity"/>
                         <P><b>Gender</b></P>
-                        <RadioButton name="gender" :options="['male','female','other']" v-model="gender"/>
-                        <P><b>Home Address</b></P>
-                        <Input placeholder="Home Address" v-model="homeAddress"></Input>
-                        <P><b>Phone Number</b></P>
-                        <Input placeholder="Phone Number" v-model="phoneNumber"></Input>
+                        <RadioButton name="Gender" :options="['Male','Female']" v-model="gender"/>
+                        <P><b>NYHA Classification</b></P>
+                        <Dropdown :options="['I','II','III','IV']" :optionValues="[1,2,3,4]" v-model="nyhaClassification"/>
                     </div>
-                    <Button class="bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange w-full">Next -></Button>
+                    <div class="w-full flex justify-center">
+                        <ButtonOrange @click.prevent="signupPage = 1; console.log(signupPage)">Next -></ButtonOrange>
+                    </div>
+                </Overlay>
+                <Overlay v-if="signupPage==1" :level="1" class="flex flex-col space-y-5">
+                    <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
+                    <div class="space-y-0">
+                        <P><b>Allergies</b></P>
+                        <DropdownSearchBar :dataList="allergyList" v-model="allergies"/>
+                        <P><b>Dietary Restriction</b></P>
+                        <DropdownSearchBar :dataList="dietList" v-model="dietaryRestrictions"/>
+                        <P><b>Are you currently taking any Warfarin?</b></P>
+                        <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <ButtonOrange @click.prevent="signUp">Sign Up</ButtonOrange>
+                    </div>
                 </Overlay>
             </div>
 
@@ -31,6 +44,11 @@
 
 </template>
 <script setup>
+
+  definePageMeta({
+    middleware: ["auth"],
+  });
+  
 defineOptions({
 	name: "SignUpPage",
 });
@@ -40,10 +58,43 @@ definePageMeta({
 	layout: "emptylayout"
 });
 
-const fullName = ref("")
-const identityNumber = ref("")
-const ethnicity = ref("")
+const signupPage = ref(0)
+
+const country = ref({name:"",id:""})
+const ethnicity = ref({name:"",id:""})
 const gender = ref("")
-const homeAddress = ref("")
-const phoneNumber = ref("")
+const nyhaClassification = ref("II")
+
+const allergies = ref("")
+const dietaryRestrictions = ref("")
+const warfarin = ref("no")
+
+const userInfo = useUserInfo()
+
+const signUp = async () => {
+    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`,allergies.value.name)
+    if(result) {
+        navigateTo("/temp");
+    }
+}
+const countryList = ref([])
+const ethnicityList = ref([])
+const allergyList = ref([])
+const dietList = ref([])
+
+onMounted(async () => {
+    await useApi('/country','GET')
+    countryList.value = (await useApi('/country','GET')).value
+    ethnicityList.value = (await useApi('/ethnicity','GET')).value
+    allergyList.value = (await useApi('/food_category','GET')).value
+    for(let subVal of allergyList.value) {
+        subVal.name = subVal.type
+    }
+    dietList.value = (await useApi('/dietary','GET')).value
+})
+
+
+
+
+
 </script>

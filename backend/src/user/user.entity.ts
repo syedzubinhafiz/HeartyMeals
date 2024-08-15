@@ -1,22 +1,30 @@
 import { Country } from "src/country/country.entity";
 import { Dietary } from "src/dietary/dietary.entitry";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserRole } from "./enum/user-role.enum";
+import { Gender } from "./enum/gender.enum";
+import { Ethnicity } from "src/ethnicity/ethnicity.entity";
 
 @Entity('user')   
 export class User{
 
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn({type: "uuid"} )
     user_id: string;
 
     @Column({type: "varchar"})
-    gsh_user_id: string;
+    first_name: string;
 
     @Column({type: "varchar"})
-    name: string;
+    last_name: string;
 
     @Column({type: "varchar"})
-    email: string;
+    email: string; 
+
+    @Column({
+        type: "enum",
+        enum: Gender
+    })
+    gender: Gender;
     
     @ManyToOne( () => Country, country => country.id, {eager : true, nullable: true})
     @JoinColumn({name: 'country_id'})
@@ -26,11 +34,16 @@ export class User{
     @JoinColumn({name: 'dietary_id'})
     dietary: Dietary;
 
+
+    @ManyToOne( () => Ethnicity, ethnicity => ethnicity.id, {eager : true, nullable: true})
+    @JoinColumn({name: 'ethnicity_id'})
+    ethnicity: Ethnicity;
+
     @Column({type: "integer", nullable: true})
     nyha_level: number
 
 
-    @Column({type: "json"})
+    @Column({type: "jsonb"})
     medical_info: JSON;
 
 
@@ -39,6 +52,16 @@ export class User{
         enum: UserRole
     })
     user_role: UserRole;
+
+
+    @CreateDateColumn({ type: "timestamp with time zone" })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: "timestamp with time zone" })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
+    deletedAt?: Date;
 
     
 }

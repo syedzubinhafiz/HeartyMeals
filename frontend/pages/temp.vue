@@ -73,7 +73,7 @@ defineOptions({
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
     layout: "baselayout",
-    middleware: "login-check",
+    // middleware: "login-check",
 });
 
 const onClickButton = async () => {
@@ -214,3 +214,5 @@ display: none;
 }
 }
 </style>
+
+

@@ -12,4 +12,9 @@ export class DietaryController {
     async addDietary(@Body("dietaryName") dietaryName: string){
         return await this.dietaryService.addDietary(dietaryName)
     }
+
+    @Get()
+    async getDietary(){
+        return await this.dietaryService.getAllDietary();
+    }
 }

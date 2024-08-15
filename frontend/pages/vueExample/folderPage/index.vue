@@ -10,7 +10,12 @@
 
 </template>
 <script setup>
-defineOptions({
+
+  definePageMeta({
+    middleware: ["auth"],
+  });
+
+  defineOptions({
 	name: "folderPage",
 });
 
