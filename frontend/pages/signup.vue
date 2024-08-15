@@ -80,7 +80,6 @@ const signUp = async () => {
     let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,"1232bd2d-fb5d-45d8-ab3a-c39da5b0781b",ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
     if(result.isError) {
         if(process.client) {
-            console.log(result)
             $toast.open({
                 message: `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`,
                 type: "error",
@@ -91,7 +90,6 @@ const signUp = async () => {
     }
     else if(result.value.message != null) {
         if(process.client) {
-            console.log(result)
             $toast.open({
                 message: `status code 400: ${result.value.message}`,
                 type: "error",
