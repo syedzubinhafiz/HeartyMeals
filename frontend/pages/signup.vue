@@ -27,9 +27,9 @@
                     <ButtonTransparent @click.prevent="signupPage = 0"><- Back</ButtonTransparent>
                     <div class="space-y-0">
                         <P><b>Allergies</b></P>
-                        <Dropdown :options="['Allergy 1','Allergy 2','Allergy 3']" v-model="allergies"/>
+                        <SearchBar :dataList="allergyList" v-model="allergies"/>
                         <P><b>Dietary Restriction</b></P>
-                        <Dropdown :options="['Restriction 1','Restriction 2','Restriction 3']" v-model="dietaryRestrictions"/>
+                        <SearchBar :dataList="dietList" v-model="dietaryRestrictions"/>
                         <P><b>Are you currently taking any Warfarin?</b></P>
                         <RadioButton name="gender" :options="['yes','no']" v-model="warfarin" />
                     </div>
@@ -72,7 +72,7 @@ const warfarin = ref("no")
 const userInfo = useUserInfo()
 
 const signUp = async () => {
-    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,"1232bd2d-fb5d-45d8-ab3a-c39da5b0781b",ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
+    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
     if(result.isError) {
         if(process.client) {
             $toast.open({
@@ -99,11 +99,18 @@ const signUp = async () => {
 }
 const countryList = ref([])
 const ethnicityList = ref([])
+const allergyList = ref([])
+const dietList = ref([])
 
 onMounted(async () => {
     await useApi('/country','GET')
     countryList.value = (await useApi('/country','GET')).value
     ethnicityList.value = (await useApi('/ethnicity','GET')).value
+    allergyList.value = (await useApi('/food_category','GET')).value
+    for(let subVal of allergyList.value) {
+        subVal.name = subVal.type
+    }
+    dietList.value = (await useApi('/dietary','GET')).value
 })
 const { $toast } = useNuxtApp();
 
