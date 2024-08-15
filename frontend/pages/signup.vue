@@ -6,9 +6,9 @@
         <div class="w-3/5 flex items-center justify-center">
             <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
             <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
-            <div class="space-y-5 m-9 sm:mx-24 grow z-10">
+            <div class="space-y-5 m-9 sm:mx-24 grow z-10 flex flex-col items-center">
                 <H1>Create an account</H1>
-                <Overlay v-if="signupPage==0" :level="1" class="flex flex-col space-y-5">
+                <Overlay v-if="signupPage==0" :level="1" class="flex flex-col w-fit p-5 space-y-5">
                     <div class="space-y-0">
                         <P><b>Country</b></P>
                         <SearchBar :dataList="countryList" v-model="country"/>
