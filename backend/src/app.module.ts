@@ -25,6 +25,7 @@ import { AllergiesModule } from './allergies/allergies.module';
 import { FoodCategoryModule } from './food-category/food-category.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
 import seedFoodCategory from './food-category/food-category.seeder';
+import seedDietary from './dietary/dietary.seeder';
 
 @Module({
   imports: [
@@ -58,5 +59,6 @@ export class AppModule {
     seedCountry(this.dataSource); 
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
+    seedDietary(this.dataSource);
   }
 }
