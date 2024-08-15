@@ -72,28 +72,8 @@ const warfarin = ref("no")
 const userInfo = useUserInfo()
 
 const signUp = async () => {
-    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`)
-    if(result.isError) {
-        if(process.client) {
-            $toast.open({
-                message: `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`,
-                type: "error",
-                position: "top",
-                duration: 6000,
-            });
-        }
-    }
-    else if(result.value.message != null) {
-        if(process.client) {
-            $toast.open({
-                message: `status code 400: ${result.value.message}`,
-                type: "error",
-                position: "top",
-                duration: 6000,
-            });
-        }
-    }
-    else {
+    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`,allergies.value.name)
+    if(result) {
         navigateTo("/temp");
     }
 }
@@ -112,7 +92,7 @@ onMounted(async () => {
     }
     dietList.value = (await useApi('/dietary','GET')).value
 })
-const { $toast } = useNuxtApp();
+
 
 
 
