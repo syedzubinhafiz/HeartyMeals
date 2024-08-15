@@ -26,7 +26,7 @@ export default defineComponent({
             console.log("Authenticated successfully");  
 
             //check if db contains user
-            const result = await useApi("/user/verify", "GET")
+            const result = (await useApi("/user/verify", "GET")).value
             console.log(result)
             if (result == "false") {
                 console.log("User not found in db, redirecting to sign up page");
