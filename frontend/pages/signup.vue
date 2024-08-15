@@ -12,7 +12,6 @@
                     <div class="space-y-0">
                         <P><b>Country</b></P>
                         <SearchBar :dataList="countryList" v-model="country"/>
-                        <P>country: {{ country }}</P>
                         <P><b>Ethnicity</b></P>
                         <SearchBar :dataList="ethnicityList" v-model="ethnicity"/>
                         <P><b>Gender</b></P>
