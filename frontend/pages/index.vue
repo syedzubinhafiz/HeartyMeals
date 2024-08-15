@@ -4,8 +4,12 @@
             <p class="font-medium text-md">Nuxt JS Guide</p>
             <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
         </div> -->
+        <div class="flex-1 h-25">
         <WaterTankWidget/>
-        <NutrientWidget/>
+        </div>
+        <div class="flex-1 h-31">
+        <NutrientWidget />
+        </div>
     </div>
 </template>
 <script setup>
