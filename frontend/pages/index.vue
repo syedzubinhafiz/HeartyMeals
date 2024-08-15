@@ -58,6 +58,9 @@
         </div>
         </div>
     </div>
+    <div class="flex items-center justify-center">
+        <RecipeOfTheDay recipeName="Nasi Ayam"/>
+    </div>
 </template>
 
 <script setup>
