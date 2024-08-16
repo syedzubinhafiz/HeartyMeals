@@ -24,6 +24,7 @@ export const useUserInfo = () => {
     const { $toast } = useNuxtApp();
 
     const signup = async (gender,countryID,nyhaLevel,dietaryId,ethnicityId,medicalInfo,foodCategory) => {
+        // main user call
         let result = await useApi("/user/signup","POST",{
             gender: gender,
             countryId: countryID,
@@ -32,6 +33,7 @@ export const useUserInfo = () => {
             ethnicityId: ethnicityId,
             medicalInfo: medicalInfo
         })
+        // if an error occurs, show a toast and exit
         if(result.isError) {
             if(process.client) {
                 $toast.open({
@@ -43,6 +45,7 @@ export const useUserInfo = () => {
             }
             return false
         }
+        // if a non-error error message occurs, show a toast and exit (eg for the user already existing the API technically doesn't return an error)
         else if(result.value.message != null) {
             if(process.client) {
                 $toast.open({
@@ -54,7 +57,9 @@ export const useUserInfo = () => {
             }
             return false
         }
+        // if the result is valid, continue
         else {
+            // allergy is optional (avoids a bug where if allergy creation fails, the user can't sign up as the user has already been created)
             let result2 = {isError: false}
             if(foodCategory!=null) {
                 result2 = await useApi("/user_allergy/add","POST",{
@@ -62,6 +67,7 @@ export const useUserInfo = () => {
                     foodCatName: foodCategory
                 })
             }
+            // show a toast and exit if there's an error
             if(result2.isError) {
                 if(process.client) {
                     $toast.open({
@@ -73,6 +79,7 @@ export const useUserInfo = () => {
                 }
                 return false
             }
+            // otherwise return true and finish the signup process
             else {
                 return true
             }
