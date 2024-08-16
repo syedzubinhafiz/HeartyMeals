@@ -55,10 +55,13 @@ export const useUserInfo = () => {
             return false
         }
         else {
-            let result2 = await useApi("/user_allergy/add","POST",{
-                userId: result.value.user_id,
-                foodCatName: foodCategory
-            })
+            let result2 = {isError: false}
+            if(foodCategory!=null) {
+                result2 = await useApi("/user_allergy/add","POST",{
+                    userId: result.value.user_id,
+                    foodCatName: foodCategory
+                })
+            }
             if(result2.isError) {
                 if(process.client) {
                     $toast.open({
