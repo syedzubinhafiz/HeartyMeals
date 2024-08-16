@@ -142,7 +142,7 @@ import image1 from 'assets/img/LandingPage/image1.jpeg';
 
 /* Smaller background image */
 .bg-heart-image {
-    background-image: url('@/assets/img/HeartGreen.png');
+    background-image: url('@/assets/img/HeartGreen.svg');
     background-size: 50%; /* Adjust this value to make the background image smaller or larger */
     background-repeat: no-repeat;
     background-position: center;

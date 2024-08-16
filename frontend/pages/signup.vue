@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-row min-h-screen">
         <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
-            <img src="../assets/img/HeartyMealLargeLogo.png" alt="Hearty Meal">
+            <img src="../assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal">
         </div>
         <div class="w-3/5 flex items-center justify-center">
             <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">

@@ -1,11 +1,11 @@
 <template>
     <div class="flex flex-row min-h-screen">
         <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
-            <img src="../assets/img/HeartyMealLargeLogo.png" alt="Hearty Meal">
+            <img src="../assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal">
         </div>
         <div class="w-3/5 flex items-center">
             <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
-            <img src="../assets/img/BrownBlob.png" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+            <img src="../assets/img/BrownBlob.svg" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
             <div class="w-fit flex justify-center grow">
                 <div class="space-y-5 m-9 z-10">
                     <H1 class="">Login to your account</H1>
