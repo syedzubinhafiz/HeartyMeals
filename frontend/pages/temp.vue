@@ -1,5 +1,5 @@
 <template>
-    <div class="relative">
+    <div class="relative h-screen">
         <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
             <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
                 <svg class="w-full h-48" viewBox="0 0 1440 250" xmlns="http://www.w3.org/2000/svg" >
@@ -24,15 +24,17 @@
                 </button>
             </div>
         </div>
+
+        <div class="flex items-center justify-center py-9 bg-custom-overlay-brown">
+            <p class="text-center text-lg font-semibold italic text-custom-text-orange">
+                Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
+            </p>
+        </div>
+    
     </div>
 
-    <div class="flex items-center justify-center py-9 bg-custom-overlay-brown">
-        <p class="text-center text-lg font-semibold italic text-custom-text-orange">
-            Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
-        </p>
-    </div>
-    
-    <div class="flex items-center justify-center h-96">
+
+    <div class="flex items-center justify-center h-screen">
         <!-- <div class="shadow-sm bg-custom-overlay-brown h-40 w-64 rounded-lg flex flex-col items-center justify-center space-y-2">
             <p class="font-medium text-md">Nuxt JS Guide</p>
             <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
@@ -45,7 +47,7 @@
         </div>
     </div>
 
-    <div class="relative z-10 text-center py-16 ">
+    <div class="relative z-10 text-center py-16 h-screen">
       <div class="background-wrapper">
         <img :src="backgroundImage" alt="Background" class="background-image" />
           </div>
@@ -58,7 +60,7 @@
         </div>
         </div>
     </div>
-    <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center h-screen">
         <RecipeOfTheDay recipeName="Nasi Ayam"/>
     </div>
 </template>
