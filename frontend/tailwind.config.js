@@ -17,6 +17,7 @@ export default {
         'custom-overlay-brown': '#F3EADA',
         'custom-overlay-light': '#FFFEF1',
         'custom-button-orange': '#FFA17A',
+        'custom-button-orange-dark': '#E5946B',
         'custom-button-green': '#87A98D',
         'custom-text-orange': '#993300',
         'custom-sidebar-yellow': '#B8B396'

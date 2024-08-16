@@ -1,9 +1,9 @@
 <template>
-    <button class="px-2 py-1 rounded-lg shadow-sm  w-fit bg-custom-button-orange hover:bg-custom-button-orange text-custom-text-orange"><slot/></button>
+    <button class="py-2 px-4 rounded-lg shadow-md w-fit bg-custom-button-orange hover:bg-custom-button-orange-dark text-custom-text-orange"><slot/></button>
 </template>
 <script setup>
 defineOptions({
-	name: "Button",
+	name: "ButtonOrange",
 });
 
 // buttons use @click.prevent for onclick stuff
