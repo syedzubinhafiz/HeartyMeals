@@ -79,7 +79,6 @@ definePageMeta({
 const onClickButton = async () => {
     navigateTo("/vueExample");
 }
-console.log(useUserInfo().getUserInfo().email)
 
 import image1 from 'assets/img/LandingPage/image1.jpeg';
   import image2 from 'assets/img/LandingPage/image2.jpeg';
