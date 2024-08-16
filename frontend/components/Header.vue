@@ -3,7 +3,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   
   <!-- header -->
-  <div class="relative">
+  <div class="relative z-10">
       <!-- Header Image with Clickable Area -->
       <div class="relative w-full">
         <img src="../assets/img/Header.png" alt="Hearty Meal" class="w-full h-auto" />

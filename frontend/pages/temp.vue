@@ -1,4 +1,5 @@
 <template>
+    <div class="h-96 absolute top-0 left-0 w-screen bg-custom-bg-green"/>
     <div class="relative h-screen">
         <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
             <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
