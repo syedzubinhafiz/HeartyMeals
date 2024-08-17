@@ -1,20 +1,16 @@
 <template>
-  <div class="relative flex flex-col items-center">
-    <img src="../assets/img/Footer.png" alt="Hearty Meal Footer" class="h-auto" style="width: 100vw;" />
-    
-    <!-- Transparent clickable areas -->
-    <div 
-      class="absolute top-[20%] left-[2%] w-[8%] h-[10%] cursor-pointer" 
-      @click="handleClick('About')"
-    ></div>
-    <div 
-      class="absolute top-[40%] left-[2%] w-[20%] h-[10%] cursor-pointer" 
-      @click="handleClick('Join Our Community')"
-    ></div>
-    <div 
-      class="absolute top-[60%] left-[2%] w-[8%] h-[10%] cursor-pointer" 
-      @click="handleClick('News')"
-    ></div>
+  <div class="relative flex justify-between items-center bg-custom-bg-green h-48 rounded-t-2xl p-4">
+    <div class="flex flex-col space-y-2 text-lg">
+      <ButtonTransparent @click="handleClick('About')" class="text-white">About</ButtonTransparent>
+      <ButtonTransparent @click="handleClick('Join Our Community')" class="text-white">Join Our Community</ButtonTransparent>
+      <ButtonTransparent @click="handleClick('News')" class="text-white">News</ButtonTransparent>
+    </div>
+    <div class="h-full flex items-end">
+      <P class="text-white">Copyright HeartyMeal, All rights reserved.</P>
+    </div>
+    <div>
+      <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="" />
+    </div>
   </div>
 </template>
 
