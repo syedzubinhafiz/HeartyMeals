@@ -5,13 +5,12 @@
   <!-- header -->
   <div class="relative z-10">
       <!-- Header Image with Clickable Area -->
-      <div class="relative w-full">
-        <img src="../assets/img/Header.png" alt="Hearty Meal" class="w-full h-auto" />
-        
-        <!-- Clickable Area for Sidebar -->
-        <button @click="toggleSidebar" class="absolute top-1/2 left-4 transform -translate-y-1/2 w-10 h-10">
-          <span class="sr-only">Open Sidebar</span>
+      <div class="relative w-full bg-custom-bg-green rounded-b-2xl h-20 shadow-lg flex justify-center">
+        <button @click="toggleSidebar" class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white">
+          <i class="bi bi-list text-2xl"></i>
         </button>
+        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="" />
+        
       </div>
     </div>
   <!-- sidebar -->
