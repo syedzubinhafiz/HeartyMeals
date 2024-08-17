@@ -1,11 +1,11 @@
 <template>
-  <div class="relative m-20 w-[70vw] h-[60vh] flex items-center justify-center overflow-hidden">
+  <div class="relative w-[33rem] h-[20rem] lg:w-[38rem] lg:h-[23rem] flex items-center justify-center overflow-hidden">
     <img src="@/assets/img/dailyMealBG.png" alt="Hearty Meal" class="absolute w-full h-full z-0">
     <div class="absolute z-10 flex flex-col items-center text-white p-4">
-      <h2 class="text-2xl font-bold">Recipe of the Day</h2>
-      <div class="flex space-x-16 mt-2 w-full px-16 items-center justify-center">
-        <div class="w-1/2 flex flex-col">
-          <p class="text-justify">
+      <h2 class="text-xl font-bold">Recipe of the Day</h2>
+      <div class="flex space-x-6 mt-2 w-full px-16 items-center justify-center">
+        <div class="w-1/2 flex flex-col h-full">
+          <p class="text-justify text-sm">
             {{ recipeText }}
           </p>
           <div class="items-center justify-center flex flex-col">
@@ -15,7 +15,7 @@
         </div>
         <div class="w-1/2 flex flex-col items-center justify-center">
           <img src="@/assets/img/nasiAyam.png" alt="Hearty Meal" class="w-fit h-fit z-0">
-          <h2 class="text-justify -translate-y-10">{{ recipeName }}</h2>
+          <h2 class="text-justify -translate-y-6">{{ recipeName }}</h2>
         </div>
       </div>
       <div 
