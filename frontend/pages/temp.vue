@@ -1,69 +1,83 @@
 <template>
-    <div class="h-96 absolute top-0 left-0 w-screen bg-custom-bg-green"/>
-    <div class="relative h-screen">
-        <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
-            <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
-                <svg class="w-full h-48" viewBox="0 0 1440 250" xmlns="http://www.w3.org/2000/svg" >
-                    <path fill="currentColor" d="M-300,0 Q720,520 1940,0 L1940,320 L-400,320 Z"></path>
-                </svg>
+    <div class="absolute w-screen z-40">
+        <Header/>
+    </div>
+    <div ref="scrollContainer" class="scrollContainer relative">
+        <!-- section 1 -->
+        <div class="section relative h-screen">
+            <!-- <div class="h-96 absolute top-0 left-0 w-screen bg-custom-bg-green"/> -->
+            <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
+                <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
+                    <svg class="w-full h-48" viewBox="0 0 1440 250" xmlns="http://www.w3.org/2000/svg" >
+                        <path fill="currentColor" d="M-300,0 Q720,520 1940,0 L1940,320 L-400,320 Z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Content in the center of the green section -->
+            <div class="absolute top-0 w-full h-96 flex flex-col items-center justify-center text-white">
+                <h1 class="text-4xl mb-4">Welcome back, Bruno Mars</h1>
+                <p class="text-lg mb-6">What do you want to do today?</p>
+                <div class="flex space-x-5">
+                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                        <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 h-6 mr-2" /> Recipe Library
+                    </button>
+                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                        <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 h-6 mr-2" /> Meal Logging
+                    </button>
+                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 h-6 mr-2" /> Meal Planning
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center py-9 bg-custom-overlay-brown">
+                <p class="text-center text-lg font-semibold italic text-custom-text-orange">
+                    Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
+                </p>
+            </div>
+        
+        </div>
+
+        <!-- section 2 -->
+        <div class="section flex items-center justify-center h-screen">
+            <!-- <div class="shadow-sm bg-custom-overlay-brown h-40 w-64 rounded-lg flex flex-col items-center justify-center space-y-2">
+                <p class="font-medium text-md">Nuxt JS Guide</p>
+                <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
+            </div> -->
+            <div class="flex-1 h-25">
+            <WaterTankWidget/>
+            </div>
+            <div class="flex-1 h-31">
+            <NutrientWidget />
             </div>
         </div>
-
-        <!-- Content in the center of the green section -->
-        <div class="absolute top-0 w-full h-96 flex flex-col items-center justify-center text-white">
-            <h1 class="text-4xl mb-4">Welcome back, Bruno Mars</h1>
-            <p class="text-lg mb-6">What do you want to do today?</p>
-            <div class="flex space-x-5">
-                <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                    <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 h-6 mr-2" /> Recipe Library
-                </button>
-                <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                    <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 h-6 mr-2" /> Meal Logging
-                </button>
-                <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                    <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 h-6 mr-2" /> Meal Planning
-                </button>
+        
+        <!-- section 3 -->
+        <div class="section relative z-10 text-center py-16 h-screen">
+        <div class="background-wrapper">
+            <img :src="backgroundImage" alt="Background" class="background-image" />
+            </div>
+            <div class="container mx-auto relative z-20 px-4">
+                <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
+                <div class="overflow-x-auto meal-cards-container">
+                    <div class="flex justify-center space-x-4 min-w-max pb-4">
+                        <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="flex items-center justify-center py-9 bg-custom-overlay-brown">
-            <p class="text-center text-lg font-semibold italic text-custom-text-orange">
-                Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
-            </p>
+        
+        <!-- section 4 -->
+        <div class="section h-screen flex flex-col justify-end">
+            <div class="flex  flex-col items-center justify-center">
+                <RecipeOfTheDay recipeName="Nasi Ayam"/>
+            </div>
+            <Footer/>
         </div>
-    
+
     </div>
 
-
-    <div class="flex items-center justify-center h-screen">
-        <!-- <div class="shadow-sm bg-custom-overlay-brown h-40 w-64 rounded-lg flex flex-col items-center justify-center space-y-2">
-            <p class="font-medium text-md">Nuxt JS Guide</p>
-            <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
-        </div> -->
-        <div class="flex-1 h-25">
-        <WaterTankWidget/>
-        </div>
-        <div class="flex-1 h-31">
-        <NutrientWidget />
-        </div>
-    </div>
-
-    <div class="relative z-10 text-center py-16 h-screen">
-      <div class="background-wrapper">
-        <img :src="backgroundImage" alt="Background" class="background-image" />
-          </div>
-        <div class="container mx-auto relative z-20 px-4">
-          <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
-          <div class="overflow-x-auto meal-cards-container">
-          <div class="flex justify-center space-x-4 min-w-max pb-4">
-            <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
-          </div>
-        </div>
-        </div>
-    </div>
-    <div class="flex items-center justify-center h-screen">
-        <RecipeOfTheDay recipeName="Nasi Ayam"/>
-    </div>
 </template>
 
 <script setup>
@@ -75,7 +89,7 @@ defineOptions({
 // this defines the layout that the page uses
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
-    layout: "baselayout",
+    layout: "emptylayout",
     // middleware: "login-check",
 });
 
@@ -120,6 +134,30 @@ import image1 from 'assets/img/LandingPage/image1.jpeg';
     // backgroundSize: 'cover',
     height: '980px' // Adjust the height as needed
   });
+
+const container = ref(null);
+
+onMounted(() => {
+const sections = document.querySelectorAll('.section');
+let currentSection = 0;
+
+const scrollToSection = (index) => {
+    if (index >= 0 && index < sections.length) {
+    sections[index].scrollIntoView({ behavior: 'smooth' });
+    currentSection = index;
+    }
+};
+
+const handleWheel = (event) => {
+    if (event.deltaY > 0) {
+    scrollToSection(currentSection + 1);
+    } else {
+    scrollToSection(currentSection - 1);
+    }
+};
+
+container.value.addEventListener('wheel', handleWheel);
+});
 
 </script>
 
@@ -214,6 +252,23 @@ display: none;
 .flex.justify-start{
     justify-content: flex-start;
 }
+}
+
+/* full page scrolling */
+html {
+scroll-behavior: smooth;
+}
+
+.scrollContainer {
+scroll-snap-type: y mandatory;
+overflow-y: scroll;
+height: 100vh;
+}
+
+.section {
+scroll-snap-align: start;
+height: 100vh;
+width: 100%;
 }
 </style>
 
