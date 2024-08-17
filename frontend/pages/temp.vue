@@ -135,7 +135,7 @@ import image1 from 'assets/img/LandingPage/image1.jpeg';
     height: '980px' // Adjust the height as needed
   });
 
-const container = ref(null);
+const scrollContainer = ref(null);
 
 onMounted(() => {
 const sections = document.querySelectorAll('.section');
@@ -156,7 +156,7 @@ const handleWheel = (event) => {
     }
 };
 
-container.value.addEventListener('wheel', handleWheel);
+scrollContainer.value.addEventListener('wheel', handleWheel);
 });
 
 </script>
