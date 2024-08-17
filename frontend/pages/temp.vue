@@ -69,7 +69,7 @@
         </div>
         
         <!-- section 4 -->
-        <div class="section h-screen flex flex-col justify-end bg-red-200">
+        <div class="section h-screen flex flex-col justify-end">
             <div class="flex  flex-col items-center justify-center ">
                 <RecipeOfTheDay recipeName="Nasi Ayam"/>
             </div>
