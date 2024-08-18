@@ -15,11 +15,11 @@
             </div> -->
 
             <!-- Content in the center of the green section -->
-<div class="relative">
-    <div class="w-full h-96 relative bg-header-image flex flex-col items-center justify-start text-white" style="padding-top: 400px;">
+            <div class="relative">
+    <div class="w-full min-h-screen flex flex-col items-center justify-center text-white bg-header-image"> <!-- Removed padding-top and used min-h-screen -->
         <h1 class="text-4xl md:text-6xl lg:text-7xl mb-6 font-semibold">Welcome back, Bruno Mars</h1>
         <p class="text-xl md:text-2xl lg:text-3xl mb-10">What do you want to do today?</p>
-        <div class="flex flex-wrap justify-center space-x-4 lg:space-x-12">
+        <div class="flex flex-wrap justify-center space-x-0 md:space-x-6 lg:space-x-12">
             <!-- Button 1 -->
             <button class="rounded-lg shadow-lg bg-custom-button-orange py-3 md:py-4 px-6 md:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-lg md:text-2xl font-bold uppercase mb-4 lg:mb-0">
                 <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 md:w-8 h-6 md:h-8 mr-2 md:mr-4" /> Recipe Library
@@ -34,12 +34,13 @@
             </button>
         </div>
     </div>
-    <div class="flex items-center justify-center py-0">
+    <div class="flex items-center justify-center py-4">
         <p class="text-center text-base md:text-lg font-semibold italic text-custom-text-orange">
             Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
         </p>
     </div>
 </div>
+
         </div>
 
         <!-- section 2 -->
