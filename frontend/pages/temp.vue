@@ -54,16 +54,14 @@
         </div>
         
         <!-- section 3 -->
-        <div class="section relative z-10 text-center py-16 h-screen flex flex-col justify-center">
-            <div class="background-wrapper">
-                <img :src="backgroundImage" alt="Background" class="background-image" />
-            </div>
-             <div class="w-full mx-auto relative z-20 px-4" style="height: 70%;">
+        <div class="section relative z-10 text-center py-16 h-screen flex flex-col justify-center items-center">
+            <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
+             <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
                 <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
-                <div class="overflow-x-auto meal-cards-container">
-                    <div class="flex justify-center space-x-4 min-w-max pb-4">
-                        <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
-                    </div>
+                <div class="flex justify-between min-w-max pb-4">
+                    <div/>
+                    <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
+                    <div/>
                 </div>
             </div>
         </div>
