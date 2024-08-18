@@ -3,11 +3,11 @@
     <div class="m-0 p-1 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
         <Input type="text" class="border-none outline-none" readonly="readonly" v-model="selectedValue" placeholder="Select" @blur="() => {setFocusWithDelay(false)}"/>
         <i class="bi bi-chevron-down mr-2"></i>
-        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused">
+        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm scroll-auto h-42 lg:h-64" style="overflow-y: auto;" v-if="isFocused">
             <i class="bi bi-search mr-2"></i>
             <Input type="text" class="border-none outline-none" v-model="inputValue" placeholder="Search..." @click="() => {searchSelected = true}" @blur="() => {searchSelected = false; setFocusWithDelay(false)}"/>
-            <div v-for="item in filterData()" :key="getID(item)">
-                <button :onClick="()=>setValue(item)">{{ getName(item) }}</button>
+            <div v-for="item in filterData()" :key="getID(item)" class="h-6 w-full">
+                <button :onClick="()=>setValue(item)" class="h-full w-full flex justify-start">{{ getName(item) }}</button>
             </div>
             <div v-if="selectedValue && filterData().length==0">
                 <p>No results found!</p>
