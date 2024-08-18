@@ -5,7 +5,7 @@
       </div>
 
     <Overlay level="1" class="p-5 space-y-4 z-10 rounded-xl shadow-xl">
-        <H3 class="mx-5">Today's Nutrient Budget</H3>
+        <H3 class="mx-10">Today's Nutrient Budget</H3>
         <NutrientBar label="Carbohydrates" :value="1500" :maxValue="2000" icon="/assets/img/carbIcon.png"/>
         <NutrientBar label="Protein" :value="1200" :maxValue="2000" icon="/assets/img/proteinIcon.png"/>
         <NutrientBar label="Fats" :value="1000" :maxValue="2000" icon="/assets/img/fatsIcon.png"/>
