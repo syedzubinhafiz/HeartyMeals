@@ -1,6 +1,6 @@
 <template>
-  <div class="relative flex justify-between items-center bg-custom-bg-green h-36 lg:h-48 rounded-t-2xl p-4">
-    <div class="flex flex-col space-y-2 text-md lg:text-lg">
+  <div class="relative flex justify-between items-center bg-custom-bg-green h-20 lg:h-24 rounded-t-2xl p-4">
+    <div class="flex flex-col text-sm lg:text-md">
       <ButtonTransparent @click="handleClick('About')" class="text-white">About</ButtonTransparent>
       <ButtonTransparent @click="handleClick('Join Our Community')" class="text-white">Join Our Community</ButtonTransparent>
       <ButtonTransparent @click="handleClick('News')" class="text-white">News</ButtonTransparent>
@@ -9,7 +9,7 @@
       <P class="text-white text-sm">Copyright HeartyMeal, All rights reserved.</P>
     </div>
     <div>
-      <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="" />
+      <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="h-10 lg:h-24" />
     </div>
   </div>
 </template>

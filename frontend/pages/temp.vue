@@ -68,7 +68,7 @@
         
         <!-- section 4 -->
         <div class="section h-screen flex flex-col justify-end">
-            <div class="flex  flex-col items-center justify-center ">
+            <div class="flex flex-col items-center justify-center h-full">
                 <RecipeOfTheDay recipeName="Nasi Ayam"/>
             </div>
             <Footer/>
