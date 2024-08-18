@@ -6,37 +6,37 @@
         <!-- section 1 -->
         <div class="section relative h-screen">
             <!-- <div class="h-96 absolute top-0 left-0 w-screen bg-custom-bg-green"/> -->
-            <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
+            <!-- <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
                 <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
                     <svg class="w-full h-48" viewBox="0 0 1440 250" xmlns="http://www.w3.org/2000/svg" >
                         <path fill="currentColor" d="M-300,0 Q720,520 1940,0 L1940,320 L-400,320 Z"></path>
                     </svg>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Content in the center of the green section -->
-            <div class="absolute top-0 w-full h-96 flex flex-col items-center justify-center text-white">
-                <h1 class="text-4xl mb-4">Welcome back, Bruno Mars</h1>
-                <p class="text-lg mb-6">What do you want to do today?</p>
-                <div class="flex space-x-5">
-                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                        <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 h-6 mr-2" /> Recipe Library
-                    </button>
-                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                        <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 h-6 mr-2" /> Meal Logging
-                    </button>
-                    <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
-                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 h-6 mr-2" /> Meal Planning
-                    </button>
+            <div class="relative">
+                <div class="w-full h-96 relative bg-header-image flex flex-col items-center justify-start text-white" style="padding-top: 120px;"> <!-- Use inline style for padding -->
+                    <h1 class="text-5xl mb-8 font-semibold ">Welcome back, Bruno Mars</h1>
+                    <p class="text-2xl mb-8">What do you want to do today?</p>
+                        <div class="flex space-x-12">
+                            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                                <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 h-6 mr-2" /> Recipe Library
+                            </button>
+                            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                                <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 h-6 mr-2" /> Meal Logging
+                            </button>
+                            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 px-4 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text">
+                                <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 h-6 mr-2" /> Meal Planning
+                            </button>
+                        </div>
+                </div>
+                <div class="flex items-center justify-center py-0">
+                    <p class="text-center text-lg font-semibold italic text-custom-text-orange">
+                        Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
+                    </p>
                 </div>
             </div>
-
-            <div class="flex items-center justify-center py-9 bg-custom-overlay-brown">
-                <p class="text-center text-lg font-semibold italic text-custom-text-orange">
-                    Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
-                </p>
-            </div>
-        
         </div>
 
         <!-- section 2 -->
@@ -52,7 +52,7 @@
             <NutrientWidget />
             </div>
         </div>
-        
+
         <!-- section 3 -->
         <div class="section relative z-10 text-center py-16 h-screen flex flex-col justify-center items-center">
             <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
@@ -65,7 +65,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- section 4 -->
         <div class="section h-screen flex flex-col justify-end">
             <div class="flex flex-col items-center justify-center h-full">
@@ -177,11 +177,16 @@ scrollContainer.value.addEventListener('wheel', handleWheel);
 }
 
 /* Smaller background image */
-.bg-heart-image {
-    background-image: url('@/assets/img/HeartGreen.svg');
-    background-size: 50%; /* Adjust this value to make the background image smaller or larger */
+.bg-header-image {
+    background-image: url('@/assets/img/topcurve.svg');
+    background-size: 150% auto;
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: center top;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-attachment: fixed;
+
 }
 
 .bg-custom-button-orange {
@@ -199,7 +204,7 @@ scrollContainer.value.addEventListener('wheel', handleWheel);
 .bg-custom-overlay-brown {
     background-color: #DAC2A8;
 }
-  
+
 .meal-cards-container {
 height: 800px; /* Adjust this value based on your non-expanded card height */
 position: relative;
