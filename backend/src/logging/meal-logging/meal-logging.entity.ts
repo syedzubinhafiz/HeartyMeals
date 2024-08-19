@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
-import { MealType } from "../meal-type.entity";
+import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/library/recipe/recipe.entity";
 
@@ -9,9 +9,11 @@ export class MealLogging{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
+    // updatedAt
     @Column({type: 'date'})
     date: Date;
 
+    // updatedAt
     @Column({type: 'timestamp with time zone'})
     time: Timestamp;
 
@@ -36,4 +38,15 @@ export class MealLogging{
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
+    // updatedAt
+    @Column({type: 'timestamp with time zone'})
+    createdAt: Date;
+    
+    // updatedAt
+    @Column({type: 'timestamp with time zone'})
+    updatedAt: Date;
+
+    // updatedAt
+    @Column({type: 'timestamp with time zone', nullable: true})
+    deletedAt?: Date;
 }

@@ -9,4 +9,8 @@ export class MealLoggingService {
         @InjectRepository(MealLogging)
         private mealLoggingRepository: Repository<MealLogging>,
     ){}
+
+    async addMealLogging(){
+        
+    }
 }
