@@ -4,9 +4,9 @@
     "scripts": {
       "install": "cd frontend && npm install && cd .. && cd backend && npm install",
       "devFrontend": "cd frontend && npm run dev",
-      "devBackend": "cd backend && npm run dev",
+      "devBackend": "cd backend && npm run start:dev",
       "devf": "cd frontend && npm run dev",
-      "devb": "cd backend && npm run dev"
+      "devb": "cd backend && npm run start:dev"
     }
   }
   

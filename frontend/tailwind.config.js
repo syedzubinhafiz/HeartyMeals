@@ -12,10 +12,12 @@ export default {
     extend: {
       colors: {
         'custom-bg-green': '#015B59',
+        'custom-bg-lightgreen': '#427573',
         'custom-bg-brown': '#DAC2A8',
         'custom-overlay-brown': '#F3EADA',
         'custom-overlay-light': '#FFFEF1',
         'custom-button-orange': '#FFA17A',
+        'custom-button-orange-dark': '#E5946B',
         'custom-button-green': '#87A98D',
         'custom-text-orange': '#993300',
         'custom-sidebar-yellow': '#B8B396'
