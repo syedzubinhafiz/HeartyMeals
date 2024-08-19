@@ -14,6 +14,13 @@ export class EducationalService {
     ){}
 
 
+    /**
+     * Upload the content to database and firebase by creating a new educational content object
+     * @param title - title of article
+     * @param content - content of article
+     * @param files - files of article
+     * @returns newly created educational content object
+     */
     async uploadContent(title, content, files: Array<Express.Multer.File>){
         // data validation 
         if (title == null || content == null || files.length <= 0){
@@ -77,33 +84,31 @@ export class EducationalService {
         return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
     }
 
+    /**
+     * Mark the educational content object as deleted
+     * @param eduId - educational content id
+     * @returns updated educational content
+     */
     async deleteContent(eduId){
         // get the entry
         try {
             var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
 
-            // // get the files storage link
-            // // delete storage link first
-            // var storage_links = entry.storage_links;
-            // for (const key in storage_links){
-            //     const link = storage_links[key];
-            //     await this.storageService.deleteFile(link);
-            // }
-            
-            // // delete the entry
-            // return await this.educatinoalContentRepository.delete(entry.id);
-
             // soft delete
             entry.deletedAt = new Date();
             entry.visibility = Visibility.PRIVATE;
-            this.educatinoalContentRepository.save(entry);
+            return await this.educatinoalContentRepository.save(entry);
             }
         catch (e){
             return e;
         }
     }
 
-    // getContent
+    /**
+     * Get Educational Content
+     * @param eduId - educational id
+     * @returns educational content object
+     */
     async getContent(eduId){
         // get file from repository
         try {
@@ -114,7 +119,14 @@ export class EducationalService {
         }
     }
 
-    // editContent
+    /**
+     * Take current educational content id and edit the content 
+     * @param eduId - educational content id 
+     * @param title - new title
+     * @param content - new content
+     * @param files - new files
+     * @returns newly updated educational content object
+     */
     async editContent(eduId, title, content, files){
         // data validation 
         if (title == null || content == null || files.length <= 0){
@@ -173,8 +185,7 @@ export class EducationalService {
         // update entry
         // update updatedAt() column
         entry.updatedAt = new Date();
-        this.educatinoalContentRepository.save(entry);
         // return new entry
-        return entry;
+        return await this.educatinoalContentRepository.save(entry);
     }
 }
