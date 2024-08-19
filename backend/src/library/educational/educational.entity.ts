@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Visibility } from "../recipe/visibility.enum";
 
 @Entity('educational_content')
 export class EducationalContent{
@@ -11,9 +12,24 @@ export class EducationalContent{
     title: string 
     
     @Column({type: 'json'})
-    content: JSON;
+    content: Array<JSON>;
 
-    @Column({type: 'json'})
+    @Column({type: 'json', nullable: true})
     storage_links: JSON;
 
+    @Column({
+        type: 'enum',
+        enum: Visibility,
+        default: Visibility.PUBLIC
+    })
+    visibility: Visibility;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'now()' })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', nullable: true })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
 }

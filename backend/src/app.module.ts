@@ -18,6 +18,8 @@ import { AuthModule } from './auth/auth.module';
 
 // Seeder import
 import seedCountry from './country/country.seeder';
+import initialiseFirebase from './storage/firebase.config';
+import { EducationalModule } from './library/educational/educational.module';
 import { Type } from 'class-transformer';
 import { getTypeOrmConfig } from './db/config';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
@@ -47,6 +49,7 @@ import seedDietary from './dietary/dietary.seeder';
     EthnicityModule,
     AllergiesModule,
     FoodCategoryModule,
+    EducationalModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
@@ -60,5 +63,6 @@ export class AppModule {
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
     seedDietary(this.dataSource);
+    initialiseFirebase();
   }
 }

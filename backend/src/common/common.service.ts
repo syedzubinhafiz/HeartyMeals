@@ -1,8 +1,17 @@
 import { MeasuringUnit } from "src/library/recipe/component/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
+import { User } from "src/user/user.entity";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 
 export class CommonService{
+
+    constructor(
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
+    ){}
 
     convertUnits(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit, newAmount: number): number{
 
