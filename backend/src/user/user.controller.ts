@@ -1,28 +1,41 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Headers, Get, HttpException } from '@nestjs/common';
 import { CreatUserDTO } from './dto/create-user-dto';
 import { UserService } from './user.service';
-import { UserRole } from './enum/user-role.enum';
-import { CreatAdminDTO } from './dto/create-admin-dto';
+import { Gender } from './enum/gender.enum';
+import { CommonService } from 'src/common/common.service';
+import { CreateAdminDTO } from './dto/create-admin-dto';
+
 
 @Controller('user')
 export class UserController {
     
     constructor(
-        private userService: UserService
+        private userService: UserService,
+        private commonService: CommonService,
     ){}
 
-    @Post('new')
-    async createNewPatient(@Body() payload: CreatUserDTO){
-        return await this.userService.createNewUser(payload, UserRole.PATIENT)
+    @Post('signup')
+    async createUser(@Body() createUserDTO: CreatUserDTO, @Headers() headers) {
+        const authHeader = headers.authorization;
+        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+
+        return await this.userService.createNewUser(createUserDTO,decodedHeaders);
     }
 
-    @Post('new/admin')
-    async createNewAdmin(@Body() payload: CreatAdminDTO){
-        return await this.userService.createNewAdmin(payload, UserRole.ADMIN)
+    @Post('signup/admin')
+    async createAdmin(@Headers() headers, @Body() payload: CreateAdminDTO ) {
+        const authHeader = headers.authorization;
+        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+
+        return await this.userService.createNewAdmin(payload, decodedHeaders);
     }
 
-    @Post('new/dietitian')
-    async createNewDietitian(@Body() payload: CreatAdminDTO){
-        return await this.userService.createNewAdmin(payload, UserRole.DIETITIAN)
-    }
+    @Get('verify')
+    async verifyUser(@Headers() headers) {
+
+        const authHeader = headers.authorization;
+        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+
+        return await this.userService.verifyUser(decodedHeaders);
+  }
 }

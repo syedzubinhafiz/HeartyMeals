@@ -11,15 +11,16 @@ export class DietaryService {
         private dietaryRepo: Repository<Dietary>,
     ){}
 
+    async getAllDietary(){
+        return await this.dietaryRepo.find();
+    }
+
     async addDietary(dietaryName: string){
 
-        const [dietaryList, count] = await this.dietaryRepo.findAndCountBy({name:dietaryName});
-
-        if(count >= 1){
+        if (await this.dietaryRepo.findOneBy({name: dietaryName}) != null) {
             return "Dietary already Exist."
-        } 
+        }
 
-        return await this.dietaryRepo.save({name:dietaryName})
-        
+        return await this.dietaryRepo.save({name: dietaryName})
     }
 }

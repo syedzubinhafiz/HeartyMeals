@@ -1,14 +1,13 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { Gender } from "../enum/gender.enum";
 
-export class CreatAdminDTO{
+export class CreateAdminDTO{
+
+    @IsEnum(Gender)
+    @IsNotEmpty()
+    readonly gender: Gender;
 
     @IsString()
-    readonly gshUserId: string;
-
-    @IsString()
-    readonly name: string;
-
-    @IsEmail()
-    readonly email: string;
-
+    @IsNotEmpty()
+    readonly ethnicityId: string;
 }

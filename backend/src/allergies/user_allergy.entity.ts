@@ -11,7 +11,6 @@ export class UserAllergy{
     @PrimaryColumn()
     food_cat_id: string 
 
-
     @ManyToOne( () => User, user => user.user_id)
     @JoinColumn({name: 'user_id'})
     user: User

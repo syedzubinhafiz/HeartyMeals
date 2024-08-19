@@ -145,6 +145,11 @@
 
 </template>
 <script setup>
+
+definePageMeta({
+    middleware: ["auth"],
+  });
+  
 // defines the name of the page
 defineOptions({
 	name: "vueExample",
