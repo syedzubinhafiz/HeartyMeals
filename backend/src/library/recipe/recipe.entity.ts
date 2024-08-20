@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Visibility } from "./visibility.enum";
 import { User } from "src/user/user.entity";
 import { Cuisine } from "src/cuisine/cuisine.entity";
@@ -62,4 +62,13 @@ export class Recipe{
     @ManyToOne( ()=> Dietary, dietary=>dietary.id, {eager: true})
     @JoinColumn({name: 'dietary_id'})
     dietary: Dietary;
+
+    @CreateDateColumn({ type: "timestamp with time zone" })
+    createdAt: Date;
+
+    @UpdateDateColumn({ type: "timestamp with time zone" })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
+    deletedAt?: Date;
 }
