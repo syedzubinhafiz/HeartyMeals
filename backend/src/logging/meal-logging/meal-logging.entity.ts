@@ -9,11 +9,9 @@ export class MealLogging{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
-    // updatedAt
     @Column({type: 'date'})
     date: Date;
 
-    // updatedAt
     @Column({type: 'timestamp with time zone'})
     time: Timestamp;
 
@@ -33,20 +31,16 @@ export class MealLogging{
     @JoinColumn({name: 'user_id'})
     user: User;
 
-
     @ManyToOne(()=> Recipe, recipe=> recipe.id)
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
-    // updatedAt
     @Column({type: 'timestamp with time zone'})
     createdAt: Date;
     
-    // updatedAt
     @Column({type: 'timestamp with time zone'})
     updatedAt: Date;
 
-    // updatedAt
     @Column({type: 'timestamp with time zone', nullable: true})
     deletedAt?: Date;
 }
