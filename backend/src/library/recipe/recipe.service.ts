@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.entity';
 import { RecipeDTO } from './dto/recipe-dto';
 import { Recipe } from './recipe.entity';
@@ -55,5 +55,38 @@ export class RecipeService {
         
        return await this.recipeRepository.save(new_recipe)
     }
+
+    async getRecipe(decodedHeaders: any, recipeId: string = null){
+
+        if (recipeId == null){
+            return await this.recipeRepository.find({
+                where:[
+                    {user: null},
+                    {user: {user_id: decodedHeaders['sub']}}
+                ]
+            });
+        } else {
+            const  recipe = await this.recipeRepository.findOne({
+                where: {
+                    id: recipeId
+                }
+            })
+
+            if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
+                return new HttpException("Recipe does not belong to user", 400)
+            } else {
+                return recipe;
+            }
+
+
+        }
+    }
     
+    async getOfficialRecipe(){
+        return await this.recipeRepository.find({
+            where:{
+                user: null
+            }
+        })
+    }
 }

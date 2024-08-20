@@ -63,6 +63,8 @@ export class AppModule {
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
     seedDietary(this.dataSource);
-    initialiseFirebase();
+    if (process.env.DEBUG === "false"){
+      initialiseFirebase();
+    }
   }
 }
