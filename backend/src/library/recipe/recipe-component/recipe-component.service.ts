@@ -41,7 +41,6 @@ export class RecipeComponentService{
                     recipeComponent.units,
                     recipeComponent.amount,
                     component.units,
-                    component.amount
                 );
             }
     

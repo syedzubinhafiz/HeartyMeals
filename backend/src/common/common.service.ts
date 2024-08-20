@@ -1,4 +1,4 @@
-import { MeasuringUnit } from "src/library/recipe/component/measuring-unit.enum";
+import { MeasuringUnit, conversionFactors, handMeasurementsToGrams } from "src/library/recipe/component/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
 import { User } from "src/user/user.entity";
@@ -13,9 +13,30 @@ export class CommonService{
         private userRepository: Repository<User>,
     ){}
 
-    convertUnits(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit, newAmount: number): number{
+    convertUnits(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit): number{
 
-        return 0
+        if (originalUnit === newUnit) {
+            return originalAmount;
+        }
+    
+        // Convert hand measurements to grams first
+        if (handMeasurementsToGrams[originalUnit]) {
+            originalAmount *= handMeasurementsToGrams[originalUnit];
+            originalUnit = MeasuringUnit.GRAM;
+        }
+    
+        // Convert grams to hand measurements
+        if (originalUnit === MeasuringUnit.GRAM && handMeasurementsToGrams[newUnit]) {
+            return originalAmount / handMeasurementsToGrams[newUnit];
+        }
+    
+        // Convert grams to the target unit
+        if (conversionFactors[originalUnit] && conversionFactors[newUnit]) {
+            const amountInGramsOrMl = originalAmount * conversionFactors[originalUnit];
+            return amountInGramsOrMl / conversionFactors[newUnit];
+        }
+    
+        throw new Error(`Conversion from ${originalUnit} to ${newUnit} is not supported.`);
     }
 
     decodeHeaders(authHeader: string){
