@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { Dietary } from './dietary.entitry';
+import { Dietary } from './dietary.entity';
 import { DietaryController } from './dietary.controller';
 import { DietaryService } from './dietary.service';
 import { TypeOrmModule } from '@nestjs/typeorm';

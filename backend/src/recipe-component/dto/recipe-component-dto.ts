@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { MeasuringUnit } from "../../component/measuring-unit.enum";
+import { MeasuringUnit } from "../../component/enum/measuring-unit.enum";
 import { Type } from "class-transformer";
 
 export class RecipeComponentDTO{

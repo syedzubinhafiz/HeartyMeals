@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Component } from "../component/component.entity";
-import { Recipe } from "../recipe.entity";
+import { Recipe } from "../recipe/recipe.entity";
 
 @Entity('recipe_component')
 export class RecipeComponent{

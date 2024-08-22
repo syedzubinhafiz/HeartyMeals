@@ -5,7 +5,7 @@ import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { UserRole } from 'src/user/enum/user-role.enum';
 import { RecipeService } from './recipe.service';
-import { RecipeComponentService } from './recipe-component/recipe-component.service';
+import { RecipeComponentService } from '../recipe-component/recipe-component.service';
 
 @Controller('recipe')
 export class RecipeController {

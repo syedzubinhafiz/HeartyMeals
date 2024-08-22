@@ -1,10 +1,7 @@
 
 # HF Nutrition DB Info
-HF_NUTRITION_USERNAME = postgres
-HF_NUTRITION_PASSWORD =  admin123
-HF_NUTRITION_HOST = localhost
-HF_NUTRITION_PORT = 5432
-HF_NUTRITION_DATABASE = HF_Nutrition
+#postgresql://{hosting}:{port}/{database}?user={username}&password={password}
+POSTGRES_URL=postgresql://localhost:5432/HF_Nutrition?user=postgres&password=admin123
 
 # FIREBASE INFO
 DEBUG = false
