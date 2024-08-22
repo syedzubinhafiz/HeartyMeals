@@ -1,8 +1,8 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator";
-import { ComponentType } from "../type.enum";
+import { ComponentType } from "../enum/type.enum";
 import { Type } from "class-transformer";
-import { NutritionInfoDTO } from "../../dto/nutrition-info-dto";
-import { MeasuringUnit } from "../measuring-unit.enum";
+import { MeasuringUnit } from "../enum/measuring-unit.enum";
+import { NutritionInfoDTO } from "src/recipe/dto/nutrition-info-dto";
 
 export class AddComponentDTO {
 

@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ComponentType } from "./type.enum";
-import { MeasuringUnit } from "./measuring-unit.enum";
+import { ComponentType } from "./enum/type.enum";
+import { MeasuringUnit } from "./enum/measuring-unit.enum";
 import { Cuisine } from "src/cuisine/cuisine.entity";
 
 @Entity('component')

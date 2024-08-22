@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
-import { MealType } from "../meal-type.entity";
+import { MealType } from "src/meal-logging/enum/meal-type.enum";
 import { User } from "src/user/user.entity";
-import { Recipe } from "src/library/recipe/recipe.entity";
+import { Recipe } from "src/recipe/recipe.entity";
 
 @Entity('meal_logging')
 export class MealLogging{

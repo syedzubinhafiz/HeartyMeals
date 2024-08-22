@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Visibility } from "../recipe/visibility.enum";
+import { Visibility } from "../recipe/enum/visibility.enum";
 
 @Entity('educational_content')
 export class EducationalContent{

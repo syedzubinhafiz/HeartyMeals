@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { StorageService } from 'src/storage/storage.service';
-import { Visibility } from '../recipe/visibility.enum';
+import { Visibility } from '../recipe/enum/visibility.enum';
 
 @Injectable()
 export class EducationalService {

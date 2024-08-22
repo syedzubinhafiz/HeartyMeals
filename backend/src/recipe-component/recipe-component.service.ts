@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Component } from "../component/component.entity";
 import { Repository } from "typeorm";
 import { Injectable } from "@nestjs/common";
-import { Recipe } from "../recipe.entity";
+import { Recipe } from "../recipe/recipe.entity";
 import { CommonService } from 'src/common/common.service';
 import { RecipeComponent } from './recipe-component.entity';
 

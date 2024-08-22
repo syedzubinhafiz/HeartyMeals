@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Visibility } from "./visibility.enum";
+import { Visibility } from "./enum/visibility.enum";
 import { User } from "src/user/user.entity";
 import { Cuisine } from "src/cuisine/cuisine.entity";
-import { Dietary } from "src/dietary/dietary.entitry";
+import { Dietary } from "src/dietary/dietary.entity";
 
 
 @Entity('recipe')
