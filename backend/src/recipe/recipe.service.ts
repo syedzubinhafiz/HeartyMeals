@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.entity';
 import { RecipeDTO } from './dto/recipe-dto';
 import { Recipe } from './recipe.entity';
@@ -55,5 +55,33 @@ export class RecipeService {
         
        return await this.recipeRepository.save(new_recipe)
     }
-    
+
+    async deleteRecipe(decodedHeaders: any, recipeId: string){
+
+        //Check if recipe exist 
+        const recipe = await this.recipeRepository.findOne({
+            where: {
+                id: recipeId
+            }
+        })
+        
+        if (recipe == null){
+            return new HttpException("Recipe not found", 404);
+        }
+        
+        //Check if user is authorized to delete recipe
+        if (recipe.user.user_id !== decodedHeaders['sub']){
+            return new HttpException("Unauthorized", 401);
+        }
+
+        // Soft delete recipe
+        recipe.deleted_at = new Date();
+        try{
+            await this.recipeRepository.save(recipe);
+        } catch(e){
+            return new HttpException(e.message, 400);
+        } finally {
+            return new HttpException("Recipe deleted successfully", 200);
+        }
+    } 
 }
