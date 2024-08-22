@@ -2,7 +2,7 @@ import { FoodCategory } from "src/food-category/foodCategory.entity";
 import { User } from "src/user/user.entity";
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
-@Entity("user_allergies")
+@Entity("user_allergy")
 export class UserAllergy{
 
     @PrimaryColumn()

@@ -1,4 +1,4 @@
-import { MeasuringUnit } from "src/library/recipe/component/measuring-unit.enum";
+import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
 import { User } from "src/user/user.entity";
