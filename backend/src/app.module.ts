@@ -20,25 +20,20 @@ import { AuthModule } from './auth/auth.module';
 import seedCountry from './country/country.seeder';
 import initialiseFirebase from './storage/firebase.config';
 import { EducationalModule } from './educational/educational.module';
-import { Type } from 'class-transformer';
-import { getTypeOrmConfig } from './db/config';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
 import { AllergiesModule } from './allergies/allergies.module';
 import { FoodCategoryModule } from './food-category/food-category.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
 import seedFoodCategory from './food-category/food-category.seeder';
 import seedDietary from './dietary/dietary.seeder';
+import { dataSourceOptions } from './db/data-source';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
-      inject: [ConfigService],
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
     CountryModule,
     DietaryModule,
