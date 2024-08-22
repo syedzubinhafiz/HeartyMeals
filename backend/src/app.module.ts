@@ -21,7 +21,7 @@ import seedCountry from './country/country.seeder';
 import initialiseFirebase from './storage/firebase.config';
 import { EducationalModule } from './educational/educational.module';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
-import { AllergiesModule } from './allergies/allergies.module';
+import { AllergiesModule } from './allergy/allergy.module';
 import { FoodCategoryModule } from './food-category/food-category.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
 import seedFoodCategory from './food-category/food-category.seeder';

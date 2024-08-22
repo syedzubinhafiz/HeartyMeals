@@ -21,7 +21,7 @@ export class AddComponentDTO {
     readonly amount: number;
 
     @IsString()
-    readonly cuisineId: string;
+    readonly foodCategoryId: string;
     
     @ValidateNested()
     @Type(()=> NutritionInfoDTO)

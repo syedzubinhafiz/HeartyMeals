@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Component } from './component.entity';
 import { In, Repository } from 'typeorm';
 import { AddComponentDTO } from './dto/add-component-dto';
-import { Cuisine } from 'src/cuisine/cuisine.entity';
+import { FoodCategory } from 'src/food-category/foodCategory.entity';
 
 @Injectable()
 export class ComponentService {
@@ -11,17 +11,17 @@ export class ComponentService {
     constructor(
         @InjectRepository(Component)
         private componentRepository: Repository<Component>,
-        @InjectRepository(Cuisine)
-        private cuisineRepository: Repository<Cuisine>
+        @InjectRepository(FoodCategory)
+        private foodCategoryRepository: Repository<FoodCategory>
     ){}   
 
     async add(payload: AddComponentDTO) {
 
         const new_component =  new Component();
-        const selected_cuisine =  await this.cuisineRepository.findOneBy({id: payload.cuisineId});
+        const selected_category =  await this.foodCategoryRepository.findOneBy({id: payload.foodCategoryId});
 
-        if (selected_cuisine == null){
-            return new HttpException("Cuisine not found", 400);
+        if (selected_category == null){
+            return new HttpException("Food category not found", 400);
         }
         
         new_component.name = payload.name;
@@ -29,7 +29,7 @@ export class ComponentService {
         new_component.nutrition_info = payload.nutritionInformation;
         new_component.units = payload.units;
         new_component.amount = payload.amount;
-        new_component.cuisine = selected_cuisine;
+        new_component.foodCategory = selected_category;
 
 
         //TODO: Add storage links
