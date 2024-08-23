@@ -28,10 +28,14 @@ export class MealLogging{
     @JoinColumn({name: 'user_id'})
     user: User;
 
-
     @ManyToOne(()=> Recipe, recipe=> recipe.id)
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
+
+    @Column({
+        type: 'number'
+    })
+    portion: Number;
 
     @Column({type: 'timestamptz'})
     created_at: Date;
