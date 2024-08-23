@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col">
-        <div class="flex flex-row justify-between justify-between space-x-3">
+        <div class="flex flex-row justify-between space-x-3">
             <div class="flex flex-row">
                 <img :src="icon" alt="icon" class="w-5 h-5 mr-2"/>
                 <P>{{label}}</P>
