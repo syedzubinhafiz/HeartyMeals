@@ -64,12 +64,11 @@ export class MealLoggingService {
      * @param date - date 
      * @returns a list of lists of meals 
      */
-    async getMealsPerDay(userId, date){
+    async getMealsPerDay(date: Date){
         try {
             // get all the meals recoreded in a dayz
             var entries = await this.mealLoggingRepository.find({
                 where: {
-                    user: userId,
                     date: date
                 }
             })
@@ -98,21 +97,75 @@ export class MealLoggingService {
     }
 
     /**
-     * Mark the meal consumed 
-     * @param mealLoggingId - unique id of the meal
-     * @returns true after the entry is saved to the database
+     * Delete an entry of meal logging
+     * @param mealLoggingId - corresponding id for meal logging
+     * @returns delete result of the entry
      */
-    async markIsConsumed(mealLoggingId){
+    async deleteMealLogging(mealLoggingId: string){
         try {
             var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            return await this.mealLoggingRepository.delete(entry);
         }
         catch (e){
             return e;
         }
+    }
 
-        entry.is_consumed = true;
-        await this.mealLoggingRepository.save(entry);
-        return true;
+    /**
+     * Delete a list of entries of meal logging
+     * @param mealLoggingIdList - a list of corresponding ids for meal logging
+     * @returns delete result of all entries
+     */
+        async deleteMealLoggingBulk(mealLoggingIdList: Array<string>){
+            var delete_entries = []
+            try {
+                mealLoggingIdList.map(async meal_logging_id => {
+                    var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
+                    delete_entries.push(entry)
+                })
+                return await this.mealLoggingRepository.delete(delete_entries);
+            }
+            catch (e){
+                return e;
+            }
+        }
+    
+
+    /**
+     * Mark the meal consumed 
+     * @param mealLoggingId - unique id of the meal
+     * @returns true after the entry is saved to the database
+     */
+    async markIsConsumed(mealLoggingId: string){
+        try {
+            var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            entry.is_consumed = true;
+            return await this.mealLoggingRepository.save(entry);
+        }
+        catch (e){
+            return e;
+        }
+    }
+
+    /**
+     * Update the meal logging to a different day
+     * @param mealLoggingId - meal logging id  
+     * @param newDate - new date to change to 
+     * @returns the updated meal logging object
+     */
+    async updateMealLoggingDay(mealLoggingId, newDate: Date){
+        try {
+            // validate meal logging id 
+            var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            // constant for one week in milliseconds
+            if (meal_logging_object.date.getTime() > (newDate.getTime() + 6.048e+8 )){
+                return new Error("Cannot log a meal that is more than a week old");
+            }
+            meal_logging_object.date = newDate;
+            return await this.mealLoggingRepository.save(meal_logging_object);
+        } catch (e) {
+            return e;
+        }
     }
 
     /**
