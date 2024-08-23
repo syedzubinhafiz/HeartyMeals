@@ -3,10 +3,10 @@ import { ComponentService } from './component.service';
 import { ComponentController } from './component.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Component } from './component.entity';
-import { Cuisine } from 'src/cuisine/cuisine.entity';
+import { FoodCategory } from 'src/food-category/foodCategory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Component, Cuisine])],
+  imports: [TypeOrmModule.forFeature([Component, FoodCategory])],
   providers: [ComponentService],
   controllers: [ComponentController]
 })

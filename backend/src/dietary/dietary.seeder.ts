@@ -1,5 +1,5 @@
 import { Connection } from "typeorm";
-import { Dietary } from "./dietary.entitry";
+import { Dietary } from "./dietary.entity";
 
 const DIETARY_LIST = [
     'Halal',

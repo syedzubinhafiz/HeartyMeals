@@ -1,5 +1,5 @@
 import { Country } from "src/country/country.entity";
-import { Dietary } from "src/dietary/dietary.entitry";
+import { Dietary } from "src/dietary/dietary.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserRole } from "./enum/user-role.enum";
 import { Gender } from "./enum/gender.enum";

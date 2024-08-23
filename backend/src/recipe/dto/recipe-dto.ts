@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } fr
 import { NutritionInfoDTO } from "./nutrition-info-dto";
 import { Type } from "class-transformer";
 import { RecommendedMealTimeDTO } from "./reommended-meal-time-dto";
-import { Visibility } from "../visibility.enum";
+import { Visibility } from "../enum/visibility.enum";
 
 export class RecipeDTO{
 

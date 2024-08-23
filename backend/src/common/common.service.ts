@@ -1,4 +1,4 @@
-import { MeasuringUnit, conversionFactors, handMeasurementsToGrams } from "src/library/recipe/component/measuring-unit.enum";
+import { MeasuringUnit, conversionFactors, handMeasurementsToGrams } from "src/component/enum/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
 import { User } from "src/user/user.entity";

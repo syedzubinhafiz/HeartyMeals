@@ -9,7 +9,7 @@ import { DataSource } from 'typeorm';
 import { CountryModule } from './country/country.module';
 import { DietaryModule } from './dietary/dietary.module';
 import { CuisineModule } from './cuisine/cuisine.module';
-import { RecipeModule } from './library/recipe/recipe.module';
+import { RecipeModule } from './recipe/recipe.module';
 import { UserModule } from './user/user.module';
 import { StorageModule } from './storage/storage.module';
 import { AuthController } from './auth/auth.controller';
@@ -19,26 +19,21 @@ import { AuthModule } from './auth/auth.module';
 // Seeder import
 import seedCountry from './country/country.seeder';
 import initialiseFirebase from './storage/firebase.config';
-import { EducationalModule } from './library/educational/educational.module';
-import { Type } from 'class-transformer';
-import { getTypeOrmConfig } from './db/config';
+import { EducationalModule } from './educational/educational.module';
 import { EthnicityModule } from './ethnicity/ethnicity.module';
-import { AllergiesModule } from './allergies/allergies.module';
+import { AllergiesModule } from './allergy/allergy.module';
 import { FoodCategoryModule } from './food-category/food-category.module';
 import seedEthnicity from './ethnicity/ethnicity.seeder';
 import seedFoodCategory from './food-category/food-category.seeder';
 import seedDietary from './dietary/dietary.seeder';
+import { dataSourceOptions } from './db/data-source';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => getTypeOrmConfig(configService),
-      inject: [ConfigService],
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
     CountryModule,
     DietaryModule,
@@ -63,6 +58,8 @@ export class AppModule {
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
     seedDietary(this.dataSource);
-    // initialiseFirebase();
+    if (process.env.DEBUG === "true"){
+      initialiseFirebase();
+    }
   }
 }
