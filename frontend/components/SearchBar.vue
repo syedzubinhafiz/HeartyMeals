@@ -1,20 +1,18 @@
 <template>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <div class="m-0 p-0 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
+    <div class="relative m-0 p-0 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
         <i class="bi bi-search ml-1"></i>
         <Input type="text" class="border-none outline-none" v-model="inputValue" placeholder="Search..." @blur="() => {setFocusWithDelay(false)}"/>
-        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm" v-if="isFocused && inputValue.length>0">
+        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm mt-2 w-full max-h-40 overflow-y-auto" v-if="isFocused && inputValue.length > 0">
             <div v-for="item in filterData()" :key="getID(item)">
-                <button :onClick="()=>setValue(item)">{{ getName(item) }}</button>
+                <button :onClick="()=>setValue(item)" class="h-full w-full flex justify-start">{{ getName(item) }}</button>
             </div>
-            <div v-if="inputValue && filterData().length==0">
+            <div v-if="inputValue && filterData().length === 0">
                 <p>No results found!</p>
             </div>
         </div>
-
     </div>
-
- </template>
+</template>
  <script setup>
  defineOptions({
 	name: "SearchBar",
@@ -76,8 +74,27 @@ function setValue(value) {
 
 // filter based on search term
  function filterData() {
-   return props.dataList.filter((item) => 
-        getName(item).toLowerCase().includes(inputValue.value.toLowerCase())
+    return props.dataList.filter((item) => {
+        let search = inputValue.value.toLowerCase()
+        let name = getName(item).toLowerCase()
+        let splitNames = name.split(" ")
+        let i = splitNames.length - 1
+        let currentName = splitNames[i].toLowerCase()
+        if(search.length <= currentName.length && search === currentName.slice(0, search.length)) {
+            return true
+        }
+        i -= 1
+        while(i>=0) {
+            currentName = splitNames[i].toLowerCase() + " " + currentName
+            if(search.length <= currentName.length && search === currentName.slice(0, search.length)) {
+                return true
+            }
+            i -= 1
+        }
+        return false
+        // getName(item).toLowerCase().includes(inputValue.value.toLowerCase())
+   }
+        
    );
  }
 

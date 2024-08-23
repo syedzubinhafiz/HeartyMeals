@@ -17,20 +17,20 @@
             <!-- Content in the center of the green section -->
             <div class="relative">
     <div class="w-full min-h-screen flex flex-col items-center justify-center text-white bg-header-image"> <!-- Removed padding-top and used min-h-screen -->
-        <h1 class="text-4xl md:text-6xl lg:text-7xl mb-6 font-semibold">Welcome back, Bruno Mars</h1>
-        <p class="text-xl md:text-2xl lg:text-3xl mb-10">What do you want to do today?</p>
-        <div class="flex flex-wrap justify-center space-x-0 md:space-x-6 lg:space-x-12">
+        <h1 class="text-2xl lg:text-4xl xl:text-7xl mb-6 font-semibold">Welcome back, Bruno Mars</h1>
+        <p class="text-lg lg:text-xl xl:text-3xl mb-10">What do you want to do today?</p>
+        <div class="flex flex-wrap justify-center space-x-0 lg:space-x-6 xl:space-x-12">
             <!-- Button 1 -->
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-3 md:py-4 px-6 md:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-lg md:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 md:w-8 h-6 md:h-8 mr-2 md:mr-4" /> Recipe Library
+            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
+                <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Recipe Library
             </button>
             <!-- Button 2 -->
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-3 md:py-4 px-6 md:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-lg md:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 md:w-8 h-6 md:h-8 mr-2 md:mr-4" /> Meal Logging
+            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
+                <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Meal Logging
             </button>
             <!-- Button 3 -->
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-3 md:py-4 px-6 md:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-lg md:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 md:w-8 h-6 md:h-8 mr-2 md:mr-4" /> Meal Planning
+            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
+                <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Meal Planning
             </button>
         </div>
     </div>
