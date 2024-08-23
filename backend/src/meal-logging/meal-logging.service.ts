@@ -3,16 +3,58 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogging } from "./meal-logging.entity";
 import { Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
+import { User } from "src/user/user.entity";
+import { Recipe } from "src/recipe/recipe.entity";
 
 @Injectable()
 export class MealLoggingService {
     constructor(
         @InjectRepository(MealLogging)
         private mealLoggingRepository: Repository<MealLogging>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
+        @InjectRepository(Recipe)
+        private recipeRepository: Repository<Recipe>,
     ){}
 
-    async addMealLogging(userId, recipeId, mealType){
-        
+    /**
+     * Log meals based on the meal type
+     * @param userId - a valid user id
+     * @param recipeIdList - a list of recipe ids 
+     * @param mealType - the meal type the meal is supposed to be log
+     * @returns a list of meal logging objects
+     */
+    async addMealLogging(userId, recipeIdList, mealType){
+        try {
+            // validate userId
+            var user_object = await this.userRepository.findOneBy({user_id: userId});
+
+            // validate meal type
+            const meal_type_enum = this.getMealTypeEnum(mealType);
+            if (meal_type_enum == undefined) return new Error("Meal type is undefined.");
+
+            // validate all recipeIds, while creating all objects
+            var all_entries = []
+            const current_date_time = new Date()
+            recipeIdList.map( async recipeId => {
+                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeId });
+
+                var new_meal_logging = new MealLogging();
+                new_meal_logging.date = current_date_time;
+                new_meal_logging.type = meal_type_enum;
+                new_meal_logging.is_consumed = true;
+                new_meal_logging.user = user_object;
+                new_meal_logging.recipe = recipe_object;
+                new_meal_logging.created_at = current_date_time;
+                new_meal_logging.updated_at = current_date_time;
+
+                all_entries.push(new_meal_logging)
+            })
+
+            return await this.mealLoggingRepository.save(all_entries);
+        } catch (e) {
+            return e;
+        }
     }
 
 
@@ -71,5 +113,15 @@ export class MealLoggingService {
         entry.is_consumed = true;
         await this.mealLoggingRepository.save(entry);
         return true;
+    }
+
+    /**
+     * Get meal type 
+     * @param value - meal type in string
+     * @returns available meal type in enum, or undefined
+     */
+    getMealTypeEnum<T>(value: string){
+        const enumValues = Object.values(MealType);
+        return enumValues.includes(value as any) ? (value as T[keyof T]): undefined
     }
 }
