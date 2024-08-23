@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { StorageType } from "./storage.enum";
+import { StorageType } from "./enum/storage.enum";
 
 @Entity("storage")
 export class Storage{
