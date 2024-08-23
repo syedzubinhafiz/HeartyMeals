@@ -6,11 +6,11 @@
 
     <Overlay level="1" class="p-5 space-y-4 z-10 rounded-xl shadow-xl">
         <H3 class="mx-10">Today's Nutrient Budget</H3>
-        <NutrientBar label="Carbohydrates" :value="1500" :maxValue="2000" icon="/assets/img/carbIcon.png"/>
-        <NutrientBar label="Protein" :value="1200" :maxValue="2000" icon="/assets/img/proteinIcon.png"/>
-        <NutrientBar label="Fats" :value="1000" :maxValue="2000" icon="/assets/img/fatsIcon.png"/>
-        <NutrientBar label="Sodium" :value="50" :maxValue="2000" icon="/assets/img/sodiumIcon.png"/>
-        <NutrientBar label="Cholesterols" :value="200" :maxValue="2000" icon="/assets/img/cholesterolsIcon.png"/>
+        <NutrientBar label="Carbohydrates" :value="1500" :maxValue="2000" color="#83BBBE" icon="/assets/img/carbIcon.png"/>
+        <NutrientBar label="Protein" :value="1200" :maxValue="2000" color="#87A98D" icon="/assets/img/proteinIcon.png"/>
+        <NutrientBar label="Fats" :value="1000" :maxValue="2000" color="#ECC474" icon="/assets/img/fatsIcon.png"/>
+        <NutrientBar label="Sodium" :value="50" :maxValue="2000" color="#EC7455" icon="/assets/img/sodiumIcon.png"/>
+        <NutrientBar label="Cholesterols" :value="200" :maxValue="2000" color="#BE9A83" icon="/assets/img/cholesterolsIcon.png"/>
     </Overlay>
 </div>
     
