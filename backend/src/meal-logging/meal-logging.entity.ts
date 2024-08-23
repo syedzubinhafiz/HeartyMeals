@@ -9,11 +9,8 @@ export class MealLogging{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
-    @Column({type: 'date'})
+    @Column({type: 'timestamptz'})
     date: Date;
-
-    @Column({type: 'timestamp with time zone'})
-    time: Timestamp;
 
     @Column({
         type: 'enum',
@@ -36,4 +33,12 @@ export class MealLogging{
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
+    @Column({type: 'timestamptz'})
+    created_at: Date;
+
+    @Column({type: 'timestamptz'})
+    updated_at: Date;
+
+    @Column({type: 'timestamptz', nullable: true, default: null})
+    deleted_at: Date;
 }
