@@ -13,7 +13,7 @@ export class CommonService{
         private userRepository: Repository<User>,
     ){}
 
-    convertUnits(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit): number{
+    convertUnit(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit): number{
 
         if (originalUnit === newUnit) {
             return originalAmount;

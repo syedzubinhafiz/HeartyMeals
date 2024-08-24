@@ -60,7 +60,7 @@ export class UserService {
         new_user.email = decodedHeaders['email'];
         new_user.first_name =  decodedHeaders['given_name'];
         new_user.last_name = decodedHeaders['family_name'];
-        new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
+        new_user.ethnicity = null;
         new_user.gender = payload.gender
         new_user.country = null;
         new_user.dietary = null;

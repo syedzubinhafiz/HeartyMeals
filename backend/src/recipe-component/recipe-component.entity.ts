@@ -11,7 +11,7 @@ export class RecipeComponent{
     @PrimaryColumn()
     recipe_id: string 
 
-    @Column({type: 'integer'})
+    @Column({type: 'float'})
     amount: number;
 
     

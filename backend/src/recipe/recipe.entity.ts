@@ -17,10 +17,13 @@ export class Recipe{
     @Column({type: 'varchar'})
     description: string;
 
+    @Column({type: 'varchar'})
+    preparation_time: string;
+
     @Column('text', { array: true })
     instruction: string[];
 
-    @Column({type: 'integer'})
+    @Column({type: 'float'})
     serving_size: number;
 
     @Column({type: 'json'})
