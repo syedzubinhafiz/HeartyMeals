@@ -93,7 +93,6 @@ export default {
   overflow-wrap: break-word; /* Prevents text from overflowing the card */
 }
   
-<<<<<<< Updated upstream
   .labels {
   display: flex;
   gap: 10px;
@@ -104,31 +103,6 @@ export default {
 }
 
   
-=======
-.labels {
-  display: flex;
-  gap: 10px;
-  padding-bottom: 10px;
-  padding-right:30px;
-}
-  .img {
-  height: 100px;
-  padding-left: 15px; /* Add padding to the left of the image */
-  margin-right: 15px; /* Space between the image and content */
-  padding-top:10px;
-  }
-
- .image-container {
-  width: 135px; /* Fixed width to match the dimensions */
-  height: 135px; /* Fixed height to keep it square */
-  padding-left: 15px; /* Add padding to the left of the image */
-  margin-right: 15px; /* Space between the image and content */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
->>>>>>> Stashed changes
   .label {
     border: 2px solid #004d40;
     padding: 3px 8px;
