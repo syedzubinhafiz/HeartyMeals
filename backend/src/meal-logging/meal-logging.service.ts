@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
+import { Visibility } from "src/recipe/enum/visibility.enum";
 
 @Injectable()
 export class MealLoggingService {
@@ -98,39 +99,26 @@ export class MealLoggingService {
     }
 
     /**
-     * Delete an entry of meal logging
-     * @param mealLoggingId - corresponding id for meal logging
-     * @returns delete result of the entry
+     * Delete a list of entries of meal logging
+     * @param mealLoggingIdList - a list of corresponding ids for meal logging
+     * @returns delete result of all entries
      */
-    async deleteMealLogging(mealLoggingId: string){
+    async deleteMealLoggingBulk(mealLoggingIdList: Array<string>){
+        var delete_entries = []
+        const delete_date = new Date();
         try {
-            // TODO: combine with bulk and do soft delete
-            var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
-            return await this.mealLoggingRepository.delete(entry);
+            mealLoggingIdList.map(async meal_logging_id => {
+                var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
+                entry.deleted_at = delete_date;
+                entry.visibility = Visibility.PRIVATE;
+                delete_entries.push(entry);
+            })
+            return await this.mealLoggingRepository.save(delete_entries);
         }
         catch (e){
             return e;
         }
     }
-
-    /**
-     * Delete a list of entries of meal logging
-     * @param mealLoggingIdList - a list of corresponding ids for meal logging
-     * @returns delete result of all entries
-     */
-        async deleteMealLoggingBulk(mealLoggingIdList: Array<string>){
-            var delete_entries = []
-            try {
-                mealLoggingIdList.map(async meal_logging_id => {
-                    var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
-                    delete_entries.push(entry)
-                })
-                return await this.mealLoggingRepository.delete(delete_entries);
-            }
-            catch (e){
-                return e;
-            }
-        }
     
 
     /**
