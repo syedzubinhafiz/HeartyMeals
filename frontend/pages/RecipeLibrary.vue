@@ -1,7 +1,7 @@
 <template>
-    <div class="absolute w-screen z-40">
-      <Header />
-    </div>
+  <div class="absolute w-screen z-40">
+    <Header />
+  </div>
   <div class="relative min-h-screen text-white">
     <!-- Background image section -->
     <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
@@ -26,17 +26,12 @@
       <div class="scroll-content">
         <div class="cards-grid">
           <RecipeCard
-            v-for="index in 6"
+            v-for="(meal, index) in meals"
             :key="index"
-            imageSrc="assets/img/croissant.svg"
-            mealName="Tomato and Cheese Croissant"
-            mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-            :labels="[
-              { name: 'Breakfast', active: true },
-              { name: 'Lunch', active: false },
-              { name: 'Dinner', active: false },
-              { name: 'Snack', active: true },
-            ]"
+            :imageSrc="meal.imageSrc"
+            :mealName="meal.mealName"
+            :mealDescription="meal.mealDescription"
+            :labels="meal.labels"
           />
         </div>
       </div>
@@ -47,9 +42,93 @@
 <script>
 export default {
   name: "RecipePage",
+  data() {
+    return {
+      meals: [
+        {
+          imageSrc: "assets/img/croissant.svg",
+          mealName: "Tomato and Cheese Croissant",
+          mealDescription: "Incredible flavour-packed croissant that serves just nice for a tea time snack.",
+          labels: [
+            { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: false },
+            { name: "Snack", active: true },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Banana Cake",
+          mealDescription: "A delicious cake that is full of nutrients with a sweet banana twist.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Overnight Oats",
+          mealDescription: "A hearty breakfast that is filling yet packed with juicy fruits to start your day off.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Bok Choy",
+          mealDescription: "A healthy amount of fiber to pair with your lunch meal along with other dishes.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Creamy Alfredo Pasta",
+          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Creamy Alfredo Pasta",
+          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        },
+        {
+          imageSrc: "assets/img/pasta.svg",
+          mealName: "Pan-Fried Salmon and Fruit Salad",
+          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
+          labels: [
+          { name: "Breakfast", active: true },
+            { name: "Lunch", active: false },
+            { name: "Dinner", active: true },
+            { name: "Snack", active: false },
+          ],
+        }
+        // Add more meal objects as needed
+      ],
+    };
+  },
 };
 definePageMeta({
-    layout: "emptylayout",
+  layout: "emptylayout",
 });
 </script>
 
