@@ -1,4 +1,7 @@
 <template>
+    <div class="absolute w-screen z-40">
+      <Header />
+    </div>
   <div class="relative min-h-screen text-white">
     <!-- Background image section -->
     <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
@@ -85,6 +88,7 @@ export default {
   padding-right: 0; /* Removed right padding to bring scrollbar closer */
   scrollbar-width: thin;
   scrollbar-color: #888 #e0e0e0;
+  z-index:3;
 }
 
 .scroll-content::-webkit-scrollbar {
@@ -106,6 +110,7 @@ export default {
   gap: 20px; /* Space between cards */
   padding-left: 85px;
   padding-right: 85px;
+  z-index:3;
 }
 
 
@@ -126,7 +131,7 @@ export default {
   bottom: 0;
   right: 0;
   top: 310px;
-  width: 180px;
+  width: 130px;
   height: 500px;
   z-index: 1;
 }
