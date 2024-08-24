@@ -55,35 +55,19 @@ export class MealLoggingController {
     }
 
     /**
-     * Post method to delete a meal logging entry
-     * @param payload - payload that contains the meal logging id 
+     * Post method to delete meal logging entries
+     * @param payload - payload that contains a list of meal logging ids
      * @returns HttpException 200 when the meal is deleted 
      */
     @Post('delete')
     async delete(@Body() payload){
         try {
-            await this.mealLoggingService.deleteMealLogging(payload.mealLoggingId);
+            await this.mealLoggingService.deleteMealLoggingBulk(payload.mealLoggingIds);
         }
         catch (e){
             return new HttpException(e.message, 400);
         }
         return new HttpException("Meal is deleted.", 200);
-    }
-
-    /**
-     * Post method to delete a list of meal entries
-     * @param payload - payload that contains a list of meal logging ids
-     * @returns HttpException 200 when all meals have been deleted
-     */
-    @Post('bulk_delete')
-    async bulkDelete(@Body() payload){
-        try {
-            await this.mealLoggingService.deleteMealLogging(payload.mealLoggingIdList);
-        }
-        catch (e){
-            return new HttpException(e.message, 400);
-        }
-        return new HttpException("All meals have been deleted.", 200);
     }
 
     /**
