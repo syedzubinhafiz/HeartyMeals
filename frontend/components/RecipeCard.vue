@@ -110,12 +110,14 @@
   }
   
   .labels {
-    display:flex;
-    gap: 10px;
-    padding-bottom: 10px;
-    flex-wrap: wrap; /* Allows labels to wrap within the card */
-    padding-right:150px
-  }
+  display: flex;
+  gap: 10px;
+  padding-bottom: 10px;
+  flex-wrap: nowrap; /* Prevents wrapping */
+  padding-right: 10px; /* Reduce excess padding */
+  justify-content: flex-start; /* Aligns items at the start */
+}
+
   
   .label {
     border: 2px solid #004d40;
