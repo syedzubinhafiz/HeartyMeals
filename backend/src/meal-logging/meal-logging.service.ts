@@ -43,6 +43,7 @@ export class MealLoggingService {
                 new_meal_logging.date = current_date_time;
                 new_meal_logging.type = meal_type_enum;
                 new_meal_logging.is_consumed = true;
+                // TODO: add portion
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
                 new_meal_logging.created_at = current_date_time;
@@ -103,6 +104,7 @@ export class MealLoggingService {
      */
     async deleteMealLogging(mealLoggingId: string){
         try {
+            // TODO: combine with bulk and do soft delete
             var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
             return await this.mealLoggingRepository.delete(entry);
         }
