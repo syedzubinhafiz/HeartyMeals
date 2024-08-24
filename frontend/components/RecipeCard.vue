@@ -1,27 +1,30 @@
 <template>
-    <div class="card">
-        <div class="image-container">
-      <img class="img" :src="imageSrc" alt="Meal Image" />
-    </div>
+  <div class="card">
+    <div class="top-section">
+      <div class="image-container">
+        <img :src="imageSrc" alt="Meal Image" class="img" />
+      </div>
       <div class="content">
-        <h1 class="meal-name">{{ mealName }}</h1>
+        <h3 class="meal-name">{{ mealName }}</h3>
         <p class="meal-description">{{ mealDescription }}</p>
-        <div class="labels">
-          <button
-            v-for="label in labels"
-            :key="label.name"
-            :class="['label', { active: label.active }]"
-            @click="toggleLabel(label)"
-          >
-            {{ label.name }}
-          </button>
-        </div>
       </div>
     </div>
-  </template>
-  
-  
-  <script>
+    <!-- Labels are now in a separate div below the top section -->
+    <div class="labels">
+      <span
+        v-for="(label, index) in labels"
+        :key="index"
+        class="label"
+        :class="{ active: label.active }"
+        @click="toggleLabel(label)"
+      >
+        {{ label.name }}
+      </span>
+    </div>
+  </div>
+</template>
+
+<script>
 export default {
   name: "RecipeCard",
   props: {
@@ -35,7 +38,7 @@ export default {
     },
     imageSrc: {
       type: String,
-      required: true, // Ensure you pass the image source when using this component
+      required: true,
     },
     labels: {
       type: Array,
@@ -56,66 +59,85 @@ export default {
 };
 </script>
 
-  
-  <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
-  
-  .card {
-    font-family: 'Source Code Pro', monospace;
-    background-color: #f8f8f8;
-    border-radius: 15px;
-    display: flex;
-    width: 571px;
-    height:175px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index:3
-  }
-  
-  .content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Ensures labels stay inside */
-}
-  
-  .meal-name {
-    padding-top:10px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin: 0;
-    color:#000000
-  }
-  
-  .meal-description {
-  font-size: 1rem;
-  color: #000000;
-  margin: 10px 0;
-  overflow-wrap: break-word; /* Prevents text from overflowing the card */
-}
-  
-  .labels {
-  display: flex;
-  gap: 10px;
-  padding-bottom: 10px;
-  flex-wrap: nowrap; /* Prevents wrapping */
-  padding-right: 10px; /* Reduce excess padding */
-  justify-content: flex-start; /* Aligns items at the start */
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
+
+.card {
+  font-family: 'Source Code Pro', monospace;
+  background-color: #f8f8f8;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 571px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  box-sizing: border-box;
 }
 
-  
-  .label {
-    border: 2px solid #004d40;
-    padding: 3px 8px;
-    border-radius: 20px;
-    background-color: #ffffff;
-    color: #004d40;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  .label.active {
-    background-color: #004d40;
-    color: #ffffff;
-  }
-  </style>
-  
+.top-section {
+  display: flex;
+  align-items: flex-start; /* Ensures content is aligned with the image */
+  margin-bottom: 10px;
+}
+
+.image-container {
+  flex-shrink: 0;
+  width: 90px;
+  padding: 2px;
+}
+
+.img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.content {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.meal-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meal-description {
+  font-size: 0.8rem;
+  color: #004d40;
+  margin: 5px 0;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.labels {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.label {
+  border: 2px solid #004d40;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  color: #004d40;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.label.active {
+  background-color: #004d40;
+  color: #ffffff;
+}
+</style>
