@@ -153,14 +153,15 @@ export class MealLoggingService {
      * @param newDate - new date to change to 
      * @returns the updated meal logging object
      */
-    async updateMealLoggingDay(mealLoggingId, newDate: Date){
+     async updateMealLoggingDay(mealLoggingId, newDate: Date){
         try {
+            // validate date 
+            if (!this.isPlanning(newDate)){
+                return new Error("Cannot edit today or past meals.");
+            }
+
             // validate meal logging id 
             var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
-            // constant for one week in milliseconds
-            if (meal_logging_object.date.getTime() > (newDate.getTime() + 6.048e+8 )){
-                return new Error("Cannot log a meal that is more than a week old");
-            }
             meal_logging_object.date = newDate;
             return await this.mealLoggingRepository.save(meal_logging_object);
         } catch (e) {
@@ -176,5 +177,22 @@ export class MealLoggingService {
     getMealTypeEnum<T>(value: string){
         const enumValues = Object.values(MealType);
         return enumValues.includes(value as any) ? (value as T[keyof T]): undefined
+    }
+
+    /**
+     * Check if the incoming date is still in planning phase
+     * @param newDate - incoming date to be validated
+     * @returns true if the incoming date is one day ahead of today else false
+     */
+    isPlanning(newDate) {
+        const today_date = new Date();
+        const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
+    
+        // Check if the incoming date is at least one day ahead of today_date
+        if (newDate.getTime() - today_date.getTime() >= one_day_in_millis) {
+            return true;
+        }
+
+        return false;
     }
 }
