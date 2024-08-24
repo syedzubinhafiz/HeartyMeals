@@ -1,211 +1,140 @@
 <template>
-    <div class="absolute w-screen z-40">
-      <Header />
-    </div>
-    <div class="relative min-h-screen text-white">
-      <!-- Background image section -->
-      <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
-        <h2 class="text-white text-4xl font-bold text-center">Recipe Library</h2>
-        <p class="mt-[145px] text-xl text-center italic">Because healthy food should be tasty too.</p>
-        <!-- Adding the curvy SVGs directly inside the background section -->
-        <div class="curvy-left">
-          <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" />
-        </div>
-        <div class="curvy-right">
-          <img src="/assets/img/curvyRight.svg" alt="Curvy Right" />
-        </div>
+  <div class="relative min-h-screen text-white">
+    <!-- Background image section -->
+    <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
+      <h2 class="text-white text-4xl font-bold text-center">Recipe Library</h2>
+      <p class="mt-[145px] text-xl text-center italic">Because healthy food should be tasty too.</p>
+      <!-- Curvy SVGs -->
+      <div class="curvy-left">
+        <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" />
       </div>
-      <!-- Content section -->
-      <div class="flex justify-center">
+      <div class="curvy-right">
+        <img src="/assets/img/curvyRight.svg" alt="Curvy Right" />
+      </div>
+    </div>
+
+    <!-- Search Bar and Recipe Cards Container -->
+    <div class="content-container">
+      <div class="flex justify-center mb-10">
         <MealSearchBar />
       </div>
-      <div class="pt-20">
-        <div class="scroll-content">
-            <div class="cards-grid">
-            <RecipeCard
-      imageSrc="assets/img/croissant.svg"
-      mealName="Tomato and Cheese Croissant"
-      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-      :labels="[
-        { name: 'Breakfast', active: true },
-        { name: 'Lunch', active: false },
-        { name: 'Dinner', active: false },
-        { name: 'Snack', active: true },
-      ]"
-    />
-    <RecipeCard
-      imageSrc="assets/img/croissant.svg"
-      mealName="Tomato and Cheese Croissant"
-      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-      :labels="[
-        { name: 'Breakfast', active: true },
-        { name: 'Lunch', active: false },
-        { name: 'Dinner', active: false },
-        { name: 'Snack', active: true },
-      ]"
-    />
-    <RecipeCard
-      imageSrc="assets/img/croissant.svg"
-      mealName="Tomato and Cheese Croissant"
-      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-      :labels="[
-        { name: 'Breakfast', active: true },
-        { name: 'Lunch', active: false },
-        { name: 'Dinner', active: false },
-        { name: 'Snack', active: true },
-      ]"
-    />
-    <RecipeCard
-      imageSrc="assets/img/croissant.svg"
-      mealName="Tomato and Cheese Croissant"
-      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-      :labels="[
-        { name: 'Breakfast', active: true },
-        { name: 'Lunch', active: false },
-        { name: 'Dinner', active: false },
-        { name: 'Snack', active: true },
-      ]"
-    />
-    <RecipeCard
-      imageSrc="assets/img/croissant.svg"
-      mealName="Tomato and Cheese Croissant"
-      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
-      :labels="[
-        { name: 'Breakfast', active: true },
-        { name: 'Lunch', active: false },
-        { name: 'Dinner', active: false },
-        { name: 'Snack', active: true },
-      ]"
-    />
-    
-    </div>
-    </div>
+
+      <!-- Scrollable Recipe Cards -->
+      <div class="scroll-content">
+        <div class="cards-grid">
+          <RecipeCard
+            v-for="index in 6"
+            :key="index"
+            imageSrc="assets/img/croissant.svg"
+            mealName="Tomato and Cheese Croissant"
+            mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
+            :labels="[
+              { name: 'Breakfast', active: true },
+              { name: 'Lunch', active: false },
+              { name: 'Dinner', active: false },
+              { name: 'Snack', active: true },
+            ]"
+          />
+        </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
 
-  <script>
-  definePageMeta({
-	layout: "emptylayout"
-});
+<script>
+export default {
+  name: "RecipePage",
+};
 </script>
-  
-  <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
-  
-  * {
-    font-family: 'Overpass', sans-serif;
-  }
-  
-  /* Background image and text adjustments */
-  .bg-header-image {
-    background-image: url('@/assets/img/smallerBlob.svg');
-    background-size: 110% auto;
-    background-repeat: no-repeat;
-    background-position: center;
-    height: 50vh; /* Adjust the height as needed */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0 20px; /* Optional padding */
-    position: relative; /* Ensure relative positioning for absolute children */
-  }
-  
-  .scroll-content {
-  height: calc(100vh - 50vh); /* Remaining height after the header */
-  overflow-y: auto; /* Vertical scroll */
-  padding-top: 20px; /* Add padding if necessary */
-  scrollbar-width: thin; /* For Firefox, makes the scrollbar thinner */
-  scrollbar-color: #888 #e0e0e0; /* For Firefox, colors the scrollbar */
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
+
+* {
+  font-family: 'Overpass', sans-serif;
 }
-/* For WebKit browsers (Chrome, Safari, etc.) */
+
+.bg-header-image {
+  background-image: url('@/assets/img/smallerBlob.svg');
+  background-size: 110% auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 20px;
+  position: relative;
+}
+
+/* Container for Search Bar and Recipe Cards */
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Scrollable Content */
+.scroll-content {
+  height: calc(100vh - 50vh); /* Remaining height after the header */
+  overflow-y: auto;
+  padding-top: 20px;
+  padding-right: 0; /* Removed right padding to bring scrollbar closer */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #e0e0e0;
+}
+
 .scroll-content::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+  width: 8px;
 }
 
 .scroll-content::-webkit-scrollbar-thumb {
-  background-color: #888; /* Color of the scrollbar thumb */
-  border-radius: 10px; /* Roundness of the scrollbar thumb */
+  background-color: #888;
+  border-radius: 10px;
 }
 
 .scroll-content::-webkit-scrollbar-track {
-  background-color: #e0e0e0; /* Background of the scrollbar track */
+  background-color: #e0e0e0;
 }
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* Two columns */
-  padding-left:85px;
-  gap: 20px 10px; /* 20px vertical gap, 10px horizontal gap */
-  padding-right:85px;
+  gap: 20px; /* Space between cards */
+  padding-left: 85px;
+  padding-right: 85px;
 }
-  /* Styling the curvy blobs */
-  .curvy-left {
-    position: absolute;
-    bottom: 0;
-    left: -55px;
-    top:310px;
-    width: 150px; /* Adjust size as needed */
-    height: 500px; /* Explicit height */
-    z-index: 1;
-  }
-  
-  .curvy-right {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    top:310px;
-    width: 180px; /* Adjust size as needed */
-    height:500px; /* Explicit height */
-    z-index: 1;
-  }
-  
-  .curvy-left img, .curvy-right img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Scrollable content starts below the image */
-  .scroll-content {
-    height: calc(100vh - 50vh); /* Remaining height after the header */
-    overflow-y: auto;
-    padding-top: 20px; /* Add padding if necessary */
-  }
-  
-  /* Styling the search bar section */
-  .scroll-content .flex {
-    margin-top: 20px;
-  }
-  
-  .text-white {
-    color: #ffffff;
-  }
-  
-  /* Additional styles if needed */
-  .text-custom-button-text {
-    color: #993300;
-  }
-  
-  .bg-custom-bg-green {
-    background-color: #015B59;
-  }
-  
-  .bg-custom-button-orange {
-    background-color: #FFA17A;
-  }
-  
-  .hover\:bg-custom-button-orange-dark:hover {
-    background-color: #e5946b; /* A slightly darker shade */
-  }
-  
-  .text-custom-text-orange {
-    color: #000000;
-  }
-  
-  .bg-custom-overlay-brown {
-    background-color: #DAC2A8;
-  }
-  </style>
-  
+
+
+
+/* Styling the curvy blobs */
+.curvy-left {
+  position: absolute;
+  bottom: 0;
+  left: -55px;
+  top: 310px;
+  width: 150px;
+  height: 500px;
+  z-index: 1;
+}
+
+.curvy-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  top: 310px;
+  width: 180px;
+  height: 500px;
+  z-index: 1;
+}
+
+.curvy-left img,
+.curvy-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
