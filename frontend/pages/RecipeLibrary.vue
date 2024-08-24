@@ -20,9 +20,10 @@
         <MealSearchBar />
       </div>
       <div class="pt-20">
-        
+        <div class="scroll-content">
+            <div class="cards-grid">
             <RecipeCard
-      imageSrc="/asset/img/croissant.svg"
+      imageSrc="assets/img/croissant.svg"
       mealName="Tomato and Cheese Croissant"
       mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
       :labels="[
@@ -32,6 +33,53 @@
         { name: 'Snack', active: true },
       ]"
     />
+    <RecipeCard
+      imageSrc="assets/img/croissant.svg"
+      mealName="Tomato and Cheese Croissant"
+      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
+      :labels="[
+        { name: 'Breakfast', active: true },
+        { name: 'Lunch', active: false },
+        { name: 'Dinner', active: false },
+        { name: 'Snack', active: true },
+      ]"
+    />
+    <RecipeCard
+      imageSrc="assets/img/croissant.svg"
+      mealName="Tomato and Cheese Croissant"
+      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
+      :labels="[
+        { name: 'Breakfast', active: true },
+        { name: 'Lunch', active: false },
+        { name: 'Dinner', active: false },
+        { name: 'Snack', active: true },
+      ]"
+    />
+    <RecipeCard
+      imageSrc="assets/img/croissant.svg"
+      mealName="Tomato and Cheese Croissant"
+      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
+      :labels="[
+        { name: 'Breakfast', active: true },
+        { name: 'Lunch', active: false },
+        { name: 'Dinner', active: false },
+        { name: 'Snack', active: true },
+      ]"
+    />
+    <RecipeCard
+      imageSrc="assets/img/croissant.svg"
+      mealName="Tomato and Cheese Croissant"
+      mealDescription="Incredible flavour-packed croissant that serves just nice for a tea time snack."
+      :labels="[
+        { name: 'Breakfast', active: true },
+        { name: 'Lunch', active: false },
+        { name: 'Dinner', active: false },
+        { name: 'Snack', active: true },
+      ]"
+    />
+    
+    </div>
+    </div>
       </div>
     </div>
   </template>
@@ -65,6 +113,33 @@
     position: relative; /* Ensure relative positioning for absolute children */
   }
   
+  .scroll-content {
+  height: calc(100vh - 50vh); /* Remaining height after the header */
+  overflow-y: auto; /* Vertical scroll */
+  padding-top: 20px; /* Add padding if necessary */
+  scrollbar-width: thin; /* For Firefox, makes the scrollbar thinner */
+  scrollbar-color: #888 #e0e0e0; /* For Firefox, colors the scrollbar */
+}
+/* For WebKit browsers (Chrome, Safari, etc.) */
+.scroll-content::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.scroll-content::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Roundness of the scrollbar thumb */
+}
+
+.scroll-content::-webkit-scrollbar-track {
+  background-color: #e0e0e0; /* Background of the scrollbar track */
+}
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  padding-left:85px;
+  gap: 20px 10px; /* 20px vertical gap, 10px horizontal gap */
+  padding-right:85px;
+}
   /* Styling the curvy blobs */
   .curvy-left {
     position: absolute;
@@ -81,8 +156,8 @@
     bottom: 0;
     right: 0;
     top:310px;
-    width: 150px; /* Adjust size as needed */
-    height: 500px; /* Explicit height */
+    width: 180px; /* Adjust size as needed */
+    height:500px; /* Explicit height */
     z-index: 1;
   }
   

@@ -1,8 +1,8 @@
 <template>
     <div class="card">
-      <div class="image-container">
-        <img :src="imageSrc" alt="Meal Image" />
-      </div>
+        <div class="image-container">
+      <img class="img" :src="imageSrc" alt="Meal Image" />
+    </div>
       <div class="content">
         <h1 class="meal-name">{{ mealName }}</h1>
         <p class="meal-description">{{ mealDescription }}</p>
@@ -20,40 +20,42 @@
     </div>
   </template>
   
+  
   <script>
-  export default {
-    name: "RecipeCard",
-    props: {
-      imageSrc: {
-        type: String,
-        required: true,
-      },
-      mealName: {
-        type: String,
-        required: true,
-      },
-      mealDescription: {
-        type: String,
-        required: true,
-      },
-      labels: {
-        type: Array,
-        required: true,
-        default: () => [
-          { name: "Breakfast", active: false },
-          { name: "Lunch", active: false },
-          { name: "Dinner", active: false },
-          { name: "Snack", active: false },
-        ],
-      },
+export default {
+  name: "RecipeCard",
+  props: {
+    mealName: {
+      type: String,
+      required: true,
     },
-    methods: {
-      toggleLabel(label) {
-        label.active = !label.active;
-      },
+    mealDescription: {
+      type: String,
+      required: true,
     },
-  };
-  </script>
+    imageSrc: {
+      type: String,
+      required: true, // Ensure you pass the image source when using this component
+    },
+    labels: {
+      type: Array,
+      required: true,
+      default: () => [
+        { name: "Breakfast", active: false },
+        { name: "Lunch", active: false },
+        { name: "Dinner", active: false },
+        { name: "Snack", active: false },
+      ],
+    },
+  },
+  methods: {
+    toggleLabel(label) {
+      label.active = !label.active;
+    },
+  },
+};
+</script>
+
   
   <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
@@ -65,29 +67,9 @@
     display: flex;
     width: 571px;
     height:175px;
-    margin-left:150px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index:3
   }
-  
-  .image-container {
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 20px;
-}
-
-
-.image-container img {
-  width: 100%;
-  height: auto; /* Adjust the height automatically */
-  object-fit: cover; /* Ensure the image covers the container without stretching */
-}
-
   
   .content {
   flex: 1;
@@ -97,6 +79,7 @@
 }
   
   .meal-name {
+    padding-top:10px;
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
@@ -104,11 +87,13 @@
   }
   
   .meal-description {
-    font-size: 1rem;
-    color: #000000;
-    margin: 10px 0;
-  }
+  font-size: 1rem;
+  color: #000000;
+  margin: 10px 0;
+  overflow-wrap: break-word; /* Prevents text from overflowing the card */
+}
   
+<<<<<<< Updated upstream
   .labels {
   display: flex;
   gap: 10px;
@@ -119,6 +104,31 @@
 }
 
   
+=======
+.labels {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 10px;
+  padding-right:30px;
+}
+  .img {
+  height: 100px;
+  padding-left: 15px; /* Add padding to the left of the image */
+  margin-right: 15px; /* Space between the image and content */
+  padding-top:10px;
+  }
+
+ .image-container {
+  width: 135px; /* Fixed width to match the dimensions */
+  height: 135px; /* Fixed height to keep it square */
+  padding-left: 15px; /* Add padding to the left of the image */
+  margin-right: 15px; /* Space between the image and content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+>>>>>>> Stashed changes
   .label {
     border: 2px solid #004d40;
     padding: 3px 8px;
