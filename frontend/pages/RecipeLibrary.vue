@@ -71,7 +71,7 @@ definePageMeta({
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 0 20px;
+  padding-top: 20px;
   position: relative;
 }
 
