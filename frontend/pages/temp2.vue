@@ -1,7 +1,7 @@
 <template>
     <div ref="container" class="container relative">
       <div class="section w-screen h-screen bg-red-200 flex items-center justify-center">
-        <p>section 1</p>
+        <NutrientWidgetDelta/>
       </div>
       <div class="section w-screen h-screen bg-green-200 flex items-center justify-center">
         <p>section 2</p>
