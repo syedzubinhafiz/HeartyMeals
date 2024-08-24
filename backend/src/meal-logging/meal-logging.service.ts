@@ -21,14 +21,14 @@ export class MealLoggingService {
     /**
      * Log meals based on the meal type
      * @param userId - a valid user id
-     * @param recipeIdList - a list of recipe ids 
+     * @param recipeList - a list of recipes with {recipe_id, portion}
      * @param mealType - the meal type the meal is supposed to be log
      * @returns a list of meal logging objects
      */
-    async addMealLogging(userId, recipeIdList, mealType){
+    async addMealLogging(userId, recipeList, mealType){
         try {
             // validate userId
-            var user_object = await this.userRepository.findOneBy({user_id: userId});
+            const user_object = await this.userRepository.findOneBy({user_id: userId});
 
             // validate meal type
             const meal_type_enum = this.getMealTypeEnum(mealType);
@@ -37,14 +37,14 @@ export class MealLoggingService {
             // validate all recipeIds, while creating all objects
             var all_entries = []
             const current_date_time = new Date()
-            recipeIdList.map( async recipeId => {
-                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeId });
+            recipeList.map( async recipeJSON => {
+                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeJSON.recipe_id });
 
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.date = current_date_time;
                 new_meal_logging.type = meal_type_enum;
                 new_meal_logging.is_consumed = true;
-                // TODO: add portion
+                new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
                 new_meal_logging.created_at = current_date_time;
