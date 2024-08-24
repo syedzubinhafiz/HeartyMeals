@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestam
 import { MealType } from "src/meal-logging/enum/meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
+import { Visibility } from "src/recipe/enum/visibility.enum";
 
 @Entity('meal_logging')
 export class MealLogging{
@@ -23,6 +24,13 @@ export class MealLogging{
         default: false
     })
     is_consumed: boolean = false;
+
+    @Column({
+        type: 'enum',
+        enum: Visibility,
+        default: Visibility.PUBLIC
+    })
+    visibility: Visibility;
 
     @ManyToOne(()=> User, user=> user.user_id)
     @JoinColumn({name: 'user_id'})
