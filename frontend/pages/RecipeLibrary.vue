@@ -48,6 +48,9 @@
 export default {
   name: "RecipePage",
 };
+definePageMeta({
+    layout: "emptylayout",
+});
 </script>
 
 <style scoped>
