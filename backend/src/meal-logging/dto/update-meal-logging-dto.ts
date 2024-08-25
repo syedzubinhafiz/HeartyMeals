@@ -1,9 +1,7 @@
-import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
 import { MealType } from "src/meal-type.enum";
-import { MealLoggingListDTO } from "./meal-logging-list-dto";
 
-export class EditMealLoggingDTO{
+export class UpdateMealLoggingDTO{
 
     @IsNotEmpty()
     @IsString()

@@ -2,7 +2,7 @@ import { Body, Controller, Get, Headers, HttpException, Post } from "@nestjs/com
 import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
-import { EditMealLoggingDTO } from "./dto/edit-meal-logging-dto";
+import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
@@ -50,7 +50,7 @@ export class MealLoggingController {
      * @returns HttpException 200 if the meal is updated 
      */
     @Post('update_meal_day')
-    async updateMealLogging(@Body() payload: EditMealLoggingDTO){
+    async updateMealLogging(@Body() payload: UpdateMealLoggingDTO){
         try {
             await this.mealLoggingService.updateMealLogging(payload);
         }

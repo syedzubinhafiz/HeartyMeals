@@ -6,7 +6,7 @@ import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
-import { EditMealLoggingDTO } from "./dto/edit-meal-logging-dto";
+import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -160,7 +160,7 @@ export class MealLoggingService {
      * @param newDate - new date to change to 
      * @returns the updated meal logging object
      */
-    async updateMealLogging(payload: EditMealLoggingDTO){
+    async updateMealLogging(payload: UpdateMealLoggingDTO){
         try {
             const today_date = new Date();
             // validate date format
