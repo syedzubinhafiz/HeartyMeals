@@ -1,39 +1,141 @@
 <template>
-    <div :class="searchBarClass">
-        <span class="search-icon">
+    <div>
+      <div :class="searchBarClass" @click="() => {isFocused = true}">
+
+      <span class="search-icon">
       <img src="/assets/img/SearchIcon.svg" alt="Search Icon" />
-    </span>
-      <input type="text" placeholder="Enter Keywords" :class="inputClass" />
+      </span>
+      <input type="text" placeholder="Enter Keywords" v-model="inputValue" :class="inputClass" @blur="() => {setFocusWithDelay(false)}"/>
+
+      </div>
+      <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-xl shadow-sm" :style="`width: ${searchWidth}`" v-if="isFocused && inputValue.length>0">
+          <div v-for="item in filterData()" :key="getID(item)" class="flex space-x-2">
+              <img src="/assets/img/SearchIcon.svg" alt="Search Icon" class="w-6 h-6" />
+              <button :onClick="()=>setValue(item)" class="h-full w-full flex justify-start">{{ getName(item) }}</button>
+          </div>
+          <div v-if="inputValue && filterData().length==0">
+              <p>No results found!</p>
+          </div>
+      </div>
     </div>
   </template>
-  
-  <script>
-  export default {
-    name: 'SearchBar',
-    props: {
-      rounded: {
-        type: Boolean,
-        default: true,
-      },
-      width: {
+  <script setup>
+  defineOptions({
+	name: "MealSearchBar",
+});
+
+const props = defineProps({
+  modelValue: {
+        default: ""
+    },
+	dataList: {
+		type: Array,
+		default: [],
+	},
+    modelValueID: {
         type: String,
-        default: '800px', // Adjust this value to make the search bar longer
-      },
+        default: null
+	},
+  rounded: {
+    type: Boolean,
+    default: true,
+  },
+  searchWidth: {
+    type: String,
+    default: '800px', // Adjust this value to make the search bar longer
+  }
+})
+
+const searchBarClass = computed({
+  get() {
+    return {
+      'search-bar': true,
+      'rounded-full': props.rounded, // Change the shape by toggling the 'rounded' prop
+    };
+  }
+})
+
+const inputClass = computed({
+  get() {
+    return 'search-input'; 
+  }
+})
+
+// defineEmits defines a list of functions that can run from the component
+const emits = defineEmits(["update:modelValue","update:modelValueID"]);
+
+// computed variable based on the props passed into the component. Has a get and set function
+const computedModelValue = computed({
+	get() {
+		return props.modelValue;
+	},
+	set(value) {
+		emits("update:modelValue", value);
+	},
+});
+
+const inputValue = computed({
+	get() {
+		return getName(computedModelValue.value);
+	},
+	set(value) {
+        if(typeof computedModelValue.value === 'object' && computedModelValue.value !== null) {
+            computedModelValue.value.name = value
+            for(let data of props.dataList) {
+                if(getName(data).toLowerCase()==value.toLowerCase()) {
+                    computedModelValue.value.id = getID(data)
+                    return
+                }
+            }
+            computedModelValue.value.id = null
+        }
+        else {
+            computedModelValue.value = value
+        }
+	},
+});
+
+// set input value to selected item
+function setValue(value) {
+    computedModelValue.value = value
+}
+
+// filter based on search term
+ function filterData() {
+   return props.dataList.filter((item) => 
+        getName(item).toLowerCase().includes(inputValue.value.toLowerCase())
+   );
+ }
+
+ // only show search terms when the search bar is selected
+ const isFocused = ref(false);
+
+ // needed to ensure that setting the search term occurs before closing the selection window
+const setFocusWithDelay = async (focused) => {
+    setTimeout(()=>{
+        isFocused.value = focused
     },
-    computed: {
-      searchBarClass() {
-        return {
-          'search-bar': true,
-          'rounded-full': this.rounded, // Change the shape by toggling the 'rounded' prop
-        };
-      },
-      inputClass() {
-        return 'search-input';
-      },
-    },
-  };
-  </script>
-  
+    300)
+}
+
+const getName = (item) => {
+    if(typeof item === 'object' && item !== null) {
+        return item.name
+    }
+    else {
+        return item
+    }
+}
+const getID = (item) => {
+    if(typeof item === 'object' && item !== null) {
+        return item.id
+    }
+    else {
+        return item
+    }
+}
+</script>
+
   <style scoped>
   .search-bar {
     display: flex;
@@ -41,7 +143,7 @@
     background-color: #f9f5e7; /* Light background color */
     padding: 10px 20px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    width: var(--width); /* Use a CSS variable for the width */
+    width: var(--searchWidth); /* Use a CSS variable for the width */
     width: 800px; /* Set the width directly or adjust with the prop */
   }
   

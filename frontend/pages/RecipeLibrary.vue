@@ -2,44 +2,80 @@
   <div class="absolute w-screen z-40">
     <Header />
   </div>
+
   <div class="relative min-h-screen text-white">
     <!-- Background image section -->
     <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
       <h2 class="text-white text-4xl font-bold text-center">Recipe Library</h2>
       <p class="mt-[145px] text-xl text-center italic">Because healthy food should be tasty too.</p>
-      <!-- Curvy SVGs -->
-      <div class="curvy-left">
-        <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" />
-      </div>
-      <div class="curvy-right">
-        <img src="/assets/img/curvyRight.svg" alt="Curvy Right" />
-      </div>
     </div>
 
     <!-- Search Bar and Recipe Cards Container -->
-    <div class="content-container">
-      <div class="flex justify-center mb-10">
-        <MealSearchBar />
+    <div class="flex">
+      <div class="left-0 bottom-0 flex items-end">
+        <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" style="height: 60vh"/>
       </div>
+      <div class="content-container">
 
-      <!-- Scrollable Recipe Cards -->
-      <div class="scroll-content">
-        <div class="cards-grid">
-          <RecipeCard
-            v-for="(meal, index) in meals"
-            :key="index"
-            :imageSrc="meal.imageSrc"
-            :mealName="meal.mealName"
-            :mealDescription="meal.mealDescription"
-            :labels="meal.labels"
-          />
+        <div class="flex justify-center mb-10 text-black">
+          <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
+        </div>
+
+        <!-- Scrollable Recipe Cards -->
+        <div class="scroll-content">
+          <div class="cards-grid">
+            <RecipeCard
+              v-for="(meal, index) in meals"
+              :key="index"
+              :imageSrc="meal.imageSrc"
+              :mealName="meal.mealName"
+              :mealDescription="meal.mealDescription"
+              :labels="meal.labels"
+            />
+          </div>
         </div>
       </div>
+      <div class="right-0 bottom-0 flex items-end">
+        <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
+      </div>
     </div>
+
+
   </div>
+
+
   <Footer/>
 </template>
+<script setup>
+// .curvy-left {
+//   position: absolute;
+//   bottom: 0;
+//   left: -55px;
+//   top: 310px;
+//   width: 150px;
+//   height: 500px;
+//   z-index: 1;
+// }
 
+// .curvy-right {
+//   position: absolute;
+//   bottom: 0;
+//   right: 0;
+//   top: 310px;
+//   width: 130px;
+//   height: 500px;
+//   z-index: 1;
+// }
+
+// .curvy-left img,
+// .curvy-right img {
+//   width: 100%;
+//   height: 100%;
+//   object-fit: cover;
+// }
+
+const searchValue = ref("")
+</script>
 <script>
 export default {
   name: "RecipePage",
@@ -58,7 +94,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Banana Cake",
           mealDescription: "A delicious cake that is full of nutrients with a sweet banana twist.",
           labels: [
@@ -69,7 +105,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Overnight Oats",
           mealDescription: "A hearty breakfast that is filling yet packed with juicy fruits to start your day off.",
           labels: [
@@ -80,7 +116,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Bok Choy",
           mealDescription: "A healthy amount of fiber to pair with your lunch meal along with other dishes.",
           labels: [
@@ -91,7 +127,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Creamy Alfredo Pasta",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [
@@ -102,7 +138,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Creamy Alfredo Pasta",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [
@@ -113,7 +149,7 @@ export default {
           ],
         },
         {
-          imageSrc: "assets/img/pasta.svg",
+          imageSrc: "assets/img/croissant.svg",
           mealName: "Pan-Fried Salmon and Fruit Salad",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [

@@ -89,7 +89,7 @@ const setFocusWithDelay = async (focused) => {
     setTimeout(()=>{
         isFocused.value = focused
     },
-    100)
+    300)
 }
 
 const getName = (item) => {
