@@ -31,6 +31,7 @@
               :mealName="meal.mealName"
               :mealDescription="meal.mealDescription"
               :labels="meal.labels"
+              @click.native="openOverlay(meal)"
             />
           </div>
         </div>
@@ -39,48 +40,32 @@
         <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
       </div>
     </div>
-
-
   </div>
-
+  <RecipeOverlay
+    :visible="isOverlayVisible"
+    :meal="selectedMeal"
+    @closeOverlay="isOverlayVisible = false"
+  />
 
   <Footer/>
 </template>
-<script setup>
-// .curvy-left {
-//   position: absolute;
-//   bottom: 0;
-//   left: -55px;
-//   top: 310px;
-//   width: 150px;
-//   height: 500px;
-//   z-index: 1;
-// }
-
-// .curvy-right {
-//   position: absolute;
-//   bottom: 0;
-//   right: 0;
-//   top: 310px;
-//   width: 130px;
-//   height: 500px;
-//   z-index: 1;
-// }
-
-// .curvy-left img,
-// .curvy-right img {
-//   width: 100%;
-//   height: 100%;
-//   object-fit: cover;
-// }
-
-const searchValue = ref("")
-</script>
 <script>
+definePageMeta({
+    layout: "emptylayout",
+});
+
+import RecipeOverlay from '/components/RecipeOverlay.vue';
+
 export default {
   name: "RecipePage",
+  components: {
+    RecipeOverlay,
+  },
   data() {
     return {
+      searchValue: "",
+      isOverlayVisible: false,
+      selectedMeal: null,
       meals: [
         {
           imageSrc: "assets/img/croissant.svg",
@@ -98,7 +83,7 @@ export default {
           mealName: "Banana Cake",
           mealDescription: "A delicious cake that is full of nutrients with a sweet banana twist.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -109,7 +94,7 @@ export default {
           mealName: "Overnight Oats",
           mealDescription: "A hearty breakfast that is filling yet packed with juicy fruits to start your day off.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -120,7 +105,7 @@ export default {
           mealName: "Bok Choy",
           mealDescription: "A healthy amount of fiber to pair with your lunch meal along with other dishes.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -131,7 +116,7 @@ export default {
           mealName: "Creamy Alfredo Pasta",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -142,7 +127,7 @@ export default {
           mealName: "Creamy Alfredo Pasta",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -153,7 +138,7 @@ export default {
           mealName: "Pan-Fried Salmon and Fruit Salad",
           mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
           labels: [
-          { name: "Breakfast", active: true },
+            { name: "Breakfast", active: true },
             { name: "Lunch", active: false },
             { name: "Dinner", active: true },
             { name: "Snack", active: false },
@@ -163,10 +148,13 @@ export default {
       ],
     };
   },
+  methods: {
+    openOverlay(meal) {
+      this.selectedMeal = meal;
+      this.isOverlayVisible = true;
+    },
+  },
 };
-definePageMeta({
-  layout: "emptylayout",
-});
 </script>
 
 <style scoped>

@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" @click="$emit('openOverlay','meal')">
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
