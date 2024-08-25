@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogging } from "./meal-logging.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
@@ -52,8 +52,6 @@ export class MealLoggingService {
                 new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
-                new_meal_logging.created_at = current_date_time;
-                new_meal_logging.updated_at = current_date_time;
 
                 all_entries.push(new_meal_logging)
             }));
@@ -113,12 +111,13 @@ export class MealLoggingService {
         var delete_entries = []
         const delete_date = new Date();
         try {
-            mealLoggingIdList.map(async meal_logging_id => {
+            mealLoggingIdList.forEach(async meal_logging_id => {
                 var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
                 entry.deleted_at = delete_date;
                 delete_entries.push(entry);
             })
-            return await this.mealLoggingRepository.save(delete_entries);
+            await this.mealLoggingRepository.save(delete_entries);
+            return true;
         }
         catch (e){
             return e;
