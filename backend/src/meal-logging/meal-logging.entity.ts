@@ -33,7 +33,7 @@ export class MealLogging{
     recipe: Recipe;
 
     @Column({
-        type: 'integer'
+        type: 'float'
     })
     portion: Number;
 
