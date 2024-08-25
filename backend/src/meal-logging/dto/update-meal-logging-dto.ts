@@ -1,10 +1,16 @@
-import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, ValidateNested } from "class-validator";
 import { MealType } from "src/meal-type.enum";
 
 export class UpdateMealLoggingDTO{
 
     @IsNotEmpty()
     @IsString()
+    @Matches(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/, 
+        {
+            message: 'newDate must be in the format YYYY-MM-DDTHH:MM:SS.SSS',
+        }
+    )
     readonly newDate: string;
 
     @IsNotEmpty()

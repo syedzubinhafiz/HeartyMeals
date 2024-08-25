@@ -163,11 +163,6 @@ export class MealLoggingService {
     async updateMealLogging(payload: UpdateMealLoggingDTO){
         try {
             const today_date = new Date();
-            // validate date format
-            if (!this.isValidDate(payload.newDate)) {
-                throw new Error("Invalid date format.");
-            }
-
             const newDate = new Date(payload.newDate);
             // validate date 
             if (!this.isPlanning(newDate, today_date)){
@@ -176,9 +171,6 @@ export class MealLoggingService {
 
             // Validate meal type
             const meal_type_enum = this.getMealTypeEnum(payload.mealType);
-            if (meal_type_enum === undefined) {
-                throw new Error("Meal type is undefined.");
-            }
 
             // validate meal logging id 
             var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId});
@@ -188,7 +180,6 @@ export class MealLoggingService {
 
             // update the meal logging object
             meal_logging_object.date = newDate;
-            meal_logging_object.updated_at = today_date;
             meal_logging_object.portion = payload.portion;
             meal_logging_object.type = meal_type_enum;
 
@@ -223,18 +214,5 @@ export class MealLoggingService {
         }
 
         return false;
-    }
-
-    /**
-     * Regular expression to check date format
-     * @param date - date string to be validated
-     * @returns true if the date string matches the pattern else false
-     */
-    isValidDate(dateString: string) {
-        // Define the regex pattern for the date format
-        const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
-            
-        // Check if the dateString matches the pattern
-        return pattern.test(dateString);
     }
 }
