@@ -1,11 +1,11 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class MealLoggingListDTO {
   @IsString()
   @IsNotEmpty()
   readonly recipeId: string;
 
-  @IsInt()
+  @IsNumber()
   @IsNotEmpty()
   readonly portion: number;
 }
