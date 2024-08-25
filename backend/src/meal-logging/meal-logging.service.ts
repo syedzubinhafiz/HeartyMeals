@@ -139,11 +139,17 @@ export class MealLoggingService {
     async markIsConsumed(mealLoggingId: string){
         try {
             var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            if (!entry) {
+                throw new Error(`Recipe with id ${mealLoggingId} not found`);
+            }
             entry.is_consumed = true;
-            return await this.mealLoggingRepository.save(entry);
+            await this.mealLoggingRepository.save(entry);
         }
         catch (e){
             return e;
+        }
+        finally {
+            return true;
         }
     }
 
