@@ -21,9 +21,11 @@
         <p class="text-lg lg:text-xl xl:text-3xl mb-10">What do you want to do today?</p>
         <div class="flex flex-wrap justify-center space-x-0 lg:space-x-6 xl:space-x-12">
             <!-- Button 1 -->
+        <NuxtLink to="/RecipeLibrary">
             <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
                 <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Recipe Library
             </button>
+        </NuxtLink>
             <!-- Button 2 -->
             <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
                 <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Meal Logging
