@@ -6,6 +6,7 @@ import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
+import { EditMealLoggingDTO } from "./dto/edit-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -146,7 +147,7 @@ export class MealLoggingService {
             await this.mealLoggingRepository.save(entry);
         }
         catch (e){
-            return e;
+            throw e;
         }
         finally {
             return true;
@@ -159,19 +160,42 @@ export class MealLoggingService {
      * @param newDate - new date to change to 
      * @returns the updated meal logging object
      */
-     async updateMealLoggingDay(mealLoggingId, newDate: Date){
+    async updateMealLogging(payload: EditMealLoggingDTO){
         try {
+            const today_date = new Date();
+            // validate date format
+            if (!this.isValidDate(payload.newDate)) {
+                throw new Error("Invalid date format.");
+            }
+
+            const newDate = new Date(payload.newDate);
             // validate date 
-            if (!this.isPlanning(newDate)){
-                return new Error("Cannot edit today or past meals.");
+            if (!this.isPlanning(newDate, today_date)){
+                throw new Error("Cannot edit today or past meals.");
+            }
+
+            // Validate meal type
+            const meal_type_enum = this.getMealTypeEnum(payload.mealType);
+            if (meal_type_enum === undefined) {
+                throw new Error("Meal type is undefined.");
             }
 
             // validate meal logging id 
-            var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId});
+            if (!meal_logging_object) {
+                throw new Error(`Recipe with id ${meal_logging_object} not found`);
+            }
+
+            // update the meal logging object
             meal_logging_object.date = newDate;
-            return await this.mealLoggingRepository.save(meal_logging_object);
+            meal_logging_object.updated_at = today_date;
+            meal_logging_object.portion = payload.portion;
+            meal_logging_object.type = meal_type_enum;
+
+            await this.mealLoggingRepository.save(meal_logging_object);
+            return true;
         } catch (e) {
-            return e;
+            throw e;
         }
     }
 
@@ -190,15 +214,27 @@ export class MealLoggingService {
      * @param newDate - incoming date to be validated
      * @returns true if the incoming date is one day ahead of today else false
      */
-    isPlanning(newDate) {
-        const today_date = new Date();
+    isPlanning(newDate: Date, todayDate: Date) {
         const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
-    
+
         // Check if the incoming date is at least one day ahead of today_date
-        if (newDate.getTime() - today_date.getTime() >= one_day_in_millis) {
+        if (newDate.getTime() - todayDate.getTime() >= one_day_in_millis) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Regular expression to check date format
+     * @param date - date string to be validated
+     * @returns true if the date string matches the pattern else false
+     */
+    isValidDate(dateString: string) {
+        // Define the regex pattern for the date format
+        const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
+            
+        // Check if the dateString matches the pattern
+        return pattern.test(dateString);
     }
 }
