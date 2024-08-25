@@ -1,10 +1,13 @@
-import { Body, Controller, Get, HttpException, Post } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpException, Post } from "@nestjs/common";
 import { MealLoggingService } from "./meal-logging.service";
+import { CommonService } from "src/common/common.service";
+import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
     constructor(
         private mealLoggingService: MealLoggingService,
+        private commonService: CommonService
     ){}
 
     /**
@@ -13,11 +16,14 @@ export class MealLoggingController {
      * @returns HttpExecption 200 when all the meals have been logged
      */
     @Post('add')
-    async addMealLogging(@Body() payload){
+    async addMealLogging(@Headers() headers, @Body() mealLoggingDTO: AddMealLoggingDTO){
         try {
-            await this.mealLoggingService.addMealLogging(payload.userId, payload.recipeIdList, payload.mealType);
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+            await this.mealLoggingService.addMealLogging(decodedHeaders, mealLoggingDTO);
         }
         catch (e){
+            console.log("From controller: ", e);
             return new HttpException(e.message, 400);
         }
         return new HttpException("All meals have been logged.", 200);

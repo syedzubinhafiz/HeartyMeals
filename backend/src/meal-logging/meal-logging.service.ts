@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogging } from "./meal-logging.entity";
 import { Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
-import { Visibility } from "src/recipe/enum/visibility.enum";
+import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -20,26 +20,36 @@ export class MealLoggingService {
 
     /**
      * Log meals based on the meal type
-     * @param userId - a valid user id
-     * @param recipeList - a list of recipes with {recipe_id, portion}
-     * @param mealType - the meal type the meal is supposed to be log
-     * @returns a list of meal logging objects
+     * @param decodedHeaders - decoded headers from the request
+     * @param mealLoggingDTO - DTO containing the meal type and recipe ids
+     * @returns the saved entries in the database
      */
-    async addMealLogging(userId, recipeList, mealType){
+    async addMealLogging(decodedHeaders: any, mealLoggingDTO: AddMealLoggingDTO){
+        var all_entries = []
+        const current_date_time = new Date()
         try {
-            // validate userId
-            const user_object = await this.userRepository.findOneBy({user_id: userId});
 
-            // validate meal type
-            const meal_type_enum = this.getMealTypeEnum(mealType);
-            if (meal_type_enum == undefined) return new Error("Meal type is undefined.");
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new Error("User not found.");
+            }
 
-            // validate all recipeIds, while creating all objects
-            var all_entries = []
-            const current_date_time = new Date()
-            recipeList.map( async recipeJSON => {
-                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeJSON.recipe_id });
+            // Validate meal type
+            const meal_type_enum = this.getMealTypeEnum(mealLoggingDTO.mealType);
+            if (meal_type_enum === undefined) {
+                throw new Error("Meal type is undefined.");
+            }
 
+            // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
+            const results = await Promise.all(mealLoggingDTO.recipeIds.map(async recipeJSON => {
+                // Validate recipeId
+                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeJSON.recipeId });
+                if (!recipe_object) {
+                    throw new Error(`Recipe with id ${recipeJSON.recipeId} not found`);
+                }
+
+                // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.date = current_date_time;
                 new_meal_logging.type = meal_type_enum;
@@ -51,11 +61,12 @@ export class MealLoggingService {
                 new_meal_logging.updated_at = current_date_time;
 
                 all_entries.push(new_meal_logging)
-            })
+            }));
 
+            // Save all recipes in one go
             return await this.mealLoggingRepository.save(all_entries);
         } catch (e) {
-            return e;
+            throw e; // Return error to controller
         }
     }
 
@@ -110,7 +121,6 @@ export class MealLoggingService {
             mealLoggingIdList.map(async meal_logging_id => {
                 var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
                 entry.deleted_at = delete_date;
-                entry.visibility = Visibility.PRIVATE;
                 delete_entries.push(entry);
             })
             return await this.mealLoggingRepository.save(delete_entries);
