@@ -37,12 +37,12 @@ export class MealLogging{
     })
     portion: Number;
 
-    @Column({type: 'timestamptz'})
+    @Column({type: 'timestamp with time zone'})
     created_at: Date;
 
-    @Column({type: 'timestamptz'})
+    @Column({type: 'timestamp with time zone'})
     updated_at: Date;
 
-    @Column({type: 'timestamptz', nullable: true, default: null})
-    deleted_at: Date;
+    @Column({type: 'timestamp with time zone', nullable: true, default: null})
+    deleted_at?: Date;
 }
