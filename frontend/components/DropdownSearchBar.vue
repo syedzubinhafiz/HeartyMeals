@@ -91,7 +91,7 @@ function setValue(value) {
         }
         i -= 1
         while(i>=0) {
-            currentName += " " + splitNames[i].toLowerCase()
+            currentName = splitNames[i].toLowerCase() + " " + currentName
             if(search.length <= currentName.length && search === currentName.slice(0, search.length)) {
                 return true
             }
@@ -103,6 +103,7 @@ function setValue(value) {
         
    );
  }
+
 
  const inputValue = ref("")
  // only show search terms when the search bar is selected

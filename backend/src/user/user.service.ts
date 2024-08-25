@@ -5,7 +5,7 @@ import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Country } from 'src/country/country.entity';
-import { Dietary } from 'src/dietary/dietary.entitry';
+import { Dietary } from 'src/dietary/dietary.entity';
 import { UserRole } from './enum/user-role.enum';
 import { CommonService } from 'src/common/common.service';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';

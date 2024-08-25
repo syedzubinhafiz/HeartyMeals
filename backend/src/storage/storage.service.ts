@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Storage } from './storage.entity';
-import { StorageType } from './storage.enum';
+import { StorageType } from './enum/storage.enum';
 import { Repository } from 'typeorm';
 import { getStorage, getDownloadURL } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
