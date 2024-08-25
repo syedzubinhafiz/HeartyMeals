@@ -36,12 +36,6 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
-            // Validate meal type
-            const meal_type_enum = this.getMealTypeEnum(mealLoggingDTO.mealType);
-            if (meal_type_enum === undefined) {
-                throw new Error("Meal type is undefined.");
-            }
-
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
             const results = await Promise.all(mealLoggingDTO.recipeIds.map(async recipeJSON => {
                 // Validate recipeId
@@ -53,7 +47,7 @@ export class MealLoggingService {
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.date = current_date_time;
-                new_meal_logging.type = meal_type_enum;
+                new_meal_logging.type = mealLoggingDTO.mealType;
                 new_meal_logging.is_consumed = true;
                 new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
@@ -169,9 +163,6 @@ export class MealLoggingService {
                 throw new Error("Cannot edit today or past meals.");
             }
 
-            // Validate meal type
-            const meal_type_enum = this.getMealTypeEnum(payload.mealType);
-
             // validate meal logging id 
             var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId});
             if (!meal_logging_object) {
@@ -181,23 +172,13 @@ export class MealLoggingService {
             // update the meal logging object
             meal_logging_object.date = newDate;
             meal_logging_object.portion = payload.portion;
-            meal_logging_object.type = meal_type_enum;
+            meal_logging_object.type = payload.mealType;
 
             await this.mealLoggingRepository.save(meal_logging_object);
             return true;
         } catch (e) {
             throw e;
         }
-    }
-
-    /**
-     * Get meal type 
-     * @param value - meal type in string
-     * @returns available meal type in enum, or undefined
-     */
-    getMealTypeEnum<T>(value: string){
-        const enumValues = Object.values(MealType);
-        return enumValues.includes(value as any) ? (value as T[keyof T]): undefined
     }
 
     /**
