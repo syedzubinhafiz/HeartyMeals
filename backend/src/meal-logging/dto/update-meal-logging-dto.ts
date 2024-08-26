@@ -18,10 +18,6 @@ export class UpdateMealLoggingDTO{
     readonly mealLoggingId: string;
 
     @IsNotEmpty()
-    @IsString()
-    readonly recipeId: string;
-
-    @IsNotEmpty()
     @IsNumber()
     readonly portion: Number;
 
