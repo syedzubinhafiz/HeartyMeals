@@ -76,14 +76,7 @@ export class RecipeController {
      */
     @Get('get-components')
     async getRecipeComponents(@Body("recipeId") recipeId: string){
-
-        try{
-
-            return await this.recipeComponentService.getRecipeComponents(recipeId)
-
-        } catch(e) {
-            return new HttpException(e.message, 400)
-        }
+        return await this.recipeComponentService.getRecipeComponents(recipeId)
     }
 
 }
