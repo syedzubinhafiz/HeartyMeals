@@ -9,7 +9,7 @@ export class MealLogging{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
-    @Column({type: 'timestamptz'})
+    @Column({type: 'timestamptz', nullable: true, default: null})
     date: Date;
 
     @Column({

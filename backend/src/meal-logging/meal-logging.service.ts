@@ -35,10 +35,13 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
-            // Validate date
+            // Validate date 
             const meal_date = new Date(mealLoggingDTO.mealDate);
             const result = this.checkDate(meal_date);
-            if (result.status == false){ throw result.message; }
+            if (result.editable == false){ 
+                // Cannot edit past or future meals
+                throw result.message; 
+            } 
 
             const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
 
@@ -58,7 +61,11 @@ export class MealLoggingService {
 
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
-                new_meal_logging.date = meal_date;
+                if (result.planning == true) {
+                    new_meal_logging.date = null;
+                } else {
+                    new_meal_logging.date = meal_date;
+                }
                 new_meal_logging.type = mealLoggingDTO.mealType;
                 new_meal_logging.is_consumed = true;
                 new_meal_logging.portion = recipeJSON.portion;
@@ -142,19 +149,25 @@ export class MealLoggingService {
      * @param mealLoggingIdList - a list of corresponding ids for meal logging
      * @returns delete result of all entries
      */
-    async deleteMealLoggingBulk(mealLoggingIdList: Array<string>){
+    async deleteMealLoggingBulk(decodedHeaders: any, mealLoggingIdList: Array<string>){
         var delete_entries = []
         const delete_date = new Date();
         try {
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new Error("User not found.");
+            }
+
             mealLoggingIdList.forEach(async meal_logging_id => {
                 // Validate meal logging id
-                var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id});
+                var entry = await this.mealLoggingRepository.findOneBy({id: meal_logging_id, user: user_object});
                 if (!entry) {
                     throw new Error(`Meal logging with id ${meal_logging_id} not found`);
                 }
                 // Check if meal can be deleted
                 const result = this.checkDate(entry.date);
-                if (result.status == false){ throw result.message; }
+                if (result.editable == false){ throw result.message; }
 
                 entry.deleted_at = delete_date;
                 delete_entries.push(entry);
@@ -173,13 +186,21 @@ export class MealLoggingService {
      * @param mealLoggingId - unique id of the meal
      * @returns true after the entry is saved to the database
      */
-    async markIsConsumed(mealLoggingId: string){
+    async markIsConsumed(decodedHeaders: any, mealLoggingId: string){
         try {
-            var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId});
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new Error("User not found.");
+            }
+
+            var entry = await this.mealLoggingRepository.findOneBy({id: mealLoggingId, user: user_object});
             if (!entry) {
                 throw new Error(`Meal logging with id ${mealLoggingId} not found`);
             }
             entry.is_consumed = true;
+            entry.date = new Date();
+            entry.updated_at = new Date();
             await this.mealLoggingRepository.save(entry);
         }
         catch (e){
@@ -196,20 +217,27 @@ export class MealLoggingService {
      * @param newDate - new date to change to 
      * @returns the updated meal logging object
      */
-    async updateMealLogging(payload: UpdateMealLoggingDTO){
+    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO){
         try {
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new Error("User not found.");
+            }
+
             const newDate = new Date(payload.newDate);
             // validate date 
             const result = this.checkDate(newDate);
-            if (result.status == false){ throw result.message; }
+            if (result.editable == false){ throw new Error (result.message); }
 
             // validate meal logging id 
-            var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId});
+            var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId, user: user_object});
             if (!meal_logging_object) {
                 throw new Error(`Meal logging with id ${meal_logging_object} not found`);
             }
 
             // update the meal logging object
+            meal_logging_object.updated_at = new Date();
             meal_logging_object.date = newDate;
             meal_logging_object.portion = payload.portion;
             meal_logging_object.type = payload.mealType;
@@ -228,28 +256,45 @@ export class MealLoggingService {
      * @returns true if the incoming date is one day ahead of today else false
      */
     checkDate(newDate: Date) {
-        const today_date = new Date();
+        const today_date_in_number = new Date().setHours(0, 0, 0, 0);
         const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
         const seven_days_in_millis = 6.048e+8; // Number of milliseconds in seven days
 
-        if (newDate.getTime() - today_date.getTime() >= seven_days_in_millis) {
+        // Check if the incoming date is more than 7 days ahead of today_date
+        if (newDate.getTime() - today_date_in_number > seven_days_in_millis) {
+            console.log("Cannot edit meals more than 7 days ahead.");
             return {
-                status: false,
+                editable: false,
+                planning: false,
                 message: "Cannot edit meals more than 7 days ahead."
             };
         }
 
         // Check if the incoming date is at least one day ahead of today_date
-        if ((newDate.getTime() - today_date.getTime() >= one_day_in_millis) && (newDate.getTime() - today_date.getTime() <= seven_days_in_millis)) {
+        if ((newDate.getTime() - today_date_in_number >= one_day_in_millis) && (newDate.getTime() - today_date_in_number <= seven_days_in_millis)) {
+            console.log("Planning meals.");
             return {
-                status: true,
-                message: "Meal is modifiable."
+                editable: true,
+                planning: true,
+                message: "Planning meals."
             };
         }
 
-        if (newDate.getTime() - today_date.getTime() < one_day_in_millis) {
+        if (newDate.getTime() - today_date_in_number > 0 && newDate.getTime() - today_date_in_number < one_day_in_millis) {
+            console.log("Today meals.");
             return {
-                status: false,
+                editable: true,
+                planning: false,
+                message: "Today meals."
+            };
+        } 
+
+        // Check if the incoming date is in the past
+        if (newDate.getTime() - today_date_in_number <= 0) {
+            console.log("Past meals cannot be edited.");
+            return {
+                editable: false,
+                planning: false,
                 message: "Cannot edit past meals."
             };
         }

@@ -52,9 +52,11 @@ export class MealLoggingController {
      * @returns HttpException 200 if the meal is updated 
      */
     @Post('update_meal')
-    async updateMealLogging(@Body() payload: UpdateMealLoggingDTO){
+    async updateMealLogging(@Headers() headers, @Body() payload: UpdateMealLoggingDTO){
         try {
-            await this.mealLoggingService.updateMealLogging(payload);
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+            await this.mealLoggingService.updateMealLogging(headers, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -68,9 +70,11 @@ export class MealLoggingController {
      * @returns HttpException 200 when the meal is deleted 
      */
     @Post('delete')
-    async delete(@Body() payload){
+    async delete(@Headers() headers, @Body() payload){
         try {
-            await this.mealLoggingService.deleteMealLoggingBulk(payload.mealLoggingIds);
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload.mealLoggingIds);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -84,9 +88,11 @@ export class MealLoggingController {
      * @returns HttpException 200 when the meal is successfully marked consumed
      */
     @Post('mark_consumed')
-    async markMealConsumed(@Body("mealLoggingId") payload){
+    async markMealConsumed(@Headers() headers, @Body("mealLoggingId") payload){
         try {
-            await this.mealLoggingService.markIsConsumed(payload.mealLoggingId);
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+            await this.mealLoggingService.markIsConsumed(decodedHeaders, payload.mealLoggingId);
         }
         catch (e){
             return new HttpException(e.message, 400);
