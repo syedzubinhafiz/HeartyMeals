@@ -56,22 +56,31 @@ export class RecipeService {
        return await this.recipeRepository.save(new_recipe)
     }
 
+    /**
+     * This function returns a recipe based on the recipeId
+     * @param decodedHeaders Decoded headers from the request to get the user_id
+     * @param recipeId Recipe ID to get the recipe if null return all recipes
+     * @returns Recipe if recipeId is provided else all recipes
+     */
     async getRecipe(decodedHeaders: any, recipeId: string = null){
 
-        if (recipeId == null){
-            return await this.recipeRepository.find({
-                where:[
-                    {user: null},
-                    {user: {user_id: decodedHeaders['sub']}}
-                ]
-            });
+        if (recipeId == null){        
+
+            //Get all official recipes that is public and recipe that belongs to the user
+            return await this.recipeRepository.createQueryBuilder("recipe")
+            .where("recipe.user IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+            .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+            .getMany();
+
         } else {
+            //Get recipe based on recipeId
             const  recipe = await this.recipeRepository.findOne({
                 where: {
                     id: recipeId
                 }
             })
 
+            //Check if recipe belongs to the user
             if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
                 return new HttpException("Recipe does not belong to user", 400)
             } else {
@@ -82,11 +91,15 @@ export class RecipeService {
         }
     }
     
+    /**
+     * This function returns all official recipes
+     * @returns list of official recipes
+     */
     async getOfficialRecipe(){
-        return await this.recipeRepository.find({
-            where:{
-                user: null
-            }
-        })
+
+        return await this.recipeRepository.createQueryBuilder("recipe")
+        .where("recipe.user IS NULL")
+        .andWhere("recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+        .getMany();
     }
 }
