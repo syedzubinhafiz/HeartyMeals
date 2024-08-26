@@ -56,7 +56,7 @@ export class RecipeComponentService{
         });
     
         // Save all new RecipeComponent instances in a single batch insert
-        return this.recipeComponentRepository.save(new_recipe_components);
+        return await this.recipeComponentRepository.save(new_recipe_components);
     }
     
 }
