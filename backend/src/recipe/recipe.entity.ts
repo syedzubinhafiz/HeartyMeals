@@ -17,7 +17,10 @@ export class Recipe{
     @Column({type: 'varchar'})
     description: string;
 
-    @Column({type: 'varchar'})
+    @Column({
+        type: 'varchar',
+        default: "0 minutes"
+    })
     preparation_time: string;
 
     @Column('text', { array: true })
