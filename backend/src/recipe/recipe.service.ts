@@ -66,22 +66,23 @@ export class RecipeService {
         })
         
         if (recipe == null){
-            return new HttpException("Recipe not found", 404);
+            throw new Error("Recipe not found");
         }
-        
+
         //Check if user is authorized to delete recipe
-        if (recipe.user.user_id !== decodedHeaders['sub']){
-            return new HttpException("Unauthorized", 401);
+        if (recipe.user !== undefined){
+            if (recipe.user.user_id !== decodedHeaders['sub']) {
+                throw new Error("Unauthorized");
+            }
         }
 
         // Soft delete recipe
         recipe.deleted_at = new Date();
         try{
             await transactionalEntityManager.save(recipe);
+            return recipe.id;
         } catch(e){
             throw new Error("Error deleting recipe")
-        } finally {
-            return recipe.id;
         }
     } 
 }
