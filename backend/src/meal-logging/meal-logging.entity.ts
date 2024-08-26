@@ -10,7 +10,7 @@ export class MealLogging{
     id: string;
     
     @Column({type: 'timestamptz', nullable: true, default: null})
-    date: Date;
+    consumed_date_time: Date;
 
     @Column({
         type: 'enum',

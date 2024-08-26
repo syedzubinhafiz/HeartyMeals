@@ -13,6 +13,7 @@ export class MealLoggingController {
 
     /**
      * Post method to create all the meal loggings entry 
+     * @param headers - headers that contains the authorization token
      * @param payload - payload containing userId, recipeIdList, and mealType
      * @returns HttpExecption 200 when all the meals have been logged
      */
@@ -31,6 +32,7 @@ export class MealLoggingController {
 
     /**
      * Get method to get all the meals in a specific date
+     * @param headers - headers that contains the authorization token
      * @param payload - payload that contains the userId and the date requested to get the meals from
      * @returns a list of meals on the date, sorted by meal types
      */
@@ -52,11 +54,9 @@ export class MealLoggingController {
      * @returns HttpException 200 if the meal is updated 
      */
     @Post('update_meal')
-    async updateMealLogging(@Headers() headers, @Body() payload: UpdateMealLoggingDTO){
+    async updateMealLogging(@Body() payload: UpdateMealLoggingDTO){
         try {
-            const authHeader = headers.authorization;
-            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.updateMealLogging(headers, payload);
+            await this.mealLoggingService.updateMealLogging(payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -66,6 +66,7 @@ export class MealLoggingController {
 
     /**
      * Post method to delete meal logging entries
+     * @param headers - headers that contains the authorization token
      * @param payload - payload that contains a list of meal logging ids
      * @returns HttpException 200 when the meal is deleted 
      */
@@ -84,6 +85,7 @@ export class MealLoggingController {
 
     /**
      * Post method to mark a meal is consumed
+     * @param headers - headers that contains the authorization token
      * @param payload - payload that contains the specific meal logging id
      * @returns HttpException 200 when the meal is successfully marked consumed
      */
@@ -92,7 +94,7 @@ export class MealLoggingController {
         try {
             const authHeader = headers.authorization;
             const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.markIsConsumed(decodedHeaders, payload.mealLoggingId);
+            await this.mealLoggingService.markIsConsumed(decodedHeaders, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
