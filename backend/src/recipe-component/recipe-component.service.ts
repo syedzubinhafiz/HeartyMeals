@@ -18,6 +18,7 @@ export class RecipeComponentService{
         private commonService: CommonService,
     ){}
 
+    // Function Documentation ady added in different branch
     async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[]) {
         // Extract all component IDs from the componentList
         const component_ids = componentList.map(rc => rc.componentId);
@@ -55,9 +56,7 @@ export class RecipeComponentService{
         });
     
         // Save all new RecipeComponent instances in a single batch insert
-        await this.recipeComponentRepository.save(new_recipe_components);
-
-        return true;
+        return this.recipeComponentRepository.save(new_recipe_components);
     }
     
 }
