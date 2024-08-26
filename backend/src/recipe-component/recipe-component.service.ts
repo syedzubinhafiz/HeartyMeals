@@ -1,7 +1,7 @@
 import { RecipeComponentDTO } from './dto/recipe-component-dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Component } from "../component/component.entity";
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { Injectable } from "@nestjs/common";
 import { Recipe } from "../recipe/recipe.entity";
 import { CommonService } from 'src/common/common.service';
@@ -16,6 +16,7 @@ export class RecipeComponentService{
         @InjectRepository(RecipeComponent)
         private recipeComponentRepository: Repository<RecipeComponent>,
         private commonService: CommonService,
+
     ){}
 
     async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[]) {
@@ -58,6 +59,24 @@ export class RecipeComponentService{
         await this.recipeComponentRepository.save(new_recipe_components);
 
         return true;
+    }
+
+    
+    public async deleteRecipeComponent(recipeId: string, transactionalEntityManager: EntityManager){ 
+
+        try {
+            const recipeComponents = await this.recipeComponentRepository.find({
+                where: {
+                    recipe_id: recipeId
+                }
+            })
+    
+            await transactionalEntityManager.remove(recipeComponents);
+            return recipeComponents;
+
+        } catch (error) {
+            throw new Error(`Failed to delete recipe components: ${error.message}`);
+        }
     }
     
 }

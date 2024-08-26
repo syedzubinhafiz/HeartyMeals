@@ -1,9 +1,10 @@
+import { Component } from "src/component/component.entity";
+import { Recipe } from "src/recipe/recipe.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Component } from "../component/component.entity";
-import { Recipe } from "../recipe/recipe.entity";
 
-@Entity('recipe_component')
-export class RecipeComponent{
+@Entity('recipe_component_archive')
+export class RecipeComponentArchive {
+
 
     @PrimaryColumn()
     component_id: string;
@@ -22,4 +23,5 @@ export class RecipeComponent{
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
+    
 }

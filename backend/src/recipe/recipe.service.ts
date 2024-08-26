@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.entity';
 import { RecipeDTO } from './dto/recipe-dto';
 import { Recipe } from './recipe.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cuisine } from 'src/cuisine/cuisine.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
@@ -56,7 +56,7 @@ export class RecipeService {
        return await this.recipeRepository.save(new_recipe)
     }
 
-    async deleteRecipe(decodedHeaders: any, recipeId: string){
+    public async deleteRecipe(decodedHeaders: any, recipeId: string, transactionalEntityManager: EntityManager){
 
         //Check if recipe exist 
         const recipe = await this.recipeRepository.findOne({
@@ -77,11 +77,11 @@ export class RecipeService {
         // Soft delete recipe
         recipe.deleted_at = new Date();
         try{
-            await this.recipeRepository.save(recipe);
+            await transactionalEntityManager.save(recipe);
         } catch(e){
-            return new HttpException(e.message, 400);
+            throw new Error("Error deleting recipe")
         } finally {
-            return new HttpException("Recipe deleted successfully", 200);
+            return recipe.id;
         }
     } 
 }

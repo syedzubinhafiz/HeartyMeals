@@ -1,12 +1,13 @@
 import { Body, Controller, Delete, Headers, HttpException, Post } from '@nestjs/common';
 import { AddRecipeDTO } from './dto/add-recipe-dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { UserRole } from 'src/user/enum/user-role.enum';
 import { RecipeService } from './recipe.service';
 import { RecipeComponentService } from '../recipe-component/recipe-component.service';
 import { CommonService } from 'src/common/common.service';
+import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
 
 @Controller('recipe')
 export class RecipeController {
@@ -17,6 +18,9 @@ export class RecipeController {
         private recipeService: RecipeService,
         private recipeComponentService: RecipeComponentService,
         private commonService: CommonService,
+        @InjectEntityManager() 
+        private readonly entityManager: EntityManager,
+        private recipeComponentArchiveService: RecipeComponentArchiveService,
     ){}
     
     @Post('add')
@@ -51,7 +55,18 @@ export class RecipeController {
 
         const authHeader = headers.authorization;
         const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+        
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                await this.recipeService.deleteRecipe(decodedHeaders, recipeId,transactionalEntityManager);
+                const recipeComponents = await this.recipeComponentService.deleteRecipeComponent(recipeId, transactionalEntityManager);
+                await this.recipeComponentArchiveService.addToArchive(recipeComponents,transactionalEntityManager);
+            });
+            return new HttpException("Recipe deleted successfully", 200);
+        } catch (e) {
+            console.error('Transaction failed:', e);
+            throw new HttpException(e.message, 400);
+        }
 
-        return await this.recipeService.deleteRecipe(decodedHeaders, recipeId);
     }
 }
