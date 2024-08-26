@@ -60,6 +60,8 @@ export class MealLoggingService {
                 new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
+                new_meal_logging.created_at = current_date_time;
+                new_meal_logging.updated_at = current_date_time;
 
                 all_entries.push(new_meal_logging)
             }));
@@ -74,8 +76,8 @@ export class MealLoggingService {
 
     /**
      * Get all the meals of a user in a specific day
-     * @param userId - valid user id
-     * @param date - date 
+     * @param decodedHeaders - decoded headers from the request
+     * @param date - date string in the format YYYY-MM-DDTHH:MM:SS.SSS 
      * @returns a list of lists of meals 
      */
     async getMealsPerDay(decodedHeaders: any, date: string){
@@ -96,11 +98,12 @@ export class MealLoggingService {
             // get all the meals recoreded in a day
             var entries = await this.mealLoggingRepository.query(`
                 SELECT * FROM meal_logging
-                WHERE user = $1
-                AND DATE(date) = DATE($2)
+                WHERE 
+                DATE(date) = DATE($1)
+                AND user_id = $2
                 AND deleted_at IS NULL
-            `, [user_object, new_date]);
-
+            `, [new_date, user_object.user_id]);
+            
             }
         catch (e){
             throw e;
