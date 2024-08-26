@@ -173,7 +173,7 @@ export class MealLoggingService {
             // validate meal logging id 
             var meal_logging_object = await this.mealLoggingRepository.findOneBy({id: payload.mealLoggingId});
             if (!meal_logging_object) {
-                throw new Error(`Recipe with id ${meal_logging_object} not found`);
+                throw new Error(`Meal logging with id ${meal_logging_object} not found`);
             }
 
             // update the meal logging object
