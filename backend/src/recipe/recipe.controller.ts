@@ -46,17 +46,44 @@ export class RecipeController {
         return new HttpException("Recipe added successfully", 200)
     }
 
+    /**
+     * Endpoint to get all official recipes
+     * @returns List of official recipes
+     */
     @Get('get-official')
     async getOfficialRecipes(){
         return await this.recipeService.getOfficialRecipe()
     }
 
+    /**
+     * Endpoint to get all official recipes and recipes created by the user
+     * @param headers Authorization header
+     * @returns List of user recipes
+     */
     @Get('get')
     async getRecipe(@Headers() headers: any, @Body('recipeId') recipeId: string = null){
 
-        const authHeader = headers.authorization;
-        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-        return await this.recipeService.getRecipe(decodedHeaders, recipeId)
+        const auth_header = headers.authorization;
+        const decoded_headers = this.commonService.decodeHeaders(auth_header);
+        return await this.recipeService.getRecipe(decoded_headers, recipeId)
+    }
+
+
+    /**
+     * Get recipe components based on the recipeId
+     * @param recipeId Recipe ID to get the recipe components
+     * @returns {ingridients: [], seasonings: []} List of components for the recipe
+     */
+    @Get('get-components')
+    async getRecipeComponents(@Body("recipeId") recipeId: string){
+
+        try{
+
+            return await this.recipeComponentService.getRecipeComponents(recipeId)
+
+        } catch(e) {
+            return new HttpException(e.message, 400)
+        }
     }
 
 }
