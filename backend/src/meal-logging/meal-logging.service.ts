@@ -36,10 +36,18 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
+            const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
+
+            const recipes_object = await this.recipeRepository.findBy({
+                 id: In(all_recipe_ids),
+            });
+
+            const recipeMap = new Map(recipes_object.map(recipe => [recipe.id, recipe]));
+
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
             const results = await Promise.all(mealLoggingDTO.recipeIds.map(async recipeJSON => {
                 // Validate recipeId
-                const recipe_object = await this.recipeRepository.findOneBy({ id: recipeJSON.recipeId });
+                const recipe_object = recipeMap.get(recipeJSON.recipeId);
                 if (!recipe_object) {
                     throw new Error(`Recipe with id ${recipeJSON.recipeId} not found`);
                 }
