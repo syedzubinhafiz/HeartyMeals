@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { User } from './user.entity';
 import { Country } from 'src/country/country.entity';
-import { Dietary } from 'src/dietary/dietary.entitry';
+import { Dietary } from 'src/dietary/dietary.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';

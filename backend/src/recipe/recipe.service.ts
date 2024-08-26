@@ -5,8 +5,8 @@ import { Recipe } from './recipe.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cuisine } from 'src/cuisine/cuisine.entity';
-import { Dietary } from 'src/dietary/dietary.entitry';
-import { Visibility } from './visibility.enum';
+import { Dietary } from 'src/dietary/dietary.entity';
+import { Visibility } from './enum/visibility.enum';
 
 @Injectable()
 export class RecipeService {

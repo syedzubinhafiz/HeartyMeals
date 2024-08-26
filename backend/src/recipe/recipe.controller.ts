@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Headers, HttpException, Post } from '@nestjs/common';
+import { Body, Controller, HttpException, Post } from '@nestjs/common';
 import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { UserRole } from 'src/user/enum/user-role.enum';
 import { RecipeService } from './recipe.service';
-import { RecipeComponentService } from './recipe-component/recipe-component.service';
-import { CommonService } from 'src/common/common.service';
+import { RecipeComponentService } from 'src/recipe-component/recipe-component.service';
+
 
 @Controller('recipe')
 export class RecipeController {
@@ -16,7 +16,6 @@ export class RecipeController {
         private userRepository: Repository<User>,
         private recipeService: RecipeService,
         private recipeComponentService: RecipeComponentService,
-        private commonService: CommonService
     ){}
     
     @Post('add')
@@ -43,24 +42,5 @@ export class RecipeController {
         }
 
         return new HttpException("Recipe added successfully", 200)
-    }
-
-    @Get('get-all' )
-    async getAllOfficialRecipes(){
-        return await this.recipeService.getOfficialRecipe();
-    };
-
-
-
-    @Get('get')
-    async getRecipe( @Headers() headers: any, @Body('recipeId') recipeId:string =  null) {
-        
-        const decodedHeaders =  this.commonService.decodeHeaders(headers.authorization);
-        if (recipeId == null){
-            return await this.recipeService.getRecipe(decodedHeaders);
-
-        } else {
-            return await this.recipeService.getRecipe(decodedHeaders, recipeId);
-        }
     }
 }

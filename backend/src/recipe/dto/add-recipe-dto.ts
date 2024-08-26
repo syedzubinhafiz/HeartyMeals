@@ -1,7 +1,7 @@
 import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 import { RecipeDTO } from "./recipe-dto";
-import { RecipeComponentDTO } from "../recipe-component/dto/recipe-component-dto";
+import { RecipeComponentDTO } from "../../recipe-component/dto/recipe-component-dto";
 
 export class AddRecipeDTO{
 
