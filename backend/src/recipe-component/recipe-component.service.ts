@@ -62,16 +62,25 @@ export class RecipeComponentService{
     }
 
     
+    /**
+     * This function deletes all recipe components associated with a recipe
+     * @param recipeId Recipe Id to be deleted
+     * @param transactionalEntityManager Transactional entity manager
+     * @returns RecipeComponent[]
+     */
     public async deleteRecipeComponent(recipeId: string, transactionalEntityManager: EntityManager){ 
 
         try {
+            // Fetch all recipe components associated with the recipe
             const recipeComponents = await this.recipeComponentRepository.find({
                 where: {
                     recipe_id: recipeId
                 }
             })
-    
+            
+            // Delete all recipe components associated with the recipe
             await transactionalEntityManager.remove(recipeComponents);
+            // Return the deleted recipe components
             return recipeComponents;
 
         } catch (error) {

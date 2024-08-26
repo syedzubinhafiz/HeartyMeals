@@ -12,11 +12,17 @@ export class RecipeComponentArchiveService {
     constructor(      
     ){}
 
+    /**
+     * This function adds recipe components to the archive
+     * @param recipeComponets list of recipe components to add to archive
+     * @param transactionalEntityManager transactional entity manager
+     */
     public addToArchive(recipeComponets: RecipeComponent[], transactionalEntityManager: EntityManager) {
         
         try {
             const archive_list = [ ];
 
+            // Create a new RecipeComponentArchive instance for each RecipeComponent
             recipeComponets.forEach(recipeComponent => {
             
             const archive_recipe_component =  new RecipeComponentArchive();
@@ -29,6 +35,7 @@ export class RecipeComponentArchiveService {
             archive_list.push(archive_recipe_component);
             });
 
+            // Save all new RecipeComponentArchive instances in a single batch insert
             transactionalEntityManager.save(archive_list);
     
         } catch (e) {

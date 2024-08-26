@@ -49,21 +49,40 @@ export class RecipeController {
         return new HttpException("Recipe added successfully", 200)
     }
 
+    /**
+     * Endpoint to delete a recipe
+     * @param headers header containing the authorization token
+     * @param recipeId recipe id to delete
+     * @returns  HttpException
+     */
     @Delete('delete')
     async deleteRecipe(@Headers() headers: any, @Body('recipeId') recipeId: string) {
+
         const authHeader = headers.authorization;
         const decodedHeaders = this.commonService.decodeHeaders(authHeader);
     
         try {
+
+            // Transaction to delete recipe and its components
             await this.entityManager.transaction(async transactionalEntityManager => {
+
+                // Call delete recipe business logic to delete a recipe
                 await this.recipeService.deleteRecipe(decodedHeaders, recipeId, transactionalEntityManager);
+
+                // Call delete recipe component business logic to delete recipe components
                 const recipeComponents = await this.recipeComponentService.deleteRecipeComponent(recipeId, transactionalEntityManager);
+
+                // Call add to archive business logic to add recipe components to archive
                 await this.recipeComponentArchiveService.addToArchive(recipeComponents, transactionalEntityManager);
+
             });
+
             return new HttpException("Recipe deleted successfully", 200);
+
         } catch (e) {
-            console.error('Transaction failed:', e);
+
             throw new HttpException(e.message, 400);
+
         }
     }
     

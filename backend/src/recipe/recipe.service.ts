@@ -20,6 +20,12 @@ export class RecipeService {
         private recipeRepository: Repository<Recipe>
     ){}
 
+    /**
+     *  This function adds a new recipe to the database
+     * @param user user
+     * @param recipeDTO 
+     * @returns 
+     */
     async addRecipe(user: User|null, recipeDTO: RecipeDTO){
 
         const new_recipe =  new Recipe();
