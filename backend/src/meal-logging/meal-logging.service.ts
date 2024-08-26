@@ -78,33 +78,53 @@ export class MealLoggingService {
      * @param date - date 
      * @returns a list of lists of meals 
      */
-    async getMealsPerDay(date: Date){
+    async getMealsPerDay(decodedHeaders: any, date: string){
         try {
-            // get all the meals recoreded in a dayz
-            var entries = await this.mealLoggingRepository.find({
-                where: {
-                    date: date
-                }
-            })
-        }
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new Error("User not found.");
+            }
+
+            // Validate date format
+            const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
+            if (!pattern.test(date)){
+                throw new Error("Date must be in the format YYYY-MM-DDTHH:MM:SS.SSS");
+            }
+            const new_date = new Date(date);
+            
+            // get all the meals recoreded in a day
+            var entries = await this.mealLoggingRepository.query(`
+                SELECT * FROM meal_logging
+                WHERE user = $1
+                AND DATE(date) = DATE($2)
+                AND deleted_at IS NULL
+            `, [user_object, new_date]);
+
+            }
         catch (e){
-            return e;
+            throw e;
         }
 
         // sort them by their meal type
-        var sorted = [[], [], [], []];
+        var sorted = {
+            "Breakfast": [],
+            "Lunch": [],
+            "Dinner": [],
+            "Other": []
+        }
         entries.forEach(entry => {
             if (entry.type == MealType.BREAKFAST){
-                sorted[0].push(entry);
+                sorted["Breakfast"].push(entry);
             }
             else if (entry.type == MealType.LUNCH){
-                sorted[1].push(entry);
+                sorted["Lunch"].push(entry);
             }
             else if (entry.type == MealType.DINNER){
-                sorted[2].push(entry);
+                sorted["Dinner"].push(entry);
             }
             else {
-                sorted[3].push(entry);
+                sorted["Other"].push(entry);
             }
         });
         return sorted;

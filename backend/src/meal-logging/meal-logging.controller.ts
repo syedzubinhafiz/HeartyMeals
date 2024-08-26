@@ -35,9 +35,11 @@ export class MealLoggingController {
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get_meals')
-    async getMealsPerDay(@Body() payload){
+    async getMealsPerDay(@Headers() headers, @Body("date") payload){
         try {
-            return await this.mealLoggingService.getMealsPerDay(payload.date);
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+            return await this.mealLoggingService.getMealsPerDay(decodedHeaders, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -49,7 +51,7 @@ export class MealLoggingController {
      * @param payload - payload that contains the meal logging id and the new date
      * @returns HttpException 200 if the meal is updated 
      */
-    @Post('update_meal_day')
+    @Post('update_meal')
     async updateMealLogging(@Body() payload: UpdateMealLoggingDTO){
         try {
             await this.mealLoggingService.updateMealLogging(payload);

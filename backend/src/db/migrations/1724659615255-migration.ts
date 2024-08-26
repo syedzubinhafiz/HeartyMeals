@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1724575572107 implements MigrationInterface {
-    name = 'Migration1724575572107'
+export class Migration1724659615255 implements MigrationInterface {
+    name = 'Migration1724659615255'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "meal_logging" DROP COLUMN "time"`);
-        await queryRunner.query(`ALTER TABLE "meal_logging" ADD "portion" integer NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "meal_logging" ADD "portion" double precision NOT NULL`);
         await queryRunner.query(`ALTER TABLE "meal_logging" ADD "created_at" TIMESTAMP WITH TIME ZONE NOT NULL`);
         await queryRunner.query(`ALTER TABLE "meal_logging" ADD "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL`);
         await queryRunner.query(`ALTER TABLE "meal_logging" ADD "deleted_at" TIMESTAMP WITH TIME ZONE`);
