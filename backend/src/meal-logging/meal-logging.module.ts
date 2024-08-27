@@ -6,12 +6,13 @@ import { CommonService } from 'src/common/common.service';
 import { User } from 'src/user/user.entity';
 import { Recipe } from 'src/recipe/recipe.entity';
 import { MealLogging } from './meal-logging.entity';
+import { MealPlanningController } from './meal-planning.controller';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, Recipe, MealLogging])
     ],
-    controllers: [MealLoggingController],
+    controllers: [MealLoggingController, MealPlanningController],
     providers: [MealLoggingService, CommonService]
 })
 export class MealLoggingModule {}

@@ -210,6 +210,7 @@ export class MealLoggingService {
             }
             var entry = entry[0];
             // Check if meal can be marked as consumed
+            // use consumed date time to check
             const result = this.checkDate(entry.consumed_date_time);
             if (result.editable == true && result.planning == false){ 
                 entry.is_consumed = true;
@@ -237,6 +238,7 @@ export class MealLoggingService {
             if (result.editable == false){ throw new Error (result.message); }
 
             // validate meal logging id 
+            // returns a list of meal logging objects found
             var meal_logging_object = await this.mealLoggingRepository.query(`
                 SELECT * FROM meal_logging
                 WHERE 
@@ -245,7 +247,7 @@ export class MealLoggingService {
             if (meal_logging_object.length == 0) {
                 throw new Error(`Meal logging with id ${meal_logging_object} not found`);
             }
-            meal_logging_object= meal_logging_object[0];
+            meal_logging_object = meal_logging_object[0];
             // update the meal logging object
             meal_logging_object.updated_at = new Date();
             meal_logging_object.consumed_date_time = newDate;
