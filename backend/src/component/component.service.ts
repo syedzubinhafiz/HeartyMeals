@@ -42,7 +42,7 @@ export class ComponentService {
         new_component.name = payload.name;
         new_component.component_type = payload.componentType;
         new_component.nutrition_info = payload.nutritionInformation;
-        new_component.units = payload.units;
+        new_component.unit = payload.unit;
         new_component.amount = payload.amount;
         new_component.foodCategory = selected_category;
 
@@ -93,7 +93,7 @@ export class ComponentService {
             newComponent.name = payload.name;
             newComponent.component_type = payload.componentType;
             newComponent.nutrition_info = payload.nutritionInformation;
-            newComponent.units = payload.units;
+            newComponent.unit = payload.unit;
             newComponent.amount = payload.amount;
             newComponent.foodCategory = selectedCategory;
     

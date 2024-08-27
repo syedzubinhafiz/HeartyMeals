@@ -1,5 +1,5 @@
 import { RecipeComponentDTO } from './dto/recipe-component-dto';
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectEntityManager, InjectRepository } from "@nestjs/typeorm";
 import { Component } from "../component/component.entity";
 import { EntityManager, Repository } from "typeorm";
 import { Injectable } from "@nestjs/common";
@@ -19,48 +19,53 @@ export class RecipeComponentService{
 
     ){}
 
-    // Function Documentation ady added in different branch
-    async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[]) {
-        // Extract all component IDs from the componentList
-        const component_ids = componentList.map(rc => rc.componentId);
-    
-        // Fetch all required components in a single query
-        const components = await this.componentRepository.findByIds(component_ids);
-    
-        // Create a map of components for quick lookup
-        const component_map = new Map(components.map(component => [component.id, component]));
-    
-        // Create an array to hold new RecipeComponent instances
-        const new_recipe_components = componentList.map(recipeComponent => {
-            const component = component_map.get(recipeComponent.componentId);
-            if (!component) {
-                throw new Error(`Component with ID ${recipeComponent.componentId} not found`);
-            }
-    
-            let newAmount = recipeComponent.amount;
-            if (recipeComponent.units !== component.units) {
-                newAmount = this.commonService.convertUnits(
-                    recipeComponent.units,
-                    recipeComponent.amount,
-                    component.units,
-                    component.amount
-                );
-            }
-    
-            return this.recipeComponentRepository.create({
-                component_id: component.id,
-                recipe_id: recipe.id,
-                amount: newAmount,
-                component: component,
-                recipe: recipe
+    public async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[], transactionalEntityManager: EntityManager){
+        try {
+            // Extract all component IDs from the componentList
+            const component_ids = componentList.map(rc => rc.componentId);
+        
+            // Fetch all required components in a single query
+            const components = await this.componentRepository.findByIds(component_ids);
+            console.log('Fetched components:', components);
+        
+            // Create a map of components for quick lookup
+            const component_map = new Map(components.map(component => [component.id, component]));
+        
+            // Create an array to hold new RecipeComponent instances
+            const new_recipe_components = componentList.map(recipe_component => {
+                const component = component_map.get(recipe_component.componentId);
+                if (!component) {
+                    throw new Error(`Component with ID ${recipe_component.componentId} not found`);
+                }
+        
+                let new_amount = recipe_component.amount;
+                if (recipe_component.unit !== component.unit) {
+                    new_amount = this.commonService.convertUnit(
+                        recipe_component.unit,
+                        recipe_component.amount,
+                        component.unit,
+                    ); 
+                }
+        
+                return this.recipeComponentRepository.create({
+                    component_id: component.id,
+                    recipe_id: recipe.id,
+                    amount: new_amount,
+                    component: component,
+                    recipe: recipe
+                });
             });
-        });
-    
-        // Save all new RecipeComponent instances in a single batch insert
-        return await this.recipeComponentRepository.save(new_recipe_components);
+            
+            console.log('New recipe components:', new_recipe_components);
+            
+            // Save all new RecipeComponent instances in a single batch insert
+            return transactionalEntityManager.save(new_recipe_components);
+            
+        } catch (error) {
+            throw new Error(error);
+        }
     }
 
-    
     /**
      * This function deletes all recipe components associated with a recipe
      * @param recipeId Recipe Id to be deleted

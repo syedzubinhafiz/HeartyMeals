@@ -2,8 +2,7 @@ import { Body, Controller, Delete, Headers, HttpException, Post } from '@nestjs/
 import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/user.entity';
-import { EntityManager, Repository } from 'typeorm';
-import { UserRole } from 'src/user/enum/user-role.enum';
+import { EntityManager, getManager, Repository } from 'typeorm';
 import { RecipeService } from './recipe.service';
 import { RecipeComponentService } from '../recipe-component/recipe-component.service';
 import { CommonService } from 'src/common/common.service';
@@ -11,7 +10,6 @@ import { RecipeComponentArchiveService } from 'src/recipe-component-archive/reci
 
 @Controller('recipe')
 export class RecipeController {
-
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
@@ -24,41 +22,26 @@ export class RecipeController {
     ){}
     
     @Post('add')
-    async createRecipe(@Body() payload: AddRecipeDTO){
+    async createRecipe(@Headers() header: any, @Body() payload: AddRecipeDTO) {
+        const decoded = this.commonService.decodeHeaders(header.authorization);
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const [new_recipe, is_custom] = await this.recipeService.addRecipe(decoded, payload.recipe, transactionalEntityManager);
+                const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components, transactionalEntityManager)
 
-        // Get user from user 
-        let user = await this.userRepository.findOne({
-            where: {
-                user_id: payload.userId
-            }
-        })
-
-        if (user == null){
-            return new HttpException("User not found", 404);
+                // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
+                if (is_custom){
+                    await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
+                }
+            });
+            return new HttpException("Recipe added successfully", 200);
+        } catch (e) {
+            console.error('Transaction failed:', e);
+            throw new HttpException(e.message, 400);
         }
-        
-        if (user.user_role ==  UserRole.ADMIN){
-            user =  null;
-        }
-
-        // Call add recipe business logic to create a new recipe 
-        const new_recipe = await this.recipeService.addRecipe(user, payload.recipe)
-
-        try{
-            const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components)
-
-            // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
-            if (user !== null){
-                await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list)
-            }
-
-        } catch(e){
-            return new HttpException(e.message, 400)
-        }
-
-        return new HttpException("Recipe added successfully", 200)
     }
 
+    
     /**
      * Endpoint to delete a recipe
      * @param headers header containing the authorization token
@@ -97,3 +80,5 @@ export class RecipeController {
     }
     
 }
+
+
