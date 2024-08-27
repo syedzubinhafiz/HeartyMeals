@@ -1,8 +1,11 @@
 <template>
     <div class="border border-custom-button-green rounded-md w-full flex justify-between">
         <div v-for="(section, i) in sections" class="grow flex items-center justify-between space-x-2 text-wrap">
-            <div v-if="progress<=i" class="border border-custom-button-green rounded-full h-10 w-10 flex items-center justify-center m-2">
+            <div v-if="progress<i" class="border border-custom-button-green rounded-full h-10 w-10 flex items-center justify-center m-2">
                 <p class="text-custom-button-green">{{ i+1 }}</p>
+            </div>
+            <div v-else-if="progress==i" class="border border-custom-button-green rounded-full h-10 w-10 flex items-center justify-center m-2 bg-custom-button-green">
+                <p class="text-white">{{ i+1 }}</p>
             </div>
             <svg v-else class="m-2" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="40" height="40" rx="20" fill="#87A98D"/>
