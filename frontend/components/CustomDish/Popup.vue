@@ -1,0 +1,51 @@
+<template>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <div v-if="computedPopupOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex w-full h-full items-center justify-center">
+        <Overlay :level="1" class="fixed z-50 min-w-96 min-h-96 p-4">
+            <div class="flex justify-end w-full">
+                <button @click="togglePopup" class="text-black">
+                    <i class="bi bi-x text-3xl"></i>
+                </button>
+            </div>
+            <div class="flex justify-center bg-custom-overlay-light rounded-md p-2">
+                <p>insert progress bar here</p>
+            </div>
+            <div class="flex justify-center grow bg-custom-overlay-light rounded-md p-2">
+                <p>insert subpage here</p>
+            </div>
+            <div class="flex justify-between">
+                <ButtonGreen>← Back</ButtonGreen>
+                <ButtonGreen>→ Next</ButtonGreen>
+            </div>
+        </Overlay>
+    </div>
+
+</template>
+<script setup>
+defineOptions({
+	name: "CustomDishPopup",
+});
+
+const props = defineProps({
+  isPopupOpen: {
+      type: Boolean,
+      default: false
+  },
+})
+
+const emits = defineEmits(["update:isPopupOpen"]);
+
+const computedPopupOpen = computed({
+	get() {
+		return props.isPopupOpen;
+	},
+	set(value) {
+		emits("update:isPopupOpen", value);
+	},
+});
+
+const togglePopup = () => {
+  computedPopupOpen.value = false;
+};
+
+</script>

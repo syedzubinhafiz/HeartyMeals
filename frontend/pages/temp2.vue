@@ -10,7 +10,10 @@
         </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-yellow-200 flex items-center justify-center">
-        <p>section 3</p>
+        <CustomDishPopup v-model:isPopupOpen="isPopupOpen"/>
+        <ButtonGreen @click="togglePopup">
+          <p>open popup</p>
+        </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-blue-200 flex items-center justify-center">
         <p>section 4</p>
@@ -69,6 +72,14 @@ let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 cro
 )
 
 const mealDataList = ref([mealData1,mealData2,mealData3])
+
+// ---------------------------------
+
+const isPopupOpen = ref(false);
+
+const togglePopup = () => {
+  isPopupOpen.value = !isPopupOpen.value;
+};
 </script>
   
 <style scoped>
