@@ -10,8 +10,11 @@
             <div class="flex justify-center">
                 <CustomDishProgressBar :progress="currentSection" :sections="['Select raw ingredients','Select seasoning','Set recipe','Summary']"/>
             </div>
-            <div class="flex justify-center grow bg-custom-overlay-light rounded-md p-2">
-                <p>insert subpage here</p>
+            <div class="flex flex-col items-center grow">
+                <CustomDishSection1 v-if="currentSection==0"/>
+                <CustomDishSection2 v-if="currentSection==1"/>
+                <CustomDishSection3 v-if="currentSection==2"/>
+                <CustomDishSection4 v-if="currentSection==3"/>
             </div>
             <div class="flex justify-between">
                 <ButtonGreen @click.prevent="sectionBack">← Back</ButtonGreen>
