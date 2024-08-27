@@ -11,10 +11,11 @@ import { Component } from '../component/component.entity';
 import { RecipeComponent } from '../recipe-component/recipe-component.entity';
 import { CommonService } from 'src/common/common.service';
 import { ComponentModule } from 'src/component/component.module';
+import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Cuisine, Dietary, Recipe, User, Component, RecipeComponent]), ComponentModule],
     controllers: [RecipeController],
-    providers: [RecipeService, RecipeComponentService, CommonService],
+    providers: [RecipeService, RecipeComponentService, CommonService, RecipeComponentArchiveService],
 })
 export class RecipeModule {}

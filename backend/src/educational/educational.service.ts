@@ -95,7 +95,7 @@ export class EducationalService {
             var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
 
             // soft delete
-            entry.deletedAt = new Date();
+            entry.deleted_at = new Date();
             entry.visibility = Visibility.PRIVATE;
             return await this.educatinoalContentRepository.save(entry);
             }
