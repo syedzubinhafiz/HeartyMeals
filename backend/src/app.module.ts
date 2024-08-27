@@ -27,6 +27,7 @@ import seedEthnicity from './ethnicity/ethnicity.seeder';
 import seedFoodCategory from './food-category/food-category.seeder';
 import seedDietary from './dietary/dietary.seeder';
 import { dataSourceOptions } from './db/data-source';
+import { MealLogSummaryModule } from './meal-log-summary/meal-log-summary.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { dataSourceOptions } from './db/data-source';
     AllergiesModule,
     FoodCategoryModule,
     EducationalModule,
+    MealLogSummaryModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
