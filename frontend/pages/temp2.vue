@@ -4,7 +4,10 @@
         <NutrientWidgetDelta/>
       </div>
       <div class="section w-screen h-screen bg-green-200 flex items-center justify-center">
-        <p>section 2</p>
+        <StomachSidebar v-model="isSidebarOpen"/>
+        <ButtonGreen @click="toggleSidebar">
+          <p>open sidebar</p>
+        </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-yellow-200 flex items-center justify-center">
         <p>section 3</p>
@@ -41,6 +44,13 @@
   
     container.value.addEventListener('wheel', handleWheel);
   });
+// ---------------------------------
+
+const isSidebarOpen = ref(false);
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
   </script>
   
   <style scoped>
