@@ -7,15 +7,15 @@
                     <i class="bi bi-x text-3xl"></i>
                 </button>
             </div>
-            <div class="flex justify-center bg-custom-overlay-light rounded-md p-2">
-                <p>insert progress bar here</p>
+            <div class="flex justify-center">
+                <CustomDishProgressBar :progress="currentSection" :sections="['Select raw ingredients','Select seasoning','Set recipe','Summary']"/>
             </div>
             <div class="flex justify-center grow bg-custom-overlay-light rounded-md p-2">
                 <p>insert subpage here</p>
             </div>
             <div class="flex justify-between">
-                <ButtonGreen>← Back</ButtonGreen>
-                <ButtonGreen>→ Next</ButtonGreen>
+                <ButtonGreen @click.prevent="sectionBack">← Back</ButtonGreen>
+                <ButtonGreen @click.prevent="sectionNext">→ Next</ButtonGreen>
             </div>
         </Overlay>
     </div>
@@ -48,4 +48,15 @@ const togglePopup = () => {
   computedPopupOpen.value = false;
 };
 
+// -----------------------
+const currentSection = ref(0)
+const MAX_SECTIONS = 4
+const sectionBack = () => {currentSection.value = Math.max(0,currentSection.value-1)}
+const sectionNext = () => {
+    currentSection.value += 1
+    if(currentSection.value > MAX_SECTIONS) {
+        // implement custom recipe adding here
+        currentSection.value -= 1
+    }
+}
 </script>
