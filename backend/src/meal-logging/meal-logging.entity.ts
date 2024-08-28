@@ -9,11 +9,8 @@ export class MealLogging{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
-    @Column({type: 'date'})
-    date: Date;
-
-    @Column({type: 'timestamp with time zone'})
-    time: Timestamp;
+    @Column({type: 'timestamptz', nullable: true, default: null})
+    consumed_date_time: Date;
 
     @Column({
         type: 'enum',
@@ -31,9 +28,21 @@ export class MealLogging{
     @JoinColumn({name: 'user_id'})
     user: User;
 
-
     @ManyToOne(()=> Recipe, recipe=> recipe.id)
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
+    @Column({
+        type: 'float'
+    })
+    portion: Number;
+
+    @Column({type: 'timestamp with time zone', default: () => 'now()'})
+    created_at: Date;
+
+    @Column({type: 'timestamp with time zone', nullable: true, default: null})
+    updated_at: Date;
+
+    @Column({type: 'timestamp with time zone', nullable: true, default: null})
+    deleted_at?: Date;
 }
