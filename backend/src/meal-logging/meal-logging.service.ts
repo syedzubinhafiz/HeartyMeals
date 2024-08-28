@@ -40,7 +40,7 @@ export class MealLoggingService {
             const result = this.checkDate(meal_date);
             if (result.editable == false){ 
                 // Cannot edit past or future meals
-                throw result.message; 
+                throw new Error("Cannot add meal loggings for past meals."); 
             } 
 
             const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
@@ -67,9 +67,7 @@ export class MealLoggingService {
                 new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
-                new_meal_logging.created_at = new Date();
-                new_meal_logging.updated_at = new Date();
-
+                
                 all_entries.push(new_meal_logging)
             }));
 
@@ -154,7 +152,7 @@ export class MealLoggingService {
             }
 
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
-                .where("meal_logging.id = :id", { id: In(mealLoggingIdList) })
+                .where("meal_logging.id IN (:...ids)", { ids: mealLoggingIdList })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
                 .andWhere("meal_logging.deleted_at IS NULL")
                 .andWhere("meal_logging.is_consumed = false")
@@ -215,7 +213,7 @@ export class MealLoggingService {
                 await this.mealLoggingRepository.save(entry);
                 return true; 
             }
-            else { throw new Error(result.message); }
+            else { throw new Error("Cannot mark consume on past meal or over 7 days meal"); }
         }
         catch (e){
             throw e;
@@ -268,6 +266,12 @@ export class MealLoggingService {
         const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
         const seven_days_in_millis = 6.048e+8; // Number of milliseconds in seven days
 
+        const isSameDay = (date1, date2) => {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        };
+        
         // Check if the incoming date is more than 7 days ahead of today_date
         if (newDate.getTime() - today_date_in_number > seven_days_in_millis) {
             return {
@@ -286,13 +290,13 @@ export class MealLoggingService {
             };
         }
 
-        if (newDate.getTime() - today_date_in_number > 0 && newDate.getTime() - today_date_in_number < one_day_in_millis) {
+        if (isSameDay(newDate, new Date(today_date_in_number))) {
             return {
                 editable: true,
                 planning: false,
                 message: "Today meals."
             };
-        } 
+        }
 
         // Check if the incoming date is in the past
         if (newDate.getTime() - today_date_in_number <= 0) {
