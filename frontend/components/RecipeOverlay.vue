@@ -12,6 +12,7 @@
         <div class="tabs">
           <button :class="{ active: activeTab === 'nutrition' }" @click="activeTab = 'nutrition'">Nutrition Information</button>
           <button :class="{ active: activeTab === 'recipe' }" @click="activeTab = 'recipe'">Recipe</button>
+          <button :class="{ active: activeTab === 'ingredients' }" @click="activeTab = 'ingredients'">Ingredients</button>
         </div>
         <div class="tab-content">
           <div v-if="activeTab === 'nutrition'" class="nutrition-content">
@@ -51,10 +52,13 @@
             <p>Preparation time: 10 minutes</p>
             <!-- Add more recipe details here -->
           </div>
+          <div v-if="activeTab === 'ingredients'">
+            <p>Take 1 potato and boil it</p>
+            </div>
+        </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -172,11 +176,24 @@ export default {
   margin-right: 20px; /* Add margin between the tabs */
 }
 
-.tabs::after {
+/* Vertical line to the right of the Nutrition Information button */
+.tabs button:nth-child(1)::after {
   content: '';
   position: absolute;
   top: 50%;
-  left: calc(100% / 2 - 1px); /* Center the separator between the tabs */
+  right: -15px; /* Move the line farther to the right */
+  transform: translateY(-50%);
+  width: 2px;
+  height: 50%;
+  background-color: #D3D3D3; /* Light grey color for the separator */
+}
+
+/* Vertical line to the right of the Recipe button */
+.tabs button:nth-child(2)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -15px; /* Ensure this line is aligned properly */
   transform: translateY(-50%);
   width: 2px;
   height: 50%;
@@ -198,6 +215,7 @@ export default {
   border-radius: 3px 3px 0 0;
   box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.2); /* Shadow to indicate active tab */
 }
+
 
 .tab-content {
   padding: 10px 0;
