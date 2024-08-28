@@ -20,9 +20,9 @@ export class MealLoggingController {
     @Post('add')
     async addMealLogging(@Headers() headers, @Body() mealLoggingDTO: AddMealLoggingDTO){
         try {
-            const authHeader = headers.authorization;
-            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.addMealLogging(decodedHeaders, mealLoggingDTO);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            await this.mealLoggingService.addMealLogging(decoded_headers, mealLoggingDTO);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -39,9 +39,9 @@ export class MealLoggingController {
     @Get('get_meals')
     async getMealsPerDay(@Headers() headers, @Body("date") payload){
         try {
-            const authHeader = headers.authorization;
-            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            return await this.mealLoggingService.getMealsPerDay(decodedHeaders, payload);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            return await this.mealLoggingService.getMealsPerDay(decoded_headers, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -73,9 +73,9 @@ export class MealLoggingController {
     @Post('delete')
     async delete(@Headers() headers, @Body() payload){
         try {
-            const authHeader = headers.authorization;
-            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload.mealLoggingIds);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            await this.mealLoggingService.deleteMealLoggingBulk(decoded_headers, payload.mealLoggingIds);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -92,9 +92,9 @@ export class MealLoggingController {
     @Post('mark_consumed')
     async markMealConsumed(@Headers() headers, @Body("mealLoggingId") payload){
         try {
-            const authHeader = headers.authorization;
-            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.markIsConsumed(decodedHeaders, payload);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            await this.mealLoggingService.markIsConsumed(decoded_headers, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
