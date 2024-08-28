@@ -26,7 +26,7 @@
     </button>
     </div> 
 </div>
-<div class="section h-screen flex flex-col justify-end">
+<div class="section flex flex-col justify-end">
             <Footer/>
         </div>
 </div>
