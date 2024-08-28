@@ -3,8 +3,8 @@
 		<div class="w-full flex p-2 space-x-4">
 			<div class="w-1/2 flex flex-col space-y-2">
 				<div class="flex justify-center items-center p-2">
-					<div class="py-20 px-10 border border-black rounded-lg">
-						<p>TODO: image insertion component</p>
+					<div class="border border-black rounded-lg">
+						<ImgDragbox v-model="modelValue.mealImg"/>
 					</div>
 				</div>
 			</div>
