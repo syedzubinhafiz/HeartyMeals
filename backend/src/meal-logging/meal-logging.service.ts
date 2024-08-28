@@ -40,7 +40,7 @@ export class MealLoggingService {
             const result = this.checkDate(meal_date);
             if (result.editable == false){ 
                 // Cannot edit past or future meals
-                throw new Error("Cannot add meal loggings for past meals."); 
+                throw new Error("Cannot add meal loggings for past or future meals."); 
             } 
 
             const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
