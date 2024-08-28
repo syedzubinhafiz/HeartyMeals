@@ -13,7 +13,7 @@
             <div class="flex flex-col items-center grow">
                 <CustomDishSection1 v-if="currentSection==0" v-model="customMeal" :ingredientList="ingredientList"/>
                 <CustomDishSection2 v-if="currentSection==1" v-model="customMeal" :seasoningList="seasoningList"/>
-                <CustomDishSection3 v-if="currentSection==2"/>
+                <CustomDishSection3 v-if="currentSection==2" v-model="customMeal" :ingredientList="ingredientList"/>
                 <CustomDishSection4 v-if="currentSection==3"/>
             </div>
             <div class="flex justify-between">

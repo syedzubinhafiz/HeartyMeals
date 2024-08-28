@@ -3,11 +3,11 @@
 		<div class="w-3/5 flex flex-col space-y-2">
 			<SearchBar/>
 			<H2>Recent Searches</H2>
-			<CustomDishIngredientList :columns="2" :ingredientList="seasoningList" buttonStr="+" :buttonOnClick="onAdd" class="overflow-y-auto"  style="max-height:50vh"/>
+			<CustomDishIngredientList :columns="2" :ingredientList="seasoningList" buttonStr="+" :buttonOnClick="onAdd" :includeDropdown="true" class="overflow-y-auto"  style="max-height:50vh"/>
 		</div>
 		<div class="w-2/5 flex flex-col space-y-2">
 			<H2>Selected Seasoning</H2>
-			<CustomDishIngredientList :columns="1" :ingredientList="modelValue.seasoningList" buttonStr="-" :buttonOnClick="onRemove" class="overflow-y-auto" style="max-height:50vh"/>
+			<CustomDishIngredientList :columns="1" :ingredientList="modelValue.seasoningList" buttonStr="-" :buttonOnClick="onRemove" :includeDropdown="true" class="overflow-y-auto" style="max-height:50vh"/>
 		</div>
 
 	</div>

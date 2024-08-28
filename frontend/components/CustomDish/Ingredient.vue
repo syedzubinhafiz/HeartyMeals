@@ -3,7 +3,8 @@
         <img :src="ingredient.imgSrc" class="h-8 w-8"/>
         <P>{{ ingredient.name }}</P>
         <div class="grow flex justify-end space-x-2 items-center">
-            <Dropdown v-model="ingredient.unit" :options="['tbsp','grams','ml','items']" class="shadow-md rounded-md" color="bg-white"/>
+            <Input v-if="includeInput" v-model="ingredient.cookingMethod"/>
+            <Dropdown v-if="includeDropdown" v-model="ingredient.unit" :options="['tbsp','grams','ml','items']" class="shadow-md rounded-md" color="bg-white"/>
             <ButtonTransparent v-if="buttonStr!=null" @click.prevent="() => buttonOnClick(ingredient)">{{ buttonStr }}</ButtonTransparent>
         </div>
         
@@ -28,6 +29,14 @@ const props = defineProps({
     buttonOnClick: {
         type: Function,
         default: () => {}
+    },
+    includeInput: {
+        type: Boolean,
+        default: false
+    },
+    includeDropdown: {
+        type: Boolean,
+        default: false
     }
 })
 </script>
