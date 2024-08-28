@@ -16,7 +16,7 @@
                 />
             </div>
             <div class="nutrition-summary">
-                <NutrientWidget />
+                <NutrientWidgetDelta />
             </div>
         </div>
   <div class="button-container"> 
