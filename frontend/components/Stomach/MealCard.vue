@@ -1,7 +1,7 @@
 <template>
     <div level="2" class="flex flex-row items-center p-2 space-x-4">
         <!-- <div class="w-16 h-16"/> -->
-         <img :src="modelValue.mealImg" class="h-24 w-24 rounded-lg shadow-md"/>
+         <img :src="modelValue.imgSrc" class="h-24 w-24 rounded-lg shadow-md"/>
          <div class="flex flex-col grow">
             <H3>{{ modelValue.name }}</H3>
             <P>Serving Size: {{ modelValue.servingSize }}</P>

@@ -4,7 +4,7 @@
 			<div class="w-1/2 flex flex-col space-y-2">
 				<div class="flex justify-center items-center p-2">
 					<div class="border border-black rounded-lg">
-						<ImgDragbox v-model="modelValue.mealImg"/>
+						<ImgDragbox v-model="modelValue.imgSrc"/>
 					</div>
 				</div>
 			</div>
