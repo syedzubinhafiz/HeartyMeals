@@ -12,7 +12,7 @@
             </div>
             <div class="flex flex-col items-center grow">
                 <CustomDishSection1 v-if="currentSection==0" v-model="customMeal" :ingredientList="ingredientList"/>
-                <CustomDishSection2 v-if="currentSection==1"/>
+                <CustomDishSection2 v-if="currentSection==1" v-model="customMeal" :seasoningList="seasoningList"/>
                 <CustomDishSection3 v-if="currentSection==2"/>
                 <CustomDishSection4 v-if="currentSection==3"/>
             </div>
@@ -47,6 +47,13 @@ const ingredientList = reactive([new IngredientData("Potato","assets/img/potato.
     new IngredientData("Rice","assets/img/potato.svg","grams"),
     new IngredientData("Plutonium","assets/img/potato.svg","grams")])
 
+const seasoningList = reactive([
+    new IngredientData("Salt","assets/img/potato.svg","tbsp"),
+    new IngredientData("Pepper","assets/img/potato.svg","tbsp"),
+    new IngredientData("Blackpepper","assets/img/potato.svg","tbsp"),
+    new IngredientData("Arsenic","assets/img/potato.svg","tbsp"),
+    new IngredientData("Wasabi","assets/img/potato.svg","tbsp"),
+])
 // -----------------------
 
 const emits = defineEmits(["update:isPopupOpen"]);

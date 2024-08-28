@@ -27,9 +27,6 @@ const props = defineProps({
 	ingredientList: {
 		default: []
 	},
-	seasoningList: {
-		default: []
-	}
 })
 
 const onAdd = (ingredient) => {
