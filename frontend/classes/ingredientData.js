@@ -1,7 +1,8 @@
 export default class IngredientData {
-    constructor(name,imgSrc,unit,cookingMethod) {
+    constructor(name,imgSrc,quantity,unit,cookingMethod) {
         this.name = name
         this.imgSrc = imgSrc
+        this.quantity = 0
         this.unit = unit ?? "grams"
         this.cookingMethod = cookingMethod ?? null
     }

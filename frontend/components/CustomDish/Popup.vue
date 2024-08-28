@@ -7,14 +7,14 @@
                     <i class="bi bi-x text-3xl"></i>
                 </button>
             </div>
-            <div class="flex justify-center px-16">
+            <div class="flex justify-center px-24">
                 <CustomDishProgressBar :progress="currentSection" :sections="['Select raw ingredients','Select seasoning','Set recipe','Summary']"/>
             </div>
             <div class="flex flex-col items-center grow">
                 <CustomDishSection1 v-if="currentSection==0" v-model="customMeal" :ingredientList="ingredientList"/>
                 <CustomDishSection2 v-if="currentSection==1" v-model="customMeal" :seasoningList="seasoningList"/>
                 <CustomDishSection3 v-if="currentSection==2" v-model="customMeal" :ingredientList="ingredientList"/>
-                <CustomDishSection4 v-if="currentSection==3"/>
+                <CustomDishSection4 v-if="currentSection==3" v-model="customMeal" :ingredientList="ingredientList" :seasoningList="seasoningList"/>
             </div>
             <div class="flex justify-between">
                 <ButtonGreen @click.prevent="sectionBack">← Back</ButtonGreen>
@@ -40,19 +40,19 @@ const props = defineProps({
 })
 // -----------------------
 const customMeal = reactive(new CustomMealData("Mystery Dish","assets/img/croissant.svg"))
-const ingredientList = reactive([new IngredientData("Potato","assets/img/potato.svg","grams"),
-    new IngredientData("Tomato","assets/img/potato.svg","grams"),
-    new IngredientData("Chicken","assets/img/potato.svg","grams"),
-    new IngredientData("Cauliflower","assets/img/potato.svg","grams"),
-    new IngredientData("Rice","assets/img/potato.svg","grams"),
-    new IngredientData("Plutonium","assets/img/potato.svg","grams")])
+const ingredientList = reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
+    new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
+    new IngredientData("Chicken","assets/img/potato.svg",0,"grams"),
+    new IngredientData("Cauliflower","assets/img/potato.svg",0,"grams"),
+    new IngredientData("Rice","assets/img/potato.svg",0,"grams"),
+    new IngredientData("Plutonium","assets/img/potato.svg",0,"grams")])
 
 const seasoningList = reactive([
-    new IngredientData("Salt","assets/img/potato.svg","tbsp"),
-    new IngredientData("Pepper","assets/img/potato.svg","tbsp"),
-    new IngredientData("Blackpepper","assets/img/potato.svg","tbsp"),
-    new IngredientData("Arsenic","assets/img/potato.svg","tbsp"),
-    new IngredientData("Wasabi","assets/img/potato.svg","tbsp"),
+    new IngredientData("Salt","assets/img/potato.svg",0,"tbsp"),
+    new IngredientData("Pepper","assets/img/potato.svg",0,"tbsp"),
+    new IngredientData("Blackpepper","assets/img/potato.svg",0,"tbsp"),
+    new IngredientData("Arsenic","assets/img/potato.svg",0,"tbsp"),
+    new IngredientData("Wasabi","assets/img/potato.svg",0,"tbsp"),
 ])
 // -----------------------
 

@@ -1,11 +1,11 @@
 <template>
 	<div class="flex w-full h-full grow p-2 space-x-4">
-		<div class="w-3/5 flex flex-col space-y-2">
+		<div class="w-2/3 flex flex-col space-y-2">
 			<SearchBar/>
 			<H2>Recent Searches</H2>
 			<CustomDishIngredientList :columns="2" :ingredientList="ingredientList" buttonStr="+" :buttonOnClick="onAdd" :includeDropdown="true" class="overflow-y-auto"  style="max-height:50vh"/>
 		</div>
-		<div class="w-2/5 flex flex-col space-y-2">
+		<div class="w-1/3 flex flex-col space-y-2">
 			<H2>Selected Ingredients</H2>
 			<CustomDishIngredientList :columns="1" :ingredientList="modelValue.ingredientList" buttonStr="-" :buttonOnClick="onRemove" :includeDropdown="true" class="overflow-y-auto" style="max-height:50vh"/>
 		</div>
