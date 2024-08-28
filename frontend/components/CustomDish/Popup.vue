@@ -17,8 +17,10 @@
                 <CustomDishSection4 v-if="currentSection==3" v-model="customMeal" :ingredientList="ingredientList" :seasoningList="seasoningList"/>
             </div>
             <div class="flex justify-between">
-                <ButtonGreen @click.prevent="sectionBack">← Back</ButtonGreen>
-                <ButtonGreen @click.prevent="sectionNext">→ Next</ButtonGreen>
+                <ButtonGreen @click.prevent="sectionBack" v-if="currentSection>0">← Back</ButtonGreen>
+                <div v-else/>
+                <ButtonGreen @click.prevent="sectionNext" v-if="currentSection<MAX_SECTIONS-1">→ Next</ButtonGreen>
+                <ButtonGreen @click.prevent="()=>{}" v-else>Done</ButtonGreen>
             </div>
         </Overlay>
     </div>
