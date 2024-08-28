@@ -135,7 +135,6 @@ export class RecipeService {
             
             // Get user selected cuisine
             if (cuisineIds.length > 0){
-                console.log(typeof cuisineIds)
                 query.andWhere("recipe.cuisine_id IN (:...ids)", {ids:cuisineIds })
             }
 
