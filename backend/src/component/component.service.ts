@@ -122,7 +122,14 @@ export class ComponentService {
      * @param pageSize limit of components per page
      * @returns list of components and total count
      */
-    async getComponents(decodedHeader: any, componentType: ComponentType, page: number, pageSize: number): Promise<[Component[], number]> {
+    async getComponents(
+        decodedHeader: any, 
+        componentType: ComponentType, 
+        page: number, 
+        pageSize: number, 
+        pagination: boolean, 
+        search: string
+    ): Promise<[Component[], number]> {
 
         // Calculate the number of items to skip
         const skip = (page - 1) * pageSize;
@@ -141,6 +148,12 @@ export class ComponentService {
         const query = this.componentRepository.createQueryBuilder("component")
             .select(["component.id", "component.name", "component.storage_links"])
             .where("component.component_type = :type", { type:componentType });
+
+
+        if (search != null){
+            query.andWhere("component.name ILIKE :search", { search: `%${search}%` });
+
+        }
     
 
         // If there are restricted food categories, exclude them from the query
@@ -148,11 +161,15 @@ export class ComponentService {
             query.andWhere("component.food_cat_id NOT IN (:...ids)", { ids: food_cat_ids });
         }
 
-        // Execute the query with pagination
-        query.skip(skip)
-            .take(take);
-    
-        return await query.getManyAndCount();
+        if (pagination){
+            // Execute the query with pagination
+            query.skip(skip)
+                .take(take);
+        }
+        
+        const result = await query.getMany();
+
+        return  [result, result.length];
     }
     
     
