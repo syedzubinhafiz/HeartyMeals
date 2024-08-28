@@ -53,6 +53,55 @@ export class User{
     })
     user_role: UserRole;
 
+    @Column({type: "integer"})
+    age: number;
+
+    //height in cm
+    @Column({type: "integer"})
+    height: number;
+
+
+    //weight in kg
+    @Column({type: "integer"})
+    weight: number;
+
+
+    /**
+    {
+        carbs_percentage: 0.5, //range from 0 to 1
+        protein_percentage: 0.3, //range from 0 to 1
+        fat_percentage: 0.2, //range from 0 to 1
+        activity_level: 1, {1: sedentary, 2: light, 3: moderate, 4: active, 5: very active}
+        water_intake: 2000, // in ml    
+
+    }
+     */
+    @Column({
+        type: 'jsonb', 
+        nullable: false, 
+        default: {
+            'carbs_percentage': 0.5,
+            'protein_percentage': 0.3,
+            'fat_percentage': 0.2,
+            'activity_level': 1,
+            'water_intake': 2000
+        }
+    })
+    user_nutrition_setting: JSON;
+
+    @Column({
+        type: 'jsonb', 
+        nullable: false, 
+        default: {
+            "calories": 0, //in kcal
+            "carbs": 0, //in g
+            "protein": 0, //in g
+            "fat": 0, //in g
+            "sodium": 0, //in mg
+            "cholesterol": 0, //in mg
+        }
+    })
+    nutrition_budget: JSON;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;
