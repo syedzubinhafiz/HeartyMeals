@@ -4,10 +4,16 @@
         <NutrientWidgetDelta/>
       </div>
       <div class="section w-screen h-screen bg-green-200 flex items-center justify-center">
-        <p>section 2</p>
+        <StomachSidebar v-model="mealDataList" v-model:isSidebarOpen="isSidebarOpen"/>
+        <ButtonGreen @click="toggleSidebar">
+          <p>open sidebar</p>
+        </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-yellow-200 flex items-center justify-center">
-        <p>section 3</p>
+        <CustomDishPopup v-model:isPopupOpen="isPopupOpen"/>
+        <ButtonGreen @click="togglePopup">
+          <p>open popup</p>
+        </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-blue-200 flex items-center justify-center">
         <p>section 4</p>
@@ -41,23 +47,55 @@
   
     container.value.addEventListener('wheel', handleWheel);
   });
-  </script>
+// ---------------------------------
+
+const isSidebarOpen = ref(false);
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+import MealData from '../../classes/mealData.js'
+import NutrientData from '../../classes/nutrientData.js'
+
+
+let mealData1 = new MealData("Regular Croissant","assets/img/croissant.svg","1 crossiant (80g)",1,
+  new NutrientData(400,150,100,100,5,300)
+)
+
+let mealData2 = new MealData("Cheese Croissant","assets/img/croissant.svg","1 crossiant (100g)",1,
+  new NutrientData(500,100,200,200,10,400)
+)
+
+let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 crossiant (50g)",1,
+  new NutrientData(100,60,140,70,20,200)
+)
+
+const mealDataList = ref([mealData1,mealData2,mealData3])
+
+// ---------------------------------
+
+const isPopupOpen = ref(false);
+
+const togglePopup = () => {
+  isPopupOpen.value = !isPopupOpen.value;
+};
+</script>
   
-  <style scoped>
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  .container {
-    scroll-snap-type: y mandatory;
-    overflow-y: scroll;
-    height: 100vh;
-  }
-  
-  .section {
-    scroll-snap-align: start;
-    height: 100vh;
-    width: 100%;
-  }
-  </style>
-  
+<style scoped>
+html {
+  scroll-behavior: smooth;
+}
+
+.container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.section {
+  scroll-snap-align: start;
+  height: 100vh;
+  width: 100%;
+}
+</style>
