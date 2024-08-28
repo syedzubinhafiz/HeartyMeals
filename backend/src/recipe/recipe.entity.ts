@@ -55,7 +55,10 @@ export class Recipe{
     })
     storage_links: JSON
 
-    @ManyToOne( ()=> User, user=> user.user_id, {nullable: true} )
+    @Column( "jsonb", { array: false, default: [] })
+    related_food_categories: string[];
+
+    @ManyToOne( ()=> User, user=> user.user_id, {nullable: true, eager: true} )
     @JoinColumn({name: 'user_id'})
     user: User;
 
