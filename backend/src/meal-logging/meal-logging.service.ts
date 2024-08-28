@@ -103,14 +103,11 @@ export class MealLoggingService {
             const new_date = new Date(date);
             
             // get all the meals recoreded in a day
-            var entries = await this.mealLoggingRepository.query(`
-                SELECT * FROM meal_logging
-                WHERE 
-                DATE(consumed_date_time) = DATE($1)
-                AND user_id = $2
-                AND deleted_at IS NULL
-            `, [new_date, user_object.user_id]);
-            
+            var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where('DATE(meal_logging.consumed_date_time) = DATE(:date)', { date: new_date })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+                .andWhere("meal_logging.deleted_at IS NULL")
+                .getMany()
             }
         catch (e){
             throw e;
@@ -156,14 +153,13 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
-            var entries = await this.mealLoggingRepository.query(`
-                SELECT * FROM meal_logging
-                WHERE 
-                id = ANY($1)
-                AND user_id = $2
-                AND deleted_at IS NULL
-                AND is_consumed = false
-            `, [mealLoggingIdList, user_object.user_id]);
+            var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: In(mealLoggingIdList) })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+                .andWhere("meal_logging.deleted_at IS NULL")
+                .andWhere("meal_logging.is_consumed = false")
+                .getMany()
+
             if (entries.length != mealLoggingIdList.length){ throw new Error("Some meal logging entries are not found or already consumed."); }
 
             entries.forEach(async meal_logging_object => {
@@ -197,18 +193,19 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
-            var entry = await this.mealLoggingRepository.query(`
-                SELECT * FROM meal_logging
-                WHERE 
-                id = $1
-                AND user_id = $2
-                AND deleted_at IS NULL
-                AND is_consumed = false
-            `, [mealLoggingId, user_object.user_id]);
-            if (entry.length == 0){ 
+            var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: mealLoggingId })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+                .getOne()
+
+            if (!entry || entry == undefined){ 
                 throw new Error(`Meal logging with id ${mealLoggingId} not found`);
             }
-            var entry = entry[0];
+            
+            if (entry.is_consumed){ 
+                throw new Error(`Meal is consumed already.`);
+            }
+
             // Check if meal can be marked as consumed
             // use consumed date time to check
             const result = this.checkDate(entry.consumed_date_time);
@@ -230,7 +227,7 @@ export class MealLoggingService {
      * @param payload - payload that contains the meal logging id and the new date
      * @returns the updated meal logging object
      */
-    async updateMealLogging(payload: UpdateMealLoggingDTO){
+    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO){
         try {
             const newDate = new Date(payload.newDate);
             // validate date 
@@ -239,22 +236,22 @@ export class MealLoggingService {
 
             // validate meal logging id 
             // returns a list of meal logging objects found
-            var meal_logging_object = await this.mealLoggingRepository.query(`
-                SELECT * FROM meal_logging
-                WHERE 
-                id = $1
-            `, [payload.mealLoggingId]);
-            if (meal_logging_object.length == 0) {
-                throw new Error(`Meal logging with id ${meal_logging_object} not found`);
-            }
-            meal_logging_object = meal_logging_object[0];
-            // update the meal logging object
-            meal_logging_object.updated_at = new Date();
-            meal_logging_object.consumed_date_time = newDate;
-            meal_logging_object.portion = payload.portion;
-            meal_logging_object.type = payload.mealType;
+            var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: payload.mealLoggingId })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+                .getOne()
 
-            await this.mealLoggingRepository.save(meal_logging_object);
+            if (!entry || entry == undefined){ 
+                throw new Error(`Meal logging with id ${payload.mealLoggingId} not found`);
+            }
+
+            // update the meal logging object
+            entry.updated_at = new Date();
+            entry.consumed_date_time = newDate;
+            entry.portion = payload.portion;
+            entry.type = payload.mealType;
+
+            await this.mealLoggingRepository.save(entry);
             return true;
         } catch (e) {
             throw e;

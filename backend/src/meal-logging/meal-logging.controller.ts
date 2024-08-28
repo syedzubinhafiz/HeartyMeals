@@ -54,9 +54,11 @@ export class MealLoggingController {
      * @returns HttpException 200 if the meal is updated 
      */
     @Post('update_meal')
-    async updateMealLogging(@Body() payload: UpdateMealLoggingDTO){
+    async updateMealLogging(@Headers() headers, @Body() payload: UpdateMealLoggingDTO){
         try {
-            await this.mealLoggingService.updateMealLogging(payload);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            await this.mealLoggingService.updateMealLogging(decoded_headers, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);
