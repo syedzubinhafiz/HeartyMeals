@@ -37,10 +37,10 @@ export class MealLogging{
     })
     portion: Number;
 
-    @Column({type: 'timestamp with time zone'})
+    @Column({type: 'timestamp with time zone', default: () => 'now()'})
     created_at: Date;
 
-    @Column({type: 'timestamp with time zone'})
+    @Column({type: 'timestamp with time zone', nullable: true, default: null})
     updated_at: Date;
 
     @Column({type: 'timestamp with time zone', nullable: true, default: null})
