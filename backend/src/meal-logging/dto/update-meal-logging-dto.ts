@@ -8,7 +8,7 @@ export class UpdateMealLoggingDTO{
     @Matches(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/,
         {
-            message: 'newDate must be in the format YYYY-MM-DDTHH:MM:SS.SSS',
+            message: 'newDate must be in the format YYYY-MM-DDTHH:MM:SS.SSS+-HHMM',
         }
     )
     readonly newDate: string;
