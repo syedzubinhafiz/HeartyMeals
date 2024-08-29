@@ -114,7 +114,7 @@ export class RecipeController {
                     totalPages: Math.ceil(total_recipe / page_size)
                 }
             // If pagination is not required return the recipe list
-            } else if( page_number == 0 && page_size == 0){ 
+            } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
                 return recipes;
 
             // If recipeId is provided return the recipe details with components info 

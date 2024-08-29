@@ -9,7 +9,12 @@ export class ComponentController {
         private componentService: ComponentService
     ){}
 
-    @Post()
+    /**
+     * This endpoint is used to add a new component
+     * @param payload component details
+     * @returns component added successfully or error message
+     */
+    @Post('add')
     async add(@Body() payload: AddComponentDTO){
         return this.componentService.add(payload);
     }

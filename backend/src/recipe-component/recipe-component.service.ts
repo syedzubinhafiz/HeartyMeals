@@ -73,7 +73,7 @@ export class RecipeComponentService{
     /**
      *  This function is used to get the components of a recipe
      * @param recipeId  Recipe ID to get the recipe components
-     * @returns {ingridients: [], seasonings: []} List of components for the recipe
+     * @returns {ingredient: [], seasonings: []} List of components for the recipe
      */
     async getRecipeComponents(recipeId: string){
 
@@ -83,12 +83,12 @@ export class RecipeComponentService{
         })
 
         const seasonings = [];
-        const ingridients = [];
+        const ingredient = [];
         
         // Iterate over the recipe components and separate them into ingridients and seasonings
         recipe_component_list.forEach(recipe_component => {
             if (recipe_component.component.component_type == ComponentType.INGREDIENT){
-                ingridients.push ({
+                ingredient.push ({
                     component_id: recipe_component.component.id,
                     name: recipe_component.component.name,
                     amount: recipe_component.amount,
@@ -107,7 +107,7 @@ export class RecipeComponentService{
         });
 
         return {
-            ingridients: ingridients,
+            ingredient: ingredient,
             seasonings: seasonings
         }
     }
