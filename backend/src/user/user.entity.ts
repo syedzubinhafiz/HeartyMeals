@@ -93,7 +93,7 @@ export class User{
             'activity_level': 1
         }
     })
-    user_nutrition_setting: Object;
+    user_nutrition_setting: JSON;
 
     @Column({
         type: 'jsonb', 
@@ -108,7 +108,7 @@ export class User{
             "water_intake": 0 //in ml
         }
     })
-    daily_budget: Object;
+    daily_budget: JSON;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;

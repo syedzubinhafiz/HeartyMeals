@@ -55,14 +55,13 @@ export class UserService {
         new_user.height = payload.height;
         new_user.weight = payload.weight;
 
-        new_user.user_nutrition_setting = {
-            'carbs_percentage': payload.userNutritionSetting.carbsPercentage,
-            'protein_percentage': payload.userNutritionSetting.proteinPercentage,
-            'fat_percentage': payload.userNutritionSetting.fatPercentage,
-            'cholesterol_level': payload.userNutritionSetting.cholesterolLevel,
-            'activity_level': payload.userNutritionSetting.activityLevel,
-        }
-        payload.userNutritionSetting;
+        // manually assignation because of the JSON type
+        new_user.user_nutrition_setting = {} as JSON;
+        new_user.user_nutrition_setting["carbs_percentage"] = payload.userNutritionSetting.carbsPercentage;
+        new_user.user_nutrition_setting["protein_percentage"] = payload.userNutritionSetting.proteinPercentage;
+        new_user.user_nutrition_setting["fat_percentage"] = payload.userNutritionSetting.fatPercentage;
+        new_user.user_nutrition_setting["cholesterol_level"] = payload.userNutritionSetting.cholesterolLevel;
+        new_user.user_nutrition_setting["activity_level"] = payload.userNutritionSetting.activityLevel;
 
         // calculate the daily budget for the user in the format below
         // {
@@ -80,7 +79,15 @@ export class UserService {
         // call common service to calculate the daily nutrition budget for the user
         var user_daily_budget = this.commonService.calculateNutritionBudget(user_daily_calories, payload.userNutritionSetting, payload.nyhaLevel);
 
-        new_user.daily_budget = user_daily_budget;
+        // manually assignation because of the JSON type
+        new_user.daily_budget = {} as JSON;
+        new_user.daily_budget["calories"] = user_daily_budget.calories;
+        new_user.daily_budget["carbs"] = user_daily_budget.carbs;
+        new_user.daily_budget["protein"] = user_daily_budget.protein;
+        new_user.daily_budget["fat"] = user_daily_budget.fat;
+        new_user.daily_budget["sodium"] = user_daily_budget.sodium;
+        new_user.daily_budget["cholesterol"] = user_daily_budget.cholesterol;
+        new_user.daily_budget["water_intake"] = user_daily_budget.water_intake;
 
         return await this.userRepository.save(new_user);
     }
