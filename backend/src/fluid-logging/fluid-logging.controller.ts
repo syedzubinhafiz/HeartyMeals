@@ -11,15 +11,15 @@ export class FluidLoggingController {
     ){}
 
     @Get('get')
-    async getFoodCategory(@Headers() headers, @Body("date") payload) {
+    async getFluidLogging(@Headers() headers, @Body("date") payload) {
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
         return await this.fluidLoggingService.getFluidLogging(decoded_headers, payload);
     }
 
-    @Post('add')
-    async addDietary(@Headers() headers, @Body() payload){
+    @Post('update')
+    async updateFluidLogging(@Headers() headers, @Body() payload){
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
