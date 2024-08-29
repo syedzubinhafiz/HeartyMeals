@@ -42,25 +42,45 @@ export class ComponentController {
     @Get("ingredients")
     async getIngredients(
         @Headers() headers: any,
-        @Query('page') page: number = 1,
-        @Query('pageSize') pageSize: number = 10
+        @Query("page") page: string,
+        @Query("pageSize") pageSize: string,
+        @Query("search") search: string = null,
+
     ) {
 
         // Extract the authorization header from the request headers
         const auth_header = headers.authorization;
         const decoded_header = this.commonService.decodeHeaders(auth_header);
 
+        // Get the page number and page size
+        const page_number = page != undefined ? parseInt(page, 10) : 0;
+        const page_size = pageSize != undefined ? parseInt(pageSize, 10) : 0;
+
+        // Check if pagination is required
+        let pagination =  false;
+        if (page_number != 0 && page_size != 0){
+            pagination = true
+        }
+        
+
         // Get the list of ingredients
-        const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page, pageSize);
+    const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page_number, page_size, pagination, search);
         
         // Return the list of ingredients along with pagination details
-        return {
-            data: component_list,
-            total,
-            page,
-            pageSize,
-            totalPages: Math.ceil(total / pageSize)
-        };
+        if (pagination){
+            return {
+                data: component_list,
+                total,
+                page_number,
+                page_size,
+                totalPages: Math.ceil(total / page_size)
+            };
+        } else {
+            return {
+                data: component_list,
+                total
+            };
+        }
     }
     
     /**
@@ -73,25 +93,48 @@ export class ComponentController {
     @Get("seasonings")
     async getSeasonings(
         @Headers() headers: any,
-        @Query('page') page: number = 1,
-        @Query('pageSize') pageSize: number = 10
-    ){
+        @Query("page") page: string,
+        @Query("pageSize") pageSize: string,
+        @Query("search") search: string = null,
+
+    ) {
 
         // Extract the authorization header from the request headers
         const auth_header = headers.authorization;
         const decoded_header = this.commonService.decodeHeaders(auth_header);
 
-        // Get the list of seasonings
-        const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.SEASONING, page, pageSize);
+        const page_number = page != undefined ? parseInt(page, 10) : 0;
+        const page_size = pageSize != undefined ? parseInt(pageSize, 10) : 0;
+
+        // Check if pagination is required
+        let pagination =  false;
+        if (page_number != 0 && page_size != 0){
+            pagination = true
+        }
         
+
+        // Get the list of seasonings
+        const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.SEASONING, page_number, page_size, pagination, search);
+        
+
         // Return the list of seasonings along with pagination details
-        return {
-            data: component_list,
-            total,
-            page,
-            pageSize,
-            totalPages: Math.ceil(total / pageSize)
-        };
+        if (pagination){
+            return {
+                data: component_list,
+                total,
+                page_number,
+                page_size,
+                totalPages: Math.ceil(total / page_size)
+            };
+        } else {
+            return {
+                data: component_list,
+                total
+            };
+        }
     }
+
+
+    //
 
 }

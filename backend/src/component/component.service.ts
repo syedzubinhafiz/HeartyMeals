@@ -68,44 +68,44 @@ export class ComponentService {
     async addBulk(payloads: AddComponentDTO[]) {
 
         // Get all unique foodCategoryIds from the payloads
-        const foodCategoryIds = [...new Set(payloads.map(payload => payload.foodCategoryId))];
+        const food_category_ids = [...new Set(payloads.map(payload => payload.foodCategoryId))];
     
         // Fetch all food categories in a single query
-        const foodCategories = await this.foodCategoryRepository.findByIds(foodCategoryIds);
+        const food_categories = await this.foodCategoryRepository.findByIds(food_category_ids);
     
         // Create a map for easy access to categories by id
-        const foodCategoryMap = new Map<string, FoodCategory>();
-        foodCategories.forEach(category => {
-            foodCategoryMap.set(category.id, category);
+        const food_category_map = new Map<string, FoodCategory>();
+        food_categories.forEach(category => {
+            food_category_map.set(category.id, category);
         });
     
-        const newComponents: Component[] = [];
+        const new_components: Component[] = [];
     
         // Create new components from the payloads
         for (const payload of payloads) {
-            const selectedCategory = foodCategoryMap.get(payload.foodCategoryId);
+            const selected_category = food_category_map.get(payload.foodCategoryId);
     
-            if (!selectedCategory) {
+            if (!selected_category) {
                 return new HttpException(`Food category not found for ID ${payload.foodCategoryId}`, 400);
             }
 
-            const newComponent = new Component();
-            newComponent.name = payload.name;
-            newComponent.component_type = payload.componentType;
-            newComponent.nutrition_info = payload.nutritionInformation;
-            newComponent.unit = payload.unit;
-            newComponent.amount = payload.amount;
-            newComponent.foodCategory = selectedCategory;
+            const new_component = new Component();
+            new_component.name = payload.name;
+            new_component.component_type = payload.componentType;
+            new_component.nutrition_info = payload.nutritionInformation;
+            new_component.unit = payload.unit;
+            new_component.amount = payload.amount;
+            new_component.foodCategory = selected_category;
     
             // Add storage links
-            newComponent.storage_links = JSON.parse("{}");
+            new_component.storage_links = JSON.parse("{}");
             
-            newComponents.push(newComponent);
+            new_components.push(new_component);
         }
     
         // Save all new components in a single batch insert
         try {
-            await this.componentRepository.save(newComponents);
+            await this.componentRepository.save(new_components);
         } catch (error) {
             console.error(error);
             return new HttpException("Error saving components", 400);
@@ -122,7 +122,14 @@ export class ComponentService {
      * @param pageSize limit of components per page
      * @returns list of components and total count
      */
-    async getComponents(decodedHeader: any, componentType: ComponentType, page: number, pageSize: number): Promise<[Component[], number]> {
+    async getComponents(
+        decodedHeader: any, 
+        componentType: ComponentType, 
+        page: number, 
+        pageSize: number, 
+        pagination: boolean, 
+        search: string
+    ): Promise<[Component[], number]> {
 
         // Calculate the number of items to skip
         const skip = (page - 1) * pageSize;
@@ -141,6 +148,12 @@ export class ComponentService {
         const query = this.componentRepository.createQueryBuilder("component")
             .select(["component.id", "component.name", "component.storage_links"])
             .where("component.component_type = :type", { type:componentType });
+
+
+        if (search != null){
+            query.andWhere("component.name ILIKE :search", { search: `%${search}%` });
+
+        }
     
 
         // If there are restricted food categories, exclude them from the query
@@ -148,11 +161,15 @@ export class ComponentService {
             query.andWhere("component.food_cat_id NOT IN (:...ids)", { ids: food_cat_ids });
         }
 
-        // Execute the query with pagination
-        query.skip(skip)
-            .take(take);
-    
-        return await query.getManyAndCount();
+        if (pagination){
+            // Execute the query with pagination
+            query.skip(skip)
+                .take(take);
+        }
+        
+        const result = await query.getMany();
+
+        return  [result, result.length];
     }
     
     
