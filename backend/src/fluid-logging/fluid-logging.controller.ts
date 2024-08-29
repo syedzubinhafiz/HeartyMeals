@@ -2,7 +2,7 @@ import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
 import { FluidLoggingService } from './fluid-logging.service';
 import { CommonService } from 'src/common/common.service';
 
-@Controller('fluid_logging')
+@Controller('fluid-logging')
 export class FluidLoggingController {
     
     constructor(
