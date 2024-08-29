@@ -21,6 +21,8 @@ export class FluidLoggingService {
         const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
         if (!loggingDate || !date_pattern.test(loggingDate.toString())) { return new HttpException("Invalid date format. date must be in the format YYYY-MM-DDTHH:MM:SS.SSS+-HHMM", 400); }
 
+        // TODO: validate the date is not in the future or in the past
+
         // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
             .where('user_id = :user_id', {user_id: user_object.user_id})
