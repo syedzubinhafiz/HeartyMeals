@@ -13,36 +13,36 @@ export class FluidLoggingService {
     ){}
     
     async getFluidLogging(decodedHeaders: any, loggingDate: Date, water_intake: number){
-        // // get user object
-        // const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
-        // if (!user_object || user_object == null) { return new HttpException(`User with ${decodedHeaders.user_id} not found`, 404); }
+        // get user object
+        const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
+        if (!user_object || user_object == null) { return new HttpException(`User with ${decodedHeaders.user_id} not found`, 404); }
 
-        // var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
-        //     .where('user_id = :user_id', {user_id: decodedHeaders.user_id})
-        //     .andWhere('logging_date = :logging_date', {logging_date: loggingDate})
-        //     .getOne();
+        // get the fluid logging entry for the user on the given date and userid
+        var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
+            .where('user_id = :user_id', {user_id: user_object.user_id})
+            .andWhere('logging_date = :logging_date', {logging_date: loggingDate})
+            .getOne();
 
-        // if (!entry || entry == null) {
-        //     entry = new FluidLogging();
+        // if the entry does not exist, means today water intake is not logged yet, create a new entry
+        if (!entry || entry == null) {
+            entry = new FluidLogging();
 
-        //     entry.user = user_object;
-            
-        //     const remaining_fluid = user_object.daily_budget.water_intake - water_intake;
+            entry.user = user_object;
 
-        //     entry.remaining_fluid = remaining_fluid;
+            entry.remaining_fluid = user_object.daily_budget["water_intake"] - water_intake;
 
-        //     entry.logging_date = loggingDate;
+            entry.logging_date = loggingDate;
 
-        //     try{
-        //         await this.fluidLoggingRepository.save(entry);  
-        //     }
-        //     catch (error){
-        //         return new HttpException("Error logging fluid", 500);
-        //     }
-        //     return true;
-        // }
-        // else {
-        //     return entry;
-        // }
+            try{
+                await this.fluidLoggingRepository.save(entry);  
+            }
+            catch (error){
+                return new HttpException("Error logging fluid", 500);
+            }
+            return true;
+        }
+        else {
+            return entry;
+        }
     }
 }
