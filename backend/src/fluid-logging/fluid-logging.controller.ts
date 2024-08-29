@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, Post } from '@nestjs/common';
 import { FluidLoggingService } from './fluid-logging.service';
 import { CommonService } from 'src/common/common.service';
 
@@ -15,7 +15,12 @@ export class FluidLoggingController {
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-        return await this.fluidLoggingService.getFluidLogging(decoded_headers, payload);
+        try {
+            return await this.fluidLoggingService.getFluidLogging(decoded_headers, payload);
+        } catch (e) {
+            return new HttpException(e.message, 500);
+        }
+        
     }
 
     @Post('update')
@@ -23,6 +28,12 @@ export class FluidLoggingController {
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-        return await this.fluidLoggingService.updateFluidLogging(decoded_headers, payload);
+        try {
+            await this.fluidLoggingService.updateFluidLogging(decoded_headers, payload);
+            return new HttpException("Fluid is logged.", 200);
+        } catch (e) {
+            return new HttpException(e.message, 500);
+        }
+        
     }
 }

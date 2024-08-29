@@ -40,12 +40,11 @@ export class FluidLoggingService {
             entry.logging_date = loggingDate;
 
             try{
-                await this.fluidLoggingRepository.save(entry);  
+                return await this.fluidLoggingRepository.save(entry);  
             }
             catch (error){
                 return new HttpException("Error logging fluid", 500);
             }
-            return true;
         }
         else {
             return entry;
