@@ -4,6 +4,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToO
 import { UserRole } from "./enum/user-role.enum";
 import { Gender } from "./enum/gender.enum";
 import { Ethnicity } from "src/ethnicity/ethnicity.entity";
+import { CholesterolLevel } from "./enum/cholesterol.enum";
 
 @Entity('user')   
 export class User{
@@ -71,6 +72,7 @@ export class User{
         carbs_percentage: 0.5, //range from 0 to 1
         protein_percentage: 0.3, //range from 0 to 1
         fat_percentage: 0.2, //range from 0 to 1
+        cholesterol_level: Normal, //Normal, High, Low
         activity_level: 1, {
             1: sedentary (less than 1 session of 30 minute exercise per week), 
             2: light (1-2 sessions of 30 minute exercise per week), 
@@ -87,8 +89,8 @@ export class User{
             'carbs_percentage': 0.5,
             'protein_percentage': 0.3,
             'fat_percentage': 0.2,
-            'activity_level': 1,
-            'water_intake': 2000
+            'cholesterol_level': CholesterolLevel.NORMAL,
+            'activity_level': 1
         }
     })
     user_nutrition_setting: Object;
@@ -103,9 +105,10 @@ export class User{
             "fat": 0, //in g
             "sodium": 0, //in mg
             "cholesterol": 0, //in mg
+            "water_intake": 0 //in ml
         }
     })
-    nutrition_budget: Object;
+    daily_budget: Object;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;
