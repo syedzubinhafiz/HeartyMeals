@@ -62,7 +62,7 @@ export class User{
 
 
     //weight in kg
-    @Column({type: "integer"})
+    @Column({type: "float"})
     weight: number;
 
 
@@ -71,9 +71,13 @@ export class User{
         carbs_percentage: 0.5, //range from 0 to 1
         protein_percentage: 0.3, //range from 0 to 1
         fat_percentage: 0.2, //range from 0 to 1
-        activity_level: 1, {1: sedentary, 2: light, 3: moderate, 4: active, 5: very active}
-        water_intake: 2000, // in ml    
-
+        activity_level: 1, {
+            1: sedentary (less than 1 session of 30 minute exercise per week), 
+            2: light (1-2 sessions of 30 minute exercise per week), 
+            3: moderate (3-4 sessions of 30 minute exercise per week), 
+            4: active (5-6 sessions of 30 minute exercise per week), 
+            5: very active (more than 7 sessions of 30 minute exercise per week, active athlete, or job requires physical activity), 
+        }
     }
      */
     @Column({
@@ -87,7 +91,7 @@ export class User{
             'water_intake': 2000
         }
     })
-    user_nutrition_setting: JSON;
+    user_nutrition_setting: Object;
 
     @Column({
         type: 'jsonb', 
@@ -101,7 +105,7 @@ export class User{
             "cholesterol": 0, //in mg
         }
     })
-    nutrition_budget: JSON;
+    nutrition_budget: Object;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;
