@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, ValidateNested} from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, ValidateNested, Min, Max} from "class-validator";
 import { Gender } from "../enum/gender.enum";
 import { NutritionSettingDTO } from "./nutrition-setting-dto";
 import { Type } from "class-transformer";
@@ -11,6 +11,8 @@ export class CreatUserDTO{
 
     @IsNotEmpty()
     @IsNumber()
+    @Min(1)
+    @Max(4)
     readonly nyhaLevel: number;
 
     @IsString()
