@@ -82,7 +82,7 @@ export class UserService {
         }
     }
 
-    async getDailyBudget(decodedHeaders: any, date: Date = null){ 
+    async getDailyBudget(decodedHeaders: any, date: string = null){ 
         return this.commonService.getRemainingBudget(decodedHeaders, date);
     }
 }

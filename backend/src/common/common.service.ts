@@ -44,15 +44,20 @@ export class CommonService{
     }
 
     
-    async getRemainingBudget(decodedHeaders: any, date: Date = null){
+    async getRemainingBudget(decodedHeaders: any, dateString: string = null){
         if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
         const user_id = decodedHeaders['sub'];
 
         const user_object = await this.userRepository.findOneBy({ user_id: user_id });
 
-        if (date == null){
+        // TODO: add pattern checking for the date string
+        var date = null;
+        if (dateString == null){
             date = new Date();
+        }
+        else {
+            date = new Date(dateString);
         }
 
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')

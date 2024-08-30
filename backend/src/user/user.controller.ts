@@ -38,4 +38,13 @@ export class UserController {
 
         return await this.userService.verifyUser(decodedHeaders);
   }
+
+  @Get('budget')
+    async getRemainingBudget(@Body() payload){
+        try {
+            return this.commonService.getRemainingBudget(payload.user_id, payload.date);
+        } catch (e){
+            return new HttpException(e.messageq, 400)
+        }
+    }
 }
