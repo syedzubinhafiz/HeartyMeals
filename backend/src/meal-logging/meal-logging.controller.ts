@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpException, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpException, Post } from "@nestjs/common";
 import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
@@ -72,7 +72,7 @@ export class MealLoggingController {
      * @param payload - payload that contains a list of meal logging ids
      * @returns HttpException 200 when the meal is deleted 
      */
-    @Post('delete')
+    @Delete('delete')
     async delete(@Headers() headers, @Body() payload){
         try {
             const auth_header = headers.authorization;
