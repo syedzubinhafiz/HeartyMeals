@@ -31,14 +31,17 @@ export class CreatUserDTO{
     
     @IsNumber()
     @IsNotEmpty()
+    @Min(0, {message: "Age must be greater than 0"})
     readonly age: number;
 
     @IsNumber()
     @IsNotEmpty()
+    @Min(0, {message: "Height must be greater than 0"})
     readonly height: number;
 
     @IsNumber()
     @IsNotEmpty()
+    @Min(0, {message: "Weight must be greater than 0"})
     readonly weight: number;
 
     @ValidateNested()
