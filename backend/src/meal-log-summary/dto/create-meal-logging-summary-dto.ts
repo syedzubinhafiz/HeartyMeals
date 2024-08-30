@@ -1,5 +1,5 @@
-import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsObject, IsOptional, IsString, Matches, ValidateNested } from "class-validator";
+import { Transform, Type } from "class-transformer";
+import { ArrayNotEmpty, IsArray, IsJSON, IsNotEmpty, IsObject, IsOptional, IsString, Matches, ValidateNested } from "class-validator";
 import { RecipeComponentDTO } from "../../recipe-component/dto/recipe-component-dto";
 import { MealLogSummary } from "../meal-log-summary.entity";
 import { NutritionInfoDTO } from "src/recipe/dto/nutrition-info-dto";
@@ -33,9 +33,14 @@ export class CreateMealLoggingSummaryDTO{
     )
     readonly mealDate: string;
     
-    @IsObject()
+    @IsJSON()
     @ValidateNested()
     @Type(() => MealsDTO)
     readonly foodConsumed: MealsDTO;
+
+    @IsJSON()
+    @ValidateNested()
+    @Transform(({ value }) => value ?? {})
+    readonly nutritionAfter: JSON;
 
 }
