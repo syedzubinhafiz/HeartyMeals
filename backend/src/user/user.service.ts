@@ -22,7 +22,8 @@ export class UserService {
         @InjectRepository(Dietary)
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(Ethnicity)
-        private ethnicityRepository: Repository<Ethnicity>
+        private ethnicityRepository: Repository<Ethnicity>,
+        private commonService: CommonService,
     ){}
 
     
@@ -81,6 +82,7 @@ export class UserService {
         }
     }
 
-   
-
+    async getDailyBudget(decodedHeaders: any, date: Date = null){ 
+        return this.commonService.getRemainingBudget(decodedHeaders, date);
+    }
 }
