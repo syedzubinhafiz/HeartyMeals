@@ -43,7 +43,24 @@ export class CommonService{
         }
     }
 
-    
+    /**
+     * Checks the date format
+     * @param date - date to validate
+     * @returns true if the date is in the format of YYYY-MM-DDTHH:MM:SS.SSS+-HHMM else false
+     */
+    validateDate(date: string): boolean{
+        // check for valid date format
+        const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
+        if (!date || !date_pattern.test(date)) { return false; }
+        return true;
+    }
+
+    /**
+     * Get the remaining budget of a user in a specific date
+     * @param decodedHeaders - decoded headers from the request
+     * @param dateString - date to get the remaining budget, in string
+     * @returns remaining budget of a user in a specific date
+     */
     async getRemainingBudget(decodedHeaders: any, dateString: string = null){
         if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
@@ -51,14 +68,15 @@ export class CommonService{
 
         const user_object = await this.userRepository.findOneBy({ user_id: user_id });
 
-        // TODO: add pattern checking for the date string
         var date = null;
         if (dateString == null){
             date = new Date();
         }
         else {
-            date = new Date(dateString);
+            if (!this.validateDate(dateString)){ throw new Error("Invalid date format. Date must be in YYYY-MM-DDTHH:MM:SS.SSS+-HHMM format."); }
+            date = new Date(dateString.split('T')[0]);
         }
+        
 
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_id})
