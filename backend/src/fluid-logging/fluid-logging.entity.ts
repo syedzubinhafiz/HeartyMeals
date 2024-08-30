@@ -11,9 +11,9 @@ export class FluidLogging{
     @JoinColumn({name: 'user_id'})
     user: User;
     
-    @Column({type: 'timestamptz'})
+    @Column({type: 'date'})
     logging_date: Date;
 
-    @Column({type: 'integer'})
-    remaining_fluid: number;
+    @Column({type: 'jsonb'})
+    remaining_fluid: Array<JSON>;
 }
