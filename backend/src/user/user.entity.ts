@@ -58,7 +58,7 @@ export class User{
     age: number;
 
     //height in cm
-    @Column({type: "integer"})
+    @Column({type: "float"})
     height: number;
 
 
