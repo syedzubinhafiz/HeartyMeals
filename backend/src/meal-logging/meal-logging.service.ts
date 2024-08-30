@@ -94,7 +94,7 @@ export class MealLoggingService {
             }
 
             // Validate date format
-            const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
+            const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
             if (!pattern.test(date)){
                 throw new Error("Date must be in the format YYYY-MM-DDTHH:MM:SS.SSS");
             }
