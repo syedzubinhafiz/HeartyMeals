@@ -40,6 +40,15 @@ export class CommonService{
         }
     }
 
+    /**
+     * Calculate the calories required for intake based on user information
+     * @param gender - user gender in Enum
+     * @param age - user age in years
+     * @param height - user height in cm
+     * @param weight - user weight in kg
+     * @param userNutritionSetting - user nutrition setting
+     * @returns bmr (calories) - basal metabolic rate in kcal/day 
+     */
     calculateCalories(gender: Gender, age: number, height: number, weight: number, userNutritionSetting: NutritionSettingDTO){
         // weight, height in kg, cm
         // calculate BMR in kcal/day
@@ -76,6 +85,13 @@ export class CommonService{
         return bmr;
    }
 
+   /**
+    * Calculate the daily nutrition budget based on user nutrition settings and nyha level
+    * @param calories - daily calories intake
+    * @param userNutritionSetting - user nutrition setting
+    * @param nyhaLevel - user nyha level
+    * @returns an object with daily nutrition budget (calories, carbs, protein, fats, sodium, cholesterol, water_intake) in kcal, g, g, g, mg, mg, ml
+    */
    calculateNutritionBudget(calories: number, userNutritionSetting: NutritionSettingDTO, nyhaLevel: number){
 
         // get sodium intake in mg and water intake in ml based on nyha level
@@ -121,7 +137,7 @@ export class CommonService{
             "calories": calories,
             "carbs": calories * userNutritionSetting.carbsPercentage / 4,
             "protein": calories * userNutritionSetting.proteinPercentage / 4,
-            "fat": calories * userNutritionSetting.fatPercentage / 9,
+            "fats": calories * userNutritionSetting.fatPercentage / 9,
             "sodium": sodium_intake,
             "cholesterol": cholesterol_intake,
             "water_intake": water_intake
