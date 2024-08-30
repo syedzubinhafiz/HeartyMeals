@@ -175,7 +175,7 @@ export class RecipeService {
         }
 
         //Check if user is authorized to delete recipe
-        if (recipe.user !== undefined){
+        if (recipe.user !== null){
             if (recipe.user.user_id !== decodedHeaders['sub']) {
                 throw new Error("Unauthorized");
             }
