@@ -16,7 +16,7 @@ import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.ser
     imports: [
         TypeOrmModule.forFeature([User, Country, Dietary, Ethnicity, MealLogSummary])
     ],
-    controllers: [UserController, MealLogSummaryController],
+    controllers: [UserController],
     providers: [UserService, CommonService, MealLogSummaryService],
 })
 export class UserModule {}
