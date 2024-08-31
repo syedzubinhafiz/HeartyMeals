@@ -7,10 +7,15 @@ import { User } from 'src/user/user.entity';
 import { CommonService } from 'src/common/common.service';
 import { MealLogging } from 'src/meal-logging/meal-logging.entity';
 import { Recipe } from 'src/recipe/recipe.entity';
+import { Country } from 'src/country/country.entity';
+import { Dietary } from 'src/dietary/dietary.entity';
+import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
+import { UserController } from 'src/user/user.controller';
+import { UserService } from 'src/user/user.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([MealLogSummary, User, MealLogging, Recipe])],
-    controllers: [MealLogSummaryController],
-    providers: [MealLogSummaryService, CommonService],
+    imports: [TypeOrmModule.forFeature([MealLogSummary, User, Country, Dietary, Ethnicity, MealLogging, Recipe])],
+    controllers: [MealLogSummaryController, UserController],
+    providers: [MealLogSummaryService, CommonService, UserService],
 })
 export class MealLogSummaryModule {}

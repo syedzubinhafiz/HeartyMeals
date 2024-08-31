@@ -22,7 +22,8 @@ export class UserService {
         @InjectRepository(Dietary)
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(Ethnicity)
-        private ethnicityRepository: Repository<Ethnicity>
+        private ethnicityRepository: Repository<Ethnicity>,
+        private commonService: CommonService,
     ){}
 
     
@@ -80,7 +81,5 @@ export class UserService {
             return false; 
         }
     }
-
-   
 
 }

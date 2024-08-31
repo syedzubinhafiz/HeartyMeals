@@ -8,6 +8,7 @@ import { MealLogging } from "src/meal-logging/meal-logging.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -102,5 +103,47 @@ export class MealLogSummaryService {
         // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_nutrition, meal_logging_entries);
 
         // return [nutrition_before, nutrition_after];
+    }
+
+    async getRemainingBudget(decodedHeaders: any, dateString: DateValidationDTO = null){
+        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
+
+        const user_id = decodedHeaders['sub'];
+
+        const user_object = await this.userRepository.findOneBy({ user_id: user_id });
+
+        var date = null;
+        if (dateString == null){
+            date = new Date().toISOString().split('T')[0];
+        }
+        else {
+            date = new Date(dateString.date.split('T')[0]);
+        }
+        
+        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+            .where('user_id = :user_id', {user_id: user_id})
+            .andWhere('date = :meal_date', {meal_date: date})
+            .getOne();
+
+        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
+            var remaining_nutrients = user_object.daily_budget as JSON;
+            delete remaining_nutrients["water_intake"];
+
+            meal_logging_summary_entry = new MealLogSummary();
+            meal_logging_summary_entry.user = user_object;
+            meal_logging_summary_entry.date = date;
+            meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
+
+            try {
+                await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            } catch (e) {
+                throw new Error("Error saving meal logging summary entry");
+            }
+
+            return remaining_nutrients;
+        }
+        else {
+            return meal_logging_summary_entry.remaining_nutrients;
+        }
     }
 }

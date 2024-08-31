@@ -67,20 +67,13 @@ export class User{
         type: 'jsonb', 
         nullable: false, 
         default: {
-            // "calories": 0, //in kcal
-            // "carbs": 0, //in g
-            // "protein": 0, //in g
-            // "fat": 0, //in g
-            // "sodium": 0, //in mg
-            // "cholesterol": 0, //in mg
-            // "water_intake": 0 //in ml
-            "fat": 55.137777777777785,
-            "carbs": 248.12000000000003,
-            "sodium": 2000,
-            "protein": 248.12000000000003,
-            "calories": 2481.2000000000003,
-            "cholesterol": 200,
-            "water_intake": 2000
+            "calories": 0, //in kcal
+            "carbs": 0, //in g
+            "protein": 0, //in g
+            "fat": 0, //in g
+            "sodium": 0, //in mg
+            "cholesterol": 0, //in mg
+            "water_intake": 0 //in ml
         }
     })
     daily_budget: Object;
