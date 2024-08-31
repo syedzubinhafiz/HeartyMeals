@@ -1,131 +1,186 @@
 <template>
-    <div class="add-meals-page">
-      <Header/>
-      
-      <div class="search-bar">
-        <input type="text" placeholder="Enter Keywords" class="search-input">
-        <button class="stomach-button">
-          <img src="path-to-stomach-icon.svg" alt="Stomach" />
-          <span class="notification-badge">3</span>
-        </button>
-      </div>
-      
-      <section class="recently-added">
-        <h2>Recently Added</h2>
-        <div class="meal-cards">
-          <div class="meal-card customize">
-            <p>+ Customize Your Meal</p>
-          </div>
-          <MealCard
-            v-for="meal in meals"
-            :key="meal.id"
-            :meal="meal"
-          />
-        </div>
-      </section>
-      <Footer/>
-    </div>
-  </template>
+  <div class="absolute w-screen z-40">
+    <Header />
+  </div>
 
+  <div class="relative min-h-screen text-white">
+    <!-- Background image section -->
+    <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
+      <h2 class="text-white text-4xl font-bold text-center">Add Meals</h2>
+    </div>
+
+    <!-- Search Bar and Recipe Cards Container -->
+    <div class="flex">
+      <div class="left-0 bottom-0 flex items-end">
+        <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" style="height: 60vh"/>
+      </div>
+      <div class="content-container">
+        <div class="flex justify-center mb-10 text-black">
+          <MealSearchBar v-model="searchValue" :dataList="searchDataList" />
+        </div>
+
+        <!-- Scrollable Recipe Cards -->
+        <div class="scroll-content">
+          <h3 class="text-2xl font-semibold mb-4">Recently Added</h3>
+          <div class="cards-grid">
+            <!-- Customize Your Meal Card -->
+            <div class="recipe-card customize-card text-black flex items-center justify-center" @click="addCustomMeal">
+              <span>+ Customize Your Meal</span>
+            </div>
+
+            <!-- Other Meal Cards -->
+            <RecipeCard
+              v-for="(meal, index) in meals"
+              :key="index"
+              :imageSrc="meal.imageSrc"
+              :mealName="meal.mealName"
+              :mealDescription="meal.mealDescription"
+              :labels="meal.labels"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="right-0 bottom-0 flex items-end">
+        <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
+      </div>
+    </div>
+  </div>
+
+  <Footer/>
+</template>
 
 <script setup>
-const meals = [
-  {
-    id: 1,
-    title: "Overnight Oats",
-    description: "A hearty breakfast that is filling yet packed with juicy fruits to start your day off.",
-    imageUrl: "path-to-overnight-oats-image.png",
-    tags: ["Breakfast", "Lunch", "Dinner", "Snack"]
-  },
-  {
-    id: 2,
-    title: "Banana Cake",
-    description: "A delicious cake that is full of nutrients with a sweet banana twist.",
-    imageUrl: "path-to-banana-cake-image.png",
-    tags: ["Breakfast", "Lunch", "Dinner", "Snack"]
-  },
-  // Add more meals as necessary...
-];
+import { ref, onMounted } from 'vue';
+
+const searchValue = ref("");
+const meals = ref([]);
+
+const searchDataList = ['Tomato and Cheese Croissant', 'Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza'];
+
+// Function to add a custom meal
+const addCustomMeal = () => {
+  const newMeal = {
+    imageSrc: "assets/img/customMeal.svg", // Replace with the appropriate image or placeholder
+    mealName: "Custom Meal",
+    mealDescription: "Your custom created meal.",
+    labels: [
+      { name: "Custom", active: true },
+    ],
+  };
+  meals.value.unshift(newMeal); // Add the custom meal to the beginning of the array
+};
+
+// Fetch meals from the backend when the component mounts
+onMounted(() => {
+  // Replace with your actual API call
+  fetch('/api/meals')
+    .then(response => response.json())
+    .then(data => {
+      meals.value = data;
+    });
+});
 </script>
 
-
 <style scoped>
-.add-meals-page {
-  padding: 20px;
-  background-color: #f5d6b1; /* Adjust the background color */
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
+
+* {
+  font-family: 'Overpass', sans-serif;
 }
 
-.header {
+.bg-header-image {
+  background-image: url('@/assets/img/smallerBlob.svg');
+  background-size: 110% auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 50vh;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  background-color: #1f6e5f; /* Header background color */
-  padding: 20px;
-  color: white;
-}
-
-.page-title {
-  font-size: 24px;
-  margin: 0 auto;
-}
-
-.search-bar {
-  margin: 20px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.search-input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 25px;
-  border: 1px solid #ccc;
-}
-
-.stomach-button {
-  background-color: #ff7f50;
-  border: none;
-  padding: 10px;
-  border-radius: 25px;
-  display: flex;
-  align-items: center;
+  text-align: center;
+  padding-top: 20px;
   position: relative;
 }
 
-.notification-badge {
-  background-color: red;
-  border-radius: 50%;
-  color: white;
-  padding: 5px;
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  font-size: 12px;
+/* Container for Search Bar and Recipe Cards */
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.recently-added {
-  margin-top: 20px;
+/* Scrollable Content */
+.scroll-content {
+  height: calc(100vh - 50vh); /* Remaining height after the header */
+  overflow-y: auto;
+  padding-top: 20px;
+  padding-right: 0; /* Removed right padding to bring scrollbar closer */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #e0e0e0;
+  z-index: 3;
 }
 
-.meal-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+.scroll-content::-webkit-scrollbar {
+  width: 8px;
 }
 
-.meal-card {
-  background-color: white;
+.scroll-content::-webkit-scrollbar-thumb {
+  background-color: #888;
   border-radius: 10px;
-  padding: 15px;
-  width: 200px; /* Adjust to fit your layout */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.customize {
+.scroll-content::-webkit-scrollbar-track {
+  background-color: #e0e0e0;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid with minimum width */
+  gap: 20px; /* Space between cards */
+  padding-left: 85px;
+  padding-right: 85px;
+  z-index: 3;
+}
+
+.customize-card {
+  background-color: #fff;
+  border: 2px dashed #000;
+  border-radius: 8px;
+  height: 100px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 1.2rem;
+}
+
+/* Styling the curvy blobs */
+.curvy-left {
+  position: absolute;
+  bottom: 0;
+  left: -55px;
+  top: 310px;
+  width: 150px;
+  height: 500px;
+  z-index: 1;
+}
+
+.curvy-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  top: 310px;
+  width: 130px;
+  height: 500px;
+  z-index: 1;
+}
+
+.curvy-left img,
+.curvy-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
