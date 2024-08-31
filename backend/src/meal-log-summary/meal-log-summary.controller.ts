@@ -4,6 +4,7 @@ import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { CreateMealLoggingSummaryDTO } from "./dto/create-meal-logging-summary-entry-dto";
+import { RemomveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
@@ -45,6 +46,18 @@ export class MealLogSummaryController {
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
             return this.mealLogSummaryService.getRemainingBudget(decoded_headers, payload);
+        } catch (e){
+            return new HttpException(e.message, 400)
+        }
+    }
+
+    @Post('remove')
+    async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemomveMealLoggingIdDTO){
+        try {
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            return this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload);
         } catch (e){
             return new HttpException(e.message, 400)
         }

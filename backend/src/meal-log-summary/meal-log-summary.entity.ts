@@ -25,7 +25,12 @@ export class MealLogSummary{
      * "Other": []
      * }
      */
-    @Column({type: 'json', default: {}})
+    @Column({type: 'json', default: {
+        "Breakfast": [],
+        "Lunch": [],
+        "Dinner": [],
+        "Other": []
+    }})
     food_consumed: Object;
 
     @ManyToOne(()=> User, user=> user.user_id)
