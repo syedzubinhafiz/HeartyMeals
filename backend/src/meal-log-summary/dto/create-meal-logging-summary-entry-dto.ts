@@ -27,10 +27,10 @@ export class CreateMealLoggingSummaryDTO{
     /**
      * @example
      * {
-     *  "Breakfast": [{recipeId: "5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b", portion: 1}],
-     *  "Lunch": [{recipeId: "5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b", portion: 1}],
-     *  "Dinner": [{recipeId: "5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b", portion: 1}],
-     *  "Other": [{recipeId: "5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b", portion: 1}]
+     *  "Breakfast": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
+     *  "Lunch": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
+     *  "Dinner": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
+     *  "Other": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"]
      * }
      */
     @ValidateNested()

@@ -35,31 +35,37 @@ export class MealLogSummaryService {
         // get the date only
         const meal_logging_summary_date = new Date(createMealLoggingSummaryDTO.mealDate.split('T')[0]);
 
+        // meal logging id validation
+        const meal_loggings_in_object = createMealLoggingSummaryDTO.mealLoggingIdsInJSON;
+        const meal_logging_ids = Object.values(meal_loggings_in_object).flat();
+        const meal_loggings_object_lists = await this.mealLoggingRepository.find({
+            where: {
+                id: In(meal_logging_ids)
+            }
+        });
+        if (meal_loggings_object_lists.length !== meal_logging_ids.length) {
+            throw new HttpException(`Some meal logging ids are not found`, 404);
+        }
+
+        // get the entry
+        // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
+        // or user will call to get daily budget which will get the entry also
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_object.user_id})
             .andWhere('date = :meal_date', {meal_date: meal_logging_summary_date})
             .getOne();
-
-        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
-            meal_logging_summary_entry = new MealLogSummary();
-            meal_logging_summary_entry.user = user_object;
-            meal_logging_summary_entry.date = meal_logging_summary_date;
-            // save the food consumed in the meal logging summary
-            meal_logging_summary_entry.food_consumed = createMealLoggingSummaryDTO.mealLoggingIdsInJSON;
+            
+        var previous_food_consumed = meal_logging_summary_entry.food_consumed;
+        // Loop through each key (Breakfast, Lunch, Dinner, Other) in the object
+        for (const key in createMealLoggingSummaryDTO.mealLoggingIdsInJSON) {
+            // Loop through each item in the array associated with the key
+            createMealLoggingSummaryDTO.mealLoggingIdsInJSON[key].forEach((item) => {
+                // Add them into the object
+                previous_food_consumed[key].push(item);
+            });
         }
-        else {
-            var previous_food_consumed = meal_logging_summary_entry.food_consumed;
-            // Loop through each key (Breakfast, Lunch, Dinner, Other) in the object
-            for (const key in createMealLoggingSummaryDTO.mealLoggingIdsInJSON) {
-                // Loop through each item in the array associated with the key
-                createMealLoggingSummaryDTO.mealLoggingIdsInJSON[key].forEach((item) => {
-                    // Add them into the object
-                    previous_food_consumed[key].push(item);
-                });
-            }
-            meal_logging_summary_entry.food_consumed = previous_food_consumed;
-        }
-
+        meal_logging_summary_entry.food_consumed = previous_food_consumed;
+        
         meal_logging_summary_entry.remaining_nutrients = createMealLoggingSummaryDTO.nutritionAfter;
 
         try {
@@ -179,6 +185,12 @@ export class MealLogSummaryService {
         // }
     }
 
+    /**
+     * Remove the meal logging id from the meal logging summary, and add the nutrition back to the remaining nutrients
+     * @param decodedHeaders - headers from request
+     * @param remomveMealLoggingIdDTO - DTO containing the meal logging id to be removed
+     * @returns true if the meal logging id is removed successfully
+     */
     async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomveMealLoggingIdDTO){
         // remove the meal logging id from the meal logging summary
 

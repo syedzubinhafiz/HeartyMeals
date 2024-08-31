@@ -57,7 +57,8 @@ export class MealLogSummaryController {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload);
+            await this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload);
+            return new HttpException("Meal logging removed successfully", 200);
         } catch (e){
             return new HttpException(e.message, 400)
         }
