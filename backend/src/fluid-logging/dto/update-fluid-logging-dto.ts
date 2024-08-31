@@ -6,8 +6,8 @@ import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 export class UpdateFluidLoggingDTO{
     
     @IsNotEmpty()
-    @Type(()=> DateValidationDTO)
-    readonly loggingDate: DateValidationDTO;
+    @IsDateString()
+    readonly loggingDate: string;
 
     @IsNumber()
     @IsNotEmpty()
