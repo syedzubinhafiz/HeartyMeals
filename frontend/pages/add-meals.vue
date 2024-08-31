@@ -49,6 +49,7 @@
   <Footer/>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue';
 
@@ -86,6 +87,14 @@ onMounted(() => {
 
 * {
   font-family: 'Overpass', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  background-color: #f7f7f7; /* Ensure a default background color */
 }
 
 .bg-header-image {
@@ -101,6 +110,7 @@ onMounted(() => {
   text-align: center;
   padding-top: 20px;
   position: relative;
+  background-color: #F1EDE9; /* Fallback background color */
 }
 
 /* Container for Search Bar and Recipe Cards */
@@ -109,6 +119,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background-color: transparent; /* Ensure transparency */
 }
 
 /* Scrollable Content */
@@ -120,6 +131,7 @@ onMounted(() => {
   scrollbar-width: thin;
   scrollbar-color: #888 #e0e0e0;
   z-index: 3;
+  background-color: transparent; /* Ensure transparency */
 }
 
 .scroll-content::-webkit-scrollbar {
@@ -137,11 +149,12 @@ onMounted(() => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Responsive grid with minimum width */
+  grid-template-columns: repeat(2, 1fr); /* Two columns layout */
   gap: 20px; /* Space between cards */
   padding-left: 85px;
   padding-right: 85px;
   z-index: 3;
+  background-color: transparent; /* Ensure transparency */
 }
 
 .customize-card {
@@ -154,7 +167,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  grid-column: span 1; /* Make the Customize Your Meal card span only one column */
 }
+
+
 
 /* Styling the curvy blobs */
 .curvy-left {
