@@ -27,6 +27,12 @@ export class MealLogSummaryService {
         private userService: UserService,
     ){}
 
+    /**
+     * Adds the meal logging ids created to the meal logging summary
+     * @param decodedHeaders - headers from request
+     * @param createMealLoggingSummaryDTO - DTO containing the meal logging ids and nutrition info
+     * @returns true if the meal logging summary is added successfully
+     */
     async addMealLoggingSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
         // Validate userId
         if (!await this.userService.verifyUser(decodedHeaders)) { throw new Error(`User with id ${decodedHeaders['sub']} not found`); }
