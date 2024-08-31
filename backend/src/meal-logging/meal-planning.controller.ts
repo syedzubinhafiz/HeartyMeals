@@ -3,6 +3,7 @@ import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Controller('meal-planning')
 export class MealPlanningController {
@@ -37,7 +38,7 @@ export class MealPlanningController {
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get_meals')
-    async getMealsPerDay(@Headers() headers, @Body("date") payload){
+    async getMealsPerDay(@Headers() headers, @Body() payload: DateValidationDTO){
         try {
             const authHeader = headers.authorization;
             const decodedHeaders = this.commonService.decodeHeaders(authHeader);
@@ -73,11 +74,11 @@ export class MealPlanningController {
      * @returns HttpException 200 when the meal is deleted 
      */
     @Post('delete')
-    async delete(@Headers() headers, @Body() payload){
+    async delete(@Headers() headers, @Body("mealLoggingId") payload){
         try {
             const authHeader = headers.authorization;
             const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload.mealLoggingIds);
+            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload);
         }
         catch (e){
             return new HttpException(e.message, 400);

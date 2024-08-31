@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestamp } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 import { MealType } from "src/meal-logging/enum/meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
@@ -37,12 +37,12 @@ export class MealLogging{
     })
     portion: Number;
 
-    @Column({type: 'timestamp with time zone', default: () => 'now()'})
+    @CreateDateColumn({type: 'timestamp with time zone', default: () => 'now()'})
     created_at: Date;
 
-    @Column({type: 'timestamp with time zone', nullable: true, default: null})
+    @UpdateDateColumn({type: 'timestamp with time zone', nullable: true, default: null})
     updated_at: Date;
 
-    @Column({type: 'timestamp with time zone', nullable: true, default: null})
+    @DeleteDateColumn({type: 'timestamp with time zone', nullable: true, default: null})
     deleted_at?: Date;
 }
