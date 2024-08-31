@@ -10,6 +10,7 @@ import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { CreateMealLoggingSummaryDTO } from "./dto/create-meal-logging-summary-entry-dto";
+import { RemomveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -63,6 +64,7 @@ export class MealLogSummaryService {
 
         try {
             await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            return true;
         }
         catch (e) {
             throw new HttpException(e, 400);
@@ -175,5 +177,82 @@ export class MealLogSummaryService {
         // else {
         //     return meal_logging_summary_entry.remaining_nutrients;
         // }
+    }
+
+    async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomveMealLoggingIdDTO){
+        // remove the meal logging id from the meal logging summary
+
+        // Validate userId
+        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
+
+        const user_id = decodedHeaders['sub'];
+        const date = new Date(remomveMealLoggingIdDTO.date.split('T')[0]);
+
+        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+            .where('user_id = :user_id', {user_id: user_id})
+            .andWhere('date = :meal_date', {meal_date: date})
+            .getOne();
+
+        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {    
+            throw new HttpException(`Meal logging summary entry for user with id ${user_id} on date ${date} not found`, 404);
+        }
+
+        // remove the meal logging id from the food consumed
+        const food_consumed = meal_logging_summary_entry.food_consumed;
+        food_consumed[remomveMealLoggingIdDTO.mealType] = food_consumed[remomveMealLoggingIdDTO.mealType].filter(item => item.recipeId !== remomveMealLoggingIdDTO.mealLoggingId);
+        
+        // recalculate the nutrition summary
+        this.recalculateNutritionSummary(food_consumed)
+
+    }
+
+    async recalculateNutritionSummary(foodConsumed){
+        // recalculate the nutrition summary
+
+        // get list of recipe ids from meal logging ids
+
+
+
+        // combine multiple lists of meal logging ids into one big lists of meal logging ids
+        const combined_meals = [
+            ...foodConsumed["Breakfast"], 
+            ...foodConsumed["Lunch"], 
+            ...foodConsumed["Dinner"], 
+            ...foodConsumed["Other"]
+        ];
+
+        // get all the meal logging objects
+        const meal_logging_object_list = await this.mealLoggingRepository.find({
+            where: {
+                id: In(combined_meals)
+            }
+        });
+
+        // get list of recipe ids
+        const recipe_objects = meal_logging_object_list.map(meal_logging_object => meal_logging_object.recipe);
+
+        // // get all the meal logging objects
+        // const recipe_id_portion_list = await this.recipeRepository.find({
+        //     where: {
+        //         id: In(recipe_ids)
+        //     }
+        // });
+
+        // const recipe_object_portion_list = [];
+
+        // // combine the recipe id, nutrition info and portion into one list
+        // combined_meals.forEach(meal => {
+        //     const recipe = recipe_id_portion_list.find(r => r.id === meal.recipeId);
+        //     if (recipe) {
+        //         recipe_object_portion_list.push({
+        //             recipe_id: meal.recipeId,
+        //             nutrition_info: recipe.nutrition_info, 
+        //             portion: meal.portion 
+        //         });
+        //     }
+        //     else {
+        //         throw new HttpException (`Recipe with id ${meal.recipeId} not found.`, 404);
+        //     }
+        // });
     }
 }

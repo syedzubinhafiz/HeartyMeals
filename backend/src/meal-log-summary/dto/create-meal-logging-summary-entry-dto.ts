@@ -38,7 +38,6 @@ export class CreateMealLoggingSummaryDTO{
     readonly mealLoggingIdsInJSON: MealLoggingsDTO;
 
     @IsOptional()
-    @ValidateNested()
     @Transform(({ value }) => (value === undefined ? {} : value))
     readonly nutritionAfter: JSON;
 

@@ -41,10 +41,4 @@ export class CalculateMealLoggingSummaryDTO{
     @ValidateNested()
     @Type(() => MealRecipesDTO)
     readonly recipeIdsInJSON: MealRecipesDTO;
-
-    @IsOptional()
-    @ValidateNested()
-    @Transform(({ value }) => (value === undefined ? {} : value))
-    readonly nutritionAfter: JSON;
-
 }
