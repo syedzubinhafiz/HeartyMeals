@@ -199,60 +199,33 @@ export class MealLogSummaryService {
 
         // remove the meal logging id from the food consumed
         const food_consumed = meal_logging_summary_entry.food_consumed;
-        food_consumed[remomveMealLoggingIdDTO.mealType] = food_consumed[remomveMealLoggingIdDTO.mealType].filter(item => item.recipeId !== remomveMealLoggingIdDTO.mealLoggingId);
-        
-        // recalculate the nutrition summary
-        this.recalculateNutritionSummary(food_consumed)
+        food_consumed[remomveMealLoggingIdDTO.mealType] = food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
 
-    }
-
-    async recalculateNutritionSummary(foodConsumed){
-        // recalculate the nutrition summary
-
-        // get list of recipe ids from meal logging ids
-
-
-
-        // combine multiple lists of meal logging ids into one big lists of meal logging ids
-        const combined_meals = [
-            ...foodConsumed["Breakfast"], 
-            ...foodConsumed["Lunch"], 
-            ...foodConsumed["Dinner"], 
-            ...foodConsumed["Other"]
-        ];
-
-        // get all the meal logging objects
-        const meal_logging_object_list = await this.mealLoggingRepository.find({
-            where: {
-                id: In(combined_meals)
-            }
+        // get meal logging object with recipe object
+        const meal_logging_object = await this.mealLoggingRepository.findOne({
+            where: { id: remomveMealLoggingIdDTO.mealLoggingId },
+            relations: ['recipe'],
         });
 
-        // get list of recipe ids
-        const recipe_objects = meal_logging_object_list.map(meal_logging_object => meal_logging_object.recipe);
+        var remaining_nutrients = meal_logging_summary_entry.remaining_nutrients;
 
-        // // get all the meal logging objects
-        // const recipe_id_portion_list = await this.recipeRepository.find({
-        //     where: {
-        //         id: In(recipe_ids)
-        //     }
-        // });
+        // add the nutrition to the remaining nutrients
+        // remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion);
+        // remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["carbs"] * (meal_logging_object.portion);
+        // remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion);
+        // remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion );
+        // remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion);
+        // remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion);
 
-        // const recipe_object_portion_list = [];
+        meal_logging_summary_entry.food_consumed = food_consumed;
+        meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
 
-        // // combine the recipe id, nutrition info and portion into one list
-        // combined_meals.forEach(meal => {
-        //     const recipe = recipe_id_portion_list.find(r => r.id === meal.recipeId);
-        //     if (recipe) {
-        //         recipe_object_portion_list.push({
-        //             recipe_id: meal.recipeId,
-        //             nutrition_info: recipe.nutrition_info, 
-        //             portion: meal.portion 
-        //         });
-        //     }
-        //     else {
-        //         throw new HttpException (`Recipe with id ${meal.recipeId} not found.`, 404);
-        //     }
-        // });
+        try {
+            await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            return true;
+        } catch (e) {
+            throw new HttpException(e, 400);
+        }
+        
     }
 }
