@@ -36,4 +36,10 @@ export class MealLogging{
     @JoinColumn({name: 'recipe_id'})
     recipe: Recipe;
 
+    @Column({
+        type: 'float'
+    })
+    portion: Number;
+
+
 }

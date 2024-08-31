@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { Country } from 'src/country/country.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
 import { UserRole } from './enum/user-role.enum';
-import { CommonService } from 'src/common/common.service';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 import { CreateAdminDTO } from './dto/create-admin-dto';
 
@@ -23,7 +22,6 @@ export class UserService {
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(Ethnicity)
         private ethnicityRepository: Repository<Ethnicity>,
-        private commonService: CommonService,
     ){}
 
     
@@ -73,7 +71,7 @@ export class UserService {
 
     async verifyUser( decoded: any) {
     
-        const user = await this.userRepository.findOneBy({user_id:decoded['sub']});
+        const user = await this.userRepository.findOneBy({user_id: decoded['sub']});
 
         if (user !== null){
             return true;

@@ -7,14 +7,15 @@ import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonService } from 'src/common/common.service';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
-import { MealLogSummary } from 'src/meal-log-summary/meal-log-summary.entity';
-import { MealLogSummaryController } from 'src/meal-log-summary/meal-log-summary.controller';
 import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.service';
+import { MealLogSummary } from 'src/meal-log-summary/meal-log-summary.entity';
+import { MealLogging } from 'src/meal-logging/meal-logging.entity';
+import { Recipe } from 'src/recipe/recipe.entity';
 
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Country, Dietary, Ethnicity, MealLogSummary])
+        TypeOrmModule.forFeature([User, Country, Dietary, Ethnicity, MealLogSummary, MealLogging, Recipe])
     ],
     controllers: [UserController],
     providers: [UserService, CommonService, MealLogSummaryService],

@@ -14,7 +14,7 @@ import { UserController } from 'src/user/user.controller';
 import { UserService } from 'src/user/user.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([MealLogSummary, User, Country, Dietary, Ethnicity, MealLogging, Recipe])],
+    imports: [TypeOrmModule.forFeature([MealLogSummary, User, MealLogging, Recipe, Country, Dietary, Ethnicity, ])],
     controllers: [MealLogSummaryController, UserController],
     providers: [MealLogSummaryService, CommonService, UserService],
 })

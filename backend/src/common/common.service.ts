@@ -33,7 +33,7 @@ export class CommonService{
         }
     }
 
-    calculateNutritionAfter(userDailyBudget: Object, recipeNutrition: void[], mealLoggingEntries: MealLogging[]): JSON{
+    calculateNutritionAfter(userDailyBudget: Object, recipeNutritionList: Object[]): JSON{
         var nutrition_after = {} as JSON;
 
         nutrition_after["calories"] = userDailyBudget["calories"];
@@ -43,14 +43,16 @@ export class CommonService{
         nutrition_after["cholesterol"] = userDailyBudget["cholesterol"];
         nutrition_after["sodium"] = userDailyBudget["sodium"];
 
-        // TODO: multiply with portion
-        for (var i = 0; i < recipeNutrition.length; i++){
-            nutrition_after["calories"] -= recipeNutrition[i]["calories"];
-            nutrition_after["protein"] -= recipeNutrition[i]["protein"];
-            nutrition_after["carbs"] -= recipeNutrition[i]["carbs"];
-            nutrition_after["fat"] -= recipeNutrition[i]["fat"];
-            nutrition_after["cholesterol"] -= recipeNutrition[i]["cholesterol"];
-            nutrition_after["sodium"] -= recipeNutrition[i]["sodium"];
+        for (const item of recipeNutritionList){
+            const recipe_nutrition = item["nutrition_info"];
+            const portion = item["portion"];
+
+            nutrition_after["calories"] -= recipe_nutrition["calories"] * portion;
+            nutrition_after["protein"] -= recipe_nutrition["protein"] * portion;
+            nutrition_after["carbs"] -= recipe_nutrition["total_carbohydrate"] * portion;
+            nutrition_after["fat"] -= recipe_nutrition["fat"] * portion;
+            nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* portion;
+            nutrition_after["sodium"] -= recipe_nutrition["sodium"] * portion;
         }
 
         return nutrition_after;

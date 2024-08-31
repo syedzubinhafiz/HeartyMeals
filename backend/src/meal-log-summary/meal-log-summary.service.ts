@@ -28,10 +28,10 @@ export class MealLogSummaryService {
     async createMealLoggingSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
         // Validate userId
         if (!await this.userService.verifyUser(decodedHeaders)) { throw new Error(`User with id ${decodedHeaders['sub']} not found`); }
-
         const user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
-        const meal_logging_summary_date = new Date(createMealLoggingSummaryDTO.mealDate);
+        // get the date only
+        const meal_logging_summary_date = new Date(createMealLoggingSummaryDTO.mealDate.date.split('T')[0]);
 
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_object.user_id})
@@ -57,52 +57,60 @@ export class MealLogSummaryService {
 
     }
 
+    /**
+     * Calculate the nutrition info before logging the meal after logging the meal
+     * @param decodedHeaders - headers from request
+     * @param createMealLoggingSummaryDTO - DTO containing the meals that user selected and portion
+     * @returns [nutrition_before, nutrition_after], a list of the nutrition before and after logging the meals
+     */
     async calculateNutritionSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
-        // Validate userId
-        if (!await this.userService.verifyUser(decodedHeaders)) { throw new Error(`User with id ${decodedHeaders['sub']} not found`); }
-        var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+        try {
+            // Validate userId
+            if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
-        const meal_logging_summary_date = new Date(createMealLoggingSummaryDTO.mealDate);
+            // combine multiple lists of meal logging ids into one big lists of meal looging ids
+            const combined_meals = [
+                ...createMealLoggingSummaryDTO.recipeIdsInJSON.Breakfast, 
+                ...createMealLoggingSummaryDTO.recipeIdsInJSON.Lunch, 
+                ...createMealLoggingSummaryDTO.recipeIdsInJSON.Dinner, 
+                ...createMealLoggingSummaryDTO.recipeIdsInJSON.Other
+            ];
 
-        // combine multiple lists of meal logging ids into one big lists of meal looging ids
-        const combined_meals = [
-            ...createMealLoggingSummaryDTO.foodConsumed.Breakfast, 
-            ...createMealLoggingSummaryDTO.foodConsumed.Lunch, 
-            ...createMealLoggingSummaryDTO.foodConsumed.Dinner, 
-            ...createMealLoggingSummaryDTO.foodConsumed.Other
-        ];
+            // get list of recipe ids
+            const recipe_ids = combined_meals.map(json_object => json_object.recipeId);
 
-        // get all the meal logging objects
-        const meal_logging_entries = await this.mealLoggingRepository.find({
-            where: {
-                id: In(combined_meals)
-            }
-        });
+            // get all the meal logging objects
+            const recipe_id_portion_list = await this.recipeRepository.find({
+                where: {
+                    id: In(recipe_ids)
+                }
+            });
 
-        // get all the recipe ids
-        const recipe_ids = meal_logging_entries.map(meal_logging => {meal_logging.recipe}); 
-        // TODO: put portion here
-        // const recipe_ids = meal_logging_entries.map(meal_logging => {meal_logging.recipe, meal_logging.portion});
+            const recipe_object_portion_list = [];
 
-        // get all the recipe objects
-        const recipe_entries = await this.recipeRepository.find({
-            where: {
-                id: In(recipe_ids)
-            }
-        });
+            combined_meals.forEach(meal => {
+                const recipe = recipe_id_portion_list.find(r => r.id === meal.recipeId);
+                if (recipe) {
+                    recipe_object_portion_list.push({
+                        recipe_id: meal.recipeId,
+                        nutrition_info: recipe.nutrition_info, 
+                        portion: meal.portion 
+                    });
+                }
+                else {
+                    throw new HttpException (`Recipe with id ${meal.recipeId} not found.`, 404);
+                }
+            });
 
-        // check if all the recipes are found
-        if (recipe_ids.length != recipe_entries.length) { throw new Error("Some recipes not found."); }
+            const nutrition_before = await this.getRemainingBudget(decodedHeaders, createMealLoggingSummaryDTO.mealDate);
 
-        // get all nutrition info
-        const recipe_nutrition = recipe_entries.map(recipe => {recipe.id, recipe.nutrition_info}); 
+            const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_object_portion_list);
 
-        // TODO: calculate the nutrition here
-        // const nutrition_before = this.commonService.getRemainingBudget(user_object.user_id, meal_logging_summary_date);
-
-        // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_nutrition, meal_logging_entries);
-
-        // return [nutrition_before, nutrition_after];
+            return [nutrition_before, nutrition_after];
+        } catch (e) {
+            throw e;
+        }
     }
 
     async getRemainingBudget(decodedHeaders: any, dateString: DateValidationDTO = null){

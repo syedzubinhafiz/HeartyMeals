@@ -14,8 +14,23 @@ export class MealLogSummaryController {
     @Post('create')
     async createMealLoggingSummary(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
         try {
-            const decodedHeaders = this.commonService.decodeHeaders(headers.authorization);
-            await this.mealLogSummaryService.createMealLoggingSummary(decodedHeaders, createMealLoggingSummaryDTO);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            await this.mealLogSummaryService.createMealLoggingSummary(decoded_headers, createMealLoggingSummaryDTO);
+        } catch (e) {
+            return new HttpException(e.message, 400);
+        }
+
+    }
+
+    @Post('calculate')
+    async calculate(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
+        try {
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            return await this.mealLogSummaryService.calculateNutritionSummary(decoded_headers, createMealLoggingSummaryDTO);
         } catch (e) {
             return new HttpException(e.message, 400);
         }
@@ -23,7 +38,7 @@ export class MealLogSummaryController {
     }
 
     @Get('budget')
-    async getRemainingBudget(@Headers() headers, @Body() payload: DateValidationDTO){
+    async getRemainingBudget(@Headers() headers: any, @Body() payload: DateValidationDTO){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
