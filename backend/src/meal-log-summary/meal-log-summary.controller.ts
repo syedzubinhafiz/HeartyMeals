@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpException } from "@nestjs/common";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 
@@ -10,9 +10,12 @@ export class MealLogSummaryController {
     ) {}
 
     @Get('budget')
-    async getRemainingBudget(@Body() payload){
+    async getRemainingBudget(@Headers() headers, @Body("date") payload){
         try {
-            return this.commonService.getRemainingBudget(payload.user_id, payload.date);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            return this.commonService.getRemainingBudget(decoded_headers, payload.date);
         } catch (e){
             return new HttpException(e.messageq, 400)
         }

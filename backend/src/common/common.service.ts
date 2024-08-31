@@ -90,7 +90,7 @@ export class CommonService{
             meal_logging_summary_entry = new MealLogSummary();
             meal_logging_summary_entry.user = user_object;
             meal_logging_summary_entry.date = date;
-            meal_logging_summary_entry.remaining_nutrients = user_object.daily_budget as JSON;
+            meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
 
             try {
                 await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
