@@ -7,7 +7,7 @@
     <!-- Background image section -->
     <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
       <h2 class="text-white text-4xl font-bold text-center">Recipe Library</h2>
-      <p class="mt-[145px] text-xl text-center italic">Because healthy food should be tasty too.</p>
+      <p class="mt-[15px] text-xl text-center italic">Because healthy food should be tasty too.</p>
     </div>
 
     <!-- Search Bar and Recipe Cards Container -->
@@ -22,10 +22,9 @@
         </div>
 
         <!-- Scrollable Recipe Cards -->
-        <div class="scroll-content">
           <div class="cards-grid">
             <RecipeCard
-              v-for="(meal, index) in meals"
+              v-for="(meal, index) in paginatedMeals"
               :key="index"
               :imageSrc="meal.imageSrc"
               :mealName="meal.mealName"
@@ -36,17 +35,20 @@
           </div>
         </div>
       </div>
-      <div class="right-0 bottom-0 flex items-end">
+      <!-- Pagination Component -->
+      <Pagination
+          :totalItems="meals.length"
+          :itemsPerPage="itemsPerPage"
+          v-model:currentPage="currentPage"
+        />
+      <!-- <div class="right-0 bottom-0 flex items-end"> -->
         <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
       </div>
-    </div>
-  </div>
   <RecipeOverlay
     :visible="isOverlayVisible"
     :meal="selectedMeal"
     @closeOverlay="isOverlayVisible = false"
   />
-
   <Footer/>
 </template>
 <script>
@@ -55,10 +57,11 @@ definePageMeta({
 });
 
 import RecipeOverlay from '/components/RecipeOverlay.vue';
-
+import Pagination from '/components/Pagination.vue';
 export default {
   name: "RecipePage",
   components: {
+    Pagination,
     RecipeOverlay,
   },
   data() {
@@ -66,6 +69,8 @@ export default {
       searchValue: "",
       isOverlayVisible: false,
       selectedMeal: null,
+      currentPage: 1,
+      itemsPerPage: 6,
       meals: [
         {
           imageSrc: "assets/img/croissant.svg",
@@ -144,9 +149,15 @@ export default {
             { name: "Snack", active: false },
           ],
         }
-        // Add more meal objects as needed
       ],
     };
+  },
+  computed: {
+    paginatedMeals() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.meals.slice(start, end);
+    },
   },
   methods: {
     openOverlay(meal) {
@@ -166,10 +177,10 @@ export default {
 
 .bg-header-image {
   background-image: url('@/assets/img/smallerBlob.svg');
-  background-size: 110% auto;
+  background-size: 100% auto;
   background-repeat: no-repeat;
   background-position: center;
-  height: 50vh;
+  height: 35vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -185,31 +196,10 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
-/* Scrollable Content */
-.scroll-content {
-  height: calc(100vh - 50vh); /* Remaining height after the header */
-  overflow-y: auto;
-  padding-top: 20px;
-  padding-right: 0; /* Removed right padding to bring scrollbar closer */
-  scrollbar-width: thin;
-  scrollbar-color: #888 #e0e0e0;
-  z-index:3;
-}
-
-.scroll-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.scroll-content::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
-}
-
-.scroll-content::-webkit-scrollbar-track {
-  background-color: #e0e0e0;
-}
 
 .cards-grid {
   display: grid;
@@ -249,4 +239,29 @@ export default {
   height: 100%;
   object-fit: cover;
 }
+.cards-grid, .pagination {
+  margin-bottom: 20px; /* Reduce if this is too large */
+}
+.relative {
+  min-height: auto;  /* Adjust this from min-h-screen or 100vh to auto */
+}
+.cards-grid, .content-container {
+  margin-bottom: 0;  /* Ensure bottom margins are minimal */
+  padding-bottom: 0;
+}
+
+.bg-header-image, .cards-grid {
+  margin-bottom: 0px; /* Reduce or adjust based on your needs */
+}
+/* If your main container uses flex, make sure it's not spreading items too much */
+.main-container {  /* Replace .main-container with actual class or element */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;  /* Change this if necessary */
+}
+.footer {  /* Add or modify an existing class */
+  position: relative;  /* Position it relative to its natural flow */
+}
+
+
 </style>
