@@ -79,7 +79,7 @@ export class FluidLoggingService {
         const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
 
         // date validation
-        const logging_date = new Date(updateFluidLoggingDTO.loggingDate.date);
+        const logging_date = new Date(updateFluidLoggingDTO.loggingDate);
         const today = new Date();
         if (!this.commonService.isSameDay(logging_date, today)) { throw new HttpException("You can only log fluid intake for today.", 400); }
 
