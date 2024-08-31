@@ -1,13 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, Min, Matches} from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, Min, Matches, IsDateString} from "class-validator";
 
 
 export class UpdateFluidLoggingDTO{
     
-    @IsString()
+    @IsDateString()
     @IsNotEmpty()
-    @Matches(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/, {message: "Timestamp must be in the format YYYY-MM-DDTHH:MM:SS.SSS+-HHMM"}
-    )
     readonly loggingDate: string;
 
     @IsNumber()

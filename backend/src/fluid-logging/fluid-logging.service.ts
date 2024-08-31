@@ -29,7 +29,6 @@ export class FluidLoggingService {
         const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
 
         // date validation
-        if (!this.commonService.validateDate(loggingDate)) { return new HttpException("Invalid date format. Date must be in YYYY-MM-DDTHH:MM:SS.SSS+-HHMM format.", 400); }
         const logging_date = new Date(loggingDate.split('T')[0]);
 
         // get the fluid logging entry for the user on the given date and userid
