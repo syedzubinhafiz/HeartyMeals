@@ -14,7 +14,7 @@ export class MealLogSummary{
     @Column({type: "json"})
     remaining_nutrients: JSON
     
-    @Column({type: 'json'})
+    @Column({type: 'json', default: {}})
     food_consumed: JSON;
 
     @ManyToOne(()=> User, user=> user.user_id)

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, HttpException } from "@nestjs/common";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
@@ -10,14 +11,14 @@ export class MealLogSummaryController {
     ) {}
 
     @Get('budget')
-    async getRemainingBudget(@Headers() headers, @Body("date") payload){
+    async getRemainingBudget(@Headers() headers, @Body() payload: DateValidationDTO){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return this.commonService.getRemainingBudget(decoded_headers, payload.date);
+            return this.mealLogSummaryService.getRemainingBudget(decoded_headers, payload);
         } catch (e){
-            return new HttpException(e.messageq, 400)
+            return new HttpException(e.message, 400)
         }
     }
 }

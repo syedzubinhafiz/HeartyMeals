@@ -4,6 +4,8 @@ import { UserService } from './user.service';
 import { Gender } from './enum/gender.enum';
 import { CommonService } from 'src/common/common.service';
 import { CreateAdminDTO } from './dto/create-admin-dto';
+import { DateValidationDTO } from 'src/common/dto/date-validation-dto';
+import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.service';
 
 
 @Controller('user')
@@ -12,6 +14,7 @@ export class UserController {
     constructor(
         private userService: UserService,
         private commonService: CommonService,
+        private mealLogSummaryService: MealLogSummaryService,
     ){}
 
     @Post('signup')
@@ -40,11 +43,14 @@ export class UserController {
   }
 
   @Get('budget')
-    async getRemainingBudget(@Body() payload){
+    async getRemainingBudget(@Headers() headers, @Body() payload: DateValidationDTO){
+        const authHeader = headers.authorization;
+        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+
         try {
-            return this.commonService.getRemainingBudget(payload.user_id, payload.date);
+            return this.mealLogSummaryService.getRemainingBudget(decodedHeaders, payload);
         } catch (e){
-            return new HttpException(e.messageq, 400)
+            return new HttpException(e.message, 400)
         }
     }
 }
