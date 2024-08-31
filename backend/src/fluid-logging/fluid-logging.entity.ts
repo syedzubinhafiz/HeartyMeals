@@ -14,6 +14,9 @@ export class FluidLogging{
     @Column({type: 'date'})
     logging_date: Date;
 
+    @Column({type: 'float'})
+    remaining_fluid: number;
+
     @Column({type: 'jsonb'})
-    remaining_fluid: Array<JSON>;
+    logging_history: Array<JSON>;
 }
