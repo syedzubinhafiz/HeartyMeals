@@ -13,7 +13,7 @@ export class UpdateMealLoggingDTO{
 
     @IsNotEmpty()
     @IsNumber()
-    readonly portion: Number;
+    readonly portion: number;
 
     @IsNotEmpty()
     @IsEnum(MealType)

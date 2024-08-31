@@ -35,7 +35,7 @@ export class MealLogging{
     @Column({
         type: 'float'
     })
-    portion: Number;
+    portion: number;
 
     @CreateDateColumn({type: 'timestamp with time zone', default: () => 'now()'})
     created_at: Date;
