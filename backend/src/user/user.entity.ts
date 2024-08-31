@@ -119,19 +119,4 @@ export class User{
     @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
     deleted_at?: Date;
 
-    @Column({
-        type: 'jsonb', 
-        nullable: false, 
-        default: {
-            "calories": 0, //in kcal
-            "carbs": 0, //in g
-            "protein": 0, //in g
-            "fat": 0, //in g
-            "sodium": 0, //in mg
-            "cholesterol": 0, //in mg
-            "water_intake": 0 //in ml
-        }
-    })
-    daily_budget: Object;
-
 }
