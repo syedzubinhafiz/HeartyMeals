@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Headers, HttpException, Post } from "@nestjs/common";
-import { CreateMealLoggingSummaryDTO } from "./dto/create-meal-logging-summary-dto";
+import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { CreateMealLoggingSummaryDTO } from "./dto/create-meal-logging-summary-entry-dto";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
@@ -25,7 +26,7 @@ export class MealLogSummaryController {
     }
 
     @Post('calculate')
-    async calculate(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
+    async calculate(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CalculateMealLoggingSummaryDTO){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
