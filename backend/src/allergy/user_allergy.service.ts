@@ -4,6 +4,7 @@ import { In, Repository } from "typeorm";
 import { UserAllergy } from "./user_allergy.entity";
 import { UserService } from "src/user/user.service";
 import { FoodCategory } from "src/food-category/foodCategory.entity";
+import { User } from "src/user/user.entity";
 
 @Injectable()
 export class UserAllergyService{
@@ -12,6 +13,8 @@ export class UserAllergyService{
         private userAllergyRepository: Repository<UserAllergy>,
         @InjectRepository(FoodCategory)
         private foodCategoryRepository: Repository<FoodCategory>,
+        @InjectRepository(User)
+        private userRepository: Repository<User>,
         private userService: UserService,
     ){}
 
@@ -26,6 +29,8 @@ export class UserAllergyService{
 
         // user id validation
         if (!this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with id ${decodedHeaders['sub']} not found.`, 400); }
+
+        const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders['sub']});
 
         // food category id validation
         const food_category_objects = await this.foodCategoryRepository.findBy({
@@ -53,8 +58,8 @@ export class UserAllergyService{
                     
                     // Create entries to store in saved_entries
                     const new_user_allergy = new UserAllergy();
-                    new_user_allergy.user_id = decodedHeaders['sub'];
-                    new_user_allergy.food_cat_id = id;
+                    new_user_allergy.user = user_object;
+                    new_user_allergy.foodCategory = food_category;
                     
                     all_entries.push(new_user_allergy)
                 }
