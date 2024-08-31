@@ -27,7 +27,7 @@ export class MealLogSummaryService {
         private userService: UserService,
     ){}
 
-    async createMealLoggingSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
+    async addMealLoggingSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
         // Validate userId
         if (!await this.userService.verifyUser(decodedHeaders)) { throw new Error(`User with id ${decodedHeaders['sub']} not found`); }
         const user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });

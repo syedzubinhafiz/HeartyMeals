@@ -13,13 +13,13 @@ export class MealLogSummaryController {
         private commonService: CommonService
     ) {}
 
-    @Post('create')
-    async createMealLoggingSummary(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
+    @Post('add')
+    async addMealLoggingSummary(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            await this.mealLogSummaryService.createMealLoggingSummary(decoded_headers, createMealLoggingSummaryDTO);
+            await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, createMealLoggingSummaryDTO);
         } catch (e) {
             return new HttpException(e.message, 400);
         }
