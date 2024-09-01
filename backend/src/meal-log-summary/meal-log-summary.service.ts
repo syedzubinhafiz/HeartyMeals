@@ -49,7 +49,7 @@ export class MealLogSummaryService {
             .getOne();
         
         // add the new meal logging ids into the specified meal type in the meal logging summary 
-        addMealLoggingSummaryDTO.mealLoggingIds[addMealLoggingSummaryDTO.mealType].forEach((item) => {
+        addMealLoggingSummaryDTO.mealLoggingIds.forEach((item) => {
             meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType].push(item);
         });
 

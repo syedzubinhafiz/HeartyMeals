@@ -32,9 +32,8 @@ export class MealLogSummaryController {
 
                 // const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingDTO, transactionalEntityManager);
                 // then add meal logging summary
-
                 // addMealLoggingSummaryDTO.mealLoggingIds = meal_logging_ids;
-
+                
                 await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, addMealLoggingSummaryDTO, transactionalEntityManager);
             });
             return new HttpException("All meals have been logged.", 200);
