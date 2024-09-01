@@ -1,6 +1,5 @@
 import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
-import { MealLogging } from "src/meal-logging/meal-logging.entity";
 
 
 

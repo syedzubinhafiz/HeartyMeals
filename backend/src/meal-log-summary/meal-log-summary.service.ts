@@ -9,7 +9,7 @@ import { Recipe } from "src/recipe/recipe.entity";
 import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
-import { CreateMealLoggingSummaryDTO } from "./dto/create-meal-logging-summary-entry-dto";
+import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
 import { RemomveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 
 @Injectable()
@@ -30,28 +30,15 @@ export class MealLogSummaryService {
     /**
      * Adds the meal logging ids created to the meal logging summary
      * @param decodedHeaders - headers from request
-     * @param createMealLoggingSummaryDTO - DTO containing the meal logging ids and nutrition info
+     * @param addMealLoggingSummaryDTO - DTO containing the meal logging ids and nutrition info
      * @returns true if the meal logging summary is added successfully
      */
-    async addMealLoggingSummary(decodedHeaders: any, createMealLoggingSummaryDTO: CreateMealLoggingSummaryDTO){
-        // Validate userId
-        if (!await this.userService.verifyUser(decodedHeaders)) { throw new Error(`User with id ${decodedHeaders['sub']} not found`); }
+    async addMealLoggingSummary(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO){
+
         const user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
         // get the date only
-        const meal_logging_summary_date = new Date(createMealLoggingSummaryDTO.mealDate.split('T')[0]);
-
-        // meal logging id validation
-        const meal_loggings_in_object = createMealLoggingSummaryDTO.mealLoggingIdsInJSON;
-        const meal_logging_ids = Object.values(meal_loggings_in_object).flat();
-        const meal_loggings_object_lists = await this.mealLoggingRepository.find({
-            where: {
-                id: In(meal_logging_ids)
-            }
-        });
-        if (meal_loggings_object_lists.length !== meal_logging_ids.length) {
-            throw new HttpException(`Some meal logging ids are not found`, 404);
-        }
+        const meal_logging_summary_date = new Date(addMealLoggingSummaryDTO.mealDate.split('T')[0]);
 
         // get the entry
         // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
@@ -60,19 +47,13 @@ export class MealLogSummaryService {
             .where('user_id = :user_id', {user_id: user_object.user_id})
             .andWhere('date = :meal_date', {meal_date: meal_logging_summary_date})
             .getOne();
-            
-        var previous_food_consumed = meal_logging_summary_entry.food_consumed;
-        // Loop through each key (Breakfast, Lunch, Dinner, Other) in the object
-        for (const key in createMealLoggingSummaryDTO.mealLoggingIdsInJSON) {
-            // Loop through each item in the array associated with the key
-            createMealLoggingSummaryDTO.mealLoggingIdsInJSON[key].forEach((item) => {
-                // Add them into the object
-                previous_food_consumed[key].push(item);
-            });
-        }
-        meal_logging_summary_entry.food_consumed = previous_food_consumed;
         
-        meal_logging_summary_entry.remaining_nutrients = createMealLoggingSummaryDTO.nutritionAfter;
+        // add the new meal logging ids into the specified meal type in the meal logging summary 
+        addMealLoggingSummaryDTO.mealLoggingIds[addMealLoggingSummaryDTO.mealType].forEach((item) => {
+            meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType].push(item);
+        });
+
+        meal_logging_summary_entry.remaining_nutrients = addMealLoggingSummaryDTO.nutritionAfter;
 
         try {
             await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
@@ -94,101 +75,47 @@ export class MealLogSummaryService {
         try {
             // Validate userId
             if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
-            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
-            // combine multiple lists of meal logging ids into one big lists of meal looging ids
-            const combined_meals = [
-                ...calculateMealLoggingSummaryDTO.recipeIdsInJSON.Breakfast, 
-                ...calculateMealLoggingSummaryDTO.recipeIdsInJSON.Lunch, 
-                ...calculateMealLoggingSummaryDTO.recipeIdsInJSON.Dinner, 
-                ...calculateMealLoggingSummaryDTO.recipeIdsInJSON.Other
-            ];
+         
+            // get list of recipe objects
+            const recipe_ids = calculateMealLoggingSummaryDTO.recipeIdPortions.map(json_object => json_object.recipeId);
 
-            // get list of recipe ids
-            const recipe_ids = combined_meals.map(json_object => json_object.recipeId);
-
-            // get all the meal logging objects
-            const recipe_id_portion_list = await this.recipeRepository.find({
+            // get all the recipe objects
+            const recipes = await this.recipeRepository.find({
                 where: {
                     id: In(recipe_ids)
                 }
             });
 
-            const recipe_object_portion_list = [];
+            const recipe_nutrition_portion = [];
 
             // combine the recipe id, nutrition info and portion into one list
-            combined_meals.forEach(meal => {
-                const recipe = recipe_id_portion_list.find(r => r.id === meal.recipeId);
+            calculateMealLoggingSummaryDTO.recipeIdPortions.forEach(json_object => {
+                const recipe = recipes.find(r => r.id === json_object.recipeId);
                 if (recipe) {
-                    recipe_object_portion_list.push({
-                        recipe_id: meal.recipeId,
+                    recipe_nutrition_portion.push({
+                        recipe_id: json_object.recipeId,
                         nutrition_info: recipe.nutrition_info, 
-                        portion: meal.portion 
+                        portion: json_object.portion 
                     });
                 }
                 else {
-                    throw new HttpException (`Recipe with id ${meal.recipeId} not found.`, 404);
+                    throw new HttpException (`Recipe with id ${json_object.recipeId} not found.`, 404);
                 }
             });
 
             // get the remaining budget of the user for the day    
-            const nutrition_before = await this.getRemainingBudget(decodedHeaders, {"date": calculateMealLoggingSummaryDTO.mealDate});
+            const  dateValidationDTO = new DateValidationDTO();
+            dateValidationDTO.date = calculateMealLoggingSummaryDTO.mealDate;
+            // const nutrition_before = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
             // calculate the nutrition if the user plan to eat the meal
-            const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_object_portion_list);
+            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_nutrition_portion);
 
-            return [nutrition_before, nutrition_after];
+            // return [nutrition_before, nutrition_after];
         } catch (e) {
             throw e;
         }
-    }
-
-    /**
-     * Get the remaining budget of the user for the day
-     * @param decodedHeaders - headers from request
-     * @param dateValidationDTO - DTO containing the date validated
-     * @returns an Object of remaining nutrients of the user for the day
-     */
-    async getRemainingBudget(decodedHeaders: any, dateValidationDTO: DateValidationDTO = null){
-        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
-
-        const user_id = decodedHeaders['sub'];
-
-        const user_object = await this.userRepository.findOneBy({ user_id: user_id });
-
-        var date = null;
-        if (dateValidationDTO == null){
-            date = new Date().toISOString().split('T')[0];
-        }
-        else {
-            date = new Date(dateValidationDTO.date.split('T')[0]);
-        }
-        
-        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-            .where('user_id = :user_id', {user_id: user_id})
-            .andWhere('date = :meal_date', {meal_date: date})
-            .getOne();
-
-        // if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
-        //     var remaining_nutrients = user_object.daily_budget as JSON;
-        //     delete remaining_nutrients["water_intake"];
-
-        //     meal_logging_summary_entry = new MealLogSummary();
-        //     meal_logging_summary_entry.user = user_object;
-        //     meal_logging_summary_entry.date = date;
-        //     meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
-
-        //     try {
-        //         await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
-        //     } catch (e) {
-        //         throw new Error("Error saving meal logging summary entry");
-        //     }
-
-        //     return remaining_nutrients;
-        // }
-        // else {
-        //     return meal_logging_summary_entry.remaining_nutrients;
-        // }
     }
 
     /**
@@ -216,8 +143,7 @@ export class MealLogSummaryService {
         }
 
         // remove the meal logging id from the food consumed
-        const food_consumed = meal_logging_summary_entry.food_consumed;
-        food_consumed[remomveMealLoggingIdDTO.mealType] = food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
+        meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
 
         // get meal logging object with recipe object
         const meal_logging_object = await this.mealLoggingRepository.findOne({
@@ -235,7 +161,6 @@ export class MealLogSummaryService {
         // remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion);
         // remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion);
 
-        meal_logging_summary_entry.food_consumed = food_consumed;
         meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
 
         try {
