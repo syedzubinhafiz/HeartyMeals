@@ -143,11 +143,17 @@ export class MealLogSummaryService {
 
         // get meal logging object with recipe object
         const meal_logging_object = await this.mealLoggingRepository.findOne({
-            where: { id: remomveMealLoggingIdDTO.mealLoggingId },
+            where: { id: remomveMealLoggingIdDTO.mealLoggingId, is_consumed: false },
             relations: ['recipe'],
         });
 
-        if (!meal_logging_object || meal_logging_object == null) { return new HttpException(`Meal logging with id ${remomveMealLoggingIdDTO.mealLoggingId} not found.`, 404); }
+
+
+        if (!meal_logging_object || meal_logging_object == null) { return new HttpException(`Meal logging with id ${remomveMealLoggingIdDTO.mealLoggingId} not found or is consumed.`, 404); }
+
+        // const result = this.mealLoggingService.checkDate(meal_logging_object.consumed_date_time);
+        // if (result.editable == false){ throw new HttpException(result.message, 400); }
+
 
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
