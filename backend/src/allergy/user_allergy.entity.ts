@@ -1,6 +1,6 @@
 import { FoodCategory } from "src/food-category/foodCategory.entity";
 import { User } from "src/user/user.entity";
-import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity("user_allergy")
 export class UserAllergy{
@@ -18,4 +18,11 @@ export class UserAllergy{
     @ManyToOne( () => FoodCategory, foodCategory => foodCategory.id)
     @JoinColumn({name: 'food_cat_id'})
     foodCategory: FoodCategory
+
+    @CreateDateColumn({type: 'timestamp with time zone', default: () => 'now()'})
+    created_at: Date;
+
+    @DeleteDateColumn({ type: "timestamp with time zone", nullable: true , default: null})
+    deleted_at?: Date;
+
 }
