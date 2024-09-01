@@ -235,6 +235,8 @@ export class MealLoggingService {
                 throw new HttpException(`Meal logging with id ${payload.mealLoggingId} not found`, 404);
             }
 
+            const old_meal_type = entry.type;
+
             // update the meal logging object
             entry.updated_at = new Date();
             entry.consumed_date_time = newDate;
@@ -242,7 +244,7 @@ export class MealLoggingService {
             entry.type = payload.mealType;
 
             await this.mealLoggingRepository.save(entry);
-            return true;
+            return old_meal_type;
         } catch (e) {
             throw e;
         }
