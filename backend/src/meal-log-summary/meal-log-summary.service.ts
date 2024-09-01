@@ -11,6 +11,7 @@ import { UserService } from "src/user/user.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
 import { RemoveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
+import { UpdateMealLoggingSummaryDTO } from "./dto/update-meal-logging-summary-dto";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -180,44 +181,89 @@ export class MealLogSummaryService {
      * @param mealLoggingSummaryId - meal logging summary id
      * @returns [daily_budget, nutrition_before, nutrition_after]
      */
-    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId, transactionalEntityManager: EntityManager){
+    async updateNutritionBudget(decodedHeaders: any, updatemealLoggingSummaryDTO: UpdateMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
         try {     
 
-            var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: mealLoggingSummaryId });
+            var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: updatemealLoggingSummaryDTO.mealLoggingSummaryId });
 
-            const combined_meal_logging_ids = meal_logging_summary_entry.food_consumed["Breakfast"].concat(meal_logging_summary_entry.food_consumed["Lunch"], meal_logging_summary_entry.food_consumed["Dinner"], meal_logging_summary_entry.food_consumed["Other"]);
+            // check if the date is still within the same day 
 
-            // get all the recipe objects
-            const meal_logging_objects = await this.mealLoggingRepository.find({
-                where: {
-                    id: In(combined_meal_logging_ids)
-                },
-                relations: ['recipe']
-            });
+            const updated_meal_logging_object = await this.mealLoggingRepository.findOneBy({ id: updatemealLoggingSummaryDTO.mealLoggingId });
 
-            // get the recipe id and recipe nutrition info 
-            const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {
-                return {
-                    recipe_id: meal_logging_object.recipe.id,
-                    nutrition_info: meal_logging_object.recipe.nutrition_info,
-                    recipe_portion: meal_logging_object.recipe.serving_size,
-                    // meal_logging_portion: meal_logging_object.portion
-                }
-            });
+            // if (updated_meal_logging_object.consumed_date_time.toDateString() !== meal_logging_summary_entry.date.toDateString()) {
+            //     // relocate the meal logging id to the new meal logging summary date
 
-            const dateValidationDTO = new DateValidationDTO();
-            dateValidationDTO.date = meal_logging_summary_entry.date.toISOString();
-            // nutrition_list = [daily_budget, nutrition_before]
-            // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
-            // calculate the nutrition if the user plan to eat the meal
-            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
+            //     // get the new meal logging summary entry
+            //     var new_meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+            //         .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+            //         .andWhere('date = :meal_date', {meal_date: updated_meal_logging_object.consumed_date_time})
+            //         .getOne();
 
-            // meal_logging_summary_entry.remaining_nutrients = nutrition_after;
+            //     // add id to new date food consumed
+            //     new_meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
 
-            // return await transactionalEntityManager.save(meal_logging_summary_entry);
+            //     // recalculate new date nutrition budget
+            //     const saved_new_entry = this.calculateNutritionBudget(new_meal_logging_summary_entry, transactionalEntityManager);
+
+
+            //     // remove id from old date by calling removeMealLoggingId (auto recalculate old date nutrition budget)
+            //     const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
+            //     removeMealLoggingIdDTO.date = meal_logging_summary_entry.date.toISOString();
+            //     removeMealLoggingIdDTO.mealLoggingId = updatemealLoggingSummaryDTO.mealLoggingId;
+            //     removeMealLoggingIdDTO.mealType = updatemealLoggingSummaryDTO.oldMealType;
+            //     await this.removeMealLoggingId(decodedHeaders, removeMealLoggingIdDTO, transactionalEntityManager);
+            //     return true;
+                
+            // }
+            // else {
+            //     // remove from old food consumed meal type
+            //     meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType] = meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType].filter(meal_logging_id => meal_logging_id !== updatemealLoggingSummaryDTO.mealLoggingId);
+
+            //     // add to new food consumed meal type
+            //     meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
+
+            //     // recalculate new date nutrition budget
+            //     const saved_entry = this.calculateNutritionBudget(meal_logging_summary_entry, transactionalEntityManager);
+            //     return true;
+            // }
         } catch (e) {
             throw e;
         }
+    }
+
+    async calculateNutritionBudget(mealLoggingSummaryEntry: MealLogSummary, transactionalEntityManager: EntityManager){
+        // get all the meal logging ids
+        const combined_meal_logging_ids = mealLoggingSummaryEntry.food_consumed["Breakfast"].concat(mealLoggingSummaryEntry.food_consumed["Lunch"], mealLoggingSummaryEntry.food_consumed["Dinner"], mealLoggingSummaryEntry.food_consumed["Other"]);
+
+        // get all the recipe objects
+        const meal_logging_objects = await this.mealLoggingRepository.find({
+            where: {
+                id: In(combined_meal_logging_ids)
+            },
+            relations: ['recipe']
+        });
+
+        // get the recipe id and recipe nutrition info 
+        const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {
+            return {
+                recipe_id: meal_logging_object.recipe.id,
+                nutrition_info: meal_logging_object.recipe.nutrition_info,
+                recipe_portion: meal_logging_object.recipe.serving_size,
+                // meal_logging_portion: meal_logging_object.portion
+            }
+        });
+
+        const dateValidationDTO = new DateValidationDTO();
+        dateValidationDTO.date = mealLoggingSummaryEntry.date.toISOString();
+        // nutrition_list = [daily_budget, nutrition_before]
+        // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+
+        // calculate the nutrition if the user plan to eat the meal
+        // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[0], recipe_nutrition_portion);
+
+        // meal_logging_summary_entry.remaining_nutrients = nutrition_after;
+
+        return await transactionalEntityManager.save(mealLoggingSummaryEntry);
     }
 }
