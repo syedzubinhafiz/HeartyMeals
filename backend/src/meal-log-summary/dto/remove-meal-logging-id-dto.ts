@@ -6,14 +6,14 @@ export class RemomeMealLoggingIdDTO{
    
     @IsNotEmpty()
     @IsDateString()
-    readonly date: string;
+    date: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly mealLoggingId: string;
+    mealLoggingId: string;
 
     @IsNotEmpty()
     @IsEnum(MealType)
-    readonly mealType: MealType
+    mealType: MealType
 
 }

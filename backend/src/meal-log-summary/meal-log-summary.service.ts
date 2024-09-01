@@ -174,7 +174,7 @@ export class MealLogSummaryService {
      * @param mealLoggingSummaryId - meal logging summary id
      * @returns [daily_budget, nutrition_before, nutrition_after]
      */
-    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId: string, transactionalEntityManager: EntityManager){
+    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId, transactionalEntityManager: EntityManager){
         try {     
 
             var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: mealLoggingSummaryId });
