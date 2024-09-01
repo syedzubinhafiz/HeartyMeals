@@ -66,7 +66,7 @@ export class MealLogSummaryService {
     }
 
     /**
-     * Calculate the nutrition info before logging the meal after logging the meal
+     * Calculate the nutrition info before logging the meal and after logging the meal
      * @param decodedHeaders - headers from request
      * @param calculateMealLoggingSummaryDTO - DTO containing the meals that user selected and portion
      * @returns [daily_budget, nutrition_before, nutrition_after]
@@ -130,6 +130,8 @@ export class MealLogSummaryService {
      */
     async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomveMealLoggingIdDTO, transactionalEntityManager: EntityManager){
         // remove the meal logging id from the meal logging summary
+        // Validate userId
+        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
         const user_id = decodedHeaders['sub'];
         const date = new Date(remomveMealLoggingIdDTO.date.split('T')[0]);
@@ -139,26 +141,28 @@ export class MealLogSummaryService {
             .andWhere('date = :meal_date', {meal_date: date})
             .getOne();
 
-        // remove the meal logging id from the food consumed
-        meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
-
         // get meal logging object with recipe object
         const meal_logging_object = await this.mealLoggingRepository.findOne({
             where: { id: remomveMealLoggingIdDTO.mealLoggingId },
             relations: ['recipe'],
         });
 
+        if (!meal_logging_object || meal_logging_object == null) { return new HttpException(`Meal logging with id ${remomveMealLoggingIdDTO.mealLoggingId} not found.`, 404); }
+
+        // remove the meal logging id from the food consumed
+        meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
+
         // add the nutrition to the remaining nutrients
-        // meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion);
-        // meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["carbs"] * (meal_logging_object.portion);
-        // meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion);
-        // meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion );
-        // meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion);
-        // meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion);
+        // meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
-            return true;
+            return meal_logging_summary_entry.remaining_nutrients;
         } catch (e) {
             throw new HttpException(e, 400);
         }
