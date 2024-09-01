@@ -8,8 +8,8 @@ export class UpdateMealLoggingSummaryDTO{
     newDate: string;
 
     @IsNotEmpty()
-    @IsEnum(MealType)
-    mealLoggingSummaryId: MealType;
+    @IsString()
+    mealLoggingSummaryId: string;
 
     @IsNotEmpty()
     @IsString()

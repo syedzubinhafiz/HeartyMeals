@@ -6,6 +6,8 @@ import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
 import { RemoveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 import { EntityManager } from "typeorm";
 import { InjectEntityManager } from "@nestjs/typeorm";
+import { AddMealLoggingDTO } from "src/meal-logging/dto/add-meal-logging-dto";
+import { MealLoggingService } from "src/meal-logging/meal-logging.service";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
@@ -14,7 +16,7 @@ export class MealLogSummaryController {
         private commonService: CommonService,
         @InjectEntityManager() 
         private readonly entityManager: EntityManager,
-        // private mealLoggingService: MealLoggingService
+        private mealLoggingService: MealLoggingService
 
     ) {}
 
@@ -26,14 +28,14 @@ export class MealLogSummaryController {
                 // use transactionalEntityManager to perform operations with transactions
                 // create meal logging entries first 
 
-                // const addMealLoggingDTO = new AddMealLoggingDTO();
-                // addMealLoggingDTO.mealDate = addMealLoggingSummaryDTO.mealDate;
-                // addMealLoggingDTO.mealType = addMealLoggingSummaryDTO.mealType;
-                // addMealLoggingDTO.recipeIds = addMealLoggingSummaryDTO.recipeIdPortions;
+                const addMealLoggingDTO = new AddMealLoggingDTO();
+                addMealLoggingDTO.mealDate = addMealLoggingSummaryDTO.mealDate;
+                addMealLoggingDTO.mealType = addMealLoggingSummaryDTO.mealType;
+                addMealLoggingDTO.recipeIds = addMealLoggingSummaryDTO.recipeIdPortions;
 
-                // const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingDTO, transactionalEntityManager);
+                const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingDTO, transactionalEntityManager);
                 // then add meal logging summary
-                // addMealLoggingSummaryDTO.mealLoggingIds = meal_logging_ids;
+                addMealLoggingSummaryDTO.mealLoggingIds = meal_logging_ids;
                 
                 await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, addMealLoggingSummaryDTO, transactionalEntityManager);
             });
