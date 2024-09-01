@@ -10,15 +10,18 @@ export class AddComponentDTO {
     readonly name: string;
 
     @IsEnum(ComponentType)
+    @IsNotEmpty()
     readonly componentType: ComponentType;
 
     @IsEnum(MeasuringUnit)
-    readonly units: MeasuringUnit;
+    @IsNotEmpty()
+    readonly unit: MeasuringUnit;
 
     @IsNumber()
     readonly amount: number;
 
     @IsString()
+    @IsNotEmpty()
     readonly foodCategoryId: string;
     
     @ValidateNested()
