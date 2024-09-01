@@ -7,14 +7,14 @@ export class AddMealLoggingDTO{
 
     @IsNotEmpty()
     @IsDateString()
-    readonly mealDate: string;
+    mealDate: string;
 
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => MealLoggingListDTO)
-    readonly recipeIds: MealLoggingListDTO[];
+    recipeIds: MealLoggingListDTO[];
 
     @IsNotEmpty()
     @IsEnum(MealType)
-    readonly mealType: MealType;
+    mealType: MealType;
 }
