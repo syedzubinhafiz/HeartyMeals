@@ -1,25 +1,9 @@
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { MealType } from "src/meal-logging/enum/meal-type.enum";
 
-export class MealLoggingsDTO {
-    @IsArray()
-    @IsString({ each: true })
-    Breakfast: string[];  
-
-    @IsArray()
-    @IsString({ each: true })
-    Lunch: string[];
-  
-    @IsArray()
-    @IsString({ each: true })
-    Dinner: string[];
-  
-    @IsArray()
-    @IsString({ each: true })
-    Other: string[];
-}
-
-export class CreateMealLoggingSummaryDTO{
+export class AddMealLoggingSummaryDTO{
+    
     @IsNotEmpty()
     @IsDateString()
     readonly mealDate: string;
@@ -27,15 +11,16 @@ export class CreateMealLoggingSummaryDTO{
     /**
      * @example
      * {
-     *  "Breakfast": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
-     *  "Lunch": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
-     *  "Dinner": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
-     *  "Other": ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"]
+     *  mealLoggingIds: ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"],
      * }
      */
-    @ValidateNested()
-    @Type(() => MealLoggingsDTO)
-    readonly mealLoggingIdsInJSON: MealLoggingsDTO;
+    @IsArray()
+    @IsString({ each: true })
+    readonly mealLoggingIds: string[];
+
+    @IsNotEmpty()
+    @IsEnum(MealType)
+    readonly mealType: MealType;
 
     @IsOptional()
     @Transform(({ value }) => (value === undefined ? {} : value))

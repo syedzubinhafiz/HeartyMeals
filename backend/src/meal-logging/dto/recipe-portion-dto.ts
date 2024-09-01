@@ -1,6 +1,6 @@
 import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class MealLoggingListDTO {
+export class RecipePortionDTO {
   @IsString()
   @IsNotEmpty()
   readonly recipeId: string;
