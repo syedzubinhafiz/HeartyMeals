@@ -10,7 +10,7 @@ import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
-import { RemomeMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
+import { RemoveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -128,7 +128,7 @@ export class MealLogSummaryService {
      * @param remomveMealLoggingIdDTO - DTO containing the meal logging id to be removed
      * @returns true if the meal logging id is removed successfully
      */
-    async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomeMealLoggingIdDTO, transactionalEntityManager: EntityManager){
+    async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemoveMealLoggingIdDTO, transactionalEntityManager: EntityManager){
         // remove the meal logging id from the meal logging summary
         // Validate userId
         if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }

@@ -3,7 +3,7 @@ import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-sum
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
-import { RemomeMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
+import { RemoveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 import { EntityManager } from "typeorm";
 import { InjectEntityManager } from "@nestjs/typeorm";
 
@@ -14,6 +14,7 @@ export class MealLogSummaryController {
         private commonService: CommonService,
         @InjectEntityManager() 
         private readonly entityManager: EntityManager,
+        // private mealLoggingService: MealLoggingService
 
     ) {}
 
@@ -28,7 +29,7 @@ export class MealLogSummaryController {
                 // const addMealLoggingDTO = new AddMealLoggingDTO();
                 // addMealLoggingDTO.mealDate = addMealLoggingSummaryDTO.mealDate;
                 // addMealLoggingDTO.mealType = addMealLoggingSummaryDTO.mealType;
-                // addMealLoggingDTO.recipeIdList = addMealLoggingSummaryDTO.recipeIdList;
+                // addMealLoggingDTO.recipeIds = addMealLoggingSummaryDTO.recipeIdPortions;
 
                 // const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingDTO, transactionalEntityManager);
                 // then add meal logging summary
@@ -57,7 +58,7 @@ export class MealLogSummaryController {
     }
 
     @Post('remove')
-    async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemomeMealLoggingIdDTO){
+    async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemoveMealLoggingIdDTO){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
