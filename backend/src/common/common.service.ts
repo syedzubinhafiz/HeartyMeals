@@ -44,14 +44,15 @@ export class CommonService{
 
         for (const item of recipeNutritionList){
             const recipe_nutrition = item["nutrition_info"];
-            const portion = item["portion"];
+            const meal_logging_portion = item["meal_logging_portion"];
+            const recipe_portion = item["recipe_portion"];
 
-            nutrition_after["calories"] -= recipe_nutrition["calories"] * portion;
-            nutrition_after["protein"] -= recipe_nutrition["protein"] * portion;
-            nutrition_after["carbs"] -= recipe_nutrition["total_carbohydrate"] * portion;
-            nutrition_after["fats"] -= recipe_nutrition["fat"] * portion;
-            nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* portion;
-            nutrition_after["sodium"] -= recipe_nutrition["sodium"] * portion;
+            nutrition_after["calories"] -= recipe_nutrition["calories"] * meal_logging_portion / recipe_portion;
+            nutrition_after["protein"] -= recipe_nutrition["protein"] * meal_logging_portion / recipe_portion;
+            nutrition_after["carbs"] -= recipe_nutrition["total_carbohydrate"] * meal_logging_portion / recipe_portion;
+            nutrition_after["fats"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
+            nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
+            nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
         }
 
         return nutrition_after;

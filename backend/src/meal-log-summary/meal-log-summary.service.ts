@@ -78,7 +78,7 @@ export class MealLogSummaryService {
 
          
             // get recipe ids
-            const recipe_ids = calculateMealLoggingSummaryDTO.recipeIdPortions.map(json_object => json_object.recipeId);
+            const recipe_ids = calculateMealLoggingSummaryDTO.recipeIdPortions.map(recipe_id_portion => recipe_id_portion.recipeId);
 
             // get recipe objects
             const recipes = await this.recipeRepository.find({
@@ -90,17 +90,18 @@ export class MealLogSummaryService {
             const recipe_nutrition_portion = [];
 
             // combine the recipe id, nutrition info and portion into one list
-            calculateMealLoggingSummaryDTO.recipeIdPortions.forEach(json_object => {
-                const recipe = recipes.find(r => r.id === json_object.recipeId);
+            calculateMealLoggingSummaryDTO.recipeIdPortions.forEach(recipe_id_portion => {
+                const recipe = recipes.find(r => r.id === recipe_id_portion.recipeId);
                 if (recipe) {
                     recipe_nutrition_portion.push({
-                        recipe_id: json_object.recipeId,
+                        recipe_id: recipe_id_portion.recipeId,
                         nutrition_info: recipe.nutrition_info, 
-                        portion: json_object.portion 
+                        recipe_portion: recipe.serving_size,
+                        meal_logging_portion: recipe_id_portion.portion 
                     });
                 }
                 else {
-                    throw new HttpException (`Recipe with id ${json_object.recipeId} not found.`, 404);
+                    throw new HttpException (`Recipe with id ${recipe_id_portion.recipeId} not found.`, 404);
                 }
             });
 
