@@ -53,19 +53,13 @@ export class UserAllergyService{
                 .andWhere('food_cat_id = :food_cat_id', {food_cat_id: id})
                 .getOne();
                 // only add the ones that do not exist in the database
-                if (!user_allergy){
-                    if (user_allergy.deleted_at != null){
-                        // if the entry is soft deleted, reactivate the entry
-                        user_allergy.deleted_at = null;
-                        all_entries.push(user_allergy);
-                    } else {
-                        // Create entries to store in saved_entries
-                        const new_user_allergy = new UserAllergy();
-                        new_user_allergy.user = user_object;
-                        new_user_allergy.foodCategory = food_category;
-                        
-                        all_entries.push(new_user_allergy);
-                    }
+                if (!user_allergy || user_allergy == null){
+                    // Create entries to store in saved_entries
+                    const new_user_allergy = new UserAllergy();
+                    new_user_allergy.user = user_object;
+                    new_user_allergy.foodCategory = food_category;
+                    
+                    all_entries.push(new_user_allergy)
                 }
 
             }));
