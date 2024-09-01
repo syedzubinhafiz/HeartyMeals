@@ -119,5 +119,4 @@ export class User{
     @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
     deleted_at?: Date;
 
-    
 }

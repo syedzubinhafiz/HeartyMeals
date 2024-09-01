@@ -28,6 +28,7 @@ import seedFoodCategory from './food-category/food-category.seeder';
 import seedDietary from './dietary/dietary.seeder';
 import { dataSourceOptions } from './db/data-source';
 import { MealLoggingModule } from './meal-logging/meal-logging.module';
+import { FluidLoggingModule } from './fluid-logging/fluid-logging.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { MealLoggingModule } from './meal-logging/meal-logging.module';
     FoodCategoryModule,
     EducationalModule,
     MealLoggingModule,
+    FluidLoggingModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],

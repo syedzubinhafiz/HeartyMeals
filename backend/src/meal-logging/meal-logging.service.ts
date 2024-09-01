@@ -7,6 +7,7 @@ import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -85,7 +86,7 @@ export class MealLoggingService {
      * @param date - date string in the format YYYY-MM-DDTHH:MM:SS.SSS 
      * @returns a list of lists of meals 
      */
-    async getMealsPerDay(decodedHeaders: any, date: string){
+    async getMealsPerDay(decodedHeaders: any, dateValidationDto: DateValidationDTO){
         try {
             // Validate userId
             var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
@@ -93,12 +94,7 @@ export class MealLoggingService {
                 throw new Error("User not found.");
             }
 
-            // Validate date format
-            const pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/;
-            if (!pattern.test(date)){
-                throw new Error("Date must be in the format YYYY-MM-DDTHH:MM:SS.SSS");
-            }
-            const new_date = new Date(date);
+            const new_date = new Date(dateValidationDto.date);
             
             // get all the meals recoreded in a day
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
@@ -266,10 +262,8 @@ export class MealLoggingService {
         const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
         const seven_days_in_millis = 6.048e+8; // Number of milliseconds in seven days
 
-        const isSameDay = (date1, date2) => {
-            return date1.getFullYear() === date2.getFullYear() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getDate() === date2.getDate();
+        const isSameDay = (date1: Date, date2: Date) => {
+            return date1.getDate() === date2.getDate();
         };
         
         // Check if the incoming date is more than 7 days ahead of today_date

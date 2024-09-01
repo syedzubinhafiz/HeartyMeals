@@ -12,6 +12,12 @@
                 <Overlay v-if="signupPage==0" :level="1" class="flex flex-col w-fit p-5 space-y-5">
                     <!-- options -->
                     <div class="space-y-0">
+                        <P><b>Age</b></P>
+                        <Input v-model="age"/>
+                        <P><b>Height</b></P>
+                        <Input v-model="height"/>
+                        <P><b>Weight</b></P>
+                        <Input v-model="weight"/>
                         <P><b>Country</b></P>
                         <DropdownSearchBar :dataList="countryList" v-model="country"/>
                         <P><b>Ethnicity</b></P>
@@ -67,6 +73,10 @@ definePageMeta({
 // relevant variables
 const signupPage = ref(0)
 
+const age = ref(0)
+const height = ref(0)
+const weight = ref(0)
+
 const country = ref({name:"",id:""})
 const ethnicity = ref({name:"",id:""})
 const gender = ref("")
@@ -80,7 +90,7 @@ const userInfo = useUserInfo()
 // function for signing up
 const signUp = async () => {
 
-    let result = await userInfo.signup(gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`,allergies.value.name)
+    let result = await userInfo.signup(age.value,height.value,weight.value,gender.value,country.value.id,nyhaClassification.value,dietaryRestrictions.value.id,ethnicity.value.id,`{\"warfarin\":${warfarin.value=="yes"?"true":"false"}}`,allergies.value.name)
     if(result) {
         navigateTo("/temp");
     }
@@ -96,7 +106,7 @@ onMounted(async () => {
     await useApi('/country','GET')
     countryList.value = (await useApi('/country','GET')).value
     ethnicityList.value = (await useApi('/ethnicity','GET')).value
-    allergyList.value = (await useApi('/food_category','GET')).value
+    allergyList.value = (await useApi('/food_category/get','GET')).value
     for(let subVal of allergyList.value) {
         subVal.name = subVal.type
     }
