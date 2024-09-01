@@ -4,12 +4,14 @@ import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { EntityManager } from "typeorm";
 
 @Controller('meal-planning')
 export class MealPlanningController {
     constructor(
         private mealLoggingService: MealLoggingService,
-        private commonService: CommonService
+        private commonService: CommonService,
+        private readonly entityManager: EntityManager,
     ){}
 
     /**
@@ -23,7 +25,7 @@ export class MealPlanningController {
         try {
             const authHeader = headers.authorization;
             const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.addMealLogging(decodedHeaders, mealLoggingDTO);
+            await this.mealLoggingService.addMealLogging(decodedHeaders, mealLoggingDTO, this.entityManager);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -60,6 +62,8 @@ export class MealPlanningController {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
             await this.mealLoggingService.updateMealLogging(decoded_headers, payload);
+
+            // TODO: recalculate the nutrition summary
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -78,7 +82,10 @@ export class MealPlanningController {
         try {
             const authHeader = headers.authorization;
             const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload);
+            await this.mealLoggingService.deleteMealLoggingBulk(decodedHeaders, payload, this.entityManager);
+
+            // TODO: call meal logging summary to remove the meal logging id from the list
+            // TODO: recalculate the nutrition summary
         }
         catch (e){
             return new HttpException(e.message, 400);

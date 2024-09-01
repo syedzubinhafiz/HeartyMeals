@@ -74,7 +74,8 @@ export class MealLoggingService {
             }));
 
             // Save all recipes in one go
-            return await transactionalEntityManager.save(all_entries);
+            const saved_entries = await transactionalEntityManager.save(all_entries);
+            return saved_entries.map(entry => entry.id);
         } catch (e) {
             throw e; // Return error to controller
         }
