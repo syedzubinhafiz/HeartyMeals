@@ -60,6 +60,7 @@ export class CommonService{
         }
     }
 
+
     /**
      * Calculate the calories required for intake based on user information
      * @param gender - user gender in Enum
@@ -190,5 +191,29 @@ export class CommonService{
         );
       }
 
-    
+    calculateNutritionAfter(userDailyBudget: Object, recipeNutritionList: Object[]): JSON{
+        var nutrition_after = {} as JSON;
+
+        nutrition_after["calories"] = userDailyBudget["calories"];
+        nutrition_after["protein"] = userDailyBudget["protein"];
+        nutrition_after["carbs"] = userDailyBudget["carbs"];
+        nutrition_after["fats"] = userDailyBudget["fats"];
+        nutrition_after["cholesterol"] = userDailyBudget["cholesterol"];
+        nutrition_after["sodium"] = userDailyBudget["sodium"];
+
+        for (const item of recipeNutritionList){
+            const recipe_nutrition = item["nutrition_info"];
+            const meal_logging_portion = item["meal_logging_portion"];
+            const recipe_portion = item["recipe_portion"];
+
+            nutrition_after["calories"] -= recipe_nutrition["calories"] * meal_logging_portion / recipe_portion;
+            nutrition_after["protein"] -= recipe_nutrition["protein"] * meal_logging_portion / recipe_portion;
+            nutrition_after["carbs"] -= recipe_nutrition["totalCarbohydrate"] * meal_logging_portion / recipe_portion;
+            nutrition_after["fats"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
+            nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
+            nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
+        }
+
+        return nutrition_after;
+    }
 }

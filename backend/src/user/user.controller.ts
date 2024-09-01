@@ -42,15 +42,16 @@ export class UserController {
         return await this.userService.verifyUser(decodedHeaders);
   }
 
-  @Get('budget')
-    async getRemainingBudget(@Headers() headers, @Body() payload: DateValidationDTO){
-        const authHeader = headers.authorization;
-        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+    @Get('budget')
+        async getRemainingBudget(@Headers() headers, @Body() payload: DateValidationDTO){
+            const authHeader = headers.authorization;
+            const decodedHeaders = this.commonService.decodeHeaders(authHeader);
 
-        try {
-            return this.mealLogSummaryService.getRemainingBudget(decodedHeaders, payload);
-        } catch (e){
-            return new HttpException(e.message, 400)
+            try {
+                return this.mealLogSummaryService.getRemainingBudget(decodedHeaders, payload);
+            } catch (e){
+                return new HttpException(e.message, 400)
+            }
         }
-    }
+
 }

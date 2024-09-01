@@ -5,6 +5,6 @@ export class DateValidationDTO{
     
     @IsDateString()
     @IsNotEmpty()
-    readonly date: string;
+    date: string;
 
 }
