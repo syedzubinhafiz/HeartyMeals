@@ -217,7 +217,7 @@ export class MealLoggingService {
      * @param payload - payload that contains the meal logging id and the new date
      * @returns the updated meal logging object
      */
-    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO){
+    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
             const newDate = new Date(payload.newDate);
             // validate date 
@@ -243,7 +243,7 @@ export class MealLoggingService {
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
-            await this.mealLoggingRepository.save(entry);
+            await transactionalEntityManager.save(entry);
             return old_meal_type;
         } catch (e) {
             throw e;

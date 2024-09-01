@@ -7,6 +7,9 @@ import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
+// import { UpdateMealLoggingSummaryDTO } from "src/meal-log-summary/dto/update-meal-logging-summary-dto";
+// import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
+// import { RemoveMealLoggingIdDTO } from "src/meal-log-summary/dto/remove-meal-logging-id-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
@@ -65,16 +68,17 @@ export class MealLoggingController {
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
-                const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload);
+                const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
                 // TODO: recalculate the nutrition summary
                 // const update_meal_logging_summary = new UpdateMealLoggingSummaryDTO();
                 // update_meal_logging_summary.mealLoggingId = payload.mealLoggingId;
                 // update_meal_logging_summary.oldMealType = old_meal_type;
                 // update_meal_logging_summary.newMealType = payload.mealType;
-                // update_meal_logging_summary.date = payload.mealDate;
+                // update_meal_logging_summary.newDate = payload.newDate;
                 // update_meal_logging_summary.mealLoggingSummaryId = payload.mealLoggingSummaryId;
-                // await this.MealLogSummaryService.updateNutritionSummary(decoded_headers, update_meal_logging_summary, transactionalEntityManager);
+
+                // await this.mealLoggingSummaryService.updateNutritionBudget(decoded_headers, update_meal_logging_summary, transactionalEntityManager);
             });
             return new HttpException("Meal is updated.", 200);
         }
@@ -96,7 +100,7 @@ export class MealLoggingController {
             await this.entityManager.transaction(async transactionalEntityManager => { 
                 // TODO: call meal logging summary to remove the meal logging id from the list
                 // const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
-                // removeMealLoggingIdDTO.mealLoggingId = payload.mealLogging
+                // removeMealLoggingIdDTO.mealLoggingId = payload.mealLoggingId;
                 // removeMealLoggingIdDTO.date = payload.mealDate;
                 // removeMealLoggingIdDTO.mealType = payload.mealType;
 
