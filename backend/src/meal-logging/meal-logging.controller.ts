@@ -15,6 +15,7 @@ export class MealLoggingController {
         private commonService: CommonService,
         @InjectEntityManager()
         private readonly entityManager: EntityManager,
+        // private mealLoggingSummaryService: MealLogSummaryService,
     ){}
 
     /**
@@ -94,7 +95,7 @@ export class MealLoggingController {
                 // const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
 
                 // TODO: recalculate the nutrition summary
-                // await this.mealLoggingSummaryService.calculateNutritionSummary(decoded_headers, meal_logging_summary_id, transactionalEntityManager);
+                // await this.mealLoggingSummaryService.updateNutritionBudget(decoded_headers, meal_logging_summary_id, transactionalEntityManager);
 
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
