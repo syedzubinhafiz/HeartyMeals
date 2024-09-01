@@ -12,7 +12,7 @@ import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
 import { RemoveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
 import { UpdateMealLoggingSummaryDTO } from "./dto/update-meal-logging-summary-dto";
-// import { MealLoggingService } from "src/meal-logging/meal-logging.service";
+import { MealLoggingService } from "src/meal-logging/meal-logging.service";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -27,7 +27,7 @@ export class MealLogSummaryService {
         private recipeRepository: Repository<Recipe>,
         private commonService: CommonService,
         private userService: UserService,
-        // private mealLoggingService: MealLoggingService
+        private mealLoggingService: MealLoggingService
     ){}
 
     /**
@@ -163,12 +163,12 @@ export class MealLogSummaryService {
             dateValidationDTO.date = calculateMealLoggingSummaryDTO.mealDate;
 
             // nutrition_list = [daily_budget, nutrition_before]
-            // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+            const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
             // calculate the nutrition if the user plan to eat the meal
-            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
+            const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
 
-            // return [nutrition_list[0], nutrition_list[1], nutrition_after];
+            return [nutrition_list[0], nutrition_list[1], nutrition_after];
         } catch (e) {
             throw e;
         }
@@ -202,8 +202,8 @@ export class MealLogSummaryService {
 
         if (!meal_logging_object || meal_logging_object == null) { throw new HttpException(`Meal logging with id ${remomveMealLoggingIdDTO.mealLoggingId} not found or is consumed.`, 404); }
 
-        // const result = this.mealLoggingService.checkDate(meal_logging_object.consumed_date_time);
-        // if (result.editable == false){ throw new HttpException(result.message, 400); }
+        const result = this.mealLoggingService.checkDate(meal_logging_object.consumed_date_time);
+        if (result.editable == false){ throw new HttpException(result.message, 400); }
 
 
         // remove the meal logging id from the food consumed
@@ -211,40 +211,40 @@ export class MealLogSummaryService {
 
         
 
-        // // add the nutrition to the remaining nutrients
-        // meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        // meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        // meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        // meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        // meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        // meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        // add the nutrition to the remaining nutrients
+        meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
 
-        // const dateValidationDTO = new DateValidationDTO();
-        // dateValidationDTO.date = remomveMealLoggingIdDTO.date.split('T')[0];
+        const dateValidationDTO = new DateValidationDTO();
+        dateValidationDTO.date = remomveMealLoggingIdDTO.date.split('T')[0];
 
-        // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+        const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
-        // // check if each nutrient is within the daily budget
-        // const daily_budget = nutrition_list[0];
+        // check if each nutrient is within the daily budget
+        const daily_budget = nutrition_list[0];
 
-        // if (meal_logging_summary_entry.remaining_nutrients["calories"] > daily_budget["calories"]){
-        //     meal_logging_summary_entry.remaining_nutrients["calories"] = daily_budget["calories"];
-        // }
-        // if (meal_logging_summary_entry.remaining_nutrients["carbs"] > daily_budget["carbs"]){
-        //     meal_logging_summary_entry.remaining_nutrients["carbs"] = daily_budget["carbs"];
-        // }
-        // if (meal_logging_summary_entry.remaining_nutrients["protein"] > daily_budget["protein"]){
-        //     meal_logging_summary_entry.remaining_nutrients["protein"] = daily_budget["protein"];
-        // }
-        // if (meal_logging_summary_entry.remaining_nutrients["fats"] > daily_budget["fats"]){
-        //     meal_logging_summary_entry.remaining_nutrients["fats"] = daily_budget["fats"];
-        // }
-        // if (meal_logging_summary_entry.remaining_nutrients["sodium"] > daily_budget["sodium"]){
-        //     meal_logging_summary_entry.remaining_nutrients["sodium"] = daily_budget["sodium"];
-        // }
-        // if (meal_logging_summary_entry.remaining_nutrients["cholesterol"] > daily_budget["cholesterol"]){
-        //     meal_logging_summary_entry.remaining_nutrients["cholesterol"] = daily_budget["cholesterol"];
-        // }
+        if (meal_logging_summary_entry.remaining_nutrients["calories"] > daily_budget["calories"]){
+            meal_logging_summary_entry.remaining_nutrients["calories"] = daily_budget["calories"];
+        }
+        if (meal_logging_summary_entry.remaining_nutrients["carbs"] > daily_budget["carbs"]){
+            meal_logging_summary_entry.remaining_nutrients["carbs"] = daily_budget["carbs"];
+        }
+        if (meal_logging_summary_entry.remaining_nutrients["protein"] > daily_budget["protein"]){
+            meal_logging_summary_entry.remaining_nutrients["protein"] = daily_budget["protein"];
+        }
+        if (meal_logging_summary_entry.remaining_nutrients["fats"] > daily_budget["fats"]){
+            meal_logging_summary_entry.remaining_nutrients["fats"] = daily_budget["fats"];
+        }
+        if (meal_logging_summary_entry.remaining_nutrients["sodium"] > daily_budget["sodium"]){
+            meal_logging_summary_entry.remaining_nutrients["sodium"] = daily_budget["sodium"];
+        }
+        if (meal_logging_summary_entry.remaining_nutrients["cholesterol"] > daily_budget["cholesterol"]){
+            meal_logging_summary_entry.remaining_nutrients["cholesterol"] = daily_budget["cholesterol"];
+        }
 
         try {
             return (await transactionalEntityManager.save(meal_logging_summary_entry)).id;
@@ -269,57 +269,57 @@ export class MealLogSummaryService {
 
             const updated_meal_logging_object = await transactionalEntityManager.findOneBy(MealLogging, { id: updatemealLoggingSummaryDTO.mealLoggingId });
 
-            // if ((new Date(updated_meal_logging_object.consumed_date_time)).toDateString() !== (new Date(meal_logging_summary_entry.date)).toDateString()) {
-            //     // relocate the meal logging id to the new meal logging summary date
+            if ((new Date(updated_meal_logging_object.consumed_date_time)).toDateString() !== (new Date(meal_logging_summary_entry.date)).toDateString()) {
+                // relocate the meal logging id to the new meal logging summary date
                 
-            //     // get the new meal logging summary entry
-            //     var new_meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-            //         .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
-            //         .andWhere('date = :meal_date', {meal_date: updated_meal_logging_object.consumed_date_time})
-            //         .getOne();
+                // get the new meal logging summary entry
+                var new_meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+                    .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                    .andWhere('date = :meal_date', {meal_date: updated_meal_logging_object.consumed_date_time})
+                    .getOne();
 
-            //     if (!new_meal_logging_summary_entry || new_meal_logging_summary_entry == null) {
-            //         const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
-            //         removeMealLoggingIdDTO.date = (new Date(updated_meal_logging_object.consumed_date_time)).toISOString();
-            //         await this.getRemainingBudget(decodedHeaders, removeMealLoggingIdDTO);
+                if (!new_meal_logging_summary_entry || new_meal_logging_summary_entry == null) {
+                    const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
+                    removeMealLoggingIdDTO.date = (new Date(updated_meal_logging_object.consumed_date_time)).toISOString();
+                    await this.getRemainingBudget(decodedHeaders, removeMealLoggingIdDTO);
 
-            //         console.log("created entry for tomorrow")
+                    console.log("created entry for tomorrow")
 
-            //         var new_meal_logging_summary_entry = await transactionalEntityManager.createQueryBuilder('meal_log_summary', 'meal_log_summary')
-            //             .where('meal_log_summary.user_id = :user_id', { user_id: decodedHeaders['sub'] })
-            //             .andWhere('meal_log_summary.date = :meal_date', { meal_date: updated_meal_logging_object.consumed_date_time })
-            //             .getOne() as MealLogSummary;
+                    var new_meal_logging_summary_entry = await transactionalEntityManager.createQueryBuilder('meal_log_summary', 'meal_log_summary')
+                        .where('meal_log_summary.user_id = :user_id', { user_id: decodedHeaders['sub'] })
+                        .andWhere('meal_log_summary.date = :meal_date', { meal_date: updated_meal_logging_object.consumed_date_time })
+                        .getOne() as MealLogSummary;
 
-            //     }
+                }
                 
-            //     // add id to new date food consumed
-            //     new_meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
+                // add id to new date food consumed
+                new_meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
 
-            //     // recalculate new date nutrition budget
+                // recalculate new date nutrition budget
 
-            //     const saved_new_entry = await this.calculateNutritionBudget(decodedHeaders, new_meal_logging_summary_entry, transactionalEntityManager);
+                const saved_new_entry = await this.calculateNutritionBudget(decodedHeaders, new_meal_logging_summary_entry, transactionalEntityManager);
                 
-            //     // remove id from old date by calling removeMealLoggingId (auto recalculate old date nutrition budget)
-            //     const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
-            //     removeMealLoggingIdDTO.date = (new Date(meal_logging_summary_entry.date)).toISOString();
-            //     removeMealLoggingIdDTO.mealLoggingId = updatemealLoggingSummaryDTO.mealLoggingId;
-            //     removeMealLoggingIdDTO.mealType = updatemealLoggingSummaryDTO.oldMealType;
-            //     await this.removeMealLoggingId(decodedHeaders, removeMealLoggingIdDTO, transactionalEntityManager);
+                // remove id from old date by calling removeMealLoggingId (auto recalculate old date nutrition budget)
+                const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
+                removeMealLoggingIdDTO.date = (new Date(meal_logging_summary_entry.date)).toISOString();
+                removeMealLoggingIdDTO.mealLoggingId = updatemealLoggingSummaryDTO.mealLoggingId;
+                removeMealLoggingIdDTO.mealType = updatemealLoggingSummaryDTO.oldMealType;
+                await this.removeMealLoggingId(decodedHeaders, removeMealLoggingIdDTO, transactionalEntityManager);
 
-            //     return true;
+                return true;
                 
-            // }
-            // else {
-            //     // remove from old food consumed meal type
-            //     meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType] = meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType].filter(meal_logging_id => meal_logging_id !== updatemealLoggingSummaryDTO.mealLoggingId);
+            }
+            else {
+                // remove from old food consumed meal type
+                meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType] = meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.oldMealType].filter(meal_logging_id => meal_logging_id !== updatemealLoggingSummaryDTO.mealLoggingId);
 
-            //     // add to new food consumed meal type
-            //     meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
+                // add to new food consumed meal type
+                meal_logging_summary_entry.food_consumed[updatemealLoggingSummaryDTO.newMealType].push(updatemealLoggingSummaryDTO.mealLoggingId);
 
-            //     // recalculate new date nutrition budget
-            //     const saved_entry = await this.calculateNutritionBudget(decodedHeaders, meal_logging_summary_entry, transactionalEntityManager);
-            //     return true;
-            // }
+                // recalculate new date nutrition budget
+                const saved_entry = await this.calculateNutritionBudget(decodedHeaders, meal_logging_summary_entry, transactionalEntityManager);
+                return true;
+            }
         } catch (e) {
             throw e;
         }
@@ -348,19 +348,19 @@ export class MealLogSummaryService {
                 recipe_id: meal_logging_object.recipe.id,
                 nutrition_info: meal_logging_object.recipe.nutrition_info,
                 recipe_portion: meal_logging_object.recipe.serving_size,
-                // meal_logging_portion: meal_logging_object.portion
+                meal_logging_portion: meal_logging_object.portion
             }
         });
     
         const dateValidationDTO = new DateValidationDTO();
         dateValidationDTO.date = (new Date(mealLoggingSummaryEntry.date)).toISOString();
         // nutrition_list = [daily_budget, nutrition_before]
-        // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+        const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
     
         // calculate the nutrition if the user plan to eat the meal
-        // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[0], recipe_nutrition_portion);
+        const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[0], recipe_nutrition_portion);
     
-        // mealLoggingSummaryEntry.remaining_nutrients = nutrition_after;
+        mealLoggingSummaryEntry.remaining_nutrients = nutrition_after;
         await transactionalEntityManager.save(mealLoggingSummaryEntry);
         return true;
     }
