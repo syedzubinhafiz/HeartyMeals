@@ -12,8 +12,7 @@ import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
 export class CommonService{
 
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+
     ){}
 
     convertUnit(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit): number{
@@ -190,4 +189,6 @@ export class CommonService{
             date1.toDateString() === date2.toDateString()
         );
       }
+
+    
 }
