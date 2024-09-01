@@ -1,4 +1,4 @@
-<template>
+<<template>
   <div class="absolute w-screen z-40">
     <Header />
   </div>
@@ -28,7 +28,7 @@
               <h3 class="text-2xl font-semibold text-black">Recently Added</h3>
               <div class="stomach-button-container">
                 <button class="button-orange" @click="toggleSidebar">
-                  <img src="path-to-your-stomach-icon.svg" alt="Stomach Icon" class="stomach-icon"/>
+                  <img src="/assets/img/SVGRepo_iconCarrier.svg" alt="Stomach Icon" class="stomach-icon"/>
                   <span>Stomach</span>
                   <div class="notification-bubble">3</div>
                 </button>
@@ -68,9 +68,6 @@
 
   <Footer/>
 </template>
-
-
-
 
 <script setup>
 definePageMeta({
