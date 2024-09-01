@@ -53,6 +53,42 @@
   />
   <Footer/>
 </template>
+<script setup>
+onMounted(async () => {
+  console.log("AAAA")
+  await useApi("/dietary","GET")
+  // console.log(await useApi("/dietary","GET"))
+  const results = await useApi("/recipe/add","POST",  {"recipe": {
+        "name": "White Soy Sauce Beef",
+        "description": "wow so cool",
+        "instruction": ["instruction"],
+        "servingSize": 1,
+        "mealTimeRecommendation": {
+            "Breakfast" : true,
+            "Lunch" : true,
+            "Dinner": false
+        },
+        "visibility": "Public",
+        "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
+        "dietaryId": "6723c1d3-e47a-46bc-9048-780db825043c"
+    },
+    "components": [
+        {
+            "componentId": "194f8640-2f99-4baf-8d60-350993b53fb8",
+            "amount" : 69,
+            "unit": "g"
+        },
+        {
+            "componentId": "79338f94-f372-41ec-a932-d56a582d303b",
+            "amount" : 20,
+            "unit": "g"
+        }
+    ]})
+  console.log(results)
+  // const recipeData = await useApi("/recipe/get?page=1&pageSize=10","GET")
+  // console.log(recipeData)
+})
+</script>
 <script>
 definePageMeta({
     layout: "emptylayout",

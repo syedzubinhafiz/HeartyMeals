@@ -96,7 +96,7 @@ onMounted(async () => {
     await useApi('/country','GET')
     countryList.value = (await useApi('/country','GET')).value
     ethnicityList.value = (await useApi('/ethnicity','GET')).value
-    allergyList.value = (await useApi('/food_category','GET')).value
+    allergyList.value = (await useApi('/food_category/get','GET')).value
     for(let subVal of allergyList.value) {
         subVal.name = subVal.type
     }
