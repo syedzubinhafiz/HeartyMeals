@@ -96,7 +96,7 @@ export class MealLoggingController {
                 // TODO: recalculate the nutrition summary
                 // await this.mealLoggingSummaryService.calculateNutritionSummary(decoded_headers, meal_logging_summary_id, transactionalEntityManager);
 
-                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, this.entityManager);
+                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
             return new HttpException("Meal is deleted.", 200);
         }

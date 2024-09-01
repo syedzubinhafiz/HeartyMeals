@@ -84,10 +84,17 @@ export class MealPlanningController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
                 // TODO: call meal logging summary to remove the meal logging id from the list
-                // await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, payload, transactionalEntityManager);
-                // TODO: recalculate the nutrition summary
+                // const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
+                // removeMealLoggingIdDTO.mealLoggingId = payload.mealLogging
+                // removeMealLoggingIdDTO.date = payload.mealDate;
+                // removeMealLoggingIdDTO.mealType = payload.mealType;
 
-                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, this.entityManager);
+                // const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
+
+                // TODO: recalculate the nutrition summary
+                // await this.mealLoggingSummaryService.calculateNutritionSummary(decoded_headers, meal_logging_summary_id, transactionalEntityManager);
+
+                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
             return new HttpException("Meal is deleted.", 200);
         }
