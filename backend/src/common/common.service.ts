@@ -49,7 +49,7 @@ export class CommonService{
 
             nutrition_after["calories"] -= recipe_nutrition["calories"] * meal_logging_portion / recipe_portion;
             nutrition_after["protein"] -= recipe_nutrition["protein"] * meal_logging_portion / recipe_portion;
-            nutrition_after["carbs"] -= recipe_nutrition["total_carbohydrate"] * meal_logging_portion / recipe_portion;
+            nutrition_after["carbs"] -= recipe_nutrition["totalCarbohydrate"] * meal_logging_portion / recipe_portion;
             nutrition_after["fats"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
             nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
             nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
