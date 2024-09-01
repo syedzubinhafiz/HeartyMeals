@@ -21,22 +21,35 @@
 
         <!-- Scrollable Recipe Cards -->
         <div class="scroll-content">
-          <h3 class="text-2xl font-semibold mb-4">Recently Added</h3>
-          <div class="cards-grid">
-            <!-- Customize Your Meal Card -->
-            <div class="recipe-card customize-card bg-custom-overlay-light text-black flex items-center justify-center" @click="addCustomMeal">
-              <span>+ Customize Your Meal</span>
+          <!-- Container for heading and cards -->
+          <div class="cards-container">
+            <!-- Heading and Button Row -->
+            <div class="heading-button-row flex justify-between items-center mb-4">
+              <h3 class="text-2xl font-semibold text-black">Recently Added</h3>
+              <div class="stomach-button-container">
+                <button class="button-orange" @click="toggleSidebar">
+                  <img src="path-to-your-stomach-icon.svg" alt="Stomach Icon" class="stomach-icon"/>
+                  <span>Stomach</span>
+                  <div class="notification-bubble">3</div>
+                </button>
+              </div>
             </div>
+            <div class="cards-grid">
+              <!-- Customize Your Meal Card with Popup -->
+              <button class="recipe-card customize-card bg-custom-overlay-light text-black flex items-center justify-center" @click="togglePopup">
+                <span>+ Customize Your Meal</span>
+              </button>
 
-            <!-- Other Meal Cards -->
-            <RecipeCard
-              v-for="(meal, index) in meals"
-              :key="index"
-              :imageSrc="meal.imageSrc"
-              :mealName="meal.mealName"
-              :mealDescription="meal.mealDescription"
-              :labels="meal.labels"
-            />
+              <!-- Other Meal Cards -->
+              <RecipeCard
+                v-for="(meal, index) in meals"
+                :key="index"
+                :imageSrc="meal.imageSrc"
+                :mealName="meal.mealName"
+                :mealDescription="meal.mealDescription"
+                :labels="meal.labels"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -44,47 +57,98 @@
         <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
       </div>
     </div>
+
+    <!-- Sidebar Component -->
+    <StomachSidebar v-model="mealDataList" v-model:isSidebarOpen="isSidebarOpen"/>
+    <!-- Popup Overlay -->
+    <div class="text-black">
+      <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
+    </div>
   </div>
 
   <Footer/>
 </template>
 
 
+
+
 <script setup>
 definePageMeta({
-	layout: "emptylayout"
+  layout: "emptylayout"
 });
 
 import { ref, onMounted } from 'vue';
 
 const searchValue = ref("");
 const meals = ref([]);
-
+const isSidebarOpen = ref(false);
+const isPopupOpen = ref(false);
 const searchDataList = ['Tomato and Cheese Croissant', 'Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza'];
+const mealDataList = ref([
+  {
+    name: "Regular Croissant",
+    imageSrc: "assets/img/croissant.svg",
+    portionSize: "1 croissant (80g)",
+    servings: 1,
+    nutrients: {
+      calories: 400,
+      protein: 150,
+      carbs: 100,
+      fat: 100,
+      fiber: 5,
+      sugar: 300,
+    },
+  },
+  {
+    name: "Cheese Croissant",
+    imageSrc: "assets/img/croissant.svg",
+    portionSize: "1 croissant (100g)",
+    servings: 1,
+    nutrients: {
+      calories: 500,
+      protein: 100,
+      carbs: 200,
+      fat: 200,
+      fiber: 10,
+      sugar: 400,
+    },
+  },
+  {
+    name: "Not a Croissant",
+    imageSrc: "assets/img/croissant.svg",
+    portionSize: "1 croissant (50g)",
+    servings: 1,
+    nutrients: {
+      calories: 100,
+      protein: 60,
+      carbs: 140,
+      fat: 70,
+      fiber: 20,
+      sugar: 200,
+    },
+  },
+]);
 
-// Function to add a custom meal
-const addCustomMeal = () => {
-  const newMeal = {
-    imageSrc: "assets/img/customMeal.svg", // Replace with the appropriate image or placeholder
-    mealName: "Custom Meal",
-    mealDescription: "Your custom created meal.",
-    labels: [
-      { name: "Custom", active: true },
-    ],
-  };
-  meals.value.unshift(newMeal); // Add the custom meal to the beginning of the array
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+const togglePopup = () => {
+  isPopupOpen.value = !isPopupOpen.value;
+  console.log(isPopupOpen.value)
 };
 
 // Fetch meals from the backend when the component mounts
-onMounted(() => {
-  // Replace with your actual API call
-  fetch('/api/meals')
-    .then(response => response.json())
-    .then(data => {
-      meals.value = data;
-    });
-});
+// onMounted(() => {
+//   // Replace with your actual API call
+//   fetch('/api/meals')
+//     .then(response => response.json())
+//     .then(data => {
+//       meals.value = data;
+//     });
+// });
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
@@ -150,12 +214,62 @@ body, html {
   background-color: #e0e0e0;
 }
 
+/* Container for the heading and cards */
+.cards-container {
+  padding-left: 85px; /* Same as cards-grid padding */
+  padding-right: 85px; /* Same as cards-grid padding */
+}
+
+/* Heading and Button Row */
+.heading-button-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Stomach Button Container */
+.stomach-button-container {
+  position: relative;
+}
+
+.button-orange {
+  display: flex;
+  align-items: center;
+  background-color: #f89c74;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.stomach-icon {
+  margin-right: 10px;
+}
+
+.notification-bubble {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: #ff4c4c;
+  color: white;
+  font-size: 0.75rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cards Grid */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* Two columns layout */
   gap: 20px; /* Space between cards */
-  padding-left: 85px;
-  padding-right: 85px;
   z-index: 3;
 }
 
@@ -169,35 +283,7 @@ body, html {
   justify-content: center;
   font-size: 1.2rem;
   grid-column: span 1; /* Make the Customize Your Meal card span only one column */
-}
-
-
-
-/* Styling the curvy blobs */
-.curvy-left {
-  position: absolute;
-  bottom: 0;
-  left: -55px;
-  top: 310px;
-  width: 150px;
-  height: 500px;
-  z-index: 1;
-}
-
-.curvy-right {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  top: 310px;
-  width: 130px;
-  height: 500px;
-  z-index: 1;
-}
-
-.curvy-left img,
-.curvy-right img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: relative;
 }
 </style>
+
