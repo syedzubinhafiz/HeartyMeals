@@ -9,6 +9,10 @@ export class UpdateMealLoggingDTO{
 
     @IsNotEmpty()
     @IsString()
+    readonly mealLoggingSummaryId: string;
+
+    @IsNotEmpty()
+    @IsString()
     readonly mealLoggingId: string;
 
     @IsNotEmpty()
