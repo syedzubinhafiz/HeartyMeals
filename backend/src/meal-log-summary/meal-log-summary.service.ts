@@ -168,4 +168,49 @@ export class MealLogSummaryService {
         }
         
     }
+
+    /**
+     * Update the nutrition budget 
+     * @param decodedHeaders - headers from request
+     * @param mealLoggingSummaryId - meal logging summary id
+     * @returns [daily_budget, nutrition_before, nutrition_after]
+     */
+    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId: string ){
+        try {     
+
+            var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: mealLoggingSummaryId });
+
+            const combined_meal_logging_ids = meal_logging_summary_entry.food_consumed["Breakfast"].concat(meal_logging_summary_entry.food_consumed["Lunch"], meal_logging_summary_entry.food_consumed["Dinner"], meal_logging_summary_entry.food_consumed["Other"]);
+
+            // get all the recipe objects
+            const meal_logging_objects = await this.mealLoggingRepository.find({
+                where: {
+                    id: In(combined_meal_logging_ids)
+                },
+                relations: ['recipe']
+            });
+
+            // get the recipe id and recipe nutrition info 
+            const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {
+                return {
+                    recipe_id: meal_logging_object.recipe.id,
+                    nutrition_info: meal_logging_object.recipe.nutrition_info,
+                    recipe_portion: meal_logging_object.recipe.serving_size,
+                    // meal_logging_portion: meal_logging_object.portion
+                }
+            });
+
+            const dateValidationDTO = new DateValidationDTO();
+            dateValidationDTO.date = meal_logging_summary_entry.date.toISOString();
+            // nutrition_list = [daily_budget, nutrition_before]
+            // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+
+            // calculate the nutrition if the user plan to eat the meal
+            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
+
+            // return [nutrition_list[0], nutrition_list[1], nutrition_after];
+        } catch (e) {
+            throw e;
+        }
+    }
 }
