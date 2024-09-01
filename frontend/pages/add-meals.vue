@@ -58,10 +58,11 @@
       </div>
     </div>
 
-    <!-- Sidebar Component -->
-    <StomachSidebar v-model="mealDataList" v-model:isSidebarOpen="isSidebarOpen"/>
-    <!-- Popup Overlay -->
     <div class="text-black">
+
+      <!-- Sidebar Component -->
+      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen"/>
+      <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
   </div>
@@ -69,10 +70,15 @@
   <Footer/>
 </template>
 
+
 <script setup>
 definePageMeta({
   layout: "emptylayout"
 });
+
+
+import MealData from '../../classes/mealData.js'
+import NutrientData from '../../classes/nutrientData.js'
 
 import { ref, onMounted } from 'vue';
 
@@ -134,6 +140,21 @@ const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value;
   console.log(isPopupOpen.value)
 };
+
+
+let mealData1 = new MealData("Regular Croissant","assets/img/croissant.svg","1 crossiant (80g)",1,
+  new NutrientData(400,150,100,100,5,300)
+)
+
+let mealData2 = new MealData("Cheese Croissant","assets/img/croissant.svg","1 crossiant (100g)",1,
+  new NutrientData(500,100,200,200,10,400)
+)
+
+let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 crossiant (50g)",1,
+  new NutrientData(100,60,140,70,20,200)
+)
+
+const mealDataList2 = ref([mealData1,mealData2,mealData3])
 
 // Fetch meals from the backend when the component mounts
 // onMounted(() => {
