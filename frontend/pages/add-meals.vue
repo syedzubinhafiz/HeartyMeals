@@ -24,7 +24,7 @@
           <h3 class="text-2xl font-semibold mb-4">Recently Added</h3>
           <div class="cards-grid">
             <!-- Customize Your Meal Card -->
-            <div class="recipe-card customize-card text-black flex items-center justify-center" @click="addCustomMeal">
+            <div class="recipe-card customize-card bg-custom-overlay-light text-black flex items-center justify-center" @click="addCustomMeal">
               <span>+ Customize Your Meal</span>
             </div>
 
@@ -51,6 +51,10 @@
 
 
 <script setup>
+definePageMeta({
+	layout: "emptylayout"
+});
+
 import { ref, onMounted } from 'vue';
 
 const searchValue = ref("");
@@ -110,7 +114,6 @@ body, html {
   text-align: center;
   padding-top: 20px;
   position: relative;
-  background-color: #F1EDE9; /* Fallback background color */
 }
 
 /* Container for Search Bar and Recipe Cards */
@@ -154,11 +157,9 @@ body, html {
   padding-left: 85px;
   padding-right: 85px;
   z-index: 3;
-  background-color: transparent; /* Ensure transparency */
 }
 
 .customize-card {
-  background-color: #fff;
   border: 2px dashed #000;
   border-radius: 8px;
   height: 100px;
