@@ -43,14 +43,15 @@ export class MealLogSummaryService {
             .andWhere('date = :meal_date', {meal_date: date})
             .getOne();
 
+        var daily_budget = user_object.daily_budget as JSON;
+        delete daily_budget["water_intake"];
+
         if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
-            var remaining_nutrients = user_object.daily_budget as JSON;
-            delete remaining_nutrients["water_intake"];
 
             meal_logging_summary_entry = new MealLogSummary();
             meal_logging_summary_entry.user = user_object;
             meal_logging_summary_entry.date = date;
-            meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
+            meal_logging_summary_entry.remaining_nutrients = daily_budget;
 
             try {
                 await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
@@ -58,10 +59,10 @@ export class MealLogSummaryService {
                 throw new Error("Error saving meal logging summary entry");
             }
 
-            return remaining_nutrients;
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
         }
         else {
-            return meal_logging_summary_entry.remaining_nutrients;
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
         }
     }
 }
