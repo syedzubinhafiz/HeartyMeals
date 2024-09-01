@@ -13,11 +13,11 @@
                     <!-- options -->
                     <div class="space-y-0">
                         <P><b>Age</b></P>
-                        <Input v-model="age"/>
+                        <Input v-model="age" type="number"/>
                         <P><b>Height</b></P>
-                        <Input v-model="height"/>
+                        <Input v-model="height" type="number"/>
                         <P><b>Weight</b></P>
-                        <Input v-model="weight"/>
+                        <Input v-model="weight" type="number"/>
                         <P><b>Country</b></P>
                         <DropdownSearchBar :dataList="countryList" v-model="country"/>
                         <P><b>Ethnicity</b></P>
