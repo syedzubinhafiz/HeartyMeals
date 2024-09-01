@@ -161,7 +161,7 @@ export class MealLogSummaryService {
         // meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
 
         try {
-            return await transactionalEntityManager.save(meal_logging_summary_entry);
+            return (await transactionalEntityManager.save(meal_logging_summary_entry)).id;
         } catch (e) {
             throw new HttpException(e, 400);
         }
