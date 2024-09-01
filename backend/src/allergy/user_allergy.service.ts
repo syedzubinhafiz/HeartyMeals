@@ -103,13 +103,9 @@ export class UserAllergyService{
                 var user_allergy = await this.userAllergyRepository.createQueryBuilder('user_allergy')
                     .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
                     .andWhere('food_cat_id = :food_cat_id', {food_cat_id: id})
-                    .andWhere('deleted_at IS NULL')
                     .getOne() 
                 // only add the ones that do not exist in the database
                 if (user_allergy){
-                    // soft delete the entry
-                    user_allergy.deleted_at = new Date();
-                    
                     all_entries.push(user_allergy)
                 }
                 else {
@@ -118,7 +114,7 @@ export class UserAllergyService{
 
             }));
 
-            await this.userAllergyRepository.save(all_entries);
+            await this.userAllergyRepository.delete(all_entries);
             return true;
 
         } catch (e) {
@@ -138,7 +134,6 @@ export class UserAllergyService{
         try {
             return await this.userAllergyRepository.createQueryBuilder('user_allergy')
                 .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
-                .andWhere('deleted_at IS NULL')
                 .getMany();
         } catch (e) {
             return new HttpException(`Error fetching user allergies with uesr id ${decodedHeaders['sub']}`, 400);

@@ -19,10 +19,4 @@ export class UserAllergy{
     @JoinColumn({name: 'food_cat_id'})
     foodCategory: FoodCategory
 
-    @CreateDateColumn({type: 'timestamp with time zone', default: () => 'now()'})
-    created_at: Date;
-
-    @DeleteDateColumn({ type: "timestamp with time zone", nullable: true , default: null})
-    deleted_at?: Date;
-
 }
