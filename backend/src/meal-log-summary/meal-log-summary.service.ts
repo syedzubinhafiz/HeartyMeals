@@ -174,7 +174,7 @@ export class MealLogSummaryService {
      * @param mealLoggingSummaryId - meal logging summary id
      * @returns [daily_budget, nutrition_before, nutrition_after]
      */
-    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId: string ){
+    async updateNutritionBudget(decodedHeaders: any, mealLoggingSummaryId: string, transactionalEntityManager: EntityManager){
         try {     
 
             var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: mealLoggingSummaryId });
@@ -207,7 +207,7 @@ export class MealLogSummaryService {
             // calculate the nutrition if the user plan to eat the meal
             // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
 
-            // return [nutrition_list[0], nutrition_list[1], nutrition_after];
+            // return await this.transactionalEntityManager.update(mealLoggingSummaryId, { remaining_nutrients: nutrition_after });
         } catch (e) {
             throw e;
         }
