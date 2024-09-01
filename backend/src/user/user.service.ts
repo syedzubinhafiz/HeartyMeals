@@ -103,6 +103,9 @@ export class UserService {
         new_user.country = null;
         new_user.dietary = null;
         new_user.nyha_level = null;
+        new_user.age = 0;
+        new_user.height = 0;
+        new_user.weight = 0;
         new_user.medical_info = JSON.parse("{}");
         
         return await this.userRepository.save(new_user);
