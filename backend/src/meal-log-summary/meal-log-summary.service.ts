@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogSummary } from "./meal-log-summary.entity";
-import { In, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { User } from "src/user/user.entity";
 import { MealLogging } from "src/meal-logging/meal-logging.entity";
@@ -33,7 +33,7 @@ export class MealLogSummaryService {
      * @param addMealLoggingSummaryDTO - DTO containing the meal logging ids and nutrition info
      * @returns true if the meal logging summary is added successfully
      */
-    async addMealLoggingSummary(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO){
+    async addMealLoggingSummary(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
 
         const user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
@@ -56,7 +56,7 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.remaining_nutrients = addMealLoggingSummaryDTO.nutritionAfter;
 
         try {
-            await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            await transactionalEntityManager.save(meal_logging_summary_entry);
             return true;
         }
         catch (e) {
@@ -69,7 +69,7 @@ export class MealLogSummaryService {
      * Calculate the nutrition info before logging the meal after logging the meal
      * @param decodedHeaders - headers from request
      * @param calculateMealLoggingSummaryDTO - DTO containing the meals that user selected and portion
-     * @returns [nutrition_before, nutrition_after], a list of the nutrition before and after logging the meals
+     * @returns [daily_budget, nutrition_before, nutrition_after]
      */
     async calculateNutritionSummary(decodedHeaders: any, calculateMealLoggingSummaryDTO: CalculateMealLoggingSummaryDTO){
         try {
@@ -77,10 +77,10 @@ export class MealLogSummaryService {
             if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
          
-            // get list of recipe objects
+            // get recipe ids
             const recipe_ids = calculateMealLoggingSummaryDTO.recipeIdPortions.map(json_object => json_object.recipeId);
 
-            // get all the recipe objects
+            // get recipe objects
             const recipes = await this.recipeRepository.find({
                 where: {
                     id: In(recipe_ids)
@@ -107,28 +107,28 @@ export class MealLogSummaryService {
             // get the remaining budget of the user for the day    
             const  dateValidationDTO = new DateValidationDTO();
             dateValidationDTO.date = calculateMealLoggingSummaryDTO.mealDate;
-            // const nutrition_before = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
+
+            // nutrition_list = [daily_budget, nutrition_before]
+            // const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
             // calculate the nutrition if the user plan to eat the meal
-            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_before, recipe_nutrition_portion);
+            // const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
 
-            // return [nutrition_before, nutrition_after];
+            // return [nutrition_list[0], nutrition_list[1], nutrition_after];
         } catch (e) {
             throw e;
         }
     }
 
     /**
-     * Remove the meal logging id from the meal logging summary, and add the nutrition back to the remaining nutrients
+     * Remove the meal logging id from the meal logging summary, and add the nutrition back to the remaining nutrients.
+     * This is called when the user deletes a meal logging from meal logging module.
      * @param decodedHeaders - headers from request
      * @param remomveMealLoggingIdDTO - DTO containing the meal logging id to be removed
      * @returns true if the meal logging id is removed successfully
      */
-    async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomveMealLoggingIdDTO){
+    async removeMealLoggingId(decodedHeaders: any, remomveMealLoggingIdDTO: RemomveMealLoggingIdDTO, transactionalEntityManager: EntityManager){
         // remove the meal logging id from the meal logging summary
-
-        // Validate userId
-        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
         const user_id = decodedHeaders['sub'];
         const date = new Date(remomveMealLoggingIdDTO.date.split('T')[0]);
@@ -137,10 +137,6 @@ export class MealLogSummaryService {
             .where('user_id = :user_id', {user_id: user_id})
             .andWhere('date = :meal_date', {meal_date: date})
             .getOne();
-
-        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {    
-            throw new HttpException(`Meal logging summary entry for user with id ${user_id} on date ${date} not found`, 404);
-        }
 
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
@@ -151,20 +147,16 @@ export class MealLogSummaryService {
             relations: ['recipe'],
         });
 
-        var remaining_nutrients = meal_logging_summary_entry.remaining_nutrients;
-
         // add the nutrition to the remaining nutrients
-        // remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion);
-        // remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["carbs"] * (meal_logging_object.portion);
-        // remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion);
-        // remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion );
-        // remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion);
-        // remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion);
-
-        meal_logging_summary_entry.remaining_nutrients = remaining_nutrients;
+        // meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion);
+        // meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["carbs"] * (meal_logging_object.portion);
+        // meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion);
+        // meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion );
+        // meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion);
+        // meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion);
 
         try {
-            await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            await transactionalEntityManager.save(meal_logging_summary_entry);
             return true;
         } catch (e) {
             throw new HttpException(e, 400);

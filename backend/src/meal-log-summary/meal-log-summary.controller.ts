@@ -4,25 +4,40 @@ import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
 import { RemomveMealLoggingIdDTO } from "./dto/remove-meal-logging-id-dto";
+import { EntityManager } from "typeorm";
+import { InjectEntityManager } from "@nestjs/typeorm";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
     constructor(
         private mealLogSummaryService: MealLogSummaryService,
-        private commonService: CommonService
+        private commonService: CommonService,
+        @InjectEntityManager() 
+        private readonly entityManager: EntityManager,
+
     ) {}
 
     @Post('add')
-    async addMealLoggingSummary(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: AddMealLoggingSummaryDTO){
+    async addMealLoggingSummary(@Headers() headers: any, @Body() addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO){
+        const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                // use transactionalEntityManager to perform operations with transactions
+                // create meal logging entries first 
 
-            // TODO:  use transaction manager 
-            // create meal logging first
-            // then add meal logging summary entry
+                // const addMealLoggingDTO = new AddMealLoggingDTO();
+                // addMealLoggingDTO.mealDate = addMealLoggingSummaryDTO.mealDate;
+                // addMealLoggingDTO.mealType = addMealLoggingSummaryDTO.mealType;
+                // addMealLoggingDTO.recipeIdList = addMealLoggingSummaryDTO.recipeIdList;
 
-            await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, createMealLoggingSummaryDTO);
+                // const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingDTO, transactionalEntityManager);
+                // then add meal logging summary
+
+                // addMealLoggingSummaryDTO.mealLoggingIds = meal_logging_ids;
+
+                await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, addMealLoggingSummaryDTO, transactionalEntityManager);
+            });
+            return new HttpException("All meals have been logged.", 200);
         } catch (e) {
             return new HttpException(e.message, 400);
         }
@@ -48,11 +63,7 @@ export class MealLogSummaryController {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            await this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload);
-
-            // TODO:  use transaction manager 
-            // remove id from meal logging summary
-            // then soft delete in meal logging
+            await this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload, this.entityManager);
 
             return new HttpException("Meal logging removed successfully", 200);
         } catch (e){
