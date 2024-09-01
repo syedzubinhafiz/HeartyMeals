@@ -6,6 +6,7 @@ import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
+import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
@@ -80,19 +81,22 @@ export class MealLoggingController {
      * @returns HttpException 200 when the meal is deleted 
      */
     @Delete('delete')
-    async delete(@Headers() headers, @Body("mealLoggingId") payload){
+    async delete(@Headers() headers, @Body() payload: DeleteMealLoggingDTO){
+        const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            await this.mealLoggingService.deleteMealLoggingBulk(decoded_headers, payload, this.entityManager);
+            await this.entityManager.transaction(async transactionalEntityManager => { 
+                // TODO: call meal logging summary to remove the meal logging id from the list
+                // await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, payload, transactionalEntityManager);
+                // TODO: recalculate the nutrition summary
 
-            // TODO: call meal logging summary to remove the meal logging id from the list
-            // TODO: recalculate the nutrition summary
+                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, this.entityManager);
+            });
+            return new HttpException("Meal is deleted.", 200);
         }
         catch (e){
             return new HttpException(e.message, 400);
         }
-        return new HttpException("Meal is deleted.", 200);
+        
     }
 
     /**

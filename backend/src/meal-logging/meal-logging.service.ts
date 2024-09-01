@@ -8,6 +8,7 @@ import { Recipe } from "src/recipe/recipe.entity";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -139,33 +140,26 @@ export class MealLoggingService {
      * @param mealLoggingIdList - a list of corresponding ids for meal logging
      * @returns delete result of all entries
      */
-    async deleteMealLoggingBulk(decodedHeaders: any, mealLoggingIdList: Array<string>, transactionalEntityManager: EntityManager){
+    async deleteMealLogging(decodedHeaders: any, deleteMealLoggingDTO: DeleteMealLoggingDTO, transactionalEntityManager: EntityManager){
         var delete_entries = []
         const delete_date = new Date();
         try {
-            // Validate userId
-            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
-            if (!user_object) {
-                throw new HttpException("User not found.", 404);
-            }
-
-            var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
-                .where("meal_logging.id IN (:...ids)", { ids: mealLoggingIdList })
-                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+            var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: deleteMealLoggingDTO.mealLoggingId })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .andWhere("meal_logging.deleted_at IS NULL")
                 .andWhere("meal_logging.is_consumed = false")
-                .getMany()
+                .getOne()
 
-            if (entries.length != mealLoggingIdList.length){ throw new HttpException("Some meal logging entries are not found or already consumed.", 404); }
+            if (!entry || entry == null){ throw new HttpException("Meal logging entry isnot found or already consumed.", 404); }
 
-            entries.forEach(async meal_logging_object => {
-                // Check if meal can be deleted
-                const result = this.checkDate(meal_logging_object.consumed_date_time);
-                if (result.editable == false){ throw result.message; }
+            // Check if meal can be deleted
+            const result = this.checkDate(entry.consumed_date_time);
+            if (result.editable == false){ throw result.message; }
 
-                meal_logging_object.deleted_at = delete_date;
-                delete_entries.push(meal_logging_object);
-            })
+            entry.deleted_at = delete_date;
+            delete_entries.push(entry);
+            
             await transactionalEntityManager.save(delete_entries);
             return true;
         }
