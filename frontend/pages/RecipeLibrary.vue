@@ -11,39 +11,41 @@
     </div>
 
     <!-- Search Bar and Recipe Cards Container -->
-    <div class="flex">
+    <div class="flex items-end justify-between">
       <div class="left-0 bottom-0 flex items-end">
         <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" style="height: 60vh"/>
       </div>
-      <div class="content-container">
+      <div>
+        <div class="content-container">
 
-        <div class="flex justify-center mb-10 text-black">
-          <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
-        </div>
-
-        <!-- Scrollable Recipe Cards -->
-          <div class="cards-grid">
-            <RecipeCard
-              v-for="(meal, index) in paginatedMeals"
-              :key="index"
-              :imageSrc="meal.imageSrc"
-              :mealName="meal.mealName"
-              :mealDescription="meal.mealDescription"
-              :labels="meal.labels"
-              @click.native="openOverlay(meal)"
-            />
+          <div class="flex justify-center mb-10 text-black">
+            <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
           </div>
+
+          <!-- Scrollable Recipe Cards -->
+            <div class="cards-grid">
+              <RecipeCard
+                v-for="(meal, index) in paginatedMeals"
+                :key="index"
+                :imageSrc="meal.imageSrc"
+                :mealName="meal.mealName"
+                :mealDescription="meal.mealDescription"
+                :labels="meal.labels"
+                @click.native="openOverlay(meal)"
+              />
+            </div>
         </div>
+        <!-- Pagination Component -->
+        <Pagination
+            :totalItems="meals.length"
+            :itemsPerPage="itemsPerPage"
+            v-model:currentPage="currentPage"
+          />
       </div>
-      <!-- Pagination Component -->
-      <Pagination
-          :totalItems="meals.length"
-          :itemsPerPage="itemsPerPage"
-          v-model:currentPage="currentPage"
-        />
       <!-- <div class="right-0 bottom-0 flex items-end"> -->
         <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
-      </div>
+    </div>
+  </div>
   <RecipeOverlay
     :visible="isOverlayVisible"
     :meal="selectedMeal"
