@@ -84,4 +84,15 @@ const sectionNext = () => {
         currentSection.value -= 1
     }
 }
+
+
+
+onMounted(async () => {
+    await useApi("/dietary","GET")
+    ingredientList.value = await useFillData().fillIngredients()
+    seasoningList.value = await useFillData().fillSeasoning()
+    console.log(ingredientList)
+    console.log(seasoningList)
+})
+
 </script>
