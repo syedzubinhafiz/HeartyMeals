@@ -1,20 +1,18 @@
 import { Type } from "class-transformer";
 import { ArrayNotEmpty, IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, ValidateNested } from "class-validator";
 import { MealType } from "src/meal-type.enum";
-import { MealLoggingListDTO } from "./meal-logging-list-dto";
 
-export class AddMealLoggingDTO{
+export class DeleteMealLoggingDTO{
 
     @IsNotEmpty()
     @IsDateString()
-    mealDate: string;
+    readonly mealDate: string;
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => MealLoggingListDTO)
-    recipeIds: MealLoggingListDTO[];
+    @IsString()
+    @IsNotEmpty()
+    readonly mealLoggingId: string;
 
     @IsNotEmpty()
     @IsEnum(MealType)
-    mealType: MealType;
+    readonly mealType: MealType;
 }

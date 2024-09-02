@@ -7,6 +7,16 @@ export default class CustomMealData extends MealData {
         this.ingredientList = []
         this.seasoningList = []
         this.description = ""
+
+        this.breakfast = false
+        this.lunch = false
+        this.dinner = false
+        this.snack = false
+        this.visibility = "unlisted"
+        this.prepTime = 0
+        this.recipeServing = 0
+        this.dietaryID = ""
+        this.cuisineID = ""
     }
 
 }

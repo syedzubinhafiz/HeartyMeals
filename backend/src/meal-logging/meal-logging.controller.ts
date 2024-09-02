@@ -4,12 +4,21 @@ import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { InjectEntityManager } from "@nestjs/typeorm";
+import { EntityManager } from "typeorm";
+import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
+import { UpdateMealLoggingSummaryDTO } from "src/meal-log-summary/dto/update-meal-logging-summary-dto";
+import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
+import { RemoveMealLoggingIdDTO } from "src/meal-log-summary/dto/remove-meal-logging-id-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
     constructor(
         private mealLoggingService: MealLoggingService,
-        private commonService: CommonService
+        private commonService: CommonService,
+        @InjectEntityManager()
+        private readonly entityManager: EntityManager,
+        private mealLoggingSummaryService: MealLogSummaryService,
     ){}
 
     /**
@@ -23,7 +32,7 @@ export class MealLoggingController {
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            await this.mealLoggingService.addMealLogging(decoded_headers, mealLoggingDTO);
+            await this.mealLoggingService.addMealLogging(decoded_headers, mealLoggingDTO, this.entityManager);
         }
         catch (e){
             return new HttpException(e.message, 400);
@@ -56,15 +65,26 @@ export class MealLoggingController {
      */
     @Post('update_meal')
     async updateMealLogging(@Headers() headers, @Body() payload: UpdateMealLoggingDTO){
+        const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            await this.mealLoggingService.updateMealLogging(decoded_headers, payload);
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
+
+                // TODO: recalculate the nutrition summary
+                const update_meal_logging_summary = new UpdateMealLoggingSummaryDTO();
+                update_meal_logging_summary.mealLoggingId = payload.mealLoggingId;
+                update_meal_logging_summary.oldMealType = old_meal_type;
+                update_meal_logging_summary.newMealType = payload.mealType;
+                update_meal_logging_summary.newDate = payload.newDate;
+                update_meal_logging_summary.mealLoggingSummaryId = payload.mealLoggingSummaryId;
+
+                await this.mealLoggingSummaryService.updateNutritionBudget(decoded_headers, update_meal_logging_summary, transactionalEntityManager);
+            });
+            return new HttpException("Meal is updated.", 200);
         }
         catch (e){
             return new HttpException(e.message, 400);
         }
-        return new HttpException("Meal is updated.", 200);
     }
 
     /**
@@ -74,16 +94,26 @@ export class MealLoggingController {
      * @returns HttpException 200 when the meal is deleted 
      */
     @Delete('delete')
-    async delete(@Headers() headers, @Body("mealLoggingId") payload){
+    async delete(@Headers() headers, @Body() payload: DeleteMealLoggingDTO){
+        const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            await this.mealLoggingService.deleteMealLoggingBulk(decoded_headers, payload);
+            await this.entityManager.transaction(async transactionalEntityManager => { 
+                // TODO: call meal logging summary to remove the meal logging id from the list
+                const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
+                removeMealLoggingIdDTO.mealLoggingId = payload.mealLoggingId;
+                removeMealLoggingIdDTO.date = payload.mealDate;
+                removeMealLoggingIdDTO.mealType = payload.mealType;
+
+                const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
+
+                await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
+            });
+            return new HttpException("Meal is deleted.", 200);
         }
         catch (e){
             return new HttpException(e.message, 400);
         }
-        return new HttpException("Meal is deleted.", 200);
+        
     }
 
     /**

@@ -1,13 +1,14 @@
 import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogging } from "./meal-logging.entity";
-import { In, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -24,16 +25,17 @@ export class MealLoggingService {
      * Log meals based on the meal type
      * @param decodedHeaders - decoded headers from the request
      * @param mealLoggingDTO - DTO containing the meal type and recipe ids
+     * @param transactionalEntityManager - transactional entity manager
      * @returns the saved entries in the database
      */
-    async addMealLogging(decodedHeaders: any, mealLoggingDTO: AddMealLoggingDTO){
+    async addMealLogging(decodedHeaders: any, mealLoggingDTO: AddMealLoggingDTO, transactionalEntityManager: EntityManager){
         var all_entries = []
         try {
 
             // Validate userId
             var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
             if (!user_object) {
-                throw new Error("User not found.");
+                throw new HttpException("User not found.", 404);
             }
 
             // Validate date 
@@ -41,7 +43,7 @@ export class MealLoggingService {
             const result = this.checkDate(meal_date);
             if (result.editable == false){ 
                 // Cannot edit past or future meals
-                throw new Error("Cannot add meal loggings for past or future meals."); 
+                throw new HttpException("Cannot add meal loggings for past or future meals.", 404); 
             } 
 
             const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
@@ -57,7 +59,7 @@ export class MealLoggingService {
                 // Validate recipeId
                 const recipe_object = recipeMap.get(recipeJSON.recipeId);
                 if (!recipe_object) {
-                    throw new Error(`Recipe with id ${recipeJSON.recipeId} not found`);
+                    throw new HttpException(`Recipe with id ${recipeJSON.recipeId} not found`, 404);
                 }
 
                 // Create entries to store in saved_entries
@@ -73,7 +75,8 @@ export class MealLoggingService {
             }));
 
             // Save all recipes in one go
-            return await this.mealLoggingRepository.save(all_entries);
+            const saved_entries = await transactionalEntityManager.save(all_entries);
+            return saved_entries.map(entry => entry.id);
         } catch (e) {
             throw e; // Return error to controller
         }
@@ -91,7 +94,7 @@ export class MealLoggingService {
             // Validate userId
             var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
             if (!user_object) {
-                throw new Error("User not found.");
+                throw new HttpException("User not found.", 404);
             }
 
             const new_date = new Date(dateValidationDto.date);
@@ -137,34 +140,27 @@ export class MealLoggingService {
      * @param mealLoggingIdList - a list of corresponding ids for meal logging
      * @returns delete result of all entries
      */
-    async deleteMealLoggingBulk(decodedHeaders: any, mealLoggingIdList: Array<string>){
+    async deleteMealLogging(decodedHeaders: any, deleteMealLoggingDTO: DeleteMealLoggingDTO, transactionalEntityManager: EntityManager){
         var delete_entries = []
         const delete_date = new Date();
         try {
-            // Validate userId
-            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
-            if (!user_object) {
-                throw new Error("User not found.");
-            }
-
-            var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
-                .where("meal_logging.id IN (:...ids)", { ids: mealLoggingIdList })
-                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+            var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: deleteMealLoggingDTO.mealLoggingId })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .andWhere("meal_logging.deleted_at IS NULL")
                 .andWhere("meal_logging.is_consumed = false")
-                .getMany()
+                .getOne()
 
-            if (entries.length != mealLoggingIdList.length){ throw new Error("Some meal logging entries are not found or already consumed."); }
+            if (!entry || entry == null){ throw new HttpException("Meal logging entry isnot found or already consumed.", 404); }
 
-            entries.forEach(async meal_logging_object => {
-                // Check if meal can be deleted
-                const result = this.checkDate(meal_logging_object.consumed_date_time);
-                if (result.editable == false){ throw result.message; }
+            // Check if meal can be deleted
+            const result = this.checkDate(entry.consumed_date_time);
+            if (result.editable == false){ throw result.message; }
 
-                meal_logging_object.deleted_at = delete_date;
-                delete_entries.push(meal_logging_object);
-            })
-            await this.mealLoggingRepository.save(delete_entries);
+            entry.deleted_at = delete_date;
+            delete_entries.push(entry);
+            
+            await transactionalEntityManager.save(delete_entries);
             return true;
         }
         catch (e){
@@ -184,7 +180,7 @@ export class MealLoggingService {
             // Validate userId
             var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
             if (!user_object) {
-                throw new Error("User not found.");
+                throw new HttpException("User not found.", 404);
             }
 
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
@@ -193,11 +189,11 @@ export class MealLoggingService {
                 .getOne()
 
             if (!entry || entry == undefined){ 
-                throw new Error(`Meal logging with id ${mealLoggingId} not found`);
+                throw new HttpException(`Meal logging with id ${mealLoggingId} not found`, 404);
             }
             
             if (entry.is_consumed){ 
-                throw new Error(`Meal is consumed already.`);
+                throw new HttpException(`Meal is consumed already.`, 400);
             }
 
             // Check if meal can be marked as consumed
@@ -209,7 +205,7 @@ export class MealLoggingService {
                 await this.mealLoggingRepository.save(entry);
                 return true; 
             }
-            else { throw new Error("Cannot mark consume on past meal or over 7 days meal"); }
+            else { throw new HttpException("Cannot mark consume on past meal or over 7 days meal", 400); }
         }
         catch (e){
             throw e;
@@ -221,7 +217,7 @@ export class MealLoggingService {
      * @param payload - payload that contains the meal logging id and the new date
      * @returns the updated meal logging object
      */
-    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO){
+    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
             const newDate = new Date(payload.newDate);
             // validate date 
@@ -236,8 +232,10 @@ export class MealLoggingService {
                 .getOne()
 
             if (!entry || entry == undefined){ 
-                throw new Error(`Meal logging with id ${payload.mealLoggingId} not found`);
+                throw new HttpException(`Meal logging with id ${payload.mealLoggingId} not found`, 404);
             }
+
+            const old_meal_type = entry.type;
 
             // update the meal logging object
             entry.updated_at = new Date();
@@ -245,8 +243,8 @@ export class MealLoggingService {
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
-            await this.mealLoggingRepository.save(entry);
-            return true;
+            await transactionalEntityManager.save(entry);
+            return old_meal_type;
         } catch (e) {
             throw e;
         }

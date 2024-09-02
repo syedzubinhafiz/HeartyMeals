@@ -7,11 +7,11 @@ import { Repository } from 'typeorm';
 import { Country } from 'src/country/country.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
 import { UserRole } from './enum/user-role.enum';
-import { CommonService } from 'src/common/common.service';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 import { CreateAdminDTO } from './dto/create-admin-dto';
 import { NutritionSettingDTO } from './dto/nutrition-setting-dto';
 import { CholesterolLevel } from './enum/cholesterol.enum';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class UserService {
@@ -103,6 +103,9 @@ export class UserService {
         new_user.country = null;
         new_user.dietary = null;
         new_user.nyha_level = null;
+        new_user.age = 0;
+        new_user.height = 0;
+        new_user.weight = 0;
         new_user.medical_info = JSON.parse("{}");
         
         return await this.userRepository.save(new_user);
@@ -110,7 +113,7 @@ export class UserService {
 
     async verifyUser( decoded: any) {
     
-        const user = await this.userRepository.findOneBy({user_id:decoded['sub']});
+        const user = await this.userRepository.findOneBy({user_id: decoded['sub']});
 
         if (user !== null){
             return true;
@@ -118,5 +121,7 @@ export class UserService {
             return false; 
         }
     }
+
    
+
 }
