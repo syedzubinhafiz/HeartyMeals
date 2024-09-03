@@ -118,7 +118,7 @@ const addRecipe = async () => {
             "Snack": customMeal.snack
         },
         "visibility": customMeal.visibility,
-        "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
+        "cuisineId": customMeal.cuisineID,
         "dietaryId": customMeal.dietaryID
     },
     "components": customMeal.ingredientList.map((ingredient)=>{return ingredient.toJson()})
