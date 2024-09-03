@@ -58,7 +58,7 @@ export class AppModule {
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
     seedDietary(this.dataSource);
-    if (process.env.DEBUG === "true"){
+    if (process.env.SAVE_FIREBASE === "true"){
       initialiseFirebase();
     }
   }
