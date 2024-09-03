@@ -5,7 +5,7 @@
         <div class="grow flex justify-end space-x-1 items-center">
             <Input v-if="includeInput" v-model="ingredient.cookingMethod" class="rounded-md" placeholder="insert cooking method"/>
             <Input v-if="includeDropdown" v-model="ingredient.quantity" type="number" class="w-14 rounded-md" placeholder=""/>
-            <Dropdown v-if="includeDropdown" v-model="ingredient.unit" :options="['tbsp','grams','ml','items']" class="shadow-md rounded-md" color="bg-white"/>
+            <Dropdown v-if="includeDropdown" v-model="ingredient.unit" :options="['tbsp','g','ml','items']" class="shadow-md rounded-md" color="bg-white"/>
             <ButtonTransparent v-if="buttonStr!=null" @click.prevent="() => buttonOnClick(ingredient)">{{ buttonStr }}</ButtonTransparent>
         </div>
         

@@ -20,7 +20,7 @@
                 <ButtonGreen @click.prevent="sectionBack" v-if="currentSection>0">← Back</ButtonGreen>
                 <div v-else/>
                 <ButtonGreen @click.prevent="sectionNext" v-if="currentSection<MAX_SECTIONS-1">→ Next</ButtonGreen>
-                <ButtonGreen @click.prevent="()=>{}" v-else>Done</ButtonGreen>
+                <ButtonGreen @click.prevent="addRecipe" v-else>Done</ButtonGreen>
             </div>
         </Overlay>
     </div>
@@ -102,5 +102,30 @@ onMounted(async () => {
         seasoningList.push(seasoning)
     }
 })
+
+const addRecipe = async () => {
+    let results = await useApi("/recipe/add","POST",{
+    "recipe": {
+        "name": "Insert Name Here",
+        "description": customMeal.description,
+        "instruction": ["instruction"],
+        "servingSize": 1,
+        "mealTimeRecommendation": {
+            "Breakfast" : customMeal.breakfast,
+            "Lunch" : customMeal.lunch,
+            "Dinner": customMeal.dinner,
+            "Snack": customMeal.snack
+        },
+        "visibility": customMeal.visibility,
+        "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
+        "dietaryId": customMeal.dietaryID
+    },
+    "components": customMeal.ingredientList.map((ingredient)=>{return ingredient.toJson()})
+        .concat(customMeal.seasoningList.map((seasoning)=>{return seasoning.toJson()}))
+
+    })
+    console.log(results)
+
+}
 
 </script>
