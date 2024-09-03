@@ -42,20 +42,21 @@ const props = defineProps({
 })
 // -----------------------
 const customMeal = reactive(new CustomMealData("Mystery Dish","assets/img/croissant.svg"))
-const ingredientList = reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Chicken","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Cauliflower","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Rice","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Plutonium","assets/img/potato.svg",0,"grams")])
-
-const seasoningList = reactive([
-    new IngredientData("Salt","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Pepper","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Blackpepper","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Arsenic","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Wasabi","assets/img/potato.svg",0,"tbsp"),
-])
+const ingredientList = reactive([])
+// reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Chicken","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Cauliflower","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Rice","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Plutonium","assets/img/potato.svg",0,"grams")])
+const seasoningList = reactive([])
+// reactive([
+//     new IngredientData("Salt","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Pepper","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Blackpepper","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Arsenic","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Wasabi","assets/img/potato.svg",0,"tbsp"),
+// ])
 // -----------------------
 
 const emits = defineEmits(["update:isPopupOpen"]);
@@ -89,10 +90,17 @@ const sectionNext = () => {
 
 onMounted(async () => {
     await useApi("/dietary","GET")
-    ingredientList.value = await useFillData().fillIngredients()
-    seasoningList.value = await useFillData().fillSeasoning()
-    console.log(ingredientList)
-    console.log(seasoningList)
+    let ingredients = await useFillData().fillIngredients()
+    console.log(ingredients)
+    ingredients = ingredients.value.data.map((jsonData) => {return IngredientData.importFromJson(jsonData)})
+    for(let ingredient of ingredients) {
+        ingredientList.push(ingredient)
+    }
+    let seasonings = await useFillData().fillSeasoning()
+    seasonings = seasonings.value.data.map((jsonData) => {return IngredientData.importFromJson(jsonData)})
+    for(let seasoning of seasonings) {
+        seasoningList.push(seasoning)
+    }
 })
 
 </script>
