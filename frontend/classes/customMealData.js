@@ -12,7 +12,7 @@ export default class CustomMealData extends MealData {
         this.lunch = false
         this.dinner = false
         this.snack = false
-        this.visibility = "unlisted"
+        this.visibility = "Unlisted"
         this.prepTime = 0
         this.recipeServing = 0
         this.dietaryID = ""

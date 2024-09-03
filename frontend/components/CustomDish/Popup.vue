@@ -20,7 +20,7 @@
                 <ButtonGreen @click.prevent="sectionBack" v-if="currentSection>0">← Back</ButtonGreen>
                 <div v-else/>
                 <ButtonGreen @click.prevent="sectionNext" v-if="currentSection<MAX_SECTIONS-1">→ Next</ButtonGreen>
-                <ButtonGreen @click.prevent="()=>{}" v-else>Done</ButtonGreen>
+                <ButtonGreen @click.prevent="addRecipe" v-else>Done</ButtonGreen>
             </div>
         </Overlay>
     </div>
@@ -41,21 +41,22 @@ const props = defineProps({
   },
 })
 // -----------------------
-const customMeal = reactive(new CustomMealData("Mystery Dish","assets/img/croissant.svg"))
-const ingredientList = reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Chicken","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Cauliflower","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Rice","assets/img/potato.svg",0,"grams"),
-    new IngredientData("Plutonium","assets/img/potato.svg",0,"grams")])
-
-const seasoningList = reactive([
-    new IngredientData("Salt","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Pepper","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Blackpepper","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Arsenic","assets/img/potato.svg",0,"tbsp"),
-    new IngredientData("Wasabi","assets/img/potato.svg",0,"tbsp"),
-])
+const customMeal = reactive(new CustomMealData("Custom Dish","assets/img/croissant.svg"))
+const ingredientList = reactive([])
+// reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Chicken","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Cauliflower","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Rice","assets/img/potato.svg",0,"grams"),
+//     new IngredientData("Plutonium","assets/img/potato.svg",0,"grams")])
+const seasoningList = reactive([])
+// reactive([
+//     new IngredientData("Salt","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Pepper","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Blackpepper","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Arsenic","assets/img/potato.svg",0,"tbsp"),
+//     new IngredientData("Wasabi","assets/img/potato.svg",0,"tbsp"),
+// ])
 // -----------------------
 
 const emits = defineEmits(["update:isPopupOpen"]);
@@ -89,10 +90,50 @@ const sectionNext = () => {
 
 onMounted(async () => {
     await useApi("/dietary","GET")
-    ingredientList.value = await useFillData().fillIngredients()
-    seasoningList.value = await useFillData().fillSeasoning()
-    console.log(ingredientList)
-    console.log(seasoningList)
+    let ingredients = await useFillData().fillIngredients()
+    console.log(ingredients)
+    ingredients = ingredients.value.data.map((jsonData) => {return IngredientData.importFromJson(jsonData)})
+    for(let ingredient of ingredients) {
+        ingredientList.push(ingredient)
+    }
+    let seasonings = await useFillData().fillSeasoning()
+    seasonings = seasonings.value.data.map((jsonData) => {return IngredientData.importFromJson(jsonData)})
+    for(let seasoning of seasonings) {
+        seasoningList.push(seasoning)
+    }
 })
+
+const addRecipe = async () => {
+    let result = await useApi("/recipe/add","POST",{
+    "recipe": {
+        "name": customMeal.name,
+        "description": customMeal.description,
+        "instruction": ["instruction"],
+        "servingSize": customMeal.recipeServing,
+        "preparationTime": `${customMeal.prepTime} minutes`,
+        "mealTimeRecommendation": {
+            "Breakfast" : customMeal.breakfast,
+            "Lunch" : customMeal.lunch,
+            "Dinner": customMeal.dinner,
+            "Snack": customMeal.snack
+        },
+        "visibility": customMeal.visibility,
+        "cuisineId": customMeal.cuisineID,
+        "dietaryId": customMeal.dietaryID
+    },
+    "components": customMeal.ingredientList.map((ingredient)=>{return ingredient.toJson()})
+        .concat(customMeal.seasoningList.map((seasoning)=>{return seasoning.toJson()}))
+
+    })
+    if(result.isError) {
+        useToast().error( `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`)
+    }
+    else {
+        useToast().success("Custom Recipe Added!")
+        togglePopup()
+    }
+    console.log(result)
+
+}
 
 </script>
