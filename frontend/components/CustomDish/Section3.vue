@@ -44,7 +44,7 @@
 					</div>
 					<div class="">
 						<H3>Recipe Visibility</H3>
-						<Dropdown v-model="modelValue.visibility" :options="['unlisted','private','public']"/>
+						<Dropdown v-model="modelValue.visibility" :options="['Unlisted','Private','Public']"/>
 						<H3>Diet</H3>
 						<Dropdown v-model="modelValue.dietaryID" :options="dietaryOptions" :optionValues="dietaryOptionValues"/>
 						<H3>Cuisine</H3>

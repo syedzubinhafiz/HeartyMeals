@@ -1,6 +1,6 @@
-const { $toast } = useNuxtApp();
 
 export const useToast = () => {
+    const { $toast } = useNuxtApp();
     const error = (message) => {
         if(process.client) {
             $toast.open({
