@@ -147,26 +147,30 @@
     console.log(localStorage.getItem('accessToken'));
     console.log('Fetching meals...');
 
-    const yourAuthToken = localStorage.getItem('accessToken'); // Or however you store the token
+    const yourAuthToken = localStorage.getItem('accessToken');
 
     console.log('Auth Token:', yourAuthToken);
 
     if (!yourAuthToken) {
         console.error('Authentication token not found.');
         alert("You are not logged in. Redirecting to login page.");
-        // Redirect to login page or handle the error as needed
-        window.location.href = '/login';  // Assuming '/login' is your login route
-        return; // Stop further execution
+        window.location.href = '/login';
+        return;
     }
 
     try {
-        const dateString = currentDate.value.toISOString().split('T')[0];
-        const response = await fetch(`/api/meal-logging/get_meals?date=${dateString}`, {
-            method: 'GET',
+        const payload = {
+            userId: 'user-id-here', // Replace with actual userId
+            date: currentDate.value.toISOString().split('T')[0],
+        };
+
+        const response = await fetch('/api/meal-logging/get_meals', {
+            method: 'POST',  // Changed to POST
             headers: {
                 'Authorization': `Bearer ${yourAuthToken}`,
                 'Content-Type': 'application/json'
             },
+            body: JSON.stringify(payload)  // Pass the payload in the body
         });
 
         if (!response.ok) throw new Error('Failed to fetch meals');
@@ -180,6 +184,7 @@
         console.error('Error fetching meals:', error);
     }
 };
+
 
 
     const removeMeal = async (mealType, index) => {
