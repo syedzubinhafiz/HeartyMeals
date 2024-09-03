@@ -28,13 +28,14 @@
   
       <!-- Buttons -->
       <div class="flex justify-between">
-        <button class="p-2 rounded-lg w-1/2 mr-2">Remove Food</button>
+        <button class="p-2 rounded-lg w-1/2 mr-2" @click="removeFood">Remove Food</button>
         <button class="p-2 rounded-lg w-1/2">Edit Meal</button>
       </div>
     </div>
 </template>
 
 <script setup>
+
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -46,6 +47,11 @@ const emit = defineEmits(['close']);
 
 const closeCard = () => {
   emit('close');
+};
+
+const removeFood = () => {
+  emit('remove');
+  closeCard();  // Optionally close the card after removing
 };
 
 // Customize position based on props or default positioning
