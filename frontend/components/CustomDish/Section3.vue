@@ -31,8 +31,8 @@
 				</div>
 				<div class="flex">
 					<div class="">
-						<H3>Recipe Visibility</H3>
-						<Dropdown v-model="modelValue.visibility" :options="['unlisted','private','public']"/>
+						<H3>Recipe Name</H3>
+						<Input v-model="modelValue.name" placeholder="" class=""/>
 						<H3>Preparation Time</H3>
 						<div class="flex space-x-2">
 							<Input v-model="modelValue.prepTime" type="number" placeholder="" class="w-2/5"/>
@@ -43,6 +43,8 @@
 						<Input v-model="modelValue.recipeServing" type="number" placeholder="" class="w-2/5"/>
 					</div>
 					<div class="">
+						<H3>Recipe Visibility</H3>
+						<Dropdown v-model="modelValue.visibility" :options="['unlisted','private','public']"/>
 						<H3>Diet</H3>
 						<Dropdown v-model="modelValue.dietaryID" :options="dietaryOptions" :optionValues="dietaryOptionValues"/>
 						<H3>Cuisine</H3>

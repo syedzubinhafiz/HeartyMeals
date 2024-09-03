@@ -41,7 +41,7 @@ const props = defineProps({
   },
 })
 // -----------------------
-const customMeal = reactive(new CustomMealData("Mystery Dish","assets/img/croissant.svg"))
+const customMeal = reactive(new CustomMealData("Custom Dish","assets/img/croissant.svg"))
 const ingredientList = reactive([])
 // reactive([new IngredientData("Potato","assets/img/potato.svg",0,"grams"),
 //     new IngredientData("Tomato","assets/img/potato.svg",0,"grams"),
@@ -104,12 +104,13 @@ onMounted(async () => {
 })
 
 const addRecipe = async () => {
-    let results = await useApi("/recipe/add","POST",{
+    let result = await useApi("/recipe/add","POST",{
     "recipe": {
-        "name": "Insert Name Here",
+        "name": customMeal.name,
         "description": customMeal.description,
         "instruction": ["instruction"],
-        "servingSize": 1,
+        "servingSize": customMeal.servingSize,
+        "preparationTime": `${customMeal.prepTime} minutes`,
         "mealTimeRecommendation": {
             "Breakfast" : customMeal.breakfast,
             "Lunch" : customMeal.lunch,
@@ -124,7 +125,14 @@ const addRecipe = async () => {
         .concat(customMeal.seasoningList.map((seasoning)=>{return seasoning.toJson()}))
 
     })
-    console.log(results)
+    if(result.isError) {
+        useToast().error( `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`)
+    }
+    else {
+        useToast().success("Custom Recipe Added!")
+        togglePopup()
+    }
+    console.log(result)
 
 }
 

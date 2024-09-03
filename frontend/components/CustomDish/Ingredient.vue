@@ -21,7 +21,7 @@ defineOptions({
 const props = defineProps({
     ingredient: {
         type: IngredientData,
-        default: new IngredientData("Potato",'/assets/img/potato.svg')
+        default: new IngredientData("1db0c08c-984f-4076-a8a3-3cfbfbf92a82","Potato",'/assets/img/potato.svg')
     },
     buttonStr: {
         type: String,
