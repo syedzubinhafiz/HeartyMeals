@@ -101,6 +101,7 @@ export class MealLoggingService {
             
             // get all the meals recoreded in a day
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .leftJoinAndSelect("meal_logging.recipe", "recipe")
                 .where('DATE(meal_logging.consumed_date_time) = DATE(:date)', { date: new_date })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
                 .andWhere("meal_logging.deleted_at IS NULL")

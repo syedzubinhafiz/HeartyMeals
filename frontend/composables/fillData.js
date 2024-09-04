@@ -2,7 +2,7 @@
 export const useFillData = () => {
     const fillIngredients = async () => {
         // get
-        const data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
+        let data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
         // if no data, fill
         if(data.value.data.length==0) {
             const foodCategoryList = await useApi("/food_category/get","GET")
@@ -109,12 +109,13 @@ export const useFillData = () => {
                 }
             })
             console.log(results)
+            data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
         }
         return data
     }
     const fillSeasoning = async () => {
         // get
-        const data = await useApi("/component/seasonings?page=1&pageSize=100","GET")
+        let data = await useApi("/component/seasonings?page=1&pageSize=100","GET")
         // if no data, fill
         if(data.value.data.length==0) {
             const foodCategoryList = await useApi("/food_category/get","GET")
@@ -179,8 +180,49 @@ export const useFillData = () => {
                 "nutritionInformation" : {}
             })
             console.log(results)
+            data = await useApi("/component/seasonings?page=1&pageSize=100","GET")
         }
         return data
     }
-    return {fillIngredients, fillSeasoning}
+    const fillCuisines = async () => {
+        // get
+        let data = await useApi("/cuisine","GET")
+        // if no data, fill
+        if(data.value.length==0) {
+            let results = ""
+            results = await useApi("/cuisine","POST",{
+                "name" : "Japanese",
+                "countryId": "JPN"
+            })
+            console.log(results)
+            results = await useApi("/cuisine","POST",{
+                "name" : "American",
+                "countryId": "USA"
+            })
+            console.log(results)
+            results = await useApi("/cuisine","POST",{
+                "name" : "Korean",
+                "countryId": "KOR"
+            })
+            console.log(results)
+            results = await useApi("/cuisine","POST",{
+                "name" : "Taiwanese",
+                "countryId": "TWN"
+            })
+            console.log(results)
+            results = await useApi("/cuisine","POST",{
+                "name" : "French",
+                "countryId": "FRA"
+            })
+            console.log(results)
+            results = await useApi("/cuisine","POST",{
+                "name" : "Indian",
+                "countryId": "IND"
+            })
+            console.log(results)
+            data = await useApi("/cuisine","GET")
+        }
+        return data
+    }
+    return {fillIngredients, fillSeasoning, fillCuisines}
 }

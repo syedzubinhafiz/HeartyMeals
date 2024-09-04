@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpException, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, Post, Query } from '@nestjs/common';
 import { FluidLoggingService } from './fluid-logging.service';
 import { CommonService } from 'src/common/common.service';
 import { UpdateFluidLoggingDTO } from './dto/update-fluid-logging-dto';
@@ -13,12 +13,15 @@ export class FluidLoggingController {
     ){}
 
     @Get('get')
-    async getFluidLogging(@Headers() headers: any, @Body() payload: DateValidationDTO) {
+    async getFluidLogging(@Headers() headers: any, @Query("date") date) {
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
+        const dateValidationDTO = new DateValidationDTO();
+        dateValidationDTO.date = date;
+
         try {
-            return await this.fluidLoggingService.getFluidLogging(decoded_headers, payload);
+            return await this.fluidLoggingService.getFluidLogging(decoded_headers, dateValidationDTO);
         } catch (e) {
             return new HttpException(e.message, 500);
         }

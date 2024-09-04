@@ -31,8 +31,8 @@
 				</div>
 				<div class="flex">
 					<div class="">
-						<H3>Recipe Visibility</H3>
-						<Dropdown v-model="modelValue.visibility" :options="['unlisted','private','public']"/>
+						<H3>Recipe Name</H3>
+						<Input v-model="modelValue.name" placeholder="" class=""/>
 						<H3>Preparation Time</H3>
 						<div class="flex space-x-2">
 							<Input v-model="modelValue.prepTime" type="number" placeholder="" class="w-2/5"/>
@@ -43,10 +43,12 @@
 						<Input v-model="modelValue.recipeServing" type="number" placeholder="" class="w-2/5"/>
 					</div>
 					<div class="">
+						<H3>Recipe Visibility</H3>
+						<Dropdown v-model="modelValue.visibility" :options="['Unlisted','Private','Public']"/>
 						<H3>Diet</H3>
 						<Dropdown v-model="modelValue.dietaryID" :options="dietaryOptions" :optionValues="dietaryOptionValues"/>
 						<H3>Cuisine</H3>
-						<Dropdown v-model="modelValue.cuisineID"/>
+						<Dropdown v-model="modelValue.cuisineID" :options="cuisineOptions" :optionValues="cuisineOptionValues"/>
 					</div>
 				</div>
 
@@ -85,6 +87,9 @@ const props = defineProps({
 
 const dietaryOptions = ref([])
 const dietaryOptionValues = ref([])
+
+const cuisineOptions = ref([])
+const cuisineOptionValues = ref([])
 onMounted(async () => {
 	await useApi("/dietary","GET")
 	const dietaryData = await useApi("/dietary","GET")
@@ -94,14 +99,17 @@ onMounted(async () => {
 		dietaryOptionValues.value = dietaryData.value.map((value)=>{return value.id})
 	}
 	else {
-		if(process.client) {
-			$toast.open({
-				message: `Dietary Retrieval Failed`,
-				type: "error",
-				position: "top",
-				duration: 6000,
-			});
-		}
+		useToast().error(`Dietary Retrieval Failed`)
+	}
+
+	const cuisineData = await useFillData().fillCuisines()
+	console.log(cuisineData)
+	if(cuisineData.value!=null) {
+		cuisineOptions.value = cuisineData.value.map((value)=>{return value.name})
+		cuisineOptionValues.value = cuisineData.value.map((value)=>{return value.id})
+	}
+	else {
+		useToast().error(`Cuisine Retrieval Failed`)
 	}
 })
 
