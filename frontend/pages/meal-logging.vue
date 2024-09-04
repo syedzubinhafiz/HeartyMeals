@@ -143,82 +143,46 @@
     const lunchList = ref([]);
     const dinnerList = ref([]);
     const otherList = ref([]);
-    const fetchMeals = async () => {
-    console.log(localStorage.getItem('accessToken'));
-    console.log('Fetching meals...');
 
-    const yourAuthToken = localStorage.getItem('accessToken');
-
-    console.log('Auth Token:', yourAuthToken);
-
-    if (!yourAuthToken) {
-        console.error('Authentication token not found.');
-        alert("You are not logged in. Redirecting to login page.");
-        window.location.href = '/login';
-        return;
-    }
-
-    try {
-        const payload = {
-            userId: 'user-id-here', // Replace with actual userId
-            date: currentDate.value.toISOString().split('T')[0],
-        };
-
-        const response = await fetch('/api/meal-logging/get_meals', {
-            method: 'POST',  // Changed to POST
-            headers: {
-                'Authorization': `Bearer ${yourAuthToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)  // Pass the payload in the body
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch meals');
-        
-        const data = await response.json();
-        breakfastList.value = data.breakfast || [];
-        lunchList.value = data.lunch || [];
-        dinnerList.value = data.dinner || [];
-        otherList.value = data.other || [];
-    } catch (error) {
-        console.error('Error fetching meals:', error);
-    }
-};
-
-
-
-    const removeMeal = async (mealType, index) => {
-    const mealId = breakfastList.value[index].id; // Ensure you have an ID to identify the meal
-    try {
-        await fetch(`/api/meal-logging/delete/${mealId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${yourAuthToken}`, 
-                'Content-Type': 'application/json'
-            },
-        });
-        // After successful deletion on the server, update the UI
-        if (mealType === 'breakfastList') {
-            breakfastList.value.splice(index, 1);
-        } else if (mealType === 'lunchList') {
-            lunchList.value.splice(index, 1);
-        } else if (mealType === 'dinnerList') {
-            dinnerList.value.splice(index, 1);
-        } else if (mealType === 'otherList') {
-            otherList.value.splice(index, 1);
-        }
-    } catch (error) {
-        console.error('Error deleting meal:', error);
-    }
-};
-
-    onMounted(() => {
-        fetchMeals();
-    });
-
-    watch(currentDate, () => {
-        fetchMeals();
-    });
+    onMounted(async () => {
+        await useApi("/dietary","GET")
+        let recipes = await useFillData().fillRecipes()
+        console.log(recipes)
+        let mealLoggingRecipes = await useFillData().fillMealLogging()
+        // let mealLoggingRecipes = {
+        //     "Breakfast": [],
+        //     "Lunch": [
+        //         {
+        //             "is_consumed": false,
+        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
+        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
+        //             "type": "Lunch",
+        //             "portion": 2,
+        //             "created_at": "2024-09-04T07:18:27.016Z",
+        //             "updated_at": null,
+        //             "deleted_at": null
+        //         }
+        //     ],
+        //     "Dinner": [],
+        //     "Other": [
+        //         {
+        //             "is_consumed": false,
+        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
+        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
+        //             "type": "Other",
+        //             "portion": 1,
+        //             "created_at": "2024-09-04T07:18:19.855Z",
+        //             "updated_at": null,
+        //             "deleted_at": null
+        //         },
+        //     ]
+        // }
+        console.log(mealLoggingRecipes)
+        breakfastList.value = mealLoggingRecipes.value["Breakfast"]
+        lunchList.value = mealLoggingRecipes.value["Lunch"]
+        dinnerList.value = mealLoggingRecipes.value["Dinner"]
+        otherList.value = mealLoggingRecipes.value["Other"]
+    })
 
 </script>
   

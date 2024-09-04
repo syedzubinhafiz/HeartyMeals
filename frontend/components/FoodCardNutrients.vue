@@ -7,21 +7,21 @@
       <div class="flex justify-between mb-2">
         <div>
           <div class="flex items-centern mb-1">
-            <img src="/assets/img/carbIcon.png" alt="Carbs Icon" class="icon-style"><span class="ml-2">100g</span>
+            <img src="/assets/img/carbIcon.png" alt="Carbs Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.totalCarbohydrate)}}g</span>
           </div>
           <div class="flex items-center mb-1">
-            <img src="/assets/img/proteinIcon.png" alt="Protein Icon" class="icon-style"><span class="ml-2">30g</span>
+            <img src="/assets/img/proteinIcon.png" alt="Protein Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.protein)}}g</span>
           </div>
           <div class="flex items-center mb-1">
-            <img src="/assets/img/fatsIcon.png" alt="Fat Icon" class="icon-style"><span class="ml-2">60g</span>
+            <img src="/assets/img/fatsIcon.png" alt="Fat Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.fat)}}g</span>
           </div>
         </div>
         <div>
           <div class="flex items-center mb-1">
-            <img src="/assets/img/cholesterolsIcon.png" alt="Sodium Icon" class="icon-style"><span class="ml-2">1000mg</span>
+            <img src="/assets/img/cholesterolsIcon.png" alt="Sodium Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.cholesterol)}}g</span>
           </div>
           <div class="flex items-center mb-1">
-            <img src="/assets/img/sodiumIcon.png" alt="Fiber Icon" class="icon-style"><span class="ml-2">25g</span>
+            <img src="/assets/img/sodiumIcon.png" alt="Fiber Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.dietaryFiber)}}g</span>
           </div>
         </div>
       </div>
@@ -40,6 +40,9 @@ const props = defineProps({
   visible: {
     type: Boolean,
     required: true
+  },
+  nutritionInfo: {
+    type: Object,
   }
 });
 

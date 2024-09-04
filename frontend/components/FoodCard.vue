@@ -1,11 +1,11 @@
 <template>
   <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
     <!-- Food Image -->
-    <img :src="cardInfo.image" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
+    <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
     <!-- Food Name -->
     <div class="ml-4 flex-1">
-      <h3 class="text-lg font-semibold">{{ cardInfo.name }}</h3>
+      <h3 class="text-lg font-semibold">{{ cardInfo.recipe.name }}</h3>
     </div>
 
     <!-- More Options Icon -->
@@ -15,9 +15,10 @@
 
     <FoodCardNutrients 
     v-if="showMiniCard" 
+    :nutritionInfo="cardInfo.recipe.nutrition_info"
     :visible="showMiniCard" 
     @close="toggleMiniCard" 
-    @remove="removeMeal(cardInfo.mealLoggingId, cardInfo.mealDate, cardInfo.mealType)"/>
+    @remove="removeMeal"/>
   </div>
 </template>
 
@@ -38,27 +39,25 @@ const toggleMiniCard = () => {
   showMiniCard.value = !showMiniCard.value;
 };
 
-const removeMeal = async (mealLoggingId, mealDate, mealType) => {
-  try {
-    const response = await fetch('/api/meal-logging/delete', {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${yourAuthToken}`, // Replace with actual token
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        mealDate: mealDate,
-        mealLoggingId: mealLoggingId,
-        mealType: mealType
-      })
-    });
-
-    if (!response.ok) throw new Error('Failed to delete meal');
-
-    // Handle success - for example, update the UI to remove the meal
-  } catch (error) {
-    console.error('Error deleting meal:', error);
-  }
+const removeMeal = async () => {
+  // cardInfo.mealLoggingId, cardInfo.mealDate, cardInfo.mealType
+  console.log({
+    "mealDate": props.cardInfo.created_at,
+    "mealLoggingId": props.cardInfo.id,
+    "mealType": props.cardInfo.type
+  })
+  let result = await useApi("/meal-logging/delete","DELETE",{
+    "mealDate": props.cardInfo.created_at,
+    "mealLoggingId": props.cardInfo.id,
+    "mealType": props.cardInfo.type
+  })
+  console.log(result)
+  // if(result.isError) {
+  //   useToast().error("Deletion Failed!")
+  // }
+  // else {
+  //   useToast().success("Meal Deleted!")
+  // }
 };
 </script>
 
