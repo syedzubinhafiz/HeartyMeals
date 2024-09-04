@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, HttpException, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpException, Param, Post, Query } from "@nestjs/common";
 import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
@@ -41,12 +41,15 @@ export class MealPlanningController {
      * @param payload - payload that contains the userId and the date requested to get the meals from
      * @returns a list of meals on the date, sorted by meal types
      */
-    @Get('get_meals')
-    async getMealsPerDay(@Headers() headers, @Body() payload: DateValidationDTO){
-        try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            return await this.mealLoggingService.getMealsPerDay(decoded_headers, payload);
+    @Get('get')
+    async getMealsPerDay(@Headers() headers, @Query('date') date: string,){
+    try {
+        const auth_header = headers.authorization;
+        const decoded_headers = this.commonService.decodeHeaders(auth_header);
+        const dateValidationDTO = new DateValidationDTO();
+        dateValidationDTO.date = date;
+
+        return await this.mealLoggingService.getMealsPerDay(decoded_headers, dateValidationDTO);
         }
         catch (e){
             return new HttpException(e.message, 400);
