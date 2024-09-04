@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Headers, HttpException, Post } from "@nestjs/common";
-import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
+import { Body, Controller, Get, Headers, HttpException, Post, Query } from "@nestjs/common";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
@@ -8,6 +7,8 @@ import { EntityManager } from "typeorm";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { AddMealLoggingDTO } from "src/meal-logging/dto/add-meal-logging-dto";
 import { MealLoggingService } from "src/meal-logging/meal-logging.service";
+import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
@@ -59,6 +60,22 @@ export class MealLogSummaryController {
 
     }
 
+    @Get('budget')
+    async getRemainingBudget(@Headers() headers, @Query("date") date: string){
+        try {
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            const dateValidationDTO = new DateValidationDTO();
+            dateValidationDTO.date = date;
+
+            return this.mealLogSummaryService.getRemainingBudget(decoded_headers, dateValidationDTO);
+        } catch (e){
+            return new HttpException(e.message, 400)
+        }
+    }
+
+    
+
     @Post('remove')
     async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemoveMealLoggingIdDTO){
         try {
@@ -72,4 +89,5 @@ export class MealLogSummaryController {
             return new HttpException(e.message, 400)
         }
     }
+    
 }
