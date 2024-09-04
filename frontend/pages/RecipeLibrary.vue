@@ -25,12 +25,12 @@
           <!-- Scrollable Recipe Cards -->
             <div class="cards-grid">
               <RecipeCard
-                v-for="(meal, index) in paginatedMeals"
+                v-for="(meal, index) in paginatedMealList"
                 :key="index"
-                :imageSrc="meal.imageSrc"
-                :mealName="meal.mealName"
-                :mealDescription="meal.mealDescription"
-                :labels="meal.labels"
+                :imageSrc="'../assets/img/croissant.svg'"
+                :mealName="meal.name"
+                :mealDescription="meal.description"
+                :labels="meal.recommended_meal_time ?? {}"
                 @click.native="openOverlay(meal)"
               />
             </div>
@@ -54,39 +54,22 @@
   <Footer/>
 </template>
 <script setup>
+const recipeList = ref([])
 onMounted(async () => {
   console.log("AAAA")
   await useApi("/dietary","GET")
   // console.log(await useApi("/dietary","GET"))
-  const results = await useApi("/recipe/add","POST",  {"recipe": {
-        "name": "White Soy Sauce Beef",
-        "description": "wow so cool",
-        "instruction": ["instruction"],
-        "servingSize": 1,
-        "mealTimeRecommendation": {
-            "Breakfast" : true,
-            "Lunch" : true,
-            "Dinner": false
-        },
-        "visibility": "Public",
-        "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-        "dietaryId": "6723c1d3-e47a-46bc-9048-780db825043c"
+  recipeList.value = await useFillData().fillRecipes2()
+  console.log(recipeList)
+})
+const currentPage = 1
+const itemsPerPage = 6
+const paginatedMealList = computed({
+  get() {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      return recipeList.value?.value?.slice(start, end);
     },
-    "components": [
-        {
-            "componentId": "194f8640-2f99-4baf-8d60-350993b53fb8",
-            "amount" : 69,
-            "unit": "g"
-        },
-        {
-            "componentId": "79338f94-f372-41ec-a932-d56a582d303b",
-            "amount" : 20,
-            "unit": "g"
-        }
-    ]})
-  console.log(results)
-  // const recipeData = await useApi("/recipe/get?page=1&pageSize=10","GET")
-  // console.log(recipeData)
 })
 </script>
 <script>
