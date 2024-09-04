@@ -97,7 +97,7 @@ export class RecipeController {
     @Get('get')
     async getRecipe(
         @Headers() headers: any, 
-        @Body('recipeId') recipeId: string = null,
+        @Query('recipeId') recipeId: string = null,
         @Query("page") page: string,
         @Query("pageSize") pageSize: string,
         @Query("search") search: string = null,
@@ -207,7 +207,7 @@ export class RecipeController {
      * @returns {ingridients: [], seasonings: []} List of components for the recipe
      */
     @Get('get-components')
-    async getRecipeComponents(@Body("recipeId") recipeId: string){
+    async getRecipeComponents(@Query("recipeId") recipeId: string){
         return await this.recipeComponentService.getRecipeComponents(recipeId)
     }
     
