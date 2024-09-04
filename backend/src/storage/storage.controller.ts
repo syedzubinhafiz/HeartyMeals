@@ -21,8 +21,6 @@ export class StorageController {
             await this.entityManager.transaction(async transactionalEntityManager => {
 
                 const storage_links = await this.storageService.uploadFile(decoded_headers, fileUploadDTO, transactionalEntityManager);
-
-                console.log(storage_links)
             });
             return new HttpException("Files uploaded successfully.", 200);
         } catch (e) {
@@ -31,18 +29,27 @@ export class StorageController {
     }
 
     @Post('delete')
-    delete(@Body() payload){
-        return this.storageService.deleteFile(payload.storageId);
+    async delete(@Body("storage_ids") payload){
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+
+                this.storageService.deleteFile(payload, transactionalEntityManager);
+
+            });
+            return new HttpException("Files deleted successfully.", 200);
+        } catch (e) {
+            return new HttpException(e.message, e.status);
+        }
     }
 
-    @Get('get_from_path')
-    get_from_path(@Body() payload){
-        return this.storageService.getFileFromPath(payload.path);
-    }
-
-    @Get('get_from_id')
-    get_from_id(@Body() payload){
-        return this.storageService.getFileFromId(payload.id);
+    @Get('get')
+    get_from_id(@Body("storage_ids") payload){
+        try {
+            return this.storageService.getFiles(payload);
+        }
+        catch (e){
+            return new HttpException(e.message, e.status);
+        }
     }
 }
 

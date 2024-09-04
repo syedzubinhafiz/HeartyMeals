@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Storage } from './storage.entity';
 import { StorageType } from './enum/storage.enum';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { getStorage, getDownloadURL } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
@@ -17,9 +17,10 @@ export class StorageService {
     ){}
 
     /**
-     * Method to upload files to the given path
-     * @param path - path to upload file to the firebase storage
-     * @param files - array of files
+     * Upload the file to firebase storage (or local) and save the entry to database
+     * @param decodedHeaders - decoded headers from the request
+     * @param fileUploadDTO - DTO that contains the file data
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
      * @returns storage_links, JSON object that contains all the storage ids of each file uploaded to cloud and saved in database
      * 
      * @example
@@ -29,11 +30,9 @@ export class StorageService {
      * }
      */
     async uploadFile(decodedHeaders: any, fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
-        var storage_links = {};
-
         // validate if there are files to upload
         if ((fileUploadDTO.thumbnail == undefined || fileUploadDTO.thumbnail == null) && (fileUploadDTO.content == undefined || fileUploadDTO.content == null)){
-            return storage_links;
+            return {};
         }
 
         // get path for upload
@@ -50,280 +49,257 @@ export class StorageService {
             throw e;
         }
 
-        if (process.env.SAVE_FIREBASE === "true")  {
-            // get the bucket
-            const bucket = getStorage().bucket();
-            // resolve all promises at once
-            const bucket_upload_promises: Promise<String>[] = [];
+        const storage_links: any = {};
 
-            if (fileUploadDTO.thumbnail != undefined && fileUploadDTO.thumbnail != null){
-                const thumbnail_promise = new Promise<String>((resolve, reject) => {
-                    
-                    const thumbnail = fileUploadDTO.thumbnail;
+        const promises: Promise<string>[] = [];
+        // get bucket
+        const bucket = (process.env.SAVE_FIREBASE === "true") ? getStorage().bucket() : null;
 
-                    const thumbnail_path = `${upload_path}/${thumbnail.fileName}`;
-
-                    const buffer = new Buffer(fileUploadDTO.thumbnail.fileDataInBase64, 'base64');
-
-                    const file_upload = bucket.file(`${thumbnail_path}`);
-
-                    const stream = file_upload.createWriteStream({
-                        metadata: {
-                            contentType: thumbnail.fileType,
-                        }
-                    });
-
-                    stream.on('error', (error) => {
-                        reject(error);
-                    });
-
-                    stream.on('finish', async () => {
-                        // once the stream finishes, save to database
-                        const new_storage = new Storage();
-
-                        new_storage.file_path = thumbnail_path;
-                        new_storage.type = thumbnail.fileType as StorageType;
-                        new_storage.size = thumbnail.fileSize;
-
-                        try {
-                            const storage_object = await transactionalEntityManager.save(new_storage);
-                            storage_links[`thumbnail`] = storage_object.storage_id;
-                            resolve(storage_object.storage_id);
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-
-                    })
-
-                    stream.end(buffer);
-                });
-                bucket_upload_promises.push(thumbnail_promise);
+        // if got thumbnail to upload
+        if (fileUploadDTO.thumbnail) {
+            if (process.env.SAVE_FIREBASE === "true") {
+                promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, upload_path, bucket, transactionalEntityManager));
+            } else {
+                var fs = require('fs');
+                const local_path = join(__dirname, '../../src/storage/uploaded/', upload_path, '/');
+                if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
+                promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
             }
-            if (fileUploadDTO.content != undefined && fileUploadDTO.content != null){
-                storage_links["content"] = {};
-                const content_promises = fileUploadDTO.content.map((file_format_DTO, index) => {
-
-                return new Promise<String>(async (resolve, reject) => {
-
-                    const content_path = `${upload_path}/${file_format_DTO.fileName}`;
-
-                    const file_upload = bucket.file(`${content_path}`);
-
-                    const buffer = new Buffer(file_format_DTO.fileDataInBase64, 'base64');
-
-                    const stream = file_upload.createWriteStream({
-                        metadata: {
-                            contentType: file_format_DTO.fileType,
-                        }
-                    });
-    
-                        stream.on('error', (error) => {
-                            reject(error);
-                        });
-    
-                        stream.on('finish', async () => {
-                            // once the stream finishes, save to database
-                            const new_storage = new Storage();
-    
-                            new_storage.file_path = content_path;
-                            new_storage.type = file_format_DTO.fileType as StorageType;
-                            new_storage.size = file_format_DTO.fileSize;
-    
-                            try {
-                                const storage_object = await transactionalEntityManager.save(new_storage);
-                                storage_links[`content`][`${index}`] = storage_object.storage_id;
-                                resolve(storage_object.storage_id);
-                            }
-                            catch (e) {
-                                reject(e);
-                            }
-                        })
-    
-                        stream.end(buffer);
-                    })
-                });
-
-                bucket_upload_promises.push(...content_promises);
-            }
-
-            // resolve all promises at once
-            await Promise.all(bucket_upload_promises);
-            return storage_links;
+            storage_links['thumbnail'] = await promises[promises.length - 1];
         }
-        else {
-            // save to local directory
-            // create a new folder called "uploaded" inside storage
-            var fs = require('fs');
-            var dir = join(__dirname, '../../src/storage/uploaded/', upload_path,'/');
-            
-            if (!fs.existsSync(dir)){
-                fs.mkdirSync(dir, { recursive: true });
-            }
-
-            const local_upload_promises: Promise<String>[] = [];
-
-            if (fileUploadDTO.thumbnail != undefined && fileUploadDTO.thumbnail != null){
-                const thumbnail = fileUploadDTO.thumbnail;
-
-                const thumbnail_local_path = `${dir}/${thumbnail.fileName}`;
-
-                // Create a write stream
-                const write_stream = createWriteStream(thumbnail_local_path);
-
-                const buffer = new Buffer(fileUploadDTO.thumbnail.fileDataInBase64, 'base64');
-
-                const thumbnail_promise =  new Promise<String> ((resolve, reject) => {
-                
-                    write_stream.write(buffer);
-        
-                    write_stream.on('finish', async () => {
-                        const new_storage = new Storage();
-                        new_storage.file_path = thumbnail_local_path;
-                        new_storage.type = thumbnail.fileType as StorageType;
-                        new_storage.size = thumbnail.fileSize;
-        
-                        try {
-                            const storage_object = await transactionalEntityManager.save(new_storage);
-                            storage_links[`thumbnail`] = storage_object.storage_id;
-                            resolve(storage_object.storage_id);
-                        }
-                        catch (e) {
-                            reject(e);
-                        }
-                    });
-        
-                    write_stream.on('error', (err) => {
-                        console.error('Error saving file:', err);
-                        reject(err);
-                    });
-
-                    write_stream.end();
-                });
-                local_upload_promises.push(thumbnail_promise);
-            }
-            if (fileUploadDTO.content != undefined && fileUploadDTO.content != null){
-                storage_links["content"] = {};
-                const content_promises = fileUploadDTO.content.map((file_format_DTO, index) => {
-                    const content_path = `${dir}/${file_format_DTO.fileName}`;
-
-                    // Create a write stream
-                    const write_stream = createWriteStream(content_path);
-
-                    const buffer = new Buffer(file_format_DTO.fileDataInBase64, 'base64');
-
-                    return new Promise<String>(async (resolve, reject) => {
-                        write_stream.write(buffer);
-        
-                        write_stream.on('finish', async () => {
-                            const new_storage = new Storage();
-                            new_storage.file_path = content_path;
-                            new_storage.type = file_format_DTO.fileType as StorageType;
-                            new_storage.size = file_format_DTO.fileSize;
-            
-                            try {
-                                const storage_object = await transactionalEntityManager.save(new_storage);
-                                storage_links[`content`][`${index}`] = storage_object.storage_id;
-                                resolve(storage_object.storage_id);
-                            }
-                            catch (e) {
-                                reject(e);
-                            }
-                        });
-            
-                        write_stream.on('error', (err) => {
-                            console.error('Error saving file:', err);
-                            reject(err);
-                        });
-    
-                        write_stream.end();
-                    });
-                });
-                local_upload_promises.push(...content_promises);
-            }
-
-            // resolve all promises at once
-            await Promise.all(local_upload_promises);
-            return storage_links;
+        // if got content to upload
+        if (fileUploadDTO.content) {
+            storage_links['content'] = {};
+            const content_promises = fileUploadDTO.content.map(async file_format_DTO => {
+                if (process.env.SAVE_FIREBASE === "true") {
+                    return this.uploadToFirebase(file_format_DTO, upload_path, bucket, transactionalEntityManager);
+                } else {
+                    var fs = require('fs');
+                    const local_path = join(__dirname, '../../src/storage/uploaded/', upload_path, '/');
+                    if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
+                    return this.saveToLocal(file_format_DTO, local_path, transactionalEntityManager);
+                }
+            });
+            promises.push(...content_promises);
+            const content_ids = await Promise.all(content_promises);
+            content_ids.forEach((id, index) => {
+                storage_links['content'][index] = id;
+            });
         }
+
+        // resolve all promises
+        await Promise.all(promises);
+        return storage_links;
     }
 
     /**
-     * Delete file method to delete the file from firebase storage and delete the entry from database
-     * @param storageId - storage id to the file
+     * Delete the file from firebase storage (or local) and delete the entry from database
+     * @param storageIds - storage ids to delete the file in an array
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
      * @returns true if file is successfully deleted
      */
-    async deleteFile(storageId){
+    async deleteFile(storageIds: string[], transactionalEntityManager: EntityManager){
         // data validation. if storage id is valid it will run, else it will throw error.
         try {
-            var entry = await this.storageRepository.findOneBy({storage_id: storageId});
-        }
-        catch (e){
-            return e;
-        }
+            var entries = await transactionalEntityManager.find(Storage, {
+                where: {
+                    storage_id: In(storageIds)
+                }
+            });
 
-        if (process.env.DEBUG === "true")  {
-            // get the storage
-            const bucket = getStorage().bucket();
+            if (entries.length === 0) {
+                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+            }
+    
+            if (entries.length !== storageIds.length) {
+                throw new HttpException('Not all storage IDs were found in the database.', HttpStatus.BAD_REQUEST);
+            }
+    
+            // Get the storage bucket if using Firebase
+            const bucket = process.env.SAVE_FIREBASE === "true" ? getStorage().bucket() : null;
+    
+            // Create an array of promises for deletion
+            entries.forEach(async (entry) => {
+                const query_runner = transactionalEntityManager.connection.createQueryRunner();
+                if (!query_runner) {
+                    throw new HttpException('Query Runner not available', HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+
+                // Establish real database connection using our new query runner
+                await query_runner.connect();
             
-            // delete in firebase
-            const file_download = bucket.file(`${entry.file_path}`)
-            file_download.delete();
-        }
-        else {
-            try {
-                // Check if the file exists
-                await fs.access(entry.file_path);
-                
-                // Delete the file
-                await fs.unlink(entry.file_path);
-        
-              } catch (e) {
-                return e;
-              }
-        }
-        // delete in database
-        await this.storageRepository.delete(entry);
-        return true;
-    }
-
-    /**
-     * Get a public file link from firebase storage
-     * @param path - path to the file in firebase storage
-     * @returns a public file link from firebase storage
-     */
-    async getFileFromPath(path){
-        // get file from firebase
-        try {
-            return await getDownloadURL(getStorage().bucket().file(path));
+                await query_runner.startTransaction();
+            
+                try {
+                    if (bucket) {
+                        // Delete file from Firebase Storage
+                        const file = bucket.file(entry.file_path);
+                        await file.delete();
+                    } else {
+                        // Check if the file exists locally
+                        await fs.access(entry.file_path);
+                        // Delete the file from the local filesystem
+                        await fs.unlink(entry.file_path);
+                    }
+            
+                    // Delete the entry from the database within the transaction
+                    await query_runner.manager.delete(Storage, entry.storage_id);
+            
+                    // Commit the transaction after successful file and database deletion
+                    await query_runner.commitTransaction();
+                } catch (error) {
+                    // Rollback the transaction in case of any errors
+                    await query_runner.rollbackTransaction();
+            
+                    // Handle the error
+                    throw new HttpException(`Error during deletion: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+                } finally {
+                    // Release the query runner
+                    await query_runner.release();
+                }
+            });
+            return true;
         }
         catch (e){
-            return e;
+            // Handle any errors related to the transaction setup
+            throw new HttpException(`Transaction setup error: ${e.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
      * Get a public file link from firebase storage by retriving entry from databases
-     * @param storageId - storage id to get the path
-     * @returns a public file link from firebase storage
+     * @param storageIds - storage ids to get the file in an array
+     * @returns a list of download urls of the files
      */
-    async getFileFromId(storageId){
+    async getFiles(storageIds: string[]){
         // data validation. if storage id is valid it will run, else it will throw error.
         try {
-            var entry = await this.storageRepository.findOneBy({storage_id: storageId});
-            if (process.env.DEBUG === "true")  {
-                // get file from firebase
-                return await getDownloadURL(getStorage().bucket().file(entry.file_path));
+            var entries = await this.storageRepository.find({
+                where: {
+                    storage_id: In(storageIds)
+                }
+            });
+
+            if (entries.length === 0) {
+                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+            }
+    
+            if (entries.length !== storageIds.length) {
+                throw new HttpException('Not all storage IDs were found in the database.', HttpStatus.BAD_REQUEST);
+            }
+
+            if (process.env.SAVE_FIREBASE === "true")  {
+                const bucket = getStorage().bucket();
+
+                const download_url_promises = entries.map(async (entry) => {
+                    const file = bucket.file(entry.file_path);
+                    const [url] = await file.getSignedUrl({
+                        action: 'read',
+                        expires: '03-09-2491', // Long expiration date
+                    });
+                    return url;
+                });
+
+                return Promise.all(download_url_promises);
             }
             else {
-                return `File is at path ${entry.file_path}`;
+                return entries.map((entry) => {
+                    return entry.file_path;
+                });
             }
         }
         catch (e){
-            return e;
+            throw e;
         }
     }
 
+    /**
+     * Local method to upload file to firebase storage
+     * @param file - file data
+     * @param upload_path - path to upload the file
+     * @param bucket - firebase storage bucket
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns promise that resolves to the storage id of the file
+     */
+    async uploadToFirebase(file: any, upload_path: string, bucket: any, transactionalEntityManager: any): Promise<string> {
+        const file_path = `${upload_path}/${file.fileName}`;
+        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
+        const file_upload = bucket.file(file_path);
+    
+        const stream = file_upload.createWriteStream({
+            metadata: {
+                contentType: file.fileType,
+            },
+        });
+
+        return new Promise<string>((resolve, reject) => {
+            stream.on('error', reject);
+    
+            stream.on('finish', async () => {
+                try {
+                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, transactionalEntityManager);
+                    resolve(storage_object.storage_id);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+    
+            stream.end(buffer);
+        });
+    }
+
+    /**
+     * Local method to save file to local storage
+     * @param file - file data
+     * @param local_path - path to save the file
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns promise that resolves to the storage id of the file
+     */
+    async saveToLocal(file: any, local_path: string, transactionalEntityManager: any): Promise<string> {
+        const file_path = `${local_path}/${file.fileName}`;
+        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
+        const write_stream = createWriteStream(file_path);
+    
+        return new Promise<string>((resolve, reject) => {
+            write_stream.on('error', reject);
+    
+            write_stream.on('finish', async () => {
+                try {
+                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, transactionalEntityManager);
+                    resolve(storage_object.storage_id);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+    
+            write_stream.end(buffer);
+        });
+    }
+
+    /**
+     * Local method to create and save the file entry to database using given information
+     * @param file_path - path of the file
+     * @param file_type - type of the file
+     * @param file_size - size of the file
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns 
+     */
+    async saveToDatabase(file_path: string, file_type: StorageType, file_size: number, transactionalEntityManager: any): Promise<Storage> {
+        const new_storage = new Storage();
+        new_storage.file_path = file_path;
+        new_storage.type = file_type;
+        new_storage.size = file_size;
+    
+        return transactionalEntityManager.save(new_storage);
+    }
+    
+    /**
+     * Local method to prepare the path for the file to be uploaded
+     * @param userId - user id
+     * @param recipeId - recipe id
+     * @param eduContentId - educational content id
+     * @returns a path for the file to be uploaded
+     */
     pathPreparation(userId: string = null, recipeId: string = null, eduContentId: string = null){
         if (userId == null && recipeId == null && eduContentId == null){
             throw new HttpException('No path is specified', HttpStatus.BAD_REQUEST);
@@ -349,11 +325,11 @@ export class StorageService {
         }
         else if (recipeId != null){
             // official recipe
-            path = `recipes/${recipeId}`;
+            path = `official_recipes/${recipeId}`;
         }
         else if (eduContentId != null){
             // educational content
-            path = `eduContent/${eduContentId}`;
+            path = `educational_content/${eduContentId}`;
         }
 
         return path;
