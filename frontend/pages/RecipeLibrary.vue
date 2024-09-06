@@ -59,7 +59,7 @@ onMounted(async () => {
   console.log("AAAA")
   await useApi("/dietary","GET")
   // console.log(await useApi("/dietary","GET"))
-  recipeList.value = await useFillData().fillRecipes2()
+  recipeList.value = await useFillData().fillRecipes()
   console.log(recipeList)
 })
 const isOverlayVisible = ref(false)
