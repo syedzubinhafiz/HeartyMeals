@@ -233,6 +233,7 @@ export const useFillData = () => {
             const cuisines = await fillCuisines()
             const diets = await useApi("/dietary","GET")
             const ingredients = await fillIngredients()
+            const seasoning = await fillSeasoning()
             let results = await useApi("/recipe/add","POST",{
                 "recipe": {
                     "name": "Baked Potato with Fish",
@@ -386,6 +387,80 @@ export const useFillData = () => {
                     {
                         "componentId": ingredients.value.data.filter((value) => value.name.toUpperCase()=="TOMATO")[0].id,
                         "amount" : 50,
+                        "unit": "g"
+                    }
+                ]
+            
+            })
+            console.log(results)
+            results = await useApi("/recipe/add","POST",{
+                "recipe": {
+                    "name": "Meal that has seasoning",
+                    "description": "very seasoned",
+                    "instruction": ["instruction"],
+                    "servingSize": 1,
+                    "preparationTime": `15 minutes`,
+                    "mealTimeRecommendation": {
+                        "Breakfast" : true,
+                        "Lunch" : true,
+                        "Dinner": true,
+                        "Snack": false
+                    },
+                    "visibility": "Public",
+                    "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="KOR")[0].id,
+                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="HALAL")[0].id
+                },
+                "components": [
+                    {
+                        "componentId": ingredients.value.data.filter((value) => value.name.toUpperCase()=="TOMATO")[0].id,
+                        "amount" : 70,
+                        "unit": "g"
+                    },
+                    {
+                        "componentId": ingredients.value.data.filter((value) => value.name.toUpperCase()=="FISH")[0].id,
+                        "amount" : 100,
+                        "unit": "g"
+                    },
+                    {
+                        "componentId": seasoning.value.data.filter((value) => value.name.toUpperCase()=="SALT")[0].id,
+                        "amount" : 5,
+                        "unit": "g"
+                    }
+                ]
+            
+            })
+            console.log(results)
+            results = await useApi("/recipe/add","POST",{
+                "recipe": {
+                    "name": "askdsalkdsalkdalkds",
+                    "description": "???",
+                    "instruction": ["instruction"],
+                    "servingSize": 1,
+                    "preparationTime": `90 minutes`,
+                    "mealTimeRecommendation": {
+                        "Breakfast" : false,
+                        "Lunch" : true,
+                        "Dinner": true,
+                        "Snack": false
+                    },
+                    "visibility": "Public",
+                    "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="USA")[0].id,
+                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="VEGAN")[0].id
+                },
+                "components": [
+                    {
+                        "componentId": ingredients.value.data.filter((value) => value.name.toUpperCase()=="POTATO")[0].id,
+                        "amount" : 120,
+                        "unit": "g"
+                    },
+                    {
+                        "componentId": ingredients.value.data.filter((value) => value.name.toUpperCase()=="TOMATO")[0].id,
+                        "amount" : 50,
+                        "unit": "g"
+                    },
+                    {
+                        "componentId": seasoning.value.data.filter((value) => value.name.toUpperCase()=="ARSENIC")[0].id,
+                        "amount" : 20,
                         "unit": "g"
                     }
                 ]

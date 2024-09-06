@@ -42,7 +42,7 @@
 
               <!-- Other Meal Cards -->
               <RecipeCard
-                v-for="(meal, index) in recipeList?.value"
+                v-for="(meal, index) in paginatedMealList"
                 :key="index"
                 :imageSrc="'../assets/img/croissant.svg'"
                 :mealName="meal.name"
@@ -51,6 +51,12 @@
               />
             </div>
           </div>
+          <!-- Pagination Component -->
+          <Pagination
+              v-model:totalItems="totalItems"
+              :itemsPerPage="itemsPerPage"
+              v-model:currentPage="currentPage"
+            />
         </div>
       </div>
       <div class="right-0 bottom-0 flex items-end">
@@ -121,6 +127,18 @@ onMounted(async () => {
   console.log(recipeList)
   console.log(recipeList.value)
   console.log(recipeList.value.value)
+  totalItems.value = recipeList.value.value.length
+
+})
+const totalItems = ref(0)
+const currentPage = ref(1)
+const itemsPerPage = ref(6)
+const paginatedMealList = computed({
+  get() {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return recipeList.value?.value?.slice(start, end);
+    },
 })
 </script>
 

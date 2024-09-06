@@ -46,6 +46,9 @@
     },
     computed: {
       totalPages() {
+        console.log("---")
+        console.log(this.totalItems)
+        console.log(this.itemsPerPage)
         return Math.ceil(this.totalItems / this.itemsPerPage);
       },
       pages() {
@@ -59,6 +62,9 @@
     },
     methods: {
       changePage(page) {
+        console.log(page)
+        console.log(this.totalPages)
+        console.log(this.totalItems)
         if (page > 0 && page <= this.totalPages) {
           this.$emit("update:currentPage", page);
         }
