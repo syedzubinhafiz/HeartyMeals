@@ -37,7 +37,7 @@
         </div>
         <!-- Pagination Component -->
         <Pagination
-            :totalItems="meals.length"
+            :totalItems="recipeList.length"
             :itemsPerPage="itemsPerPage"
             v-model:currentPage="currentPage"
           />
@@ -62,6 +62,8 @@ onMounted(async () => {
   recipeList.value = await useFillData().fillRecipes2()
   console.log(recipeList)
 })
+const isOverlayVisible = ref(false)
+const selectedMeal = ref(null)
 const currentPage = 1
 const itemsPerPage = 6
 const paginatedMealList = computed({
@@ -71,6 +73,13 @@ const paginatedMealList = computed({
       return recipeList.value?.value?.slice(start, end);
     },
 })
+
+const openOverlay = async (meal) => {
+  const detailedMealInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
+  console.log(detailedMealInfo)
+  selectedMeal.value = detailedMealInfo
+  isOverlayVisible.value = true
+}
 </script>
 <script>
 definePageMeta({
@@ -88,104 +97,8 @@ export default {
   data() {
     return {
       searchValue: "",
-      isOverlayVisible: false,
-      selectedMeal: null,
-      currentPage: 1,
-      itemsPerPage: 6,
-      meals: [
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Tomato and Cheese Croissant",
-          mealDescription: "Incredible flavour-packed croissant that serves just nice for a tea time snack.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: false },
-            { name: "Snack", active: true },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Banana Cake",
-          mealDescription: "A delicious cake that is full of nutrients with a sweet banana twist.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Overnight Oats",
-          mealDescription: "A hearty breakfast that is filling yet packed with juicy fruits to start your day off.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Bok Choy",
-          mealDescription: "A healthy amount of fiber to pair with your lunch meal along with other dishes.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Creamy Alfredo Pasta",
-          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Creamy Alfredo Pasta",
-          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        },
-        {
-          imageSrc: "assets/img/croissant.svg",
-          mealName: "Pan-Fried Salmon and Fruit Salad",
-          mealDescription: "Rich and creamy pasta that’s a treat for any dinner occasion.",
-          labels: [
-            { name: "Breakfast", active: true },
-            { name: "Lunch", active: false },
-            { name: "Dinner", active: true },
-            { name: "Snack", active: false },
-          ],
-        }
-      ],
     };
-  },
-  computed: {
-    paginatedMeals() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.meals.slice(start, end);
-    },
-  },
-  methods: {
-    openOverlay(meal) {
-      this.selectedMeal = meal;
-      this.isOverlayVisible = true;
-    },
-  },
+  }
 };
 </script>
 

@@ -5,8 +5,8 @@
     
     <div class="overlay-content">
       <div class="left-section">
-        <h2>{{ meal.mealName }}</h2>
-        <img :src="meal.imageSrc" alt="Meal Image" />
+        <h2>{{ meal.value.recipe.name }}</h2>
+        <img :src="'../assets/img/croissant.svg'" alt="Meal Image" />
       </div>
       <div class="right-section">
         <div class="tabs">
@@ -18,55 +18,64 @@
           <div v-if="activeTab === 'nutrition'" class="nutrition-content">
             <!-- Nutrition Information Content -->
             <div class="nutrition-item">
-              <span>Energy</span>
-              <span>337kcal</span>
-            </div>
-            <div class="nutrition-item">
-              <span>Fat</span>
-              <span>18.0g</span>
-            </div>
-            <div class="nutrition-item sub-item">
-              <span>Saturated fat</span>
-              <span>12.0g</span>
+              <span>Calories</span>
+              <span>{{meal.value.recipe.nutrition_info.calories}}kcal</span>
             </div>
             <div class="nutrition-item">
               <span>Carbohydrates</span>
-              <span>33.0g</span>
+              <span>{{meal.value.recipe.nutrition_info.totalCarbohydrate}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Sugar</span>
-              <span>6.8g</span>
+              <span>Proteins</span>
+              <span>{{meal.value.recipe.nutrition_info.protein}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Protein</span>
-              <span>10.0g</span>
+              <span>Fats</span>
+              <span>{{meal.value.recipe.nutrition_info.fat}}g</span>
             </div>
             <div class="nutrition-item">
               <span>Sodium</span>
-              <span>0.9g</span>
+              <span>{{meal.value.recipe.nutrition_info.sodium}}g</span>
+            </div>
+            <div class="nutrition-item">
+              <span>Cholesterol</span>
+              <span>{{meal.value.recipe.nutrition_info.cholesterol}}g</span>
             </div>
             <p class="preparation-time">* Preparation time: 10 minutes</p>
           </div>
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
-            <p>Preparation time: 10 minutes</p>
+            <p>Preparation time: {{ meal.value.recipe.preparation_time }}</p>
+            <p>{{ meal.value.recipe.instruction }}</p>
             <!-- Add more recipe details here -->
           </div>
           <div v-if="activeTab === 'ingredients'">
-            <p>Take 1 potato and boil it</p>
+            <p v-for="ingredient in props.meal.value.components.ingredient">
+              {{ `${ingredient.name}: ${ingredient.amount} ${ingredient.unit}` }}
+            </p>
+            <p v-for="ingredient in props.meal.value.components.seasonings">
+              {{ `${seasonings.name}: ${seasonings.amount} ${seasonings.unit}` }}
+            </p>
             </div>
         </div>
         </div>
       </div>
     </div>
 </template>
+<script setup>
+const props = defineProps({
+  visible: {
+    type: Boolean
+  },
+  meal: {
+    type: Object
+  }
+})
 
+
+</script>
 <script>
 export default {
-  props: {
-    visible: Boolean,
-    meal: Object,
-  },
   data() {
     return {
       activeTab: 'nutrition', // default tab
