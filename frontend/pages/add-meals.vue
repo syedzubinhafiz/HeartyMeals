@@ -42,12 +42,12 @@
 
               <!-- Other Meal Cards -->
               <RecipeCard
-                v-for="(meal, index) in meals"
+                v-for="(meal, index) in recipeList?.value"
                 :key="index"
-                :imageSrc="meal.imageSrc"
-                :mealName="meal.mealName"
-                :mealDescription="meal.mealDescription"
-                :labels="meal.labels"
+                :imageSrc="'../assets/img/croissant.svg'"
+                :mealName="meal.name"
+                :mealDescription="meal.description"
+                :labels="meal.recommended_meal_time ?? {}"
               />
             </div>
           </div>
@@ -87,50 +87,6 @@ const meals = ref([]);
 const isSidebarOpen = ref(false);
 const isPopupOpen = ref(false);
 const searchDataList = ['Tomato and Cheese Croissant', 'Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza'];
-const mealDataList = ref([
-  {
-    name: "Regular Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (80g)",
-    servings: 1,
-    nutrients: {
-      calories: 400,
-      protein: 150,
-      carbs: 100,
-      fat: 100,
-      fiber: 5,
-      sugar: 300,
-    },
-  },
-  {
-    name: "Cheese Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (100g)",
-    servings: 1,
-    nutrients: {
-      calories: 500,
-      protein: 100,
-      carbs: 200,
-      fat: 200,
-      fiber: 10,
-      sugar: 400,
-    },
-  },
-  {
-    name: "Not a Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (50g)",
-    servings: 1,
-    nutrients: {
-      calories: 100,
-      protein: 60,
-      carbs: 140,
-      fat: 70,
-      fiber: 20,
-      sugar: 200,
-    },
-  },
-]);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -155,16 +111,17 @@ let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 cro
 )
 
 const mealDataList2 = ref([mealData1,mealData2,mealData3])
-
+const recipeList = ref([])
 // Fetch meals from the backend when the component mounts
-// onMounted(() => {
-//   // Replace with your actual API call
-//   fetch('/api/meals')
-//     .then(response => response.json())
-//     .then(data => {
-//       meals.value = data;
-//     });
-// });
+onMounted(async () => {
+  console.log("AAAA")
+  await useApi("/dietary","GET")
+  // console.log(await useApi("/dietary","GET"))
+  recipeList.value = await useFillData().fillRecipes()
+  console.log(recipeList)
+  console.log(recipeList.value)
+  console.log(recipeList.value.value)
+})
 </script>
 
 
