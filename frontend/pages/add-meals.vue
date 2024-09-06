@@ -45,9 +45,11 @@
                 v-for="(meal, index) in paginatedMealList"
                 :key="index"
                 :imageSrc="'../assets/img/croissant.svg'"
+                :mealId="meal.id"
                 :mealName="meal.name"
                 :mealDescription="meal.description"
                 :labels="meal.recommended_meal_time ?? {}"
+                :onButtonClick="onAddMeal"
               />
             </div>
           </div>
@@ -140,6 +142,31 @@ const paginatedMealList = computed({
       return recipeList.value?.value?.slice(start, end);
     },
 })
+
+const onAddMeal = async (mealId,mealType) => {
+  console.log(mealId)
+  console.log(mealType)
+  let currentDate = new Date()
+  currentDate.setUTCHours(-8, 0, 0, 0)
+  currentDate = currentDate.toISOString()
+  let result = await useApi("/meal-logging/add","POST",{
+      "mealDate": currentDate,
+      "recipeIds": [
+          {
+              "recipeId": mealId,
+              "portion": 1
+          }
+      ],
+      "mealType": mealType
+  })
+  console.log(result)
+  if(result.isError) {
+    useToast().error("Meal adding failed!")
+  }
+  else {
+    useToast().success(`${mealType} Meal Added!`)
+  }
+}
 </script>
 
 
