@@ -15,7 +15,7 @@
             <StomachMealCard  v-model="tempMealData[i]"/>
           </div>
         </div>
-        <ButtonGreen>Summary</ButtonGreen>
+        <ButtonGreen @click="navigateTo('/summary')">Summary</ButtonGreen>
       </div>
       
 
