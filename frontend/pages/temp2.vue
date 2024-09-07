@@ -16,7 +16,7 @@
         </ButtonGreen>
       </div>
       <div class="section w-screen h-screen bg-blue-200 flex items-center justify-center">
-        <NutrientWidget v-model:nutrientData="nutrientData"/>
+        <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
       </div>
     </div>
   </template>
@@ -80,7 +80,7 @@ const isPopupOpen = ref(false);
 const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value;
 };
-
+const maxNutrientData = ref(null)
 const nutrientData = ref(null)
 
 // nutrient widget stuff
@@ -91,7 +91,8 @@ onMounted(async () => {
     currentDate.setUTCHours(-8, 0, 0, 0)
     currentDate = currentDate.toISOString()
   let result = await useApi("/user/budget?date=2024-09-06T11:11:11.111%2B0800","GET")
-  console.log(result.value[1])
+  console.log(result)
+  maxNutrientData.value = NutrientData.fromApi2(result.value[0])
   nutrientData.value = NutrientData.fromApi2(result.value[1])
 
   // result = await useApi("/meal-log-summary/calculate","POST",{
