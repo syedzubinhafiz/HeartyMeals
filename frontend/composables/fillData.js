@@ -396,6 +396,32 @@ export const useFillData = () => {
         }
         return data
     }
+    const createMeal = async (date,recipeId,mealType,portion=1) => {
+        let result = await useApi("/meal-log-summary/calculate","POST",{
+            "mealDate": date,
+            "recipeIdPortions": [
+                {
+                    "recipeId": recipeId,
+                    "portion": portion
+                }
+            ],
+            "mealType": mealType
+        })
+        let nutritionAfter = result.value[2]
+        result = await useApi("/meal-log-summary/add","POST",{
+            "mealDate": date,
+            "recipeIdPortions": [
+                {
+                    "recipeId": recipeId,
+                    "portion": portion
+                }
+            ],
+            "nutritionAfter": nutritionAfter,
+            "mealType": mealType
+          }
+        )
+        return result
+    }
     const fillMealLogging = async() => {
         let currentDate = new Date()
         currentDate.setUTCHours(-8, 0, 0, 0)
@@ -405,53 +431,24 @@ export const useFillData = () => {
         // if no data, fill
         if(data.value.Breakfast.length==0 && data.value.Lunch.length==0 && data.value.Dinner.length==0 && data.value.Other.length==0) {
             const recipes = await fillRecipes()
-            let results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
-                        "portion": 2
-                    }
-                ],
-                "mealType": "Breakfast"
-            })
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id,
-                        "portion": 2
-                    }
-                ],
-                "mealType": "Lunch"
-            })
-            console.log(results)
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id,
-                        "portion": 1
-                    }
-                ],
-                "mealType": "Other"
-            })
-            console.log(results)
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
-                        "portion": 1
-                    }
-                ],
-                "mealType": "Other"
-            })
-            console.log(results)
+            let recipe = null
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
+            console.log(createMeal(currentDate,recipe,"Breakfast",2))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id
+            console.log(createMeal(currentDate,recipe,"Lunch",2))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id
+            console.log(createMeal(currentDate,recipe,"Other",1))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
+            console.log(createMeal(currentDate,recipe,"Other",1))
+
             data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
         }
 
         return data
     }
-    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging}
+    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createMeal}
 }

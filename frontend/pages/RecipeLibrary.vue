@@ -20,6 +20,7 @@
 
           <div class="flex justify-center mb-10 text-black">
             <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
+            <Filtration/>
           </div>
 
           <!-- Scrollable Recipe Cards -->
