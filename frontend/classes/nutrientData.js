@@ -23,4 +23,8 @@ export default class NutrientData {
     static fromApi(apiData) {
         return new NutrientData(apiData.calories,apiData.totalCarbohydrate,apiData.protein,apiData.fat,apiData.sodium,apiData.cholesterol)
     }
+
+    static fromApi2(apiData) {
+        return new NutrientData(apiData.calories,apiData.carbs,apiData.protein,apiData.fats,apiData.sodium,apiData.cholesterol)
+    }
 }
