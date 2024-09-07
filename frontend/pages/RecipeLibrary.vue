@@ -55,6 +55,7 @@
 </template>
 <script setup>
 const recipeList = ref([])
+const mealList = ref([])
 onMounted(async () => {
   console.log("AAAA")
   await useApi("/dietary","GET")
@@ -80,6 +81,7 @@ const openOverlay = async (meal) => {
   selectedMeal.value = detailedMealInfo
   isOverlayVisible.value = true
 }
+
 </script>
 <script>
 definePageMeta({

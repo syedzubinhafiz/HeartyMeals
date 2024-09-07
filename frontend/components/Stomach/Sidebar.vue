@@ -11,8 +11,8 @@
         <H2>Stomach</H2>
         <hr>
         <div class="grow flex flex-col space-y-2 overflow-y-auto w-full">
-          <div v-for="(mealData, i) in modelValue" :key="mealData.name">
-            <StomachMealCard  v-model="modelValue[i]"/>
+          <div v-for="(mealData, i) in tempMealData" :key="mealData.name">
+            <StomachMealCard  v-model="tempMealData[i]"/>
           </div>
         </div>
         <ButtonGreen>Summary</ButtonGreen>
@@ -23,6 +23,9 @@
   </div>
 </template>
 <script setup>
+import MealData from '../../classes/mealData.js'
+
+
 defineOptions({
   name: 'StomachSidebar',
 });
@@ -37,6 +40,16 @@ const props = defineProps({
       type: Boolean,
       default: false
   },
+})
+const tempMealData = ref([])
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  let mealLoggingData = await useFillData().fillMealLogging()
+  mealLoggingData = mealLoggingData.value["Breakfast"]
+    .concat(mealLoggingData.value["Lunch"])
+    .concat(mealLoggingData.value["Dinner"])
+    .concat(mealLoggingData.value["Other"])
+  tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
 })
 
 const emits = defineEmits(["update:isSidebarOpen"]);
