@@ -53,8 +53,8 @@
             <p v-for="ingredient in props.meal.value.components.ingredient">
               {{ `${ingredient.name}: ${ingredient.amount} ${ingredient.unit}` }}
             </p>
-            <p v-for="ingredient in props.meal.value.components.seasonings">
-              {{ `${seasonings.name}: ${seasonings.amount} ${seasonings.unit}` }}
+            <p v-for="seasoning in props.meal.value.components.seasonings">
+              {{ `${seasoning.name}: ${seasoning.amount} ${seasoning.unit}` }}
             </p>
             </div>
         </div>
