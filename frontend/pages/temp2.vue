@@ -80,6 +80,48 @@ const isPopupOpen = ref(false);
 const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value;
 };
+
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  let recipes = await useFillData().fillRecipes();
+  // let currentDate = new Date()
+  //   currentDate.setUTCHours(-8, 0, 0, 0)
+  //   currentDate = currentDate.toISOString()
+  // let result = await useApi("/user/budget?date=2024-09-06T11:11:11.111%2B0800","GET")
+  
+  // result = await useApi("/meal-log-summary/calculate","POST",{
+  //   "mealDate": "2024-09-06T11:11:11.111+0800",
+  //   "recipeIdPortions": [
+  //       {
+  //           "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
+  //           "portion": 1
+  //       }
+  //   ],
+  //   "mealType": "Breakfast"
+
+  // })
+  // console.log(result)
+
+  // let nutritionAfter = result.value[2]
+
+  // result = await useApi("/meal-log-summary/add","POST",{
+  //     "mealDate": "2024-09-06T11:11:11.111+0800",
+  //     "recipeIdPortions": [
+  //         {
+  //             "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
+  //             "portion": 1
+  //         }
+  //     ],
+  //     "nutritionAfter": nutritionAfter,
+  //     "mealType": "Breakfast"
+  //   }
+  // )
+  // console.log(result)
+
+  console.log(useFillData().fillMealSummary())
+
+})
+
 </script>
   
 <style scoped>
