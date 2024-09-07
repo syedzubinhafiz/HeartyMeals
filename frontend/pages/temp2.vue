@@ -90,7 +90,7 @@ onMounted(async () => {
   let currentDate = new Date()
     currentDate.setUTCHours(-8, 0, 0, 0)
     currentDate = currentDate.toISOString()
-  let result = await useApi("/user/budget?date=2024-09-06T11:11:11.111%2B0800","GET")
+  let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
   console.log(result)
   maxNutrientData.value = NutrientData.fromApi2(result.value[0])
   nutrientData.value = NutrientData.fromApi2(result.value[1])
