@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Visibility } from "./enum/visibility.enum";
 import { User } from "src/user/user.entity";
 import { Cuisine } from "src/cuisine/cuisine.entity";
@@ -55,7 +55,10 @@ export class Recipe{
     })
     storage_links: JSON
 
-    @ManyToOne( ()=> User, user=> user.user_id, {nullable: true} )
+    @Column( "jsonb", { array: false, default: [] })
+    related_food_categories: string[];
+
+    @ManyToOne( ()=> User, user=> user.user_id, {nullable: true, eager: true} )
     @JoinColumn({name: 'user_id'})
     user: User;
 
@@ -68,4 +71,13 @@ export class Recipe{
     @ManyToOne( ()=> Dietary, dietary=>dietary.id, {eager: true})
     @JoinColumn({name: 'dietary_id'})
     dietary: Dietary;
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'now()' })
+    created_at: Date;
+
+    @UpdateDateColumn({ type: 'timestamp', nullable: true })
+    updated_at: Date;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deleted_at: Date;
 }

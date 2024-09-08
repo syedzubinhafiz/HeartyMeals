@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.entity';
 import { RecipeDTO } from './dto/recipe-dto';
 import { Recipe } from './recipe.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { Brackets, EntityManager, Repository } from 'typeorm';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Cuisine } from 'src/cuisine/cuisine.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
 import { Visibility } from './enum/visibility.enum';
+import { UserAllergy } from 'src/allergy/user_allergy.entity';
+import { RecipeComponent } from 'src/recipe-component/recipe-component.entity';
+import { NutritionInfoDTO } from './dto/nutrition-info-dto';
 import { UserRole } from 'src/user/enum/user-role.enum';
 
 @Injectable()
@@ -19,8 +22,18 @@ export class RecipeService {
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        @InjectRepository(UserAllergy)
+        private userAllergyRepository: Repository<UserAllergy>,
+        @InjectRepository(RecipeComponent)
+        private recipeComponentRepository: Repository<RecipeComponent>
     ){}
 
+    /**
+     *  This function adds a new recipe to the database
+     * @param user user
+     * @param recipeDTO 
+     * @returns 
+     */
    
     public async addRecipe(decoded, recipeDTO: RecipeDTO, transactionalEntityManager: EntityManager): Promise<Recipe> {
         let user = await this.userRepository.findOne({
@@ -69,5 +82,294 @@ export class RecipeService {
     }
     
     
+
+
+    /**
+     *  This function is used to get the recipe based on the search criteria
+     * @param decodedHeaders  Access token containing user information
+     * @param page  Page number
+     * @param pageSize  Page size
+     * @param search  Search string
+     * @param cuisineIds  filter by cuisine ids
+     * @param dietaryIds  filter by dietary ids
+     * @param foodCategoryIds  filter by food category ids
+     * @param mealTypes  filter by meal type
+     * @param pagination Pagination flag
+     * @param recipeId  Recipe ID to get the recipe details (optional)
+     * @returns  Recipe list based on the search criteria or recipe details based on the recipeId
+     */
+    async getRecipe(
+        decodedHeaders: any, 
+        page: number, 
+        pageSize:number,
+        search: string|null,
+        cuisineIds: string[],
+        dietaryIds: string[],
+        foodCategoryIds: string[],
+        mealTypes: string[], 
+        pagination: boolean = true,
+        recipeId: string = null
+    ): Promise<[Recipe[]|Recipe, number]>{
+
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+        
+
+        // get user prefered dietary
+        if (recipeId == null){        
+
+            // get user allergies 
+            const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
+            .select('user_allergy.food_cat_id')
+            .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+            .getMany();
+
+            // Get all food category ids that the user is allergic to
+            const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
+
+            //Get all official recipes that is public and recipe that belongs to the user
+            const query = this.recipeRepository.createQueryBuilder("recipe")
+            .select([
+                'recipe.id', 
+                'recipe.name', 
+                'recipe.description', 
+                'recipe.recommended_meal_time', 
+                'recipe.is_approved', 
+                'recipe.visibility', 
+                'recipe.storage_links'
+            ])
+            .where(
+                new Brackets((qb) => {
+                    qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                      .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
+                }))
+            .andWhere(`
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
+                    WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
+                )
+            `, { user_allergy_food_category_ids });
+        
+            
+            // Get user selected cuisine
+            if (cuisineIds.length > 0){
+                query.andWhere("recipe.cuisine_id IN (:...ids)", {ids:cuisineIds })
+            }
+
+            // Get user selected dietary
+            if (dietaryIds.length > 0){
+                query.andWhere("recipe.dietary_id IN (:...dietaryIds)", { dietaryIds })
+            }
+
+            // Get user selected food category
+            if (foodCategoryIds.length > 0){
+                query.andWhere("recipe.related_food_categories && ARRAY[:...foodCategoryIds]::text[]", { foodCategoryIds })
+            }
+
+            // Get user selected meal type
+            if (mealTypes.length > 0) {
+                query.andWhere(
+                    mealTypes.map(meal => `recipe.recommended_meal_time->>'${meal}' = 'true'`).join(' AND ')
+                );
+            }
+            
+            // Search for recipe
+            if (search != null){
+                query.andWhere("recipe.name ILIKE :search OR recipe.description ILIKE :search", { search: `%${search}%` })
+            }
+
+            // Pagination
+            if (pagination){
+                query.skip(skip)
+                .take(take)
+            };
+            
+            const result = await query.getMany();
+
+            return [result, result.length]
+
+
+        } else {
+            //Get recipe based on recipeId
+            const  recipe = await this.recipeRepository.findOne({
+                where: {
+                    id: recipeId
+                }
+            })
+
+            //Check if recipe belongs to the user
+            if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
+                throw new HttpException("Recipe does not belong to user", 400)
+            } else {
+                return [recipe, 1];
+            }
+
+
+        }
+    }
     
+
+    /**
+     * This function is used to get the recently added recipes
+     * @param decodedHeaders  Access token containing user information
+     * @param page  Page number
+     * @param pageSize  Page size
+     * @returns List of recently added recipes
+     */
+    async getRecentlyAddedList(
+        decodedHeaders: any, 
+        page: number, 
+        pageSize: number
+    ):Promise<[Recipe[], number]>{
+
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+
+         // get user allergies 
+         const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
+         .select('user_allergy.food_cat_id')
+         .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+         .getMany();
+
+         // Get all food category ids that the user is allergic to
+         const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
+
+         //Get all official recipes that is public and recipe that belongs to the user 
+         // filter out recipes that contains food categories that the user is allergic to
+         //Sort the recipes by created_at in descending order
+         const result = await this.recipeRepository.createQueryBuilder("recipe")
+         .select([
+            'recipe.id', 
+            'recipe.name', 
+            'recipe.description', 
+            'recipe.recommended_meal_time', 
+            'recipe.is_approved', 
+            'recipe.visibility', 
+            'recipe.storage_links'
+        ])
+         .where(
+             new Brackets((qb) => {
+                 qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                   .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
+             }))
+         .andWhere(`
+             NOT EXISTS (
+                 SELECT 1 
+                 FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
+                 WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
+             )
+         `, { user_allergy_food_category_ids })
+         .orderBy("recipe.created_at", "DESC")
+         .skip(skip)
+         .take(pageSize)
+         .getMany();
+
+         //Get all official recipes that is public and recipe that belongs to the user
+         return [result, result.length]
+
+    }
+
+
+    /**
+     * This function updates the nutrition info of a recipe
+     * @param recipe  recipe to update
+     * @param recipeComponentList list of recipe components that make up the recipe
+     */
+    async updateNutritionInfo(recipe: Recipe, recipeComponentList: RecipeComponent[]){
+
+        // Calculate the total nutrition info of the recipe
+        const totalNutritionInfo = this.calculateTotalNutritionInfo(recipeComponentList);
+
+        // Update the recipe with the new nutrition info
+        recipe.nutrition_info = totalNutritionInfo;
+
+        // Save the updated recipe
+        await this.recipeRepository.save(recipe);
+    }
+    
+    /**
+     *  This function calculates the total nutrition info of a recipe based on the recipe components
+     * @param recipeComponentList list of recipe components that make up the recipe
+     * @returns total nutrition info of the recipe
+     */
+    private calculateTotalNutritionInfo(recipeComponentList: RecipeComponent[]): NutritionInfoDTO{
+        
+        let result =  new NutritionInfoDTO();
+
+        // Loop through all recipe components and calculate the total nutrition info
+        recipeComponentList.forEach((recipeComponent) => {
+            const multiplier =  recipeComponent.amount / recipeComponent.component.amount;
+
+            result.calories += multiplier * recipeComponent.component.nutrition_info.calories;
+            result.added_sugars += multiplier * recipeComponent.component.nutrition_info.added_sugars;
+            result.biotin += multiplier * recipeComponent.component.nutrition_info.biotin;
+            result.calcium += multiplier * recipeComponent.component.nutrition_info.calcium;
+            result.chloride += multiplier * recipeComponent.component.nutrition_info.chloride;
+            result.cholesterol += multiplier * recipeComponent.component.nutrition_info.chloride;
+            result.chromium += multiplier * recipeComponent.component.nutrition_info.chromium;
+            result.copper += multiplier * recipeComponent.component.nutrition_info.copper;
+            result.dietarty_fiber += multiplier * recipeComponent.component.nutrition_info.dietarty_fiber;
+            result.fat += multiplier * recipeComponent.component.nutrition_info.fat;
+            result.folate += multiplier * recipeComponent.component.nutrition_info.folate;
+            result.iodine += multiplier * recipeComponent.component.nutrition_info.iodine;
+            result.iron += multiplier * recipeComponent.component.nutrition_info.iron;
+            result.magnesium += multiplier * recipeComponent.component.nutrition_info.magnesium;
+            result.manganese += multiplier * recipeComponent.component.nutrition_info.manganese;
+            result.molybdenum += multiplier * recipeComponent.component.nutrition_info.molybdenum;
+            result.niacin += multiplier * recipeComponent.component.nutrition_info.niacin;
+            result.pantothenic_acid += multiplier * recipeComponent.component.nutrition_info.pantothenic_acid;
+            result.phosphorus += multiplier * recipeComponent.component.nutrition_info.phosphorus;
+            result.potassium += multiplier * recipeComponent.component.nutrition_info.potassium;
+            result.protein += multiplier * recipeComponent.component.nutrition_info.protein;
+            result.riboflavin += multiplier * recipeComponent.component.nutrition_info.riboflavin;
+            result.saturated_fat += multiplier * recipeComponent.component.nutrition_info.saturated_fat;
+            result.selenium += multiplier * recipeComponent.component.nutrition_info.selenium;
+            result.sodium += multiplier * recipeComponent.component.nutrition_info.sodium;
+            result.thiamin += multiplier * recipeComponent.component.nutrition_info.thiamin;
+            result.total_carbohydrate += multiplier * recipeComponent.component.nutrition_info.total_carbohydrate;
+            result.vitamin_a += multiplier * recipeComponent.component.nutrition_info.vitamin_a;
+            result.vitamin_b6 += multiplier * recipeComponent.component.nutrition_info.vitamin_b6;
+            result.vitamin_b12 += multiplier * recipeComponent.component.nutrition_info.vitamin_b12;
+            result.vitamin_c += multiplier * recipeComponent.component.nutrition_info.vitamin_c;
+            result.vitamin_d += multiplier * recipeComponent.component.nutrition_info.vitamin_d;
+            result.vitamin_e += multiplier * recipeComponent.component.nutrition_info.vitamin_e;
+            result.vitamin_k += multiplier * recipeComponent.component.nutrition_info.vitamin_k;
+            result.zinc += multiplier * recipeComponent.component.nutrition_info.zinc;
+        });
+
+        return result;
+    }
+
+
+    public async deleteRecipe(decodedHeaders: any, recipeId: string, transactionalEntityManager: EntityManager){
+
+        //Check if recipe exist 
+        const recipe = await this.recipeRepository.findOne({
+            where: {
+                id: recipeId
+            }
+        })
+        
+        if (recipe == null){
+            throw new Error("Recipe not found");
+        }
+
+        //Check if user is authorized to delete recipe
+        if (recipe.user !== null){
+            if (recipe.user.user_id !== decodedHeaders['sub']) {
+                throw new Error("Unauthorized");
+            }
+        }
+
+        // Soft delete recipe
+        recipe.deleted_at = new Date();
+        try{
+            await transactionalEntityManager.save(recipe);
+            return recipe.id;
+        } catch(e){
+            throw new Error("Error deleting recipe")
+        }
+    } 
 }
