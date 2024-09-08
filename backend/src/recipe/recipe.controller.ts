@@ -30,6 +30,10 @@ export class RecipeController {
                 user_id: payload.userId
             }
         })
+
+        if (user == null){
+            return new HttpException("User not found", 404);
+        }
         
         if (user.user_role ==  UserRole.ADMIN){
             user =  null;
@@ -39,7 +43,13 @@ export class RecipeController {
         const new_recipe = await this.recipeService.addRecipe(user, payload.recipe)
 
         try{
-            await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components)
+            const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components)
+
+            // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
+            if (user !== null){
+                await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list)
+            }
+
         } catch(e){
             return new HttpException(e.message, 400)
         }
