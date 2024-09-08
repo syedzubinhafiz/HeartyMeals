@@ -10,11 +10,9 @@ export class AddComponentDTO {
     readonly name: string;
 
     @IsEnum(ComponentType)
-    @Type(()=> String)
     readonly componentType: ComponentType;
 
     @IsEnum(MeasuringUnit)
-    @Type(()=> String)
     readonly units: MeasuringUnit;
 
     @IsNumber()
