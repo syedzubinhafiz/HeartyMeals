@@ -55,7 +55,7 @@
             <WaterTankWidget/>
             </div>
             <div class="flex-1 h-31">
-            <NutrientWidget />
+            <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
             </div>
         </div>
 
@@ -141,27 +141,44 @@ height: '980px' // Adjust the height as needed
 
 const scrollContainer = ref(null);
 
-onMounted(() => {
-const sections = document.querySelectorAll('.section');
-let currentSection = 0;
+import { ref, computed, onMounted, watch } from 'vue';
+import NutrientData from '../../classes/nutrientData.js'
+const maxNutrientData = ref(null)
+const nutrientData = ref(null)
+onMounted(async() => {
+    const sections = document.querySelectorAll('.section');
+    let currentSection = 0;
 
-const scrollToSection = (index) => {
-    if (index >= 0 && index < sections.length) {
-    sections[index].scrollIntoView({ behavior: 'smooth' });
-    currentSection = index;
-    }
-};
+    const scrollToSection = (index) => {
+        if (index >= 0 && index < sections.length) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+        currentSection = index;
+        }
+    };
 
-const handleWheel = (event) => {
-    if (event.deltaY > 0) {
-    scrollToSection(currentSection + 1);
-    } else {
-    scrollToSection(currentSection - 1);
-    }
-};
+    const handleWheel = (event) => {
+        if (event.deltaY > 0) {
+        scrollToSection(currentSection + 1);
+        } else {
+        scrollToSection(currentSection - 1);
+        }
+    };
 
-scrollContainer.value.addEventListener('wheel', handleWheel);
+    scrollContainer.value.addEventListener('wheel', handleWheel);
+
+    await useApi("/dietary","GET")
+
+    let currentDate = new Date()
+        currentDate.setUTCHours(-8, 0, 0, 0)
+        currentDate = currentDate.toISOString()
+
+        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+        console.log(result)
+
+        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+        nutrientData.value = NutrientData.fromApi2(result.value[1])
 });
+
 
 </script>
 

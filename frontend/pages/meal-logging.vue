@@ -53,7 +53,7 @@
 
 
                 <div class="nutrient-widget-container section justify-end h-screen ">
-                    <NutrientWidget />
+                    <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
                 </div>
 
             
@@ -73,8 +73,10 @@
     import { ref, computed, onMounted, watch } from 'vue';
     import axios from 'axios';
     import backgroundImage from '/assets/img/meal-logging-bg.png';
+    import NutrientData from '../../classes/nutrientData.js'
   
     const currentDate = ref(new Date());
+    
     
     const formattedDate = computed(() => {
         return currentDate.value.toLocaleDateString('en-GB', {
@@ -144,6 +146,9 @@
     const dinnerList = ref([]);
     const otherList = ref([]);
 
+    const maxNutrientData = ref(null)
+    const nutrientData = ref(null)
+
     onMounted(async () => {
         await useApi("/dietary","GET")
         let recipes = await useFillData().fillRecipes()
@@ -182,6 +187,16 @@
         lunchList.value = mealLoggingRecipes.value["Lunch"]
         dinnerList.value = mealLoggingRecipes.value["Dinner"]
         otherList.value = mealLoggingRecipes.value["Other"]
+
+        let currentDate = new Date()
+        currentDate.setUTCHours(-8, 0, 0, 0)
+        currentDate = currentDate.toISOString()
+
+        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+        console.log(result)
+
+        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+        nutrientData.value = NutrientData.fromApi2(result.value[1])
     })
 
 </script>
