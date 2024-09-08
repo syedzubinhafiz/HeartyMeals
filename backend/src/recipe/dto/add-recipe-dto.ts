@@ -5,10 +5,6 @@ import { RecipeComponentDTO } from "../../recipe-component/dto/recipe-component-
 
 export class AddRecipeDTO{
 
-    @IsNotEmpty()       
-    @IsString()
-    readonly userId: string;
-
     @IsNotEmpty()
     @Type(()=> RecipeDTO)
     readonly recipe: RecipeDTO;

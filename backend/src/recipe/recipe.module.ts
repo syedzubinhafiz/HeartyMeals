@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cuisine } from 'src/cuisine/cuisine.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
-import { Recipe } from './recipe.entity';
 import { RecipeController } from './recipe.controller';
 import { RecipeService } from './recipe.service';
 import { User } from 'src/user/user.entity';
@@ -15,7 +14,7 @@ import { RecipeComponentArchiveService } from 'src/recipe-component-archive/reci
 import { UserAllergy } from 'src/allergy/user_allergy.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, Recipe, User, Component, RecipeComponent, UserAllergy]), ComponentModule],
+    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, User, Component, RecipeComponent, UserAllergy]), ComponentModule],
     controllers: [RecipeController],
     providers: [RecipeService, RecipeComponentService, CommonService, RecipeComponentArchiveService],
 })
