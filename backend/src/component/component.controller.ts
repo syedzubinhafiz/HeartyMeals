@@ -17,7 +17,7 @@ export class ComponentController {
      * @param payload component details
      * @returns component added successfully or error message
      */
-    @Post()
+    @Post('add')
     async add(@Body() payload: AddComponentDTO){
         return this.componentService.add(payload);
     }
