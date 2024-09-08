@@ -208,6 +208,7 @@
 
 .scroll-container {
     overflow-y: scroll;
+    padding-bottom: 10rem;
 }
 
 .bg-custom-bg {
