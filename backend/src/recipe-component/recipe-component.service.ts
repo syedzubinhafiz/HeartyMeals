@@ -1,7 +1,7 @@
 import { RecipeComponentDTO } from './dto/recipe-component-dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Component } from "../component/component.entity";
-import { In, Repository } from "typeorm";
+import { EntityManager, In, Repository } from "typeorm";
 import { Injectable } from "@nestjs/common";
 import { Recipe } from "../recipe/recipe.entity";
 import { CommonService } from 'src/common/common.service';
@@ -69,6 +69,33 @@ export class RecipeComponentService{
 
         await this.recipeRepository.update(recipe.id,{ related_food_categories: food_category_ids});
         return true;
+    }
+
+    
+    /**
+     * This function deletes all recipe components associated with a recipe
+     * @param recipeId Recipe Id to be deleted
+     * @param transactionalEntityManager Transactional entity manager
+     * @returns RecipeComponent[]
+     */
+    public async deleteRecipeComponent(recipeId: string, transactionalEntityManager: EntityManager){ 
+
+        try {
+            // Fetch all recipe components associated with the recipe
+            const recipeComponents = await this.recipeComponentRepository.find({
+                where: {
+                    recipe_id: recipeId
+                }
+            })
+            
+            // Delete all recipe components associated with the recipe
+            await transactionalEntityManager.remove(recipeComponents);
+            // Return the deleted recipe components
+            return recipeComponents;
+
+        } catch (error) {
+            throw new Error(`Failed to delete recipe components: ${error.message}`);
+        }
     }
 
     /**

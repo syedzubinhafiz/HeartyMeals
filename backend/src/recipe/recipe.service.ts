@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/user.entity';
 import { RecipeDTO } from './dto/recipe-dto';
 import { Recipe } from './recipe.entity';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cuisine } from 'src/cuisine/cuisine.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
@@ -25,9 +25,14 @@ export class RecipeService {
         private userAllergyRepository: Repository<UserAllergy>,
         @InjectRepository(RecipeComponent)
         private recipeComponentRepository: Repository<RecipeComponent>
-
     ){}
 
+    /**
+     *  This function adds a new recipe to the database
+     * @param user user
+     * @param recipeDTO 
+     * @returns 
+     */
     async addRecipe(user: User|null, recipeDTO: RecipeDTO){
 
         const new_recipe =  new Recipe();
@@ -323,4 +328,34 @@ export class RecipeService {
         return result;
     }
 
+
+    public async deleteRecipe(decodedHeaders: any, recipeId: string, transactionalEntityManager: EntityManager){
+
+        //Check if recipe exist 
+        const recipe = await this.recipeRepository.findOne({
+            where: {
+                id: recipeId
+            }
+        })
+        
+        if (recipe == null){
+            throw new Error("Recipe not found");
+        }
+
+        //Check if user is authorized to delete recipe
+        if (recipe.user !== null){
+            if (recipe.user.user_id !== decodedHeaders['sub']) {
+                throw new Error("Unauthorized");
+            }
+        }
+
+        // Soft delete recipe
+        recipe.deleted_at = new Date();
+        try{
+            await transactionalEntityManager.save(recipe);
+            return recipe.id;
+        } catch(e){
+            throw new Error("Error deleting recipe")
+        }
+    } 
 }
