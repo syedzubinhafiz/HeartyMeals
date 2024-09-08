@@ -46,7 +46,7 @@
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
             <p>Preparation time: {{ meal.value.recipe.preparation_time }}</p>
-            <p>{{ meal.value.recipe.instruction }}</p>
+            <p v-for="instruction of meal.value.recipe.instruction">{{ instruction }}</p>
             <!-- Add more recipe details here -->
           </div>
           <div v-if="activeTab === 'ingredients'">

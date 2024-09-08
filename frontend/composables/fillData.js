@@ -237,7 +237,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Baked Potato with Fish",
                     "description": "Wow so baked, very fishy",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add potato","2) add fish","3) bake for 20 minutes"],
                     "servingSize": 2,
                     "preparationTime": `30 minutes`,
                     "mealTimeRecommendation": {
@@ -269,7 +269,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Potato Tomato",
                     "description": "They rhyme!",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add potato","2) add tomato","3) mix together"],
                     "servingSize": 1,
                     "preparationTime": `15 minutes`,
                     "mealTimeRecommendation": {
@@ -301,7 +301,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Fishy Pork",
                     "description": "Very meat",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add fish","2) add pork","3) cook for 60 minutes"],
                     "servingSize": 1,
                     "preparationTime": `60 minutes`,
                     "mealTimeRecommendation": {
@@ -332,7 +332,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Nagasaki Roll",
                     "description": "Gives you superpowers",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add beef","2) add plutonium","3) put into nuclear reactor for 90 minutes"],
                     "servingSize": 1,
                     "preparationTime": `120 minutes`,
                     "mealTimeRecommendation": {
@@ -364,7 +364,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Potato with more Potato",
                     "description": "Potato with Potatos but also Potatos within Potatos",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add baked potato","2) add fried potato","3) potato"],
                     "servingSize": 1,
                     "preparationTime": `30 minutes`,
                     "mealTimeRecommendation": {
