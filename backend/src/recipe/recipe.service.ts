@@ -25,7 +25,10 @@ export class RecipeService {
         @InjectRepository(UserAllergy)
         private userAllergyRepository: Repository<UserAllergy>,
         @InjectRepository(RecipeComponent)
-        private recipeComponentRepository: Repository<RecipeComponent>
+        private recipeComponentRepository: Repository<RecipeComponent>,
+        @InjectRepository(Recipe)
+        private recipeRepository: Repository<Recipe>,
+
     ){}
 
     /**
@@ -35,53 +38,62 @@ export class RecipeService {
      * @returns 
      */
    
-    public async addRecipe(decoded, recipeDTO: RecipeDTO, transactionalEntityManager: EntityManager): Promise<Recipe> {
-        let user = await this.userRepository.findOne({
-            where: {
-                user_id: decoded['sub']
-            }
-        });
+    public async addRecipe(decoded: any, recipeDTO: RecipeDTO, transactionalEntityManager: EntityManager): Promise<[Recipe, boolean]> {
 
-        if (user.user_role == UserRole.ADMIN) {
-            user = null;
+        try{
+            let is_custom = true;
+            let user = await this.userRepository.findOne({
+                where: {
+                    user_id: decoded['sub']
+                }
+            });
+    
+            if (user == null) {
+                throw new Error("User not found");
+            }
+    
+            if (user.user_role == UserRole.ADMIN) {
+                user = null;
+                is_custom = false;
+            }
+    
+            const new_recipe = new Recipe();
+    
+            const cuisine_type = await this.cuisineRepository.findOne({
+                where: {
+                    id: recipeDTO.cuisineId
+                }
+            });
+    
+            const dietary_type = await this.dietaryRepository.findOne({
+                where: {
+                    id: recipeDTO.dietaryId
+                }
+            });
+    
+            new_recipe.name = recipeDTO.name;
+            new_recipe.description = recipeDTO.description;
+            new_recipe.instruction = recipeDTO.instruction;
+            new_recipe.serving_size = recipeDTO.servingSize;
+            new_recipe.nutrition_info = recipeDTO.nutritionInformation;
+            new_recipe.recommended_meal_time = recipeDTO.mealTimeRecommendation;
+            new_recipe.user = user;
+            new_recipe.cuisine = cuisine_type;
+            new_recipe.dietary = dietary_type;
+            new_recipe.preparation_time = recipeDTO.preparationTime;
+    
+            if (user == null) {
+                new_recipe.visibility = Visibility.PUBLIC;
+                new_recipe.is_approved = true;
+            }
+    
+            // TODO: Add image upload logic here
+            return [await transactionalEntityManager.save(new_recipe), is_custom];
+        } catch (e) {
+            throw new HttpException(e.message, 400);
         }
-
-        const new_recipe = new Recipe();
-
-        const cuisine_type = await this.cuisineRepository.findOne({
-            where: {
-                id: recipeDTO.cuisineId
-            }
-        });
-
-        const dietary_type = await this.dietaryRepository.findOne({
-            where: {
-                id: recipeDTO.dietaryId
-            }
-        });
-
-        new_recipe.name = recipeDTO.name;
-        new_recipe.description = recipeDTO.description;
-        new_recipe.instruction = recipeDTO.instruction;
-        new_recipe.serving_size = recipeDTO.servingSize;
-        new_recipe.nutrition_info = recipeDTO.nutritionInformation;
-        new_recipe.recommended_meal_time = recipeDTO.mealTimeRecommendation;
-        new_recipe.user = user;
-        new_recipe.cuisine = cuisine_type;
-        new_recipe.dietary = dietary_type;
-        new_recipe.preparation_time = recipeDTO.preparationTime;
-
-        if (user == null) {
-            new_recipe.visibility = Visibility.PUBLIC;
-            new_recipe.is_approved = true;
-        }
-
-        // TODO: Add image upload logic here
-        console.log(new_recipe);
-        return await transactionalEntityManager.save(new_recipe);
+        
     }
-    
-    
 
 
     /**
@@ -186,9 +198,9 @@ export class RecipeService {
                 .take(take)
             };
             
-            const result = await query.getMany();
+            const [result, length] = await query.getManyAndCount();
 
-            return [result, result.length]
+            return [result, length]
 
 
         } else {
@@ -199,13 +211,21 @@ export class RecipeService {
                 }
             })
 
+            if (recipe == null){
+                throw new HttpException("Recipe not found", 400)
+            }
+
             //Check if recipe belongs to the user
             if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
                 throw new HttpException("Recipe does not belong to user", 400)
-            } else {
-                return [recipe, 1];
             }
 
+
+            if (recipe.visibility === Visibility.PRIVATE && recipe.user === null){
+                throw new HttpException("Recipe is not available", 400)
+            }
+
+            return [recipe, 1]
 
         }
     }
@@ -239,7 +259,7 @@ export class RecipeService {
          //Get all official recipes that is public and recipe that belongs to the user 
          // filter out recipes that contains food categories that the user is allergic to
          //Sort the recipes by created_at in descending order
-         const result = await this.recipeRepository.createQueryBuilder("recipe")
+         const [result, length] = await this.recipeRepository.createQueryBuilder("recipe")
          .select([
             'recipe.id', 
             'recipe.name', 
@@ -264,10 +284,10 @@ export class RecipeService {
          .orderBy("recipe.created_at", "DESC")
          .skip(skip)
          .take(pageSize)
-         .getMany();
+         .getManyAndCount();
 
          //Get all official recipes that is public and recipe that belongs to the user
-         return [result, result.length]
+         return [result, length]
 
     }
 
@@ -277,7 +297,7 @@ export class RecipeService {
      * @param recipe  recipe to update
      * @param recipeComponentList list of recipe components that make up the recipe
      */
-    async updateNutritionInfo(recipe: Recipe, recipeComponentList: RecipeComponent[]){
+    async updateNutritionInfo(recipe: Recipe, recipeComponentList: RecipeComponent[], transactionalEntityManager: EntityManager){
 
         // Calculate the total nutrition info of the recipe
         const totalNutritionInfo = this.calculateTotalNutritionInfo(recipeComponentList);
@@ -286,7 +306,7 @@ export class RecipeService {
         recipe.nutrition_info = totalNutritionInfo;
 
         // Save the updated recipe
-        await this.recipeRepository.save(recipe);
+        await transactionalEntityManager.save(recipe);
     }
     
     /**
@@ -298,19 +318,19 @@ export class RecipeService {
         
         let result =  new NutritionInfoDTO();
 
-        // Loop through all recipe components and calculate the total nutrition info
-        recipeComponentList.forEach((recipeComponent) => {
+         // Loop through all recipe components and calculate the total nutrition info
+         recipeComponentList.forEach((recipeComponent) => {
             const multiplier =  recipeComponent.amount / recipeComponent.component.amount;
 
             result.calories += multiplier * recipeComponent.component.nutrition_info.calories;
-            result.added_sugars += multiplier * recipeComponent.component.nutrition_info.added_sugars;
+            result.addedSugars += multiplier * recipeComponent.component.nutrition_info.addedSugars;
             result.biotin += multiplier * recipeComponent.component.nutrition_info.biotin;
             result.calcium += multiplier * recipeComponent.component.nutrition_info.calcium;
             result.chloride += multiplier * recipeComponent.component.nutrition_info.chloride;
             result.cholesterol += multiplier * recipeComponent.component.nutrition_info.chloride;
             result.chromium += multiplier * recipeComponent.component.nutrition_info.chromium;
             result.copper += multiplier * recipeComponent.component.nutrition_info.copper;
-            result.dietarty_fiber += multiplier * recipeComponent.component.nutrition_info.dietarty_fiber;
+            result.dietaryFiber += multiplier * recipeComponent.component.nutrition_info.dietaryFiber;
             result.fat += multiplier * recipeComponent.component.nutrition_info.fat;
             result.folate += multiplier * recipeComponent.component.nutrition_info.folate;
             result.iodine += multiplier * recipeComponent.component.nutrition_info.iodine;
@@ -319,23 +339,23 @@ export class RecipeService {
             result.manganese += multiplier * recipeComponent.component.nutrition_info.manganese;
             result.molybdenum += multiplier * recipeComponent.component.nutrition_info.molybdenum;
             result.niacin += multiplier * recipeComponent.component.nutrition_info.niacin;
-            result.pantothenic_acid += multiplier * recipeComponent.component.nutrition_info.pantothenic_acid;
+            result.pantothenicAcid += multiplier * recipeComponent.component.nutrition_info.pantothenicAcid;
             result.phosphorus += multiplier * recipeComponent.component.nutrition_info.phosphorus;
             result.potassium += multiplier * recipeComponent.component.nutrition_info.potassium;
             result.protein += multiplier * recipeComponent.component.nutrition_info.protein;
             result.riboflavin += multiplier * recipeComponent.component.nutrition_info.riboflavin;
-            result.saturated_fat += multiplier * recipeComponent.component.nutrition_info.saturated_fat;
+            result.saturatedFat += multiplier * recipeComponent.component.nutrition_info.saturatedFat;
             result.selenium += multiplier * recipeComponent.component.nutrition_info.selenium;
             result.sodium += multiplier * recipeComponent.component.nutrition_info.sodium;
             result.thiamin += multiplier * recipeComponent.component.nutrition_info.thiamin;
-            result.total_carbohydrate += multiplier * recipeComponent.component.nutrition_info.total_carbohydrate;
-            result.vitamin_a += multiplier * recipeComponent.component.nutrition_info.vitamin_a;
-            result.vitamin_b6 += multiplier * recipeComponent.component.nutrition_info.vitamin_b6;
-            result.vitamin_b12 += multiplier * recipeComponent.component.nutrition_info.vitamin_b12;
-            result.vitamin_c += multiplier * recipeComponent.component.nutrition_info.vitamin_c;
-            result.vitamin_d += multiplier * recipeComponent.component.nutrition_info.vitamin_d;
-            result.vitamin_e += multiplier * recipeComponent.component.nutrition_info.vitamin_e;
-            result.vitamin_k += multiplier * recipeComponent.component.nutrition_info.vitamin_k;
+            result.totalCarbohydrate += multiplier * recipeComponent.component.nutrition_info.totalCarbohydrate;
+            result.vitaminA += multiplier * recipeComponent.component.nutrition_info.vitaminA;
+            result.vitaminB6 += multiplier * recipeComponent.component.nutrition_info.vitaminB6;
+            result.vitaminB12 += multiplier * recipeComponent.component.nutrition_info.vitaminB12;
+            result.vitaminC += multiplier * recipeComponent.component.nutrition_info.vitaminC;
+            result.vitaminD += multiplier * recipeComponent.component.nutrition_info.vitaminD;
+            result.vitaminE += multiplier * recipeComponent.component.nutrition_info.vitaminE;
+            result.vitaminK += multiplier * recipeComponent.component.nutrition_info.vitaminK;
             result.zinc += multiplier * recipeComponent.component.nutrition_info.zinc;
         });
 

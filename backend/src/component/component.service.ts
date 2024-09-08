@@ -93,7 +93,7 @@ export class ComponentService {
             new_component.name = payload.name;
             new_component.component_type = payload.componentType;
             new_component.nutrition_info = payload.nutritionInformation;
-            new_component.units = payload.units;
+            new_component.unit = payload.unit;
             new_component.amount = payload.amount;
             new_component.foodCategory = selected_category;
     
@@ -167,11 +167,9 @@ export class ComponentService {
                 .take(take);
         }
         
-        const result = await query.getMany();
+        const [result, length] = await query.getManyAndCount();
 
-        return  [result, result.length];
+        return  [result, length];
     }
     
-    
-
 }

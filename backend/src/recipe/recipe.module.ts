@@ -12,9 +12,10 @@ import { CommonService } from 'src/common/common.service';
 import { ComponentModule } from 'src/component/component.module';
 import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
 import { UserAllergy } from 'src/allergy/user_allergy.entity';
+import { Recipe } from './recipe.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, User, Component, RecipeComponent, UserAllergy]), ComponentModule],
+    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, User, Component, RecipeComponent, Recipe, UserAllergy]), ComponentModule],
     controllers: [RecipeController],
     providers: [RecipeService, RecipeComponentService, CommonService, RecipeComponentArchiveService],
 })
