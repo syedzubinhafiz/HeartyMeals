@@ -71,7 +71,6 @@
   
 <script setup>
     import { ref, computed, onMounted, watch } from 'vue';
-    import axios from 'axios';
     import backgroundImage from '/assets/img/meal-logging-bg.png';
     import NutrientData from '../../classes/nutrientData.js'
   
