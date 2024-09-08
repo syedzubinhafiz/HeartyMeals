@@ -1,4 +1,4 @@
-<<template>
+<template>
   <div class="absolute w-screen z-40">
     <Header />
   </div>
@@ -85,8 +85,8 @@ definePageMeta({
 });
 
 
-import MealData from '../../classes/mealData.js'
-import NutrientData from '../../classes/nutrientData.js'
+import MealData from '../classes/mealData.js'
+import NutrientData from '../classes/nutrientData.js'
 
 import { ref, onMounted } from 'vue';
 
