@@ -1,4 +1,4 @@
-<<template>
+<template>
   <div class="absolute w-screen z-40">
     <Header />
   </div>
@@ -42,15 +42,23 @@
 
               <!-- Other Meal Cards -->
               <RecipeCard
-                v-for="(meal, index) in meals"
+                v-for="(meal, index) in paginatedMealList"
                 :key="index"
-                :imageSrc="meal.imageSrc"
-                :mealName="meal.mealName"
-                :mealDescription="meal.mealDescription"
-                :labels="meal.labels"
+                :imageSrc="'../assets/img/croissant.svg'"
+                :mealId="meal.id"
+                :mealName="meal.name"
+                :mealDescription="meal.description"
+                :labels="meal.recommended_meal_time ?? {}"
+                :onButtonClick="onAddMeal"
               />
             </div>
           </div>
+          <!-- Pagination Component -->
+          <Pagination
+              v-model:totalItems="totalItems"
+              :itemsPerPage="itemsPerPage"
+              v-model:currentPage="currentPage"
+            />
         </div>
       </div>
       <div class="right-0 bottom-0 flex items-end">
@@ -77,8 +85,8 @@ definePageMeta({
 });
 
 
-import MealData from '../../classes/mealData.js'
-import NutrientData from '../../classes/nutrientData.js'
+import MealData from '../classes/mealData.js'
+import NutrientData from '../classes/nutrientData.js'
 
 import { ref, onMounted } from 'vue';
 
@@ -87,50 +95,6 @@ const meals = ref([]);
 const isSidebarOpen = ref(false);
 const isPopupOpen = ref(false);
 const searchDataList = ['Tomato and Cheese Croissant', 'Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza'];
-const mealDataList = ref([
-  {
-    name: "Regular Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (80g)",
-    servings: 1,
-    nutrients: {
-      calories: 400,
-      protein: 150,
-      carbs: 100,
-      fat: 100,
-      fiber: 5,
-      sugar: 300,
-    },
-  },
-  {
-    name: "Cheese Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (100g)",
-    servings: 1,
-    nutrients: {
-      calories: 500,
-      protein: 100,
-      carbs: 200,
-      fat: 200,
-      fiber: 10,
-      sugar: 400,
-    },
-  },
-  {
-    name: "Not a Croissant",
-    imageSrc: "assets/img/croissant.svg",
-    portionSize: "1 croissant (50g)",
-    servings: 1,
-    nutrients: {
-      calories: 100,
-      protein: 60,
-      carbs: 140,
-      fat: 70,
-      fiber: 20,
-      sugar: 200,
-    },
-  },
-]);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -155,16 +119,54 @@ let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 cro
 )
 
 const mealDataList2 = ref([mealData1,mealData2,mealData3])
-
+const recipeList = ref([])
 // Fetch meals from the backend when the component mounts
-// onMounted(() => {
-//   // Replace with your actual API call
-//   fetch('/api/meals')
-//     .then(response => response.json())
-//     .then(data => {
-//       meals.value = data;
-//     });
-// });
+onMounted(async () => {
+  console.log("AAAA")
+  await useApi("/dietary","GET")
+  // console.log(await useApi("/dietary","GET"))
+  recipeList.value = await useFillData().fillRecipes()
+  console.log(recipeList)
+  console.log(recipeList.value)
+  console.log(recipeList.value.value)
+  totalItems.value = recipeList.value.value.length
+
+})
+const totalItems = ref(0)
+const currentPage = ref(1)
+const itemsPerPage = ref(6)
+const paginatedMealList = computed({
+  get() {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return recipeList.value?.value?.slice(start, end);
+    },
+})
+
+const onAddMeal = async (mealId,mealType) => {
+  console.log(mealId)
+  console.log(mealType)
+  let currentDate = new Date()
+  currentDate.setUTCHours(-8, 0, 0, 0)
+  currentDate = currentDate.toISOString()
+  let result = await useApi("/meal-logging/add","POST",{
+      "mealDate": currentDate,
+      "recipeIds": [
+          {
+              "recipeId": mealId,
+              "portion": 1
+          }
+      ],
+      "mealType": mealType
+  })
+  console.log(result)
+  if(result.isError) {
+    useToast().error("Meal adding failed!")
+  }
+  else {
+    useToast().success(`${mealType} Meal Added!`)
+  }
+}
 </script>
 
 

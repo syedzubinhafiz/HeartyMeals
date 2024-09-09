@@ -11,20 +11,25 @@
     </div>
     <!-- Labels are now in a separate div below the top section -->
     <div class="labels">
-      <span
+      <button
         v-for="(label, index) in Object.keys(labels)"
         :key="index"
         class="label"
         :class="{ active: labels[label] }"
+        @click="onButtonClick(mealId,label)"
       >
         {{ label }}
-      </span>
+    </button>
     </div>
   </div>
 </template>
 
 <script setup>
 const props = defineProps({
+    mealId: {
+      type: String,
+      required: true
+    },
     mealName: {
       type: String,
       required: true,
@@ -42,6 +47,10 @@ const props = defineProps({
       required: true,
       default: {Breakfast: true, Lunch: false, Dinner: false, Snack: true},
     },
+    onButtonClick: {
+      type: Function,
+      default: (mealType) => {}
+    }
   })
 console.log(props.labels)
 </script>
