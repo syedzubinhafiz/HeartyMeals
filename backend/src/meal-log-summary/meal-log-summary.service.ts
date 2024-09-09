@@ -59,10 +59,18 @@ export class MealLogSummaryService {
                 throw new Error("Error saving meal logging summary entry");
             }
 
-            return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, false];
         }
         else {
-            return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
+            var flag = false;
+            for (const key in meal_logging_summary_entry.remaining_nutrients) {
+                if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
+                    flag = true;
+                    break;
+                }
+              }
+
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
         }
     }
 }
