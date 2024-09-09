@@ -1,11 +1,11 @@
 <template>
   <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
     <!-- Food Image -->
-    <img :src="cardInfo.image" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
+    <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
     <!-- Food Name -->
     <div class="ml-4 flex-1">
-      <h3 class="text-lg font-semibold">{{ cardInfo.name }}</h3>
+      <h3 class="text-lg font-semibold">{{ cardInfo.recipe.name }}</h3>
     </div>
 
     <!-- More Options Icon -->
@@ -13,22 +13,51 @@
       <i class="fas fa-ellipsis-v text-gray-600"></i>
     </div>
 
-    <FoodCardNutrients v-if="showMiniCard" :visible="showMiniCard" @close="toggleMiniCard" />
+    <FoodCardNutrients 
+    v-if="showMiniCard" 
+    :nutritionInfo="cardInfo.recipe.nutrition_info"
+    :visible="showMiniCard" 
+    @close="toggleMiniCard" 
+    @remove="removeMeal"/>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
 const props = defineProps({
   cardInfo: {
     type: Object,
     required: true
   }
 });
+const emit = defineEmits(['removeMeal']);
 
 const showMiniCard = ref(false);
 
 const toggleMiniCard = () => {
   showMiniCard.value = !showMiniCard.value;
+};
+
+const removeMeal = async () => {
+  // cardInfo.mealLoggingId, cardInfo.mealDate, cardInfo.mealType
+  console.log({
+    "mealDate": props.cardInfo.created_at,
+    "mealLoggingId": props.cardInfo.id,
+    "mealType": props.cardInfo.type
+  })
+  let result = await useApi("/meal-logging/delete","DELETE",{
+    "mealDate": props.cardInfo.created_at,
+    "mealLoggingId": props.cardInfo.id,
+    "mealType": props.cardInfo.type
+  })
+  console.log(result)
+  // if(result.isError) {
+  //   useToast().error("Deletion Failed!")
+  // }
+  // else {
+  //   useToast().success("Meal Deleted!")
+  // }
 };
 </script>
 

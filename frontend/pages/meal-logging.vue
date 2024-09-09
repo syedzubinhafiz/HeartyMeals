@@ -11,7 +11,7 @@
             <!-- Display the formatted date -->
             <span class="text-xl font-semibold px-6">
                 {{ formattedDate }}
-            </span>
+            </span> 
   
             <!-- Right arrow to increase the date -->
             <button @click="nextDate" class="text-custom-bg-green px-2">
@@ -24,17 +24,21 @@
             <div class="w-2/5 ml-20 mt-8 scroll-container" style="height: 100%;">
                 <Mealcardlist title="Breakfast" :itemsCount="breakfastList.length" route="/breakfast">
                     <div>
-                        <FoodCard v-for="(card, index) in breakfastList" :key="index" :cardInfo="card" class="mb-4"/>
+                        <FoodCard 
+                            v-for="(card, index) in breakfastList" 
+                            :key="index" :cardInfo="card" 
+                            class="mb-4" 
+                            @removeMeal="removeMeal('breakfastList', index)"/>
                     </div>
                 </Mealcardlist>
     
-                <Mealcardlist title="Lunch" :itemsCount="2" route="/lunch">
+                <Mealcardlist title="Lunch" :itemsCount="lunchList.length" route="/lunch">
                     <div>
-                        <FoodCard v-for="(card, index) in LunchList" :key="index" :cardInfo="card" class="mb-4"/>
+                        <FoodCard v-for="(card, index) in lunchList" :key="index" :cardInfo="card" class="mb-4"/>
                     </div>
                 </Mealcardlist>
     
-                <Mealcardlist title="Dinner" :itemsCount="3" route="/dinner">
+                <Mealcardlist title="Dinner" :itemsCount="dinnerList.length" route="/dinner">
                     <div>
                         <FoodCard v-for="(card, index) in dinnerList" :key="index" :cardInfo="card" class="mb-4"/>
                     </div>
@@ -49,12 +53,14 @@
 
 
                 <div class="nutrient-widget-container section justify-end h-screen ">
-                    <NutrientWidget />
+                    <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
                 </div>
 
             
             <img :src="backgroundImage" class="background-image" />
         </div>
+
+        <div class=""></div>
   
         <div class="section flex flex-col justify-end fixed-footer ">
             <Footer />
@@ -64,14 +70,13 @@
 
   
 <script setup>
-
-    import { ref, computed } from 'vue';
+    import { ref, computed, onMounted, watch } from 'vue';
     import backgroundImage from '/assets/img/meal-logging-bg.png';
+    import NutrientData from '../../classes/nutrientData.js'
   
-    // Define the initial state of the date
     const currentDate = ref(new Date());
     
-    // Compute the formatted date as dd-MMMM-yyyy
+    
     const formattedDate = computed(() => {
         return currentDate.value.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -79,8 +84,7 @@
         year: 'numeric',
         });
     });
-  
-    // Method to go to the previous date
+
     const previousDate = () => {
         const newDate = new Date(currentDate.value);
         newDate.setDate(newDate.getDate() - 1);
@@ -88,7 +92,6 @@
     };
   
     const today = new Date();
-    // Method to go to the next date (but not beyond the current date)
     const nextDate = () => {
     const newDate = new Date(currentDate.value);
         if (newDate.toDateString() === today.toDateString()) {
@@ -103,38 +106,98 @@
     import image2 from 'assets/img/LandingPage/image2.jpeg';
     import image3 from 'assets/img/LandingPage/image3.jpeg';
     import image4 from 'assets/img/LandingPage/image4.jpeg';
-    const breakfastList = [
-        {
-            name: "Egg Sandwich",
-            image: image4
-        }
-    ];
-    const LunchList = [
-        {
-            name: "Egg Sandwich",
-            image: image4
-        }
-    ];
-    const dinnerList = [
-        {
-            name: "Egg Sandwich",
-            image: image4
-        }
-    ];
-    const otherList = [
-        {
-            name: "Egg Sandwich",
-            image: image1
-        },
-        {
-            name: "Salad",
-            image: image2
-        },
-        {
-            name: "Cucumber",
-            image: image3
-        }
-    ];
+    import defaultImage from 'assets/img/LandingPage/image4.jpeg';
+    // const breakfastList = [
+    //     {
+    //         name: "Egg Sandwich",
+    //         image: image4
+    //     }
+    // ];
+    // const lunchList = [
+    //     {
+    //         name: "Egg Sandwich",
+    //         image: image4
+    //     }
+    // ];
+    // const dinnerList = [
+    //     {
+    //         name: "Egg Sandwich",
+    //         image: image4
+    //     }
+    // ];
+    // const otherList = [
+    //     {
+    //         name: "Egg Sandwich",
+    //         image: image1
+    //     },
+    //     {
+    //         name: "Salad",
+    //         image: image2
+    //     },
+    //     {
+    //         name: "Cucumber",
+    //         image: image3
+    //     }
+    // ];
+
+    const breakfastList = ref([]);
+    const lunchList = ref([]);
+    const dinnerList = ref([]);
+    const otherList = ref([]);
+
+    const maxNutrientData = ref(null)
+    const nutrientData = ref(null)
+
+    onMounted(async () => {
+        await useApi("/dietary","GET")
+        let recipes = await useFillData().fillRecipes()
+        console.log(recipes)
+        let mealLoggingRecipes = await useFillData().fillMealLogging()
+        // let mealLoggingRecipes = {
+        //     "Breakfast": [],
+        //     "Lunch": [
+        //         {
+        //             "is_consumed": false,
+        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
+        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
+        //             "type": "Lunch",
+        //             "portion": 2,
+        //             "created_at": "2024-09-04T07:18:27.016Z",
+        //             "updated_at": null,
+        //             "deleted_at": null
+        //         }
+        //     ],
+        //     "Dinner": [],
+        //     "Other": [
+        //         {
+        //             "is_consumed": false,
+        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
+        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
+        //             "type": "Other",
+        //             "portion": 1,
+        //             "created_at": "2024-09-04T07:18:19.855Z",
+        //             "updated_at": null,
+        //             "deleted_at": null
+        //         },
+        //     ]
+        // }
+        console.log(mealLoggingRecipes)
+        breakfastList.value = mealLoggingRecipes.value["Breakfast"]
+        lunchList.value = mealLoggingRecipes.value["Lunch"]
+        dinnerList.value = mealLoggingRecipes.value["Dinner"]
+        otherList.value = mealLoggingRecipes.value["Other"]
+
+        let currentDate = new Date()
+        currentDate.setUTCHours(-8, 0, 0, 0)
+        currentDate = currentDate.toISOString()
+
+        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+        console.log(result)
+
+        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+        nutrientData.value = NutrientData.fromApi2(result.value[1])
+    })
+
 </script>
   
 <style scoped>
@@ -145,6 +208,7 @@
 
 .scroll-container {
     overflow-y: scroll;
+    padding-bottom: 10rem;
 }
 
 .bg-custom-bg {
@@ -154,30 +218,29 @@
     padding: 0;
     overflow: hidden;
     position: relative;
-    
 }
 
 .text-custom-bg-green {
-    color: #015B59; /* Customize the color to your desired one */
+    color: #015B59; 
 }
 
 .mb-4 {
-    margin-bottom: 1rem; /* Adjust this value to increase/decrease the gap */
+    margin-bottom: 1rem; 
 }
 
 .nutrient-widget-container {
-    transform: scale(0.75); /* Default to smaller size */
-    transform-origin: top right; /* Adjust the origin if necessary */
-    position: relative; /* Ensures the widget can be positioned within its container */
-    right: 4vw; /* Adjust the right position dynamically */
+    transform: scale(0.75); 
+    transform-origin: top right; 
+    position: relative; 
+    right: 4vw; 
     height: 95%;
     bottom: 8vw;
 }
 
 @media (min-width: 680px) {
     .nutrient-widget-container {
-        transform: scale(0.9); /* Slightly larger for small screens */
-        right: 5vw; /* Adjust the right position dynamically */
+        transform: scale(0.9); 
+        right: 5vw; 
         height: 110%;
         bottom: 11vw;
     }
@@ -185,8 +248,8 @@
 
 @media (min-width: 868px) {
     .nutrient-widget-container {
-        transform: scale(1); /* Normal size for medium screens */
-        right: 6vw; /* Adjust the right position dynamically */
+        transform: scale(1); 
+        right: 6vw; 
         height: 111%;
         bottom: 12vw;
     }
@@ -194,16 +257,16 @@
 
 @media (min-width: 1024px) {
     .nutrient-widget-container {
-        transform: scale(1.1); /* Larger for large screens */
-        right: 10vw; /* Adjust the right position dynamically */
+        transform: scale(1.1); 
+        right: 10vw; 
         bottom: 12vw;
     }
 }
 
 @media (min-width: 1280px) {
     .nutrient-widget-container {
-        transform: scale(1.15); /* Largest size for extra-large screens */
-        right: 10vw; /* Adjust the right position dynamically */
+        transform: scale(1.15); 
+        right: 10vw; 
         bottom: 12vw;
     }
 }
@@ -212,18 +275,19 @@
     position: fixed;
     bottom: 0;
     width: 100%;
-    z-index: 1000; /* Adjust the z-index as needed */
-    background-color: inherit; /* Use the background color to match the page design */
+    z-index: 1000; 
+    background-color: inherit; 
 }
 
 .background-image {
     position: absolute;
     right: 0;
     z-index: -1; /* Ensures the image is behind other content */
-    height: 110%; /* Keeps the aspect ratio */
+    height: 100%; /* Keeps the aspect ratio */
     opacity: 1; /* Adjusts visibility */
     object-fit: cover; /* Ensures it covers the area */
-    margin-bottom: 200px;
+    bottom: -15vh;
+    margin-bottom: 300px;
 }
 
 </style>

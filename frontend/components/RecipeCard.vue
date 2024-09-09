@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" @click="$emit('openOverlay','meal')">
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
@@ -11,23 +11,25 @@
     </div>
     <!-- Labels are now in a separate div below the top section -->
     <div class="labels">
-      <span
-        v-for="(label, index) in labels"
+      <button
+        v-for="(label, index) in Object.keys(labels)"
         :key="index"
         class="label"
-        :class="{ active: label.active }"
-        @click="toggleLabel(label)"
+        :class="{ active: labels[label] }"
+        @click="onButtonClick(mealId,label)"
       >
-        {{ label.name }}
-      </span>
+        {{ label }}
+    </button>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "RecipeCard",
-  props: {
+<script setup>
+const props = defineProps({
+    mealId: {
+      type: String,
+      required: true
+    },
     mealName: {
       type: String,
       required: true,
@@ -41,24 +43,17 @@ export default {
       required: true,
     },
     labels: {
-      type: Array,
+      type: Object,
       required: true,
-      default: () => [
-        { name: "Breakfast", active: false },
-        { name: "Lunch", active: false },
-        { name: "Dinner", active: false },
-        { name: "Snack", active: false },
-      ],
+      default: {Breakfast: true, Lunch: false, Dinner: false, Snack: true},
     },
-  },
-  methods: {
-    toggleLabel(label) {
-      label.active = !label.active;
-    },
-  },
-};
+    onButtonClick: {
+      type: Function,
+      default: (mealType) => {}
+    }
+  })
+console.log(props.labels)
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
 

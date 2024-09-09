@@ -19,4 +19,12 @@ export default class NutrientData {
                 this.protein-other.protein,this.fats-other.fats,
                 this.sodium-other.sodium,this.cholesterol-other.cholesterol)
     }
+
+    static fromApi(apiData) {
+        return new NutrientData(apiData.calories,apiData.totalCarbohydrate,apiData.protein,apiData.fat,apiData.sodium,apiData.cholesterol)
+    }
+
+    static fromApi2(apiData) {
+        return new NutrientData(apiData.calories,apiData.carbs,apiData.protein,apiData.fats,apiData.sodium,apiData.cholesterol)
+    }
 }

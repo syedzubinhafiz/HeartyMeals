@@ -60,8 +60,10 @@
 				<CustomDishIngredientList :columns="1" :ingredientList="modelValue.ingredientList" :includeInput="true" class="overflow-y-auto"  style="max-height:30vh"/>
 			</div>
 			<div class="w-1/2 p-2 h-min-36 h-full">
+				<H3>Instructions</H3>
+				<TextArea v-model="modelValue.instructions" class="w-full min-h-16 h-full"/>
 				<H3>Additional Info</H3>
-				<TextArea v-model="modelValue.description" class="w-full min-h-24 h-full"/>
+				<TextArea v-model="modelValue.description" class="w-full min-h-16 h-full"/>
 			</div>
 		</div>
 	</div>
