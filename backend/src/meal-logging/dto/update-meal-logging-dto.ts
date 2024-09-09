@@ -5,11 +5,8 @@ export class UpdateMealLoggingDTO{
 
     @IsNotEmpty()
     @IsDateString()
-    readonly newDate: string;
+    readonly mealDate: string;
 
-    @IsNotEmpty()
-    @IsString()
-    readonly mealLoggingSummaryId: string;
 
     @IsNotEmpty()
     @IsString()

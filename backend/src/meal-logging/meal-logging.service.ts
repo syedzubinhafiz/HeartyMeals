@@ -149,7 +149,6 @@ export class MealLoggingService {
                 .where("meal_logging.id = :id", { id: deleteMealLoggingDTO.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .andWhere("meal_logging.deleted_at IS NULL")
-                .andWhere("meal_logging.is_consumed = false")
                 .getOne()
 
             if (!entry || entry == null){ throw new HttpException("Meal logging entry isnot found or already consumed.", 404); }
@@ -220,9 +219,9 @@ export class MealLoggingService {
      */
     async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
-            const newDate = new Date(payload.newDate);
+            const mealDate = new Date(payload.mealDate);
             // validate date 
-            const result = this.checkDate(newDate);
+            const result = this.checkDate(mealDate);
             if (result.editable == false){ throw new Error (result.message); }
 
             // validate meal logging id 
@@ -240,7 +239,6 @@ export class MealLoggingService {
 
             // update the meal logging object
             entry.updated_at = new Date();
-            entry.consumed_date_time = newDate;
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
