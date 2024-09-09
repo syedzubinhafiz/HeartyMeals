@@ -6,6 +6,7 @@ export default class CustomMealData extends MealData {
         super(name,imgSrc,1,1,new NutrientData(0,0,0,0,0,0))
         this.ingredientList = []
         this.seasoningList = []
+        this.instructions = ""
         this.description = ""
 
         this.breakfast = false
@@ -22,6 +23,7 @@ export default class CustomMealData extends MealData {
     reset() {
         this.ingredientList = []
         this.seasoningList = []
+        this.instructions = ""
         this.description = ""
 
         this.breakfast = false

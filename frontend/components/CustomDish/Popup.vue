@@ -107,7 +107,7 @@ const addRecipe = async () => {
     "recipe": {
         "name": customMeal.name,
         "description": customMeal.description,
-        "instruction": ["instruction"],
+        "instruction": customMeal.instructions.split("\n"),
         "servingSize": customMeal.recipeServing,
         "preparationTime": `${customMeal.prepTime} minutes`,
         "mealTimeRecommendation": {
