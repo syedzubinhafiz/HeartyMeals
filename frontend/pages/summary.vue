@@ -4,23 +4,23 @@
         <Header/>
     </div>
     <div class="content">
-        <button class="back-button">← Back</button>
+        <button @click="navigateTo('/add-meals')" class="back-button">← Back</button>
         <h2 class="page-title">Summary</h2>
         <div class="main-content">
             <div class="summary-container">
                 <SummaryCard 
-                v-for="item in summaryItems" 
-                :key="item.id" 
+                v-for="(item, index) in tempMealData" 
+                :key="index" 
                 :item="item"
                 :itemNumber="index + 1"
                 />
             </div>
             <div class="nutrition-summary">
-                <NutrientWidgetDelta />
+                <NutrientWidgetDelta :nutrientData="myNutrientData" :mealNutrientData="myMealNutrientData"/>
             </div>
         </div>
   <div class="button-container"> 
-    <button class="done-button">
+    <button class="done-button" @click="handleDoneClick">
         <img src="/assets/img/done-icon.svg" alt="done" class="done-icon"/>
         Done
     </button>
@@ -32,6 +32,9 @@
 </div>
 </template>
 <script setup>
+import MealData from '../../classes/mealData.js'
+
+
 defineOptions({
 	name: "HomePage",
 });
@@ -41,86 +44,96 @@ definePageMeta({
 	layout: "emptylayout"
 });
 
+const tempMealData = ref([])
+const myNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
+const myMealNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
+const summaryData = ref([])
 
-const summaryItems = [
-{
-    id: 1,
-    title: 'Tomato and Cheese Croissant',
-    description: 'Incredible flavour-packed croissant that serves just nice for a tea time snack.',
-    info: 'Click to show nutrition information.',
-    imageUrl: 'assets/img/Tomato-&-Mozzeralla-Croissant_0.png',
-    nutritionInfo: {
-      Calories: '240 kcal',
-      Carbohydrates: '14g',
-      Protein: '28g',
-      Fats: ` 8g`,
-      Sodium: '8g',
-      Cholesterol: '50mg'
-    }
-},
-{
-    id: 2,
-    title: 'Pan Seared Salmon with Asparagus',
-    description: 'This incredible salmon fills your protein of the day whilst not compromising in flavour.',
-    info: 'Click to show more information.',
-    imageUrl: 'assets/img/Tomato-&-Mozzeralla-Croissant_0.png',
-    nutritionInfo: {
-      Calories: '240 kcal',
-      Carbohydrates: '14g',
-      Protein: '28g',
-      Fats: ` 8g`,
-      Sodium: '8g',
-      Cholesterol: '50mg'
-    }
-},
-  {
-    id: 3,
-    title: 'Custom Recipe 1',
-    description: 'A custom recipe.',
-    info: 'Click to show more information.',
-    imageUrl: 'assets/img/Tomato-&-Mozzeralla-Croissant_0.png',
-    nutritionInfo: {
-      Calories: '240 kcal',
-      Carbohydrates: '14g',
-      Protein: '28g',
-      Fats: ` 8g`,
-      Sodium: '8g',
-      Cholesterol: '50mg'
-    }
-  },
-  {
-    id: 4,
-    title: 'Custom Recipe 1',
-    description: 'A custom recipe.',
-    info: 'Click to show more information.',
-    imageUrl: 'assets/img/Tomato-&-Mozzeralla-Croissant_0.png',
-    nutritionInfo: {
-      Calories: '240 kcal',
-      Carbohydrates: '14g',
-      Protein: '28g',
-      Fats: ` 8g`,
-      Sodium: '8g',
-      Cholesterol: '50mg'
-    }
-  },
-  {
-    id: 5,
-    title: 'Custom Recipe 1',
-    description: 'A custom recipe.',
-    info: 'Click to show more information.',
-    imageUrl: 'assets/img/Tomato-&-Mozzeralla-Croissant_0.png',
-    nutritionInfo: {
-      Calories: '240 kcal',
-      Carbohydrates: '14g',
-      Protein: '28g',
-      Fats: ` 8g`,
-      Sodium: '8g',
-      Cholesterol: '50mg'
-    }
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  let mealLoggingData = await useFillData().fillMealLogging()
+  // console.log(mealLoggingData.value)
+  mealLoggingData = mealLoggingData.value["Breakfast"]
+    .concat(mealLoggingData.value["Lunch"])
+    .concat(mealLoggingData.value["Dinner"])
+    .concat(mealLoggingData.value["Other"])
+  summaryData.value = mealLoggingData
+  console.log(summaryData.value[0].recipe.id)
+  console.log(summaryData.value)
+  tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
+  console.log(tempMealData.value)
+
+
+
+  let currentDate = new Date();
+  currentDate.setHours(-8,0,0,0);
+  currentDate = currentDate.toISOString();
+
+  let data = await useApi(`/user/budget?date=${currentDate}`, "GET");
+  console.log(data);
+  myMealNutrientData.value = new NutrientData(data.value[1].calories, data.value[1].carbs, data.value[1].protein, data.value[1].fats, data.value[1].sodium, data.value[1].cholesterol);  
+  myNutrientData.value = new NutrientData(data.value[0].calories, data.value[0].carbs, data.value[0].protein, data.value[0].fats, data.value[0].sodium, data.value[0].cholesterol);
+
+});
+
+
+const userBudget = ref("")
+
+
+function contactForm() {
+  $fetch('/api/contact', {
+    method: 'POST',
+    body: { hello: 'world '}
+  })
+}
+
+
+const getNutrition = async (mealDate, recipeId, portion ,mealType) => {
+    let body = {
+        "mealDate": `${mealDate}`,
+        "recipeIdPortions": [
+            { 
+                "recipeId": `${recipeId}`, 
+                "portion": portion
+            }
+        ],
+        "mealType": `${mealType}`
+    };
+
+    let result = await useApi("/meal-log-summary/calculate", "POST", body);
+    console.log(result)
+
+    return result.value;
+}
+
+// Handle button click
+const handleDoneClick = async () => {
+  let currentDate = new Date();
+  currentDate.setHours(-8,0,0,0);
+  currentDate = currentDate.toISOString();
+
+  for (let i = 0; i < summaryData.value.length; i++) {
+    const nutritionAfter = await getNutrition(currentDate, summaryData.value[i].recipe.id, summaryData.value[i].portion, summaryData.value[i].type);
+    let body = {
+      "mealDate": `${currentDate}`,
+      "recipeIdPortions": [
+        {
+          "recipeId": `${summaryData.value[i].recipe.id}`,
+          "portion": summaryData.value[i].portion
+        }
+      ],
+      "nutritionAfter": nutritionAfter[2],
+      "mealType": `${summaryData.value[i].type}`
+    };
+
+    let result = await useApi("/meal-log-summary/add", "POST", body);
+    console.log(result);
   }
 
-// ... other items
-]
+};
+
+
+
 
 </script>
 
@@ -221,3 +234,18 @@ const summaryItems = [
   margin-left: 8px;
 }
 </style>
+
+<script>
+import NutrientData from '~/classes/nutrientData';
+
+
+
+export default {
+  data() {
+    return {
+      myNutrientData: new NutrientData(0, 0, 0, 0, 0, 0),
+      myMealNutrientData: new NutrientData(0, 0, 0, 0, 0, 0),
+    };
+  }}
+
+</script>
