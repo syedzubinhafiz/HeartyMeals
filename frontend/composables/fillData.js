@@ -310,6 +310,7 @@ export const useFillData = () => {
                         "Dinner": true,
                         "Snack": false
                     },
+                    "is_approved":true,
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="USA")[0].id,
                     "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="NON-HALAL")[0].id
