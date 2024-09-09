@@ -4,67 +4,51 @@
     </div>
     <div ref="scrollContainer" class="scrollContainer relative">
         <!-- section 1 -->
-        <div class="section relative h-screen">
-            <!-- <div class="h-96 absolute top-0 left-0 w-screen bg-custom-bg-green"/> -->
-            <!-- <div class="w-full h-96 relative bg-custom-bg-green bg-heart-image">
-                <div class="absolute inset-x-0 bottom-0 overflow-hidden text-custom-bg-brown">
-                    <svg class="w-full h-48" viewBox="0 0 1440 250" xmlns="http://www.w3.org/2000/svg" >
-                        <path fill="currentColor" d="M-300,0 Q720,520 1940,0 L1940,320 L-400,320 Z"></path>
-                    </svg>
+        <div class="section1-container">
+            <div class="section1-content">
+                <h1 class="section1-heading">Welcome back, Bruno Mars</h1>
+                <p class="section1-subheading">What do you want to do today?</p>
+
+                <div class="section1-buttons">
+                    <NuxtLink to="/recipe-library">
+                        <button class="custom-button">
+                            <img src="/assets/img/recipe-icon.png" alt="Recipe Library" /> Recipe Library
+                        </button>
+                    </NuxtLink>
+
+                    <NuxtLink to="/meal-logging">
+                        <button class="custom-button">
+                            <img src="/assets/img/logging-icon.png" alt="Meal Logging" /> Meal Logging
+                        </button>
+                    </NuxtLink>
+
+                    <button class="custom-button">
+                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
+                    </button>
                 </div>
-            </div> -->
-
-            <!-- Content in the center of the green section -->
-            <div class="relative">
-    <div class="w-full min-h-screen flex flex-col items-center justify-center text-white bg-header-image"> <!-- Removed padding-top and used min-h-screen -->
-        <h1 class="text-2xl lg:text-4xl xl:text-7xl mb-6 font-semibold">Welcome back, Bruno Mars</h1>
-        <p class="text-lg lg:text-xl xl:text-3xl mb-10">What do you want to do today?</p>
-        <div class="flex flex-wrap justify-center space-x-0 lg:space-x-6 xl:space-x-12">
-            <!-- Button 1 -->
-        <NuxtLink to="/recipe-library">
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/recipe-icon.png" alt="Recipe Library" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Recipe Library
-            </button>
-        </NuxtLink>
-            <!-- Button 2 -->
-        <NuxtLink to="/meal-logging">
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/logging-icon.png" alt="Meal Logging" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Meal Logging
-            </button>
-        </NuxtLink>
-            <!-- Button 3 -->
-            <button class="rounded-lg shadow-lg bg-custom-button-orange py-2 lg:py-3 xl:py-4 px-2 lg:px-6 xl:px-8 hover:bg-custom-button-orange-dark flex items-center text-custom-button-text text-md lg:text-lg xl:text-2xl font-bold uppercase mb-4 lg:mb-0">
-                <img src="/assets/img/planning-icon.png" alt="Meal Planning" class="w-6 lg:w-8 h-6 lg:h-8 mr-2 lg:mr-4" /> Meal Planning
-            </button>
-        </div>
-    </div>
-    <div class="flex items-center justify-center py-4">
-        <p class="text-center text-base md:text-lg font-semibold italic text-custom-text-orange">
-            Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
-        </p>
-    </div>
-</div>
-
+                
+            </div>
+            <div class="section1-quote">
+                <p class="quote-text">
+                    Every day may not be good, but there's something good in every day. Focus on the good, no matter how small.
+                </p>
+            </div>
         </div>
 
         <!-- section 2 -->
         <div class="section flex items-center justify-center h-screen">
-            <!-- <div class="shadow-sm bg-custom-overlay-brown h-40 w-64 rounded-lg flex flex-col items-center justify-center space-y-2">
-                <p class="font-medium text-md">Nuxt JS Guide</p>
-                <button class="rounded-sm shadow-sm bg-custom-button-green py-1 px-2 text-white hover:bg-custom-button-green" @click.prevent="onClickButton">Button</button>
-            </div> -->
             <div class="flex-1 h-25">
-            <WaterTankWidget/>
+                <WaterTankWidget/>
             </div>
             <div class="flex-1 h-31">
-            <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
+                <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
             </div>
         </div>
 
         <!-- section 3 -->
         <div class="section relative z-10 text-center py-16 h-screen flex flex-col justify-center items-center">
             <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
-             <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
+            <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
                 <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
                 <div class="flex justify-between min-w-max pb-4">
                     <div/>
@@ -81,10 +65,9 @@
             </div>
             <Footer/>
         </div>
-
     </div>
-
 </template>
+
 
 <script setup>
 // defines the name of the page
@@ -201,94 +184,238 @@ onMounted(async() => {
     background-color: #015B59;
 }
 
-/* Smaller background image */
-.bg-header-image {
+/* full page scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+.scrollContainer {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+}
+
+.section {
+    scroll-snap-align: start;
+    height: 100vh;
+    width: 100%;
+}
+
+/* Section 1 Styles */
+.section1-container {
+    position: relative;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.section1-content {
+    width: 100%;
+    min-height: 110vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     background-image: url('@/assets/img/topcurve.svg');
     background-size: 150% auto;
     background-repeat: no-repeat;
     background-position: center top;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
     background-attachment: fixed;
-
+    padding-bottom: 5vh;
+    color: white;
 }
 
-.bg-custom-button-orange {
-    background-color: #FFA17A;
+@media (max-width: 1400px) {
+    .section1-content {
+        padding-bottom: 15vh;
+        min-height: 94vh;
+        width: 100%;
+    }
 }
 
-.hover\:bg-custom-button-orange-dark:hover {
-    background-color: #e5946b; /* A slightly darker shade */
+@media (max-width: 1200px) {
+    .section1-content {
+        padding-bottom: 20vh;
+        min-height: 75vh;
+    }
+}
+@media (max-width: 1000px) {
+    .section1-content {
+        padding-bottom: 20vh;
+        min-height: 70vh;
+    }
+}
+@media (max-width: 800px) {
+    .section1-content {
+        padding-bottom: 35vh;
+        min-height:70vh;
+    }
 }
 
-.text-custom-text-orange {
+@media (max-width: 468px) {
+    .section1-content {
+        padding-bottom: 45vh;
+    }
+}
+
+.section1-heading {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+    .section1-heading {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+    }
+}
+
+.section1-subheading {
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .section1-subheading {
+        font-size: 3rem;
+        margin-bottom: 2.5rem;
+    }
+}
+
+.section1-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .section1-buttons {
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .section1-buttons {
+        gap: 3rem;
+    }
+}
+
+.section1-quote {
+    display: flex;
+    justify-content: center;
+    padding-top: 2rem;
+    padding-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .section1-quote {
+        display: flex;
+        justify-content: center;
+        padding-top: 2rem;
+        padding-bottom: 1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .section1-quote {
+        display: flex;
+        justify-content: center;
+        padding-top: 2rem;
+        padding-bottom: 1rem;
+    }
+}
+
+.quote-text {
+    text-align: center;
+    font-size: 1rem;
+    font-style: italic;
     color: #000000;
+    font-weight: 600;
 }
 
-.bg-custom-overlay-brown {
-    background-color: #DAC2A8;
+@media (min-width: 768px) {
+    .quote-text {
+        font-size: 1.25rem;
+    }
 }
 
-.meal-cards-container {
-height: 800px; /* Adjust this value based on your non-expanded card height */
-position: relative;
-}
-.background-wrapper {
-position: absolute;
-margin-top: 10px;
-height: 70vh;
-width: 100vw;
-}
-
-.background-image {
-width: 100%;
-height: 100%;
-/* object-fit: cover;
-object-position: center bottom ; */
+/* Button Styles */
+.custom-button {
+    border-radius: 0.5rem; 
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+    background-color: #FFA17A; 
+    padding: 0.5rem 0.25rem; 
+    display: flex;
+    align-items: center;
+    color: #993300; 
+    font-size: 1rem; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    margin-bottom: 0.75rem; 
+    transition: background-color 0.2s ease-in-out;
 }
 
-.overflow-x-auto {
-overflow-x: auto;
--webkit-overflow-scrolling: touch;
+.custom-button:hover {
+    background-color: #e5946b; 
 }
 
-.overflow-x-auto::-webkit-scrollbar {
-display: none;
+@media (min-width: 468px) {
+    .custom-button {
+        padding: 0.3rem 0.5rem; 
+        font-size: 0.6rem; 
+    }
 }
 
-@media (max-width: 640px) {
-.flex.justify-start {
-    justify-content: flex-start;
-}
-}
-
-.flex.justify-start{
-    justify-content: flex-start;
+@media (min-width: 768px) {
+    .custom-button {
+        padding: 0.3rem 0.5rem; 
+        font-size: 0.9rem; 
+    }
 }
 
-
-.flex.justify-start{
-    justify-content: flex-start;
+@media (min-width: 1024px) {
+    .custom-button {
+        padding: 0.75rem 1.5rem; 
+        font-size: 1.15rem; 
+    }
 }
 
-
-/* full page scrolling */
-html {
-scroll-behavior: smooth;
+.custom-button img {
+    width: 1.5rem; 
+    height: 1.5rem; 
+    margin-right: 0.5rem; 
 }
 
-.scrollContainer {
-scroll-snap-type: y mandatory;
-overflow-y: scroll;
-height: 100vh;
+@media (min-width: 468px) {
+    .custom-button img {
+        width: 1rem; 
+        height: 1rem; 
+        margin-right: 0.5rem; 
+    }
 }
 
-.section {
-scroll-snap-align: start;
-height: 100vh;
-width: 100%;
+@media (min-width: 768px) {
+    .custom-button img {
+        width: 1.5rem; 
+        height: 1.5rem; 
+        margin-right: 1rem; 
+    }
 }
+
+@media (min-width: 1024px) {
+    .custom-button img {
+        width: 2rem; 
+        height: 2rem; 
+        margin-right: 0.9rem; 
+    }
+}
+
 </style>
 
 
