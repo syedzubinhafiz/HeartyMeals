@@ -81,7 +81,6 @@ const sectionBack = () => {currentSection.value = Math.max(0,currentSection.valu
 const sectionNext = () => {
     currentSection.value += 1
     if(currentSection.value > MAX_SECTIONS) {
-        // implement custom recipe adding here
         currentSection.value -= 1
     }
 }
@@ -130,6 +129,8 @@ const addRecipe = async () => {
     }
     else {
         useToast().success("Custom Recipe Added!")
+        customMeal.reset()
+        currentSection.value = 0
         togglePopup()
     }
     console.log(result)

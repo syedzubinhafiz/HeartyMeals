@@ -19,4 +19,26 @@ export default class CustomMealData extends MealData {
         this.cuisineID = ""
     }
 
+    reset() {
+        this.ingredientList = []
+        this.seasoningList = []
+        this.description = ""
+
+        this.breakfast = false
+        this.lunch = false
+        this.dinner = false
+        this.snack = false
+        this.visibility = "Unlisted"
+        this.prepTime = 0
+        this.recipeServing = 0
+        this.dietaryID = ""
+        this.cuisineID = ""
+
+        this.name = "Custom Dish"
+        this.imgSrc = "assets/img/croissant.svg"
+        this.servingSize = 1
+        this.servings = 1
+        this.nutrientData = new NutrientData(0,0,0,0,0,0)
+    }
+
 }
