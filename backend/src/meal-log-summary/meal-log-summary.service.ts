@@ -262,8 +262,12 @@ export class MealLogSummaryService {
      */
     async updateNutritionBudget(decodedHeaders: any, updatemealLoggingSummaryDTO: UpdateMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
         try {     
+            const meal_logging_date = new Date(updatemealLoggingSummaryDTO.mealDate.split('T')[0]);
 
-            var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: updatemealLoggingSummaryDTO.mealLoggingSummaryId });
+            var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+                    .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                    .andWhere('date = :meal_date', {meal_date: meal_logging_date})
+                    .getOne();
 
             // check if the date is still within the same day 
 
