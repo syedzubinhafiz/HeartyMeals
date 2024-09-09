@@ -79,12 +79,54 @@ const currentSection = ref(0)
 const MAX_SECTIONS = 4
 const sectionBack = () => {currentSection.value = Math.max(0,currentSection.value-1)}
 const sectionNext = () => {
-    currentSection.value += 1
-    if(currentSection.value > MAX_SECTIONS) {
-        currentSection.value -= 1
+    let isValid = validateSection(currentSection.value)
+    if(isValid && currentSection.value < MAX_SECTIONS) {
+        currentSection.value += 1
     }
 }
 
+const validateSection = (section) => {
+    if(section==0) {
+        if(customMeal.ingredientList.length==0) {
+            useToast().error("At least one Ingredient is required!")
+            return false
+        }
+    }
+    else if (section==1) {
+        // uncomment if at least one seasoning is required
+
+        // if(customMeal.seasoningList.length==0) {
+        //     useToast().error("At least one Seasoning is required!")
+        //     return false
+        // }
+    }
+    else if (section==2) {
+        if(!customMeal.breakfast && !customMeal.lunch && !customMeal.dinner && !customMeal.snack) {
+            useToast().error("At least one Recommended meal time is required!")
+            return false
+        }
+        else if(customMeal.name=="") {
+            useToast().error("Custom meal name required!")
+            return false
+        }
+        else if(customMeal.dietaryID=="") {
+            useToast().error("Diet required!")
+            return false
+        }
+        else if(customMeal.cuisineID=="") {
+            useToast().error("Cuisine required!")
+            return false
+        }
+        else if(customMeal.instructions=="") {
+            useToast().error("Instructions required!")
+            return false
+        }
+    }
+    else if (section==3) {
+
+    }
+    return true
+}
 
 
 onMounted(async () => {
