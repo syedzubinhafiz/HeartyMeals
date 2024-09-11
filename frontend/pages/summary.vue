@@ -9,10 +9,11 @@
         <div class="main-content">
             <div class="summary-container">
                 <SummaryCard 
-                v-for="(item, index) in tempMealData" 
+                v-for="(item, index) in summaryData" 
                 :key="index" 
                 :item="item"
                 :itemNumber="index + 1"
+                @update-servings="updatePortions"
                 />
             </div>
             <div class="nutrition-summary">
@@ -48,6 +49,8 @@ const tempMealData = ref([])
 const myNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const myMealNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const summaryData = ref([])
+const recipePortion = []
+const mealType = "Breakfast"
 
 onMounted(async () => {
   await useApi("/dietary","GET")
@@ -59,71 +62,66 @@ onMounted(async () => {
     .concat(mealLoggingData.value["Other"])
   summaryData.value = mealLoggingData
   console.log(summaryData.value[0].recipe.id)
-  console.log(summaryData.value)
   tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
   console.log(tempMealData.value)
+  console.log(summaryData.value)
+
 
 
 
   let currentDate = new Date();
-  currentDate.setHours(-8,0,0,0);
+  currentDate.setHours(0,0,0,0);
   currentDate = currentDate.toISOString();
 
-  let data = await useApi(`/user/budget?date=${currentDate}`, "GET");
-  console.log(data);
-  myMealNutrientData.value = new NutrientData(data.value[1].calories, data.value[1].carbs, data.value[1].protein, data.value[1].fats, data.value[1].sodium, data.value[1].cholesterol);  
-  myNutrientData.value = new NutrientData(data.value[0].calories, data.value[0].carbs, data.value[0].protein, data.value[0].fats, data.value[0].sodium, data.value[0].cholesterol);
+  recipePortion.value = summaryData.value.map(item => ({
+    recipeId: item.recipe.id,
+    portion: item.portion
+  }));
 
+  await calculateNutrition();
 });
 
+const updatePortions = ({ recipeId, portion }) => {
+  const index = recipePortion.value.findIndex(item => item.recipeId === recipeId);
+  if (index !== -1) {
+    recipePortion.value[index].portion = portion;
+  }
+  calculateNutrition();
+};
 
-const userBudget = ref("")
+const calculateNutrition = async () => {
+  let currentDate = new Date();
+  currentDate.setHours(0,0,0,0);
+  currentDate = currentDate.toISOString();
 
+  let body = {
+    "mealDate": `${currentDate}`,
+    "recipeIdPortions": recipePortion.value,
+    "mealType": `${mealType}`
+  };
 
-function contactForm() {
-  $fetch('/api/contact', {
-    method: 'POST',
-    body: { hello: 'world '}
-  })
-}
+  let result = await useApi("/meal-log-summary/calculate", "POST", body);
+  console.log(result);
 
+  myMealNutrientData.value = new NutrientData(result.value[1].calories, result.value[1].carbs, result.value[1].protein, result.value[1].fats, result.value[1].sodium, result.value[1].cholesterol);  
+  myNutrientData.value = new NutrientData(result.value[0].calories, result.value[0].carbs, result.value[0].protein, result.value[0].fats, result.value[0].sodium, result.value[0].cholesterol);
 
-const getNutrition = async (mealDate, recipeId, portion ,mealType) => {
-    let body = {
-        "mealDate": `${mealDate}`,
-        "recipeIdPortions": [
-            { 
-                "recipeId": `${recipeId}`, 
-                "portion": portion
-            }
-        ],
-        "mealType": `${mealType}`
-    };
-
-    let result = await useApi("/meal-log-summary/calculate", "POST", body);
-    console.log(result)
-
-    return result.value;
-}
+  return result.value; 
+};
 
 // Handle button click
 const handleDoneClick = async () => {
   let currentDate = new Date();
-  currentDate.setHours(-8,0,0,0);
+  currentDate.setHours(0,0,0,0);
   currentDate = currentDate.toISOString();
 
   for (let i = 0; i < summaryData.value.length; i++) {
-    const nutritionAfter = await getNutrition(currentDate, summaryData.value[i].recipe.id, summaryData.value[i].portion, summaryData.value[i].type);
+    const nutritionAfter = await calculateNutrition();
     let body = {
       "mealDate": `${currentDate}`,
-      "recipeIdPortions": [
-        {
-          "recipeId": `${summaryData.value[i].recipe.id}`,
-          "portion": summaryData.value[i].portion
-        }
-      ],
-      "nutritionAfter": nutritionAfter[2],
-      "mealType": `${summaryData.value[i].type}`
+      "recipeIdPortions": recipePortion,
+      "nutritionAfter": nutritionAfter[1],
+      "mealType": mealType
     };
 
     let result = await useApi("/meal-log-summary/add", "POST", body);
