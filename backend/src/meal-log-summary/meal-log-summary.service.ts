@@ -176,7 +176,15 @@ export class MealLogSummaryService {
             // calculate the nutrition if the user plan to eat the meal
             const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
 
-            return [nutrition_list[0], nutrition_list[1], nutrition_after];
+            var negative_nutrients = false;
+            for (const key in nutrition_after) {
+                if (nutrition_after[key] < 0) {
+                    negative_nutrients = true;
+                    break;
+                }
+            }
+    
+            return [nutrition_list[0], nutrition_list[1], nutrition_after, negative_nutrients];
         } catch (e) {
             throw e;
         }
