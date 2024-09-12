@@ -1,31 +1,59 @@
 <template>
    <div class="summary-card" :class="{'expanded': isExpanded}" @click="toggleExpand">
     <div class="card-header">
-      <div class="item-number">{{ item.id }}.</div>
+      <div class="item-number">{{ itemNumber }}.</div>
       <div class="item-image">
-        <img :src="item.imageUrl" :alt="item.title">
+        <img :src="item.imgSrc" :alt="item.recipe.name">
       </div>
       <div class="item-details">
-        <h3 class="item-title">{{ item.title }}</h3>
-        <p class="item-description">{{ item.description }}</p>
+        <h3 class="item-title">{{ item.recipe.name }}</h3>
+        <p class="item-description">{{ item.recipe.description }}</p>
         <p class="more-details">Click to show nutrition information.</p>
       </div>
       <div class="serving-selector">
         <label for="servings">Servings:</label>
-        <select v-model="servings" id="servings" @click.stop>
-          <option v-for="value in options" :key="value" :value="value">{{ value }}</option>
+        <select v-model="servings" id="servings" @change="updateServings" @click.stop>
+          <option class="option-button" v-for="value in options" :key="value" :value="value">{{ value }}</option>
         </select>
       </div>
     </div>
     <div v-if="isExpanded" class="expanded-content">
-      <div v-if="item.nutritionInfo" class="nutrition-info">
-        <ul>
-          <li v-for="(value, key) in item.nutritionInfo" :key="key" class="nutrition-item">
-            <img :src="getIcon(key)" alt="icon" class="nutrition-icon"/>
-            <span class="nutrition-key">{{ key }}</span>
-            <span class="nutrition-value">{{ value }}</span>
-          </li>
-        </ul>
+      <div class="nutrition-info">
+        <div class="nutrition-item">
+        <img :src="getIcon('Calories')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Calories</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.calories }}mg</span>
+      </div>
+
+      <div class="nutrition-item">
+        <img :src="getIcon('Carbohydrates')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Carbohydrates</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.totalCarbohydrate }}mg</span>
+      </div>
+
+      <div class="nutrition-item">
+        <img :src="getIcon('Protein')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Protein</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.protein }}mg</span>
+      </div>
+
+      <div class="nutrition-item">
+        <img :src="getIcon('Fats')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Fats</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.fat }}mg</span>
+      </div>
+
+      <div class="nutrition-item">
+        <img :src="getIcon('Sodium')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Sodium</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.sodium }}mg</span>
+      </div>
+
+      <div class="nutrition-item">
+        <img :src="getIcon('Cholesterol')" alt="icon" class="nutrition-icon"/>
+        <span class="nutrition-key">Cholesterol</span>
+        <span class="nutrition-value">{{ item.recipe.nutrition_info.cholesterol }}mg</span>
+      </div>
       </div>
     </div>
   </div>
@@ -47,7 +75,7 @@ export default {
 
   data() {
     return {
-      servings: 1,
+      servings: this.item.portion,
       options: [0.25, 0.5, 0.75, 1, 2],
       isExpanded: false,
       nutritionIcons: {
@@ -67,6 +95,12 @@ export default {
     getIcon(key) {
       // Use the key to get the correct icon from the nutritionIcons object
       return this.nutritionIcons[key.toLowerCase()] || '';
+    },
+    updateServings() {
+      this.$emit('update-servings', {
+        recipeId: this.item.recipe.id,
+        portion: this.servings
+      });
     }
   }
 }
