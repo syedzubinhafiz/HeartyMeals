@@ -1,19 +1,21 @@
 <template>
   <div class="card" @click="$emit('openOverlay','meal')">
     <!-- Only show this section if the recipe is admin approved -->
-    <div v-if="isAdminApproved" class="top-right">
-      <img 
-        src="/assets/img/checkMark.svg" 
-        alt="Info Icon" 
-        class="info-icon" 
-        @mouseover.stop="showTooltip = true" 
-        @mouseleave.stop="showTooltip = false"
-        @click.stop
-      />
-      <div v-if="showTooltip" class="tooltip">
-        <p v-if="isAdminApproved">Approved by Admin</p>
-      </div>
-    </div>
+    <div v-if="isCustomRecipe" class="top-right">
+  <img 
+    :src="isAdminApproved ? '/assets/img/checkMark.svg' : '/assets/img/warning.png'" 
+    alt="Info Icon" 
+    class="info-icon" 
+    @mouseover.stop="showTooltip = true" 
+    @mouseleave.stop="showTooltip = false"
+    @click.stop
+  />
+  <div v-if="showTooltip" 
+     :class="isAdminApproved ? 'tooltip tooltip-approved' : 'tooltip tooltip-pending'">
+  <p>{{ isAdminApproved ? 'Approved by Admin' : 'Custom Recipe - Pending Approval' }}</p>
+</div>
+
+</div>
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
@@ -188,14 +190,26 @@ const props = defineProps({
   position: absolute;
   top: 30px;
   right: 0;
-  background-color: #004d40;
-  color: #fff;
+  color:#004d40;;
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 0.75rem;
   white-space: nowrap;
   z-index: 100;
+  border: 1px solid #004d40; /* Adds the border with the desired color */
+  background-color: transparent; /* Ensures no background fill */
 }
+
+.tooltip-approved {
+  border-color: #004d40; /* Green border for approved */
+  color: #004d40; /* White text for approved */
+}
+
+.tooltip-pending {
+  border-color: #ffc048; /* Yellow border for pending approval */
+  color: #ffc048; /* Yellow text for pending approval */
+}
+
 .custom-tag {
   position: absolute;
   bottom: 62px;
