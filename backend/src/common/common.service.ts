@@ -1,9 +1,6 @@
 import { MeasuringUnit, conversionFactors, handMeasurementsToGrams } from "src/component/enum/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
-import { User } from "src/user/user.entity";
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Gender } from "src/user/enum/gender.enum";
 import { NutritionSettingDTO } from "src/user/dto/nutrition-setting-dto";
 import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
@@ -12,8 +9,7 @@ import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
 export class CommonService{
 
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+
     ){}
 
     convertUnit(originalUnit: MeasuringUnit, originalAmount: number, newUnit: MeasuringUnit): number{
@@ -166,4 +162,6 @@ export class CommonService{
 
         return nutrition_budget;
    }
+
+    
 }
