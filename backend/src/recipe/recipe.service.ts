@@ -142,6 +142,7 @@ export class RecipeService {
 
             //Get all official recipes that is public and recipe that belongs to the user
             const query = this.recipeRepository.createQueryBuilder("recipe")
+            .leftJoinAndSelect("recipe.user", "user")
             .select([
                 'recipe.id', 
                 'recipe.name', 
@@ -149,7 +150,8 @@ export class RecipeService {
                 'recipe.recommended_meal_time', 
                 'recipe.is_approved', 
                 'recipe.visibility', 
-                'recipe.storage_links'
+                'recipe.storage_links',
+                'user.user_id'
             ])
             .where(
                 new Brackets((qb) => {
@@ -260,6 +262,7 @@ export class RecipeService {
          // filter out recipes that contains food categories that the user is allergic to
          //Sort the recipes by created_at in descending order
          const [result, length] = await this.recipeRepository.createQueryBuilder("recipe")
+         .leftJoinAndSelect("recipe.user", "user")
          .select([
             'recipe.id', 
             'recipe.name', 
@@ -267,7 +270,9 @@ export class RecipeService {
             'recipe.recommended_meal_time', 
             'recipe.is_approved', 
             'recipe.visibility', 
-            'recipe.storage_links'
+            'recipe.storage_links',
+            'recipe.created_at',
+            'user.user_id'
         ])
          .where(
              new Brackets((qb) => {
