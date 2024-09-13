@@ -17,7 +17,7 @@
                 />
             </div>
             <div class="nutrition-summary">
-                <NutrientWidgetDelta :nutrientData="myNutrientData" :mealNutrientData="myMealNutrientData"/>
+                <NutrientWidgetDelta :nutrientData="myNutrientData" :netNutrientData="myMealNutrientData" :maxNutrientData="myMaxNutritientData"/>
             </div>
         </div>
   <div class="button-container"> 
@@ -48,6 +48,7 @@ definePageMeta({
 const tempMealData = ref([])
 const myNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const myMealNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
+const myMaxNutritientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const summaryData = ref([])
 const recipePortion = []
 const mealType = "Breakfast"
@@ -85,9 +86,14 @@ const updatePortions = ({ recipeId, portion }) => {
   const index = recipePortion.value.findIndex(item => item.recipeId === recipeId);
   if (index !== -1) {
     recipePortion.value[index].portion = portion;
+    console.log(recipePortion.value);
   }
   calculateNutrition();
 };
+
+const userBudget = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
+const alreadyLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
+const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
 
 const calculateNutrition = async () => {
   let currentDate = new Date();
@@ -103,9 +109,34 @@ const calculateNutrition = async () => {
   let result = await useApi("/meal-log-summary/calculate", "POST", body);
   console.log(result);
 
-  myMealNutrientData.value = new NutrientData(result.value[1].calories, result.value[1].carbs, result.value[1].protein, result.value[1].fats, result.value[1].sodium, result.value[1].cholesterol);  
-  myNutrientData.value = new NutrientData(result.value[0].calories, result.value[0].carbs, result.value[0].protein, result.value[0].fats, result.value[0].sodium, result.value[0].cholesterol);
+  userBudget.calories = (result.value[0].calories);
+  userBudget.carbs = result.value[0].carbs;
+  userBudget.protein = result.value[0].protein;
+  userBudget.fats = result.value[0].fats;
+  userBudget.sodium = result.value[0].sodium;
+  userBudget.cholesterol = result.value[0].cholesterol;
 
+  alreadyLog.calories = result.value[0].calories - result.value[1].calories;
+  alreadyLog.carbs = result.value[0].carbs - result.value[1].carbs;
+  alreadyLog.protein = result.value[0].protein - result.value[1].protein;
+  alreadyLog.fats = result.value[0].fats - result.value[1].fats;
+  alreadyLog.sodium = result.value[0].sodium - result.value[1].sodium;
+  alreadyLog.cholesterol = result.value[0].cholesterol - result.value[1].cholesterol;
+
+  console.log(alreadyLog);
+
+  aboutToLog.calories = result.value[0].calories - result.value[2].calories;
+  aboutToLog.carbs = result.value[0].carbs - result.value[2].carbs;
+  aboutToLog.protein = result.value[0].protein - result.value[2].protein;
+  aboutToLog.fats = result.value[0].fats - result.value[2].fats;
+  aboutToLog.sodium = result.value[0].sodium - result.value[2].sodium;
+  aboutToLog.cholesterol = result.value[0].cholesterol - result.value[2].cholesterol;
+
+  console.log(aboutToLog);
+
+  myMaxNutritientData.value = new NutrientData(userBudget.calories, userBudget.carbs, userBudget.protein, userBudget.fats, userBudget.sodium, userBudget.cholesterol);
+  myNutrientData.value = new NutrientData(aboutToLog.calories, aboutToLog.carbs, aboutToLog.protein, aboutToLog.fats, aboutToLog.sodium, aboutToLog.cholesterol);
+  myMealNutrientData.value = new NutrientData(alreadyLog.calories, alreadyLog.carbs, alreadyLog.protein, alreadyLog.fats, alreadyLog.sodium, alreadyLog.cholesterol);
   return result.value; 
 };
 
@@ -120,14 +151,16 @@ const handleDoneClick = async () => {
     let body = {
       "mealDate": `${currentDate}`,
       "recipeIdPortions": recipePortion,
-      "nutritionAfter": nutritionAfter[1],
+      "nutritionAfter": nutritionAfter[2],
       "mealType": mealType
     };
 
     let result = await useApi("/meal-log-summary/add", "POST", body);
     console.log(result);
-  }
 
+   
+  }
+  navigateTo('/meal-logging');
 };
 
 
