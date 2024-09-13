@@ -20,7 +20,6 @@
 
           <div class="flex justify-center mb-10 text-black">
             <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
-            <Filtration/>
           </div>
 
           <!-- Scrollable Recipe Cards -->
@@ -33,6 +32,9 @@
                 :mealDescription="meal.description"
                 :labels="meal.recommended_meal_time ?? {}"
                 @click.native="openOverlay(meal)"
+                :isCustomRecipe="meal.user_id !=null"
+                :isAdminApproved="meal.is_approved"
+                
               />
             </div>
         </div>
@@ -56,14 +58,12 @@
 </template>
 <script setup>
 const recipeList = ref([])
-const mealList = ref([])
 onMounted(async () => {
-  console.log("AAAA")
   await useApi("/dietary","GET")
-  // console.log(await useApi("/dietary","GET"))
-  recipeList.value = await useFillData().fillRecipes()
+  recipeList.value = await useFillData().fillRecipes2()
   console.log(recipeList)
 })
+
 const isOverlayVisible = ref(false)
 const selectedMeal = ref(null)
 const currentPage = 1
@@ -82,7 +82,6 @@ const openOverlay = async (meal) => {
   selectedMeal.value = detailedMealInfo
   isOverlayVisible.value = true
 }
-
 </script>
 <script>
 definePageMeta({

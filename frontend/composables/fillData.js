@@ -281,7 +281,8 @@ export const useFillData = () => {
                     },
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="FRA")[0].id,
-                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="VEGAN")[0].id
+                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="VEGAN")[0].id,
+                    "user_id":null
                 },
                 "components": [
                     {
@@ -311,6 +312,7 @@ export const useFillData = () => {
                         "Dinner": true,
                         "Snack": false
                     },
+                    "is_approved":true,
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="USA")[0].id,
                     "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="NON-HALAL")[0].id
@@ -327,7 +329,6 @@ export const useFillData = () => {
                         "unit": "g"
                     }
                 ]
-            
             })
             results = await useApi("/recipe/add","POST",{
                 "recipe": {
@@ -342,6 +343,7 @@ export const useFillData = () => {
                         "Dinner": true,
                         "Snack": false
                     },
+                    "is_approved":true,
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="JPN")[0].id,
                     "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="NON-HALAL")[0].id

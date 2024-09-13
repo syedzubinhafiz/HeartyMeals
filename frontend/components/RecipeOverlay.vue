@@ -18,30 +18,37 @@
           <div v-if="activeTab === 'nutrition'" class="nutrition-content">
             <!-- Nutrition Information Content -->
             <div class="nutrition-item">
-              <span>Calories</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/macroEnergy.svg" alt="icon" width="16" height="16">
+                Calories</span>
               <span>{{meal.value.recipe.nutrition_info.calories}}kcal</span>
             </div>
             <div class="nutrition-item">
-              <span>Carbohydrates</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/macroCarb.svg" alt="icon" width="16" height="16">Carbohydrates</span>
               <span>{{meal.value.recipe.nutrition_info.totalCarbohydrate}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Proteins</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/macroProtein.svg" alt="icon" width="16" height="16">Proteins</span>
               <span>{{meal.value.recipe.nutrition_info.protein}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Fats</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/macroFat.svg" alt="icon" width="10" height="10">Fats</span>
               <span>{{meal.value.recipe.nutrition_info.fat}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Sodium</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/macroSodium.svg" alt="icon" width="16" height="16">Sodium</span>
               <span>{{meal.value.recipe.nutrition_info.sodium}}g</span>
             </div>
             <div class="nutrition-item">
-              <span>Cholesterol</span>
+              <span class="nutrition-label">
+                <img src="/assets/img/cholesterolsIcon.png" alt="icon" width="16" height="16">Cholesterol</span>
               <span>{{meal.value.recipe.nutrition_info.cholesterol}}g</span>
             </div>
-            <p class="preparation-time">* Preparation time: 10 minutes</p>
+            <p class="preparation-time">* Preparation time: {{ meal.value.recipe.preparation_time }}</p>
           </div>
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
@@ -71,7 +78,6 @@ const props = defineProps({
     type: Object
   }
 })
-
 
 </script>
 <script>
@@ -251,6 +257,13 @@ export default {
   font-style: italic;
   color: #6B705C;
 }
+.nutrition-label {
+  display: flex;
+  align-items: center;
+}
 
+.nutrition-label img {
+  margin-right: 10px; /* Adjusts space between icon and text */
 
+}
 </style>
