@@ -22,6 +22,10 @@ export class RecipeDTO{
     @IsNumber()
     readonly servingSize: number;
 
+    @IsNotEmpty()
+    @IsString()
+    readonly preparationTime: string;
+
     @IsOptional()
     @ValidateNested()
     @Type(()=> NutritionInfoDTO)

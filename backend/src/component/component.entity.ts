@@ -24,9 +24,9 @@ export class Component{
         type: 'enum',
         enum: MeasuringUnit
     })
-    units: MeasuringUnit;
+    unit: MeasuringUnit;
 
-    @Column({type: 'integer'})
+    @Column({type: 'float'})
     amount: number;
 
     @Column({type:'jsonb'})
