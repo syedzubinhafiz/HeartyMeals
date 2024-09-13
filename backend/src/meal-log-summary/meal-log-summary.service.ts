@@ -221,6 +221,17 @@ export class MealLogSummaryService {
         const result = this.mealLoggingService.checkDate(meal_logging_object.consumed_date_time);
         if (result.editable == false){ throw new HttpException(result.message, 400); }
 
+        var found = false;
+        for (const meal_logging_id of meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType]) {
+            if (meal_logging_id === remomveMealLoggingIdDTO.mealLoggingId) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found){
+            throw new HttpException(`Meal logging id ${remomveMealLoggingIdDTO.mealLoggingId} not found in ${remomveMealLoggingIdDTO.mealType}`, 404);
+        }
 
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);

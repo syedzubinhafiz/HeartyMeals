@@ -223,12 +223,16 @@ export class MealLoggingService {
             // validate date 
             const result = this.checkDate(mealDate);
             if (result.editable == false){ throw new Error (result.message); }
+            // update to future: error
+            if (result.planning == true){ throw new Error ("Cannot update meal to future."); }
+
 
             // validate meal logging id 
             // returns a list of meal logging objects found
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .where("meal_logging.id = :id", { id: payload.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+                .andWhere("meal_logging.is_consumed = false")
                 .getOne()
 
             if (!entry || entry == undefined){ 
