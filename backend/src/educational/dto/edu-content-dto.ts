@@ -5,14 +5,13 @@ export class EducationalContentDTO{
 
     @IsNotEmpty()
     @IsString()
-    readonly userId: string;
-
-    @IsNotEmpty()
-    @IsString()
     readonly title: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly content: string;
+    readonly summary: string;
 
+    @ArrayNotEmpty()
+    @ValidateNested({ each: true })
+    readonly content: Array<JSON>;
 }
