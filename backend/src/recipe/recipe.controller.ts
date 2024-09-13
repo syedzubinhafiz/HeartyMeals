@@ -24,7 +24,6 @@ export class RecipeController {
     
     @Post('add')
     async createRecipe(@Headers() header: any, @Body() payload: AddRecipeDTO) {
-        console.log("REEEEEEEEEEEEEE")
         const decoded = this.commonService.decodeHeaders(header.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
@@ -109,7 +108,6 @@ export class RecipeController {
     ){
 
         try {
-            console.log("AAAA")
             // Decode the headers to get the user_id
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
@@ -125,17 +123,6 @@ export class RecipeController {
             }
     
             // Call the get recipe business logic to get the recipe
-            console.log("BBBBB")
-            console.log([                decoded_headers, 
-                page_number, 
-                page_size, 
-                search, 
-                JSON.parse(cuisineIds), 
-                JSON.parse(dietaryIds), 
-                JSON.parse(foodCategoryIds),
-                JSON.parse(mealType),
-                pagination,
-                recipeId])
             const [recipes, total_recipe] = await this.recipeService.getRecipe(
                 decoded_headers, 
                 page_number, 
@@ -148,10 +135,8 @@ export class RecipeController {
                 pagination,
                 recipeId
             )
-            console.log("CCC")
             // Return the recipe list or recipe details based on the pagination
             if (page_number != 0 && page_size != 0){
-                console.log("D1")
                 return {
                     data: recipes,
                     page_number,
@@ -161,12 +146,10 @@ export class RecipeController {
                 }
             // If pagination is not required return the recipe list
             } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
-                console.log("D2")
                 return recipes;
 
             // If recipeId is provided return the recipe details with components info 
             }else {
-                console.log("D3")
                 const recipe = recipes as Recipe;
 
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
