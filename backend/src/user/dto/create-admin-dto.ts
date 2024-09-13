@@ -6,8 +6,4 @@ export class CreateAdminDTO{
     @IsEnum(Gender)
     @IsNotEmpty()
     readonly gender: Gender;
-
-    @IsString()
-    @IsNotEmpty()
-    readonly ethnicityId: string;
 }

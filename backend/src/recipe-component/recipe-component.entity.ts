@@ -11,9 +11,8 @@ export class RecipeComponent{
     @PrimaryColumn()
     recipe_id: string 
 
-    @Column({type: 'integer'})
+    @Column({type: 'float'})
     amount: number;
-
     
     @ManyToOne( ()=> Component, component=> component.id, {eager: true})
     @JoinColumn({name: 'component_id'})
