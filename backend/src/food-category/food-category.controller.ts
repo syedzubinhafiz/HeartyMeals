@@ -8,7 +8,7 @@ export class FoodCategoryController {
         private foodCategoryService: FoodCategoryService,
     ){}
 
-    @Get()
+    @Get('get')
     async getFoodCategory() {
         return await this.foodCategoryService.getAllFoodCategory();
     }
