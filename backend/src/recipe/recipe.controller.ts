@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Delete, Headers, HttpException, Param, Post, Query } from '@nestjs/common';
 import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/user.entity';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm'; 
 import { RecipeService } from './recipe.service';
 import { RecipeComponentService } from 'src/recipe-component/recipe-component.service';
 import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
 import { CommonService } from 'src/common/common.service';
 import { Recipe } from './recipe.entity';
+import { StorageService } from 'src/storage/storage.service';
 
 @Controller('recipe')
 export class RecipeController {
@@ -18,6 +18,7 @@ export class RecipeController {
         private readonly entityManager: EntityManager,
         private recipeComponentArchiveService: RecipeComponentArchiveService,
         private readonly commonService: CommonService,
+        private storageService: StorageService,
     ) {}
 
     @Post('add')
@@ -29,8 +30,23 @@ export class RecipeController {
                 const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components, transactionalEntityManager)
 
                 // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
+                var upload_path = "";
+                var upload_path = "";
                 if (is_custom){
                     await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
+                    // get path for custom recipe
+                    upload_path = this.recipeService.getPath(decoded['sub'] as string, new_recipe.id, new_recipe.dietary.id);
+                }
+                else {
+                    // get path for official recipe
+                    upload_path = this.recipeService.getPath(null, new_recipe.id, new_recipe.dietary.id);
+                }
+
+                console.log("uploading recipe files")
+                if (payload.files != undefined){
+                    const files = payload.files;
+                    files.path = upload_path;
+                    await this.storageService.handleUpload(files, new_recipe, Recipe, transactionalEntityManager);
                 }
             });
             return new HttpException("Recipe added successfully", 200);
@@ -124,7 +140,7 @@ export class RecipeController {
         } catch (e) {
             return new HttpException(e.message, 400)
         }
-        
+
     }
 
 

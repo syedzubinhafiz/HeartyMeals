@@ -4,16 +4,8 @@ import { Type } from "class-transformer";
 
 export class FileUploadDTO{
     @IsOptional()
-    @IsBoolean()
-    userId?: boolean;
-
-    @IsOptional()
     @IsString()
-    recipeId?: string;
-
-    @IsOptional()   
-    @IsString()
-    eduContentId?: string;
+    path?: string;
 
     @IsOptional()
     @ValidateNested()

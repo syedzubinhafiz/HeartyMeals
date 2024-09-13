@@ -392,4 +392,14 @@ export class RecipeService {
             throw new Error("Error deleting recipe")
         }
     } 
+
+    getPath(userId: string = null, recipeId: string, dietaryId: string): string {
+        if (userId != null){
+            return `/user/${userId}/custom_recipe/${recipeId}`;
+        }
+        else {
+            return `official_recipe/dietary/${dietaryId}/${recipeId}`;
+        }
+        
+    }
 }

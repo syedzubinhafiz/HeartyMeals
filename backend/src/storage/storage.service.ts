@@ -16,6 +16,21 @@ export class StorageService {
         private storageRepository: Repository<Storage>
     ){}
 
+
+    async handleUpload(fileUploadDTO: FileUploadDTO, entry: any, repository: any, transactionalEntityManager: EntityManager){
+        try {
+            console.log("saving files")
+            const storage_links = await this.uploadFile(fileUploadDTO, transactionalEntityManager);
+            
+            console.log("updating links");
+
+            const saved = await this.updateStorageLinks(storage_links, entry, repository, transactionalEntityManager);
+            return true;
+        } catch (e) {
+            throw new HttpException(e.message, e.status);
+        }
+    }
+
     /**
      * Upload the file to firebase storage (or local) and save the entry to database
      * @param decodedHeaders - decoded headers from the request
@@ -29,7 +44,7 @@ export class StorageService {
      *  "content": ["storage_id", "storage_id"]
      * }
      */
-    async uploadFile(decodedHeaders: any, fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
+    async uploadFile(fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
         // validate if there are files to upload
         if ((fileUploadDTO.thumbnail == undefined || fileUploadDTO.thumbnail == null) && (fileUploadDTO.content == undefined || fileUploadDTO.content == null)){
             return {};
@@ -37,59 +52,52 @@ export class StorageService {
 
         // get path for upload
         try {
-            var upload_path = null;
-            if (fileUploadDTO.userId == true){
-                upload_path = this.pathPreparation(decodedHeaders['sub'], fileUploadDTO.recipeId, fileUploadDTO.eduContentId);
+            const storage_links: any = {};
+            storage_links['thumbnail'] = null
+            storage_links['content'] = [];
+
+            const promises: Promise<string>[] = [];
+            // get bucket
+            const bucket = (process.env.SAVE_FIREBASE === "true") ? getStorage().bucket() : null;
+
+            // if got thumbnail to upload
+            if (fileUploadDTO.thumbnail) {
+                if (process.env.SAVE_FIREBASE === "true") {
+                    promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, fileUploadDTO.path, bucket, transactionalEntityManager));
+                } else {
+                    var fs = require('fs');
+                    const local_path = join(__dirname, '../../src/storage/uploaded/', fileUploadDTO.path, '/');
+                    if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
+                    promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
+                }
+                storage_links['thumbnail'] = await promises[promises.length - 1];
             }
-            else {
-                upload_path = this.pathPreparation(null, fileUploadDTO.recipeId, fileUploadDTO.eduContentId);
+            // if got content to upload
+            if (fileUploadDTO.content) {
+                const content_promises = fileUploadDTO.content.map(async file_format_DTO => {
+                    if (process.env.SAVE_FIREBASE === "true") {
+                        return this.uploadToFirebase(file_format_DTO, fileUploadDTO.path, bucket, transactionalEntityManager);
+                    } else {
+                        var fs = require('fs');
+                        const local_path = join(__dirname, '../../src/storage/uploaded/', fileUploadDTO.path, '/');
+                        if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
+                        return this.saveToLocal(file_format_DTO, local_path, transactionalEntityManager);
+                    }
+                });
+                promises.push(...content_promises);
+                const content_ids = await Promise.all(content_promises);
+                content_ids.forEach((id) => {
+                    storage_links['content'].push(id);
+                });
             }
+
+            // resolve all promises
+            await Promise.all(promises);
+            return storage_links;
         }
         catch (e){
             throw e;
         }
-
-        const storage_links: any = {};
-
-        const promises: Promise<string>[] = [];
-        // get bucket
-        const bucket = (process.env.SAVE_FIREBASE === "true") ? getStorage().bucket() : null;
-
-        // if got thumbnail to upload
-        if (fileUploadDTO.thumbnail) {
-            if (process.env.SAVE_FIREBASE === "true") {
-                promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, upload_path, bucket, transactionalEntityManager));
-            } else {
-                var fs = require('fs');
-                const local_path = join(__dirname, '../../src/storage/uploaded/', upload_path, '/');
-                if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
-                promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
-            }
-            storage_links['thumbnail'] = await promises[promises.length - 1];
-        }
-        // if got content to upload
-        if (fileUploadDTO.content) {
-            storage_links['content'] = {};
-            const content_promises = fileUploadDTO.content.map(async file_format_DTO => {
-                if (process.env.SAVE_FIREBASE === "true") {
-                    return this.uploadToFirebase(file_format_DTO, upload_path, bucket, transactionalEntityManager);
-                } else {
-                    var fs = require('fs');
-                    const local_path = join(__dirname, '../../src/storage/uploaded/', upload_path, '/');
-                    if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
-                    return this.saveToLocal(file_format_DTO, local_path, transactionalEntityManager);
-                }
-            });
-            promises.push(...content_promises);
-            const content_ids = await Promise.all(content_promises);
-            content_ids.forEach((id, index) => {
-                storage_links['content'][index] = id;
-            });
-        }
-
-        // resolve all promises
-        await Promise.all(promises);
-        return storage_links;
     }
 
     /**
@@ -287,51 +295,21 @@ export class StorageService {
     async saveToDatabase(file_path: string, file_type: StorageType, file_size: number, transactionalEntityManager: any): Promise<Storage> {
         const new_storage = new Storage();
         new_storage.file_path = file_path;
-        new_storage.type = file_type;
+        new_storage.type = file_type as StorageType;
         new_storage.size = file_size;
     
         return transactionalEntityManager.save(new_storage);
     }
-    
-    /**
-     * Local method to prepare the path for the file to be uploaded
-     * @param userId - user id
-     * @param recipeId - recipe id
-     * @param eduContentId - educational content id
-     * @returns a path for the file to be uploaded
-     */
-    pathPreparation(userId: string = null, recipeId: string = null, eduContentId: string = null){
-        if (userId == null && recipeId == null && eduContentId == null){
-            throw new HttpException('No path is specified', HttpStatus.BAD_REQUEST);
-        }
 
-        if (userId != null && eduContentId != null){
-            throw new HttpException('Both userId and eduContentId are specified', HttpStatus.BAD_REQUEST);
+    private async updateStorageLinks(storageLinks: Object, entry: any, repository: any, transactionalEntityManager: EntityManager) {
+        try {
+            entry.storage_links = storageLinks;
+            await transactionalEntityManager.save(repository, entry);
+            return true;
+        } catch (error) {
+            throw new HttpException(`Error during update: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        if (recipeId != null && eduContentId != null){
-            throw new HttpException('Both recipeId and eduContentId are specified', HttpStatus.BAD_REQUEST);
-        }
-
-        var path = "";
-
-        if (userId != null && recipeId != null){
-            // custom recipe
-            path = `users/${userId}/custom_recipes/${recipeId}`;
-        }
-        else if (userId != null){
-            // user profile picture
-            path = `users/${userId}`;
-        }
-        else if (recipeId != null){
-            // official recipe
-            path = `official_recipes/${recipeId}`;
-        }
-        else if (eduContentId != null){
-            // educational content
-            path = `educational_content/${eduContentId}`;
-        }
-
-        return path;
     }
+    
+    
 }

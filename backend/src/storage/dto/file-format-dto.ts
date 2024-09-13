@@ -4,27 +4,11 @@ import { StorageType } from "../enum/storage.enum";
 export class FileFormatDTO {
     /**
      * @example
-     * "firebase.jpg"
-     */
-    @IsString()
-    @IsNotEmpty()
-    fileName: string;
-
-    /**
-     * @example
      * "image/jpeg"
      */
     @IsEnum(StorageType)
     @IsNotEmpty()
     fileType: StorageType;
-    
-    /**
-     * @example
-     * 1234
-     */
-    @IsNumber()
-    @IsNotEmpty()
-    fileSize: number;
 
     /**
      * @example
