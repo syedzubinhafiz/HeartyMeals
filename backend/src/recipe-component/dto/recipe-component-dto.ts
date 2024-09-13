@@ -13,5 +13,5 @@ export class RecipeComponentDTO{
 
     @IsEnum(MeasuringUnit)
     @Type(()=>String)
-    readonly units: MeasuringUnit;
+    readonly unit: MeasuringUnit;
 }

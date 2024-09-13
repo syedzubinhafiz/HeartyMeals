@@ -42,4 +42,13 @@ export class CuisineService {
             return new HttpException("Cuisine added successfully", 201);
         
     }   
+
+    /**
+     *  This function is used to get all the cuisine
+     * @returns List of cuisine in the database
+     */
+    async getAllCuisine(){
+
+        return await this.cuisineRepository.find();
+    }
 }

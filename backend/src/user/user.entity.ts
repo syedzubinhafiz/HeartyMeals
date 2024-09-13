@@ -111,13 +111,13 @@ export class User{
     daily_budget: Object;
 
     @CreateDateColumn({ type: "timestamp with time zone" })
-    createdAt: Date;
+    created_at: Date;
 
     @UpdateDateColumn({ type: "timestamp with time zone" })
-    updatedAt: Date;
+    updated_at: Date;
 
     @DeleteDateColumn({ type: "timestamp with time zone", nullable: true })
-    deletedAt?: Date;
+    deleted_at?: Date;
 
     
 }

@@ -25,11 +25,11 @@ export class EducationalContent{
     visibility: Visibility;
 
     @CreateDateColumn({ type: 'timestamp', default: () => 'now()' })
-    createdAt: Date;
+    created_at: Date;
 
     @UpdateDateColumn({ type: 'timestamp', nullable: true })
-    updatedAt: Date;
+    updated_at: Date;
 
     @DeleteDateColumn({ type: 'timestamp', nullable: true })
-    deletedAt: Date;
+    deleted_at: Date;
 }
