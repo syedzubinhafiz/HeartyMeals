@@ -30,7 +30,7 @@
                 <button class="button-orange" @click="toggleSidebar">
                   <img src="/assets/img/SVGRepo_iconCarrier.svg" alt="Stomach Icon" class="stomach-icon"/>
                   <span>Stomach</span>
-                  <div class="notification-bubble">3</div>
+                  <div class="notification-bubble"></div>
                 </button>
               </div>
             </div>
@@ -85,8 +85,8 @@ definePageMeta({
 });
 
 
-import MealData from '../classes/mealData.js'
-import NutrientData from '../classes/nutrientData.js'
+import MealData from '../../classes/mealData.js'
+import NutrientData from '../../classes/nutrientData.js'
 
 import { ref, onMounted } from 'vue';
 
@@ -94,7 +94,7 @@ const searchValue = ref("");
 const meals = ref([]);
 const isSidebarOpen = ref(false);
 const isPopupOpen = ref(false);
-const searchDataList = ['Tomato and Cheese Croissant', 'Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza'];
+const searchDataList = ref([]);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -102,7 +102,6 @@ const toggleSidebar = () => {
 
 const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value;
-  console.log(isPopupOpen.value)
 };
 
 
@@ -121,14 +120,22 @@ let mealData3 = new MealData("Not a Croissant","assets/img/croissant.svg","1 cro
 const mealDataList2 = ref([mealData1,mealData2,mealData3])
 const recipeList = ref([])
 // Fetch meals from the backend when the component mounts
+
+watch(searchValue, async ()=> {
+  let endpoint = "/recipe/get"
+  if(searchValue.value!="") {
+    endpoint = `/recipe/get?search=${searchValue.value}`
+  }
+  recipeList.value = await useApi(endpoint,"GET")
+  searchDataList.value = recipeList.value.value.map((val)=>{return val.name})
+  totalItems.value = recipeList.value.value.length
+})
+
 onMounted(async () => {
-  console.log("AAAA")
   await useApi("/dietary","GET")
   // console.log(await useApi("/dietary","GET"))
   recipeList.value = await useFillData().fillRecipes()
-  console.log(recipeList)
-  console.log(recipeList.value)
-  console.log(recipeList.value.value)
+  searchDataList.value = recipeList.value.value.map((val)=>{return val.name})
   totalItems.value = recipeList.value.value.length
 
 })
@@ -144,8 +151,6 @@ const paginatedMealList = computed({
 })
 
 const onAddMeal = async (mealId,mealType) => {
-  console.log(mealId)
-  console.log(mealType)
   let currentDate = new Date()
   currentDate.setUTCHours(-8, 0, 0, 0)
   currentDate = currentDate.toISOString()
@@ -159,7 +164,6 @@ const onAddMeal = async (mealId,mealType) => {
       ],
       "mealType": mealType
   })
-  console.log(result)
   if(result.isError) {
     useToast().error("Meal adding failed!")
   }
