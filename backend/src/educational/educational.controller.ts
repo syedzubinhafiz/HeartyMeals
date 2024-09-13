@@ -1,39 +1,57 @@
-import { Body, Controller, Get, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { EducationalService } from './educational.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { EducationalContentDTO } from './dto/edu-content-dto';
-import { Repository } from 'typeorm';
-import { User } from 'src/user/user.entity';
-import { UserRole } from 'src/user/enum/user-role.enum';
-import { InjectRepository } from '@nestjs/typeorm';
+import { EducationalContent } from './educational.entity';
 
 @Controller('education')
 export class EducationController {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
         private educationalContentService: EducationalService,
     ){}
 
-    @Post('upload')
-    @UseInterceptors(FilesInterceptor('files[]'))
-    async upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
-        payload = JSON.parse(payload);
-        try {
-            let user = await this.userRepository.findOne({
-                where: {
-                    user_id: payload.userId
-                }
-            });
+    @Get('get')
+    async get(
+        @Query('educationalContentId') educationalContentId: string = null,
+        @Query("page") page: string,
+        @Query("pageSize") pageSize: string,
+        @Query("search") search: string = null,
+    ){
+        // Get the page number and page size
+        const page_number = page != undefined ? parseInt(page, 10) : 0;
+        const page_size = pageSize != undefined ? parseInt(pageSize, 10) : 0;
 
-            if (user.user_role !=  UserRole.ADMIN){
-                return "Error: Must be admin to be able to upload educational content.";
-            }
-
-            return this.educationalContentService.uploadContent(payload.title, payload.content, files);
+        // Check if pagination is required
+        let pagination =  false;
+        if (page_number != 0 && page_size != 0){
+            pagination = true
         }
-        catch (e){
-            return e;
+
+        const [educational_contents, total_educational_content] = await this.educationalContentService.getEducationalContent(
+            page_number, 
+            page_size, 
+            search, 
+            pagination,
+            educationalContentId
+        )
+        // Return the recipe list or recipe details based on the pagination
+        if (page_number != 0 && page_size != 0){
+            return {
+                data: educational_contents,
+                page_number,
+                page_size,
+                total_educational_content,
+                totalPages: Math.ceil(total_educational_content / page_size)
+            }
+        // If pagination is not required return the recipe list
+        } else if( page_number == 0 && page_size == 0 && educationalContentId == null){ 
+            return educational_contents;
+
+        // If recipeId is provided return the recipe details with components info 
+        }else {
+            const educational_content = educational_contents as EducationalContent;
+
+            return {
+                educational_content: educational_content,
+            }
         }
     }
 

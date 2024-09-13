@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { Visibility } from '../recipe/enum/visibility.enum';
+import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
 
 @Injectable()
 export class EducationalService {
@@ -105,18 +106,63 @@ export class EducationalService {
     }
 
     /**
-     * Get Educational Content
-     * @param eduId - educational id
+     * Get Educational Content based on the search criteria, or get the educational content based on the educational content id
+     * @param page - page number
+     * @param pageSize - page size
+     * @param search - search query
+     * @param pagination - pagination flag
+     * @param educationalContentId - educational content id (Optional)
      * @returns educational content object
      */
-    async getContent(eduId){
+    async getEducationalContent(
+        page: number, 
+        pageSize:number,
+        search: string|null,
+        pagination: boolean = true,
+        educationalContentId: string = null
+    ): Promise<[EducationalContent[]|EducationalContent, number]>{
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+
+        if (educationalContentId == null){
         // get file from repository
-        try {
-            return await this.educatinoalContentRepository.findOneBy({id: eduId});
+        
+            const query = this.educatinoalContentRepository.createQueryBuilder("educational_content")
+            .select([
+                'educational_content.id', 
+                'educational_content.title', 
+                'educational_content.content', 
+                'educational_content.storage_links',
+                'educational_content.visibility'                
+            ])
+            .where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                
+
+            // Search for educational content through summary or title
+            if (search != null){
+                query.andWhere("educational_content.title ILIKE :search OR educational_content.summary ILIKE :search", { search: `%${search}%` })
+            }
+
+            // Pagination
+            if (pagination){
+                query.skip(skip)
+                .take(take)
+            };
+            
+            const result = await query.getMany();
+
+            return [result, result.length]
+        
         }
-        catch (e){
-            return e;
+        else {
+            const edu_content = await this.educatinoalContentRepository.findOneBy({
+                id: educationalContentId
+            });
+
+            return [edu_content, 1];
         }
+
     }
 
     /**
