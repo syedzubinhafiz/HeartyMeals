@@ -1,8 +1,9 @@
 <template>
   <div class="card" @click="$emit('openOverlay','meal')">
-    <div class="top-right">
+    <!-- Only show this section if the recipe is admin approved -->
+    <div v-if="isAdminApproved" class="top-right">
       <img 
-        src="/assets/img/tooltipIcon.svg" 
+        src="/assets/img/checkMark.svg" 
         alt="Info Icon" 
         class="info-icon" 
         @mouseover.stop="showTooltip = true" 
@@ -10,14 +11,17 @@
         @click.stop
       />
       <div v-if="showTooltip" class="tooltip">
-        <p v-if="isCustomRecipe">Custom recipe by user</p>
-        <p v-if="isAdminApproved">✔️ Approved by Admin</p>
+        <p v-if="isAdminApproved">Approved by Admin</p>
       </div>
     </div>
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
-      </div>
+        <!-- Move the custom tag inside the image-container -->
+        <div v-if="isCustomRecipe" class="custom-tag">
+          CUSTOM
+        </div>
+      </div>  
       <div class="content">
         <h3 class="meal-name">{{ mealName }}</h3>
         <p class="meal-description">{{ mealDescription }}</p>
@@ -36,6 +40,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue'
@@ -58,7 +63,7 @@ const props = defineProps({
       required: true,
       default: {Breakfast: true, Lunch: false, Dinner: false, Snack: true},
     },
-      isCustomRecipe: {
+    isCustomRecipe: {
       type: Boolean,
       default: false, // Set this to true when it's a custom recipe by the user
     },
@@ -66,9 +71,9 @@ const props = defineProps({
       type: Boolean,
       default: false, // Set this to true when the admin approves the recipe
     },
-  })
-console.log(props.labels)
+})
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
 
@@ -94,6 +99,7 @@ console.log(props.labels)
   flex-shrink: 0;
   width: 90px;
   padding: 2px;
+  position:relative;
 }
 
 .img {
@@ -164,6 +170,8 @@ console.log(props.labels)
   color: #ffffff;
   border-radius: 10%;
   cursor: pointer;
+  width: 20px; /* Adjust these to make it smaller */
+  height: 20px;
 }
 
 .tooltip {
@@ -177,5 +185,20 @@ console.log(props.labels)
   font-size: 0.75rem;
   white-space: nowrap;
   z-index: 100;
+}
+.custom-tag {
+  position: absolute;
+  bottom: 62px;
+  right: 35px;
+  transform: rotate(-40deg); /* Tilt effect */
+  background-color: #004d40;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 3px;
+  z-index: 10;
+  border: 2px solid #fff;
 }
 </style>
