@@ -1,46 +1,25 @@
-import { Body, Controller, Get, HttpException, Inject, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpException, Inject, Post } from "@nestjs/common";
 import { UserAllergyService } from "./user_allergy.service";
-import { CreateUserAllergyDTO } from "./dto/create-user-allergy-dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/user/user.entity";
 import { Repository } from "typeorm";
 import { FoodCategory } from "src/food-category/foodCategory.entity";
+import { CommonService } from "src/common/common.service";
 
 @Controller('user_allergy')
 export class UserAllergyController {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-        @InjectRepository(FoodCategory)
-        private foodCategoryRepository: Repository<FoodCategory>,
+        private commonService: CommonService,
         private userAllergyService: UserAllergyService
     ){}
 
     @Post('add')
-    async createNewUserAllergy(@Body() payload: CreateUserAllergyDTO){
-        // validation if user exists
-        var user = await this.userRepository.findOne({
-            where: {
-                user_id: payload.userId
-            }
-        });
-        if (user == null){
-            return "User does not exist in database.";
-        }
-
-        // validation if food category exists
-        var food_category = await this.foodCategoryRepository.findOne({
-            where: {
-                type: payload.foodCatName
-            }
-        });
-
-        if (food_category == null){
-            return "Food category does not exist in database."
-        }
-
+    async createNewUserAllergy(@Headers() headers: any, @Body("foodCatIds") payload: string[]){
         try {
-            await this.userAllergyService.createNewUserAllergy(user.user_id, food_category.id);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            await this.userAllergyService.createNewUserAllergy(decoded_headers, payload);
         }
         catch (e) {
             return new HttpException(e.message, 400);
@@ -50,56 +29,34 @@ export class UserAllergyController {
         
     }
 
-    @Post('delete')
-    async deleteUserAllergy(@Body() payload: CreateUserAllergyDTO){
-        // validation if user exists
-        var user = await this.userRepository.findOne({
-            where: {
-                user_id: payload.userId
-            }
-        });
-        if (user == null){
-            return "User does not exist in database.";
-        }
-
-        // validation if food category exists
-        var food_category = await this.foodCategoryRepository.findOne({
-            where: {
-                type: payload.foodCatName
-            }
-        });
-
-        if (food_category == null){
-            return "Food category does not exist in database."
-        }
-
+    @Delete('delete')
+    async deleteUserAllergy(@Headers() headers: any, @Body("foodCatIds") payload: string[]){
         try {
-            await this.userAllergyService.createNewUserAllergy(user.user_id, food_category.id);
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            await this.userAllergyService.deleteUserAllergy(decoded_headers, payload);
         }
         catch (e) {
             return new HttpException(e.message, 400);
         }
 
-        return new HttpException("User allergy added successfully", 200);
+        return new HttpException("User allergy deleted successfully", 200);
         
     }
 
-    @Get()
-    async getUserAllergies(@Body("userId") payload){
-        // validation if user exists
-        var user = await this.userRepository.findOne({
-            where: {
-                user_id: payload.userId
-            }
-        });
-        if (user == null){
-            return "User does not exist in database.";
+    @Get('get/user')
+    async getUserAllergies(@Headers() headers: any){
+        const auth_header = headers.authorization;
+        const decoded_headers = this.commonService.decodeHeaders(auth_header);
+        try {
+            return await this.userAllergyService.getUserAllergies(decoded_headers);
+        } catch (e) {
+            return new HttpException(e.message, 400);
         }
-
-        return await this.userAllergyService.getUserAllergies(payload.userId);
     }
 
-    @Get()
+    @Get('get/all')
     async getAllUserAllergies(){
         return await this.userAllergyService.getAllUserAllergies();
     }

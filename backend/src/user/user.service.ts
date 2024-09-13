@@ -10,6 +10,8 @@ import { UserRole } from './enum/user-role.enum';
 import { CommonService } from 'src/common/common.service';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 import { CreateAdminDTO } from './dto/create-admin-dto';
+import { NutritionSettingDTO } from './dto/nutrition-setting-dto';
+import { CholesterolLevel } from './enum/cholesterol.enum';
 
 @Injectable()
 export class UserService {
@@ -29,9 +31,12 @@ export class UserService {
     
     async createNewUser(payload: CreatUserDTO, decodedHeaders: any){
         const new_user = new User();
-        console.log(decodedHeaders)
         if (await this.userRepository.findOneBy({user_id:decodedHeaders['sub']})){
             return new HttpException("User already exists", 400);
+        }
+
+        if (payload.userNutritionSetting.carbsPercentage + payload.userNutritionSetting.proteinPercentage + payload.userNutritionSetting.fatPercentage != 1){
+            return new HttpException("Nutrition percentages should add up to 100%", 400);
         }
 
         new_user.user_role =  UserRole.PATIENT;
@@ -45,6 +50,38 @@ export class UserService {
         new_user.gender = payload.gender
         new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
         new_user.medical_info = payload.medicalInfo;
+
+        new_user.age = payload.age;
+        new_user.height = payload.height;
+        new_user.weight = payload.weight;
+
+        new_user.user_nutrition_setting = {
+            'carbs_percentage': payload.userNutritionSetting.carbsPercentage,
+            'protein_percentage': payload.userNutritionSetting.proteinPercentage,
+            'fat_percentage': payload.userNutritionSetting.fatPercentage,
+            'cholesterol_level': payload.userNutritionSetting.cholesterolLevel,
+            'activity_level': payload.userNutritionSetting.activityLevel,
+        }
+        payload.userNutritionSetting;
+
+        // calculate the daily budget for the user in the format below
+        // {
+        //     "calories": 0, //in kcal
+        //     "carbs": 0, //in g
+        //     "protein": 0, //in g
+        //     "fat": 0, //in g
+        //     "sodium": 0, //in mg
+        //     "cholesterol": 0, //in mg
+        //     "water_intake": 0 //in ml
+        // }
+        // call common service to get the daily calories required for the user
+        const user_daily_calories = this.commonService.calculateCalories(payload.gender, payload.age, payload.height, payload.weight, payload.userNutritionSetting);
+
+        // call common service to calculate the daily nutrition budget for the user
+        var user_daily_budget = this.commonService.calculateNutritionBudget(user_daily_calories, payload.userNutritionSetting, payload.nyhaLevel);
+
+        new_user.daily_budget = user_daily_budget;
+
         return await this.userRepository.save(new_user);
     }
 
@@ -61,11 +98,14 @@ export class UserService {
         new_user.email = decodedHeaders['email'];
         new_user.first_name =  decodedHeaders['given_name'];
         new_user.last_name = decodedHeaders['family_name'];
-        new_user.ethnicity = await this.ethnicityRepository.findOneBy({id: payload.ethnicityId});
+        new_user.ethnicity = null;
         new_user.gender = payload.gender
         new_user.country = null;
         new_user.dietary = null;
         new_user.nyha_level = null;
+        new_user.age = 0;
+        new_user.height = 0;
+        new_user.weight = 0;
         new_user.medical_info = JSON.parse("{}");
         
         return await this.userRepository.save(new_user);
@@ -81,5 +121,7 @@ export class UserService {
             return false; 
         }
     }
+
+   
 
 }
