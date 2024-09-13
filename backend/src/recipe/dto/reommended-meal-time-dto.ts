@@ -5,14 +5,18 @@ export class RecommendedMealTimeDTO {
 
     @IsNotEmpty()
     @IsBoolean()
-    readonly breakfast: boolean;
+    readonly Breakfast: boolean;
 
     @IsNotEmpty()
     @IsBoolean()
-    readonly lunch: boolean;
+    readonly Lunch: boolean;
 
     @IsNotEmpty()
     @IsBoolean()
-    readonly dinner: boolean;
+    readonly Dinner: boolean;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    readonly Other: boolean;
     
 }

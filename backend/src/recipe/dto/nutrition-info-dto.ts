@@ -6,7 +6,7 @@ export class NutritionInfoDTO {
     calories: number = 0;
 
     @IsNumber()
-    added_sugars: number = 0; 
+    addedSugars: number = 0; 
 
     @IsNumber()
     biotin: number = 0;
@@ -27,7 +27,7 @@ export class NutritionInfoDTO {
     copper: number = 0;
 
     @IsNumber()
-    dietarty_fiber: number = 0;
+    dietaryFiber: number = 0;
 
     @IsNumber()
     fat: number = 0;
@@ -54,7 +54,7 @@ export class NutritionInfoDTO {
     niacin: number = 0;
 
     @IsNumber()
-    pantothenic_acid: number = 0;
+    pantothenicAcid: number = 0;
 
     @IsNumber()
     phosphorus: number = 0;
@@ -69,7 +69,7 @@ export class NutritionInfoDTO {
     riboflavin: number = 0;
 
     @IsNumber()
-    saturated_fat: number = 0;
+    saturatedFat: number = 0;
 
     @IsNumber()
     selenium: number = 0;
@@ -81,28 +81,28 @@ export class NutritionInfoDTO {
     thiamin: number = 0;
 
     @IsNumber()
-    total_carbohydrate: number = 0;
+    totalCarbohydrate: number = 0;
 
     @IsNumber()
-    vitamin_a: number = 0;
+    vitaminA: number = 0;
 
     @IsNumber()
-    vitamin_b6: number = 0;
+    vitaminB6: number = 0;
 
     @IsNumber()
-    vitamin_b12: number = 0;
+    vitaminB12: number = 0;
 
     @IsNumber()
-    vitamin_c: number = 0;
+    vitaminC: number = 0;
 
     @IsNumber()
-    vitamin_d: number = 0;
+    vitaminD: number = 0;
 
     @IsNumber()
-    vitamin_e: number = 0;
+    vitaminE: number = 0;
 
     @IsNumber()
-    vitamin_k: number = 0;
+    vitaminK: number = 0;
 
     @IsNumber()
     zinc: number = 0;
