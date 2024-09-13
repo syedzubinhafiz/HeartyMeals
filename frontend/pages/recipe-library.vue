@@ -60,7 +60,7 @@
 const recipeList = ref([])
 onMounted(async () => {
   await useApi("/dietary","GET")
-  recipeList.value = await useFillData().fillRecipes2()
+  recipeList.value = await useFillData().fillRecipes()
   console.log(recipeList)
 })
 
