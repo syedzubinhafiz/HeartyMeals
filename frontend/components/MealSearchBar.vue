@@ -9,8 +9,9 @@
 
       </div>
       <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-xl shadow-sm" :style="`width: ${searchWidth}`" v-if="isFocused && inputValue.length>0">
-          <div v-for="item in filterData()" :key="getID(item)" class="flex space-x-2">
-              <img src="/assets/img/SearchIcon.svg" alt="Search Icon" class="w-6 h-6" />
+          <div v-for="item in filterData()" :key="getID(item)" class="flex space-x-2 items-center border border-gray-500">
+              <img src="/assets/img/potato.svg" alt="Meal Image" class="w-12 h-12 border border-gray-500" />
+
               <button :onClick="()=>setValue(item)" class="h-full w-full flex justify-start">{{ getName(item) }}</button>
           </div>
           <div v-if="inputValue && filterData().length==0">
