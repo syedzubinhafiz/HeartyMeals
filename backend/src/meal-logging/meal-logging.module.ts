@@ -12,14 +12,13 @@ import { MealLogSummary } from 'src/meal-log-summary/meal-log-summary.entity';
 import { Country } from 'src/country/country.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
-// import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.service';
+import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.service';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([MealLogSummary, User, MealLogging, Recipe, Country, Dietary, Ethnicity, ])
     ],
     controllers: [MealLoggingController, MealPlanningController],
-    // providers: [MealLoggingService, CommonService, UserService, MealLogSummaryService]
-    providers: [MealLoggingService, CommonService, UserService]
+    providers: [MealLoggingService, CommonService, UserService, MealLogSummaryService]
 })
 export class MealLoggingModule {}

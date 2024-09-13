@@ -58,6 +58,31 @@ export class CommonService{
     }
 
     /**
+     * Checks the date format
+     * @param date - date to validate
+     * @returns true if the date is in the format of YYYY-MM-DDTHH:MM:SS.SSS+-HHMM else false
+     */
+    validateDate(date: string): boolean{
+        // check for valid date format
+        const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
+        if (!date || !date_pattern.test(date)) { return false; }
+        return true;
+    }
+
+    /**
+     * Checks if the two dates are the same day
+     * @param date1 - first date in Date object
+     * @param date2 - second date in Date object
+     * @returns true if the two dates are the same day, else false
+     */
+    isSameDay(date1: Date, date2: Date): boolean {
+        return (
+            date1.toDateString() === date2.toDateString()
+        );
+      }
+
+
+    /**
      * Calculate the calories required for intake based on user information
      * @param gender - user gender in Enum
      * @param age - user age in years
@@ -164,4 +189,30 @@ export class CommonService{
    }
 
     
+
+    calculateNutritionAfter(userDailyBudget: Object, recipeNutritionList: Object[]): JSON{
+        var nutrition_after = {} as JSON;
+
+        nutrition_after["calories"] = userDailyBudget["calories"];
+        nutrition_after["protein"] = userDailyBudget["protein"];
+        nutrition_after["carbs"] = userDailyBudget["carbs"];
+        nutrition_after["fats"] = userDailyBudget["fats"];
+        nutrition_after["cholesterol"] = userDailyBudget["cholesterol"];
+        nutrition_after["sodium"] = userDailyBudget["sodium"];
+
+        for (const item of recipeNutritionList){
+            const recipe_nutrition = item["nutrition_info"];
+            const meal_logging_portion = item["meal_logging_portion"];
+            const recipe_portion = item["recipe_portion"];
+
+            nutrition_after["calories"] -= recipe_nutrition["calories"] * meal_logging_portion / recipe_portion;
+            nutrition_after["protein"] -= recipe_nutrition["protein"] * meal_logging_portion / recipe_portion;
+            nutrition_after["carbs"] -= recipe_nutrition["totalCarbohydrate"] * meal_logging_portion / recipe_portion;
+            nutrition_after["fats"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
+            nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
+            nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
+        }
+
+        return nutrition_after;
+    }
 }
