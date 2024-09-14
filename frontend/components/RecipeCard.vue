@@ -1,14 +1,32 @@
 <template>
   <div class="card" @click="$emit('openOverlay','meal')">
+    <!-- Only show this section if the recipe is admin approved -->
+    <div v-if="isAdminApproved" class="top-right">
+      <img 
+        src="/assets/img/checkMark.svg" 
+        alt="Info Icon" 
+        class="info-icon" 
+        @mouseover.stop="showTooltip = true" 
+        @mouseleave.stop="showTooltip = false"
+        @click.stop
+      />
+      <div v-if="showTooltip" class="tooltip">
+        <p v-if="isAdminApproved">Approved by Admin</p>
+      </div>
+    </div>
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
-      </div>
+        <!-- Move the custom tag inside the image-container -->
+        <div v-if="isCustomRecipe" class="custom-tag">
+          CUSTOM
+        </div>
+      </div>  
       <div class="content">
         <h3 class="meal-name">{{ mealName }}</h3>
         <p class="meal-description">{{ mealDescription }}</p>
       </div>
-    </div>
+    </div>  
     <!-- Labels are now in a separate div below the top section -->
     <div class="labels">
       <button
@@ -24,7 +42,10 @@
   </div>
 </template>
 
+
 <script setup>
+import { ref } from 'vue'
+const showTooltip = ref(false)
 const props = defineProps({
     mealId: {
       type: String,
@@ -50,10 +71,19 @@ const props = defineProps({
     onButtonClick: {
       type: Function,
       default: (mealType) => {}
-    }
-  })
-console.log(props.labels)
+    },
+
+    isCustomRecipe: {
+      type: Boolean,
+      default: false, // Set this to true when it's a custom recipe by the user
+    },
+    isAdminApproved: {
+      type: Boolean,
+      default: false, // Set this to true when the admin approves the recipe
+    },
+})
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
 
@@ -66,6 +96,7 @@ console.log(props.labels)
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 15px;
   box-sizing: border-box;
+  position:relative;
 }
 
 .top-section {
@@ -78,6 +109,7 @@ console.log(props.labels)
   flex-shrink: 0;
   width: 90px;
   padding: 2px;
+  position:relative;
 }
 
 .img {
@@ -134,5 +166,49 @@ console.log(props.labels)
 .label.active {
   background-color: #004d40;
   color: #ffffff;
+}
+.top-right {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.info-icon {
+  color: #ffffff;
+  border-radius: 10%;
+  cursor: pointer;
+  width: 20px; /* Adjust these to make it smaller */
+  height: 20px;
+}
+
+.tooltip {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background-color: #004d40;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 100;
+}
+.custom-tag {
+  position: absolute;
+  bottom: 62px;
+  right: 35px;
+  transform: rotate(-40deg); /* Tilt effect */
+  background-color: #004d40;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 3px;
+  z-index: 10;
+  border: 2px solid #fff;
 }
 </style>

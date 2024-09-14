@@ -238,7 +238,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Baked Potato with Fish",
                     "description": "Wow so baked, very fishy",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add potato","2) add fish","3) bake for 20 minutes"],
                     "servingSize": 2,
                     "preparationTime": `30 minutes`,
                     "mealTimeRecommendation": {
@@ -270,7 +270,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Potato Tomato",
                     "description": "They rhyme!",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add potato","2) add tomato","3) mix together"],
                     "servingSize": 1,
                     "preparationTime": `15 minutes`,
                     "mealTimeRecommendation": {
@@ -281,7 +281,8 @@ export const useFillData = () => {
                     },
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="FRA")[0].id,
-                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="VEGAN")[0].id
+                    "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="VEGAN")[0].id,
+                    "user_id":null
                 },
                 "components": [
                     {
@@ -302,7 +303,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Fishy Pork",
                     "description": "Very meat",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add fish","2) add pork","3) cook for 60 minutes"],
                     "servingSize": 1,
                     "preparationTime": `60 minutes`,
                     "mealTimeRecommendation": {
@@ -311,6 +312,7 @@ export const useFillData = () => {
                         "Dinner": true,
                         "Snack": false
                     },
+                    "is_approved":true,
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="USA")[0].id,
                     "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="NON-HALAL")[0].id
@@ -327,13 +329,12 @@ export const useFillData = () => {
                         "unit": "g"
                     }
                 ]
-            
             })
             results = await useApi("/recipe/add","POST",{
                 "recipe": {
                     "name": "Nagasaki Roll",
                     "description": "Gives you superpowers",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add beef","2) add plutonium","3) put into nuclear reactor for 90 minutes"],
                     "servingSize": 1,
                     "preparationTime": `120 minutes`,
                     "mealTimeRecommendation": {
@@ -342,6 +343,7 @@ export const useFillData = () => {
                         "Dinner": true,
                         "Snack": false
                     },
+                    "is_approved":true,
                     "visibility": "Public",
                     "cuisineId": cuisines.value.filter((value) => value.country_id.toUpperCase()=="JPN")[0].id,
                     "dietaryId": diets.value.filter((value) => value.name.toUpperCase()=="NON-HALAL")[0].id
@@ -365,7 +367,7 @@ export const useFillData = () => {
                 "recipe": {
                     "name": "Potato with more Potato",
                     "description": "Potato with Potatos but also Potatos within Potatos",
-                    "instruction": ["instruction"],
+                    "instruction": ["1) add baked potato","2) add fried potato","3) potato"],
                     "servingSize": 1,
                     "preparationTime": `30 minutes`,
                     "mealTimeRecommendation": {
@@ -471,6 +473,32 @@ export const useFillData = () => {
         }
         return data
     }
+    const createMeal = async (date,recipeId,mealType,portion=1) => {
+        let result = await useApi("/meal-log-summary/calculate","POST",{
+            "mealDate": date,
+            "recipeIdPortions": [
+                {
+                    "recipeId": recipeId,
+                    "portion": portion
+                }
+            ],
+            "mealType": mealType
+        })
+        let nutritionAfter = result.value[2]
+        result = await useApi("/meal-log-summary/add","POST",{
+            "mealDate": date,
+            "recipeIdPortions": [
+                {
+                    "recipeId": recipeId,
+                    "portion": portion
+                }
+            ],
+            "nutritionAfter": nutritionAfter,
+            "mealType": mealType
+          }
+        )
+        return result
+    }
     const fillMealLogging = async() => {
         let currentDate = new Date()
         currentDate.setUTCHours(-8, 0, 0, 0)
@@ -480,53 +508,24 @@ export const useFillData = () => {
         // if no data, fill
         if(data.value.Breakfast.length==0 && data.value.Lunch.length==0 && data.value.Dinner.length==0 && data.value.Other.length==0) {
             const recipes = await fillRecipes()
-            let results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
-                        "portion": 2
-                    }
-                ],
-                "mealType": "Breakfast"
-            })
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id,
-                        "portion": 2
-                    }
-                ],
-                "mealType": "Lunch"
-            })
-            console.log(results)
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id,
-                        "portion": 1
-                    }
-                ],
-                "mealType": "Other"
-            })
-            console.log(results)
-            results = await useApi("/meal-logging/add","POST",{
-                "mealDate": currentDate,
-                "recipeIds": [
-                    {
-                        "recipeId": recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id,
-                        "portion": 1
-                    }
-                ],
-                "mealType": "Other"
-            })
-            console.log(results)
+            let recipe = null
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
+            console.log(createMeal(currentDate,recipe,"Breakfast",2))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id
+            console.log(createMeal(currentDate,recipe,"Lunch",2))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id
+            console.log(createMeal(currentDate,recipe,"Other",1))
+
+            recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
+            console.log(createMeal(currentDate,recipe,"Other",1))
+
             data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
         }
 
         return data
     }
-    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging}
+    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createMeal}
 }

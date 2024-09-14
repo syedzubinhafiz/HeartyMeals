@@ -2,10 +2,9 @@
 	<div class="flex w-full h-full grow p-2 space-x-4">
 		<div class="w-2/3 flex flex-col space-y-2">
 			<SearchBar v-model="searchVal" :dataList="seasoningNameList"/>
-			<H2>{{ searchVal.length>0 ? "Search" : "Recent Searches" }}</H2>
+			<H2>{{ searchVal.length>0 ? "Search" : "Seasonings" }}</H2>
 			<CustomDishIngredientList v-if="searchVal.length>0" :columns="2" :ingredientList="filteredSeasoningList" buttonStr="+" :buttonOnClick="onAdd" :includeDropdown="true" class="overflow-y-auto"  style="max-height:50vh"/>
-			<CustomDishIngredientList v-else-if="recentSearches.length>0" :columns="2" :ingredientList="recentSearches" buttonStr="+" :buttonOnClick="onAdd" :includeDropdown="true" class="overflow-y-auto"  style="max-height:50vh"/>
-			<P v-else>No recent searches! Start searching to find seasonings</P>
+			<CustomDishIngredientList v-else :columns="2" :ingredientList="seasoningList" buttonStr="+" :buttonOnClick="onAdd" :includeDropdown="true" class="overflow-y-auto"  style="max-height:50vh"/>
 		</div>
 		<div class="w-1/3 flex flex-col space-y-2">
 			<H2>Selected Seasoning</H2>

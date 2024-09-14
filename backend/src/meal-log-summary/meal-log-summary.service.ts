@@ -110,10 +110,18 @@ export class MealLogSummaryService {
                     throw new Error("Error saving meal logging summary entry");
                 }
     
-                return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
+                return [daily_budget, meal_logging_summary_entry.remaining_nutrients, false];
             }
             else {
-                return [daily_budget, meal_logging_summary_entry.remaining_nutrients];
+                var flag = false;
+                for (const key in meal_logging_summary_entry.remaining_nutrients) {
+                    if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
+                        flag = true;
+                        break;
+                    }
+                  }
+    
+                return [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
             }
         }
     
@@ -168,7 +176,15 @@ export class MealLogSummaryService {
             // calculate the nutrition if the user plan to eat the meal
             const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list[1], recipe_nutrition_portion);
 
-            return [nutrition_list[0], nutrition_list[1], nutrition_after];
+            var negative_nutrients = false;
+            for (const key in nutrition_after) {
+                if (nutrition_after[key] < 0) {
+                    negative_nutrients = true;
+                    break;
+                }
+            }
+    
+            return [nutrition_list[0], nutrition_list[1], nutrition_after, negative_nutrients];
         } catch (e) {
             throw e;
         }
@@ -205,6 +221,17 @@ export class MealLogSummaryService {
         const result = this.mealLoggingService.checkDate(meal_logging_object.consumed_date_time);
         if (result.editable == false){ throw new HttpException(result.message, 400); }
 
+        var found = false;
+        for (const meal_logging_id of meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType]) {
+            if (meal_logging_id === remomveMealLoggingIdDTO.mealLoggingId) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found){
+            throw new HttpException(`Meal logging id ${remomveMealLoggingIdDTO.mealLoggingId} not found in ${remomveMealLoggingIdDTO.mealType}`, 404);
+        }
 
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
@@ -262,8 +289,12 @@ export class MealLogSummaryService {
      */
     async updateNutritionBudget(decodedHeaders: any, updatemealLoggingSummaryDTO: UpdateMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
         try {     
+            const meal_logging_date = new Date(updatemealLoggingSummaryDTO.mealDate.split('T')[0]);
 
-            var meal_logging_summary_entry = await this.mealLogSummaryRepository.findOneBy({ id: updatemealLoggingSummaryDTO.mealLoggingSummaryId });
+            var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+                    .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                    .andWhere('date = :meal_date', {meal_date: meal_logging_date})
+                    .getOne();
 
             // check if the date is still within the same day 
 

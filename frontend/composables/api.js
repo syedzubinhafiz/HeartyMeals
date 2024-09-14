@@ -1,6 +1,5 @@
 export const useApi = async (request, method,body=null) => {
     let token = getItem("accessToken")
-    console.log(token)
     let result = await useLazyFetch(request, {
         baseURL: "http://localhost:3001",
         method: method,

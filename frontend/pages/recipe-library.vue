@@ -32,6 +32,9 @@
                 :mealDescription="meal.description"
                 :labels="meal.recommended_meal_time ?? {}"
                 @click.native="openOverlay(meal)"
+                :isCustomRecipe="meal.user_id !=null"
+                :isAdminApproved="meal.is_approved"
+                
               />
             </div>
         </div>
@@ -56,12 +59,11 @@
 <script setup>
 const recipeList = ref([])
 onMounted(async () => {
-  console.log("AAAA")
   await useApi("/dietary","GET")
-  // console.log(await useApi("/dietary","GET"))
   recipeList.value = await useFillData().fillRecipes()
   console.log(recipeList)
 })
+
 const isOverlayVisible = ref(false)
 const selectedMeal = ref(null)
 const currentPage = 1
