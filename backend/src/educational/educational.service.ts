@@ -132,11 +132,12 @@ export class EducationalService {
             .select([
                 'educational_content.id', 
                 'educational_content.title', 
+                'educational_content.summary',
                 'educational_content.content', 
                 'educational_content.storage_links',
                 'educational_content.visibility'                
             ])
-            .where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+            .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
                 
 
             // Search for educational content through summary or title
@@ -159,6 +160,21 @@ export class EducationalService {
             const edu_content = await this.educatinoalContentRepository.findOneBy({
                 id: educationalContentId
             });
+
+
+            // post process to get all the links into the content array
+            // get all the links first, loop all keys in the storage_ids to form an array
+            var links = {};
+
+            // get the actual links from the storage service 
+            for (const keys in edu_content.storage_links){
+                links[keys] = await this.storageService.getDownloadURL(edu_content.storage_links[keys]);
+            }
+            
+            // update the content with the links
+            const updated_content = this.replaceSrcInArray(edu_content.content, links);
+
+            edu_content.content = updated_content;
 
             return [edu_content, 1];
         }
@@ -234,4 +250,14 @@ export class EducationalService {
         // return new entry
         return await this.educatinoalContentRepository.save(entry);
     }
+
+    replaceSrcInArray(strings, replacements) {
+        return strings.map(str => {
+          Object.keys(replacements).forEach(key => {
+            const regex = new RegExp(`src="${key}"`, 'g');
+            str = str.replace(regex, `src="${replacements[key]}"`);
+          });
+          return str;
+        });
+    }      
 }
