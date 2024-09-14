@@ -48,15 +48,15 @@ const props = defineProps({
     required: true
   },
 })
-onMounted(async () => {
-  // await useApi("/dietary","GET")
-  // let mealLoggingData = await useFillData().fillMealLogging()
-  // mealLoggingData = mealLoggingData.value["Breakfast"]
-  //   .concat(mealLoggingData.value["Lunch"])
-  //   .concat(mealLoggingData.value["Dinner"])
-  //   .concat(mealLoggingData.value["Other"])
-  useMealLogging().unsavedMealList.value
-})
+// onMounted(async () => {
+//   // await useApi("/dietary","GET")
+//   // let mealLoggingData = await useFillData().fillMealLogging()
+//   // mealLoggingData = mealLoggingData.value["Breakfast"]
+//   //   .concat(mealLoggingData.value["Lunch"])
+//   //   .concat(mealLoggingData.value["Dinner"])
+//   //   .concat(mealLoggingData.value["Other"])
+//   useMealLogging().unsavedMealList.value
+// })
 
 const emits = defineEmits(["update:isSidebarOpen"]);
 

@@ -21,4 +21,10 @@ export default class IngredientData {
     static importFromJson(jsonData) {
         return new IngredientData(jsonData.id,jsonData.name,null)
     }
+    static fromApi(apiData) {
+        let ingredientData = new IngredientData(apiData.component_id,apiData.name,null)
+        ingredientData.unit = apiData.unit
+        ingredientData.quantity = apiData.amount
+        return ingredientData
+    }
 }

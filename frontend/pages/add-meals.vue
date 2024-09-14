@@ -49,7 +49,7 @@
                 :mealName="meal.name"
                 :mealDescription="meal.description"
                 :labels="meal.recommended_meal_time ?? {}"
-                :onButtonClick="onAddMeal"
+                @click.native="openOverlay(meal)"
               />
             </div>
           </div>
@@ -74,7 +74,11 @@
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
   </div>
-
+  <AddMealsOverlay
+    :visible="isOverlayVisible"
+    :meal="selectedMeal"
+    @closeOverlay="isOverlayVisible = false"
+  />
   <Footer/>
 </template>
 
@@ -155,33 +159,16 @@ const paginatedMealList = computed({
     },
 })
 
-const onAddMeal = async (mealId,mealType) => {
-  const result = await useApi(`/recipe/get?recipeId=${mealId}`,"GET")
-  // let currentDate = new Date()
-  // currentDate.setUTCHours(-8, 0, 0, 0)
-  // currentDate = currentDate.toISOString()
-  // let result = await useApi("/meal-logging/add","POST",{
-  //     "mealDate": currentDate,
-  //     "recipeIds": [
-  //         {
-  //             "recipeId": mealId,
-  //             "portion": 1
-  //         }
-  //     ],
-  //     "mealType": mealType
-  // })
-  if(result.isError) {
-    useToast().error("Meal adding failed!")
-  }
-  else {
-    useToast().success(`Meal Added!`)
-    console.log(result.value)
-    if(useMealLogging().unsavedMealList.value==null) {
-      useMealLogging().unsavedMealList.value = []
-    }
-    useMealLogging().unsavedMealList.value.push(MealData.fromApi(result.value.recipe))
-    console.log(useMealLogging().unsavedMealList)
-  }
+
+
+const isOverlayVisible = ref(false)
+const selectedMeal = ref(null)
+
+const openOverlay = async (meal) => {
+  const detailedMealInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
+  console.log(detailedMealInfo)
+  selectedMeal.value = detailedMealInfo.value
+  isOverlayVisible.value = true
 }
 </script>
 
