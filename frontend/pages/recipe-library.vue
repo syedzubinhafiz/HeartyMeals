@@ -17,11 +17,11 @@
       </div>
       <div>
         <div class="content-container">
-
           <div class="flex justify-center mb-10 text-black">
-            <MealSearchBar v-model="searchValue" :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']"/>
+            <MealSearchBar v-model="searchValue" :dataList="searchDataList"/>
           </div>
-
+          <!-- :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']" -->
+          <h1 class="card-heading">Recently Added</h1>
           <!-- Scrollable Recipe Cards -->
             <div class="cards-grid">
               <RecipeCard
@@ -56,8 +56,11 @@
   />
   <Footer/>
 </template>
+
 <script setup>
 const recipeList = ref([])
+const searchValue = ref("");
+const searchDataList = ref([]);
 onMounted(async () => {
   await useApi("/dietary","GET")
   recipeList.value = await useFillData().fillRecipes()
@@ -82,6 +85,15 @@ const openOverlay = async (meal) => {
   selectedMeal.value = detailedMealInfo
   isOverlayVisible.value = true
 }
+watch(searchValue,async ()=>{
+  let endpoint = "/recipe/get"
+  if(searchValue.value!=""){
+    endpoint=`/recipe/get?search=${searchValue.value}`
+  }
+  recipeList.value=await useApi(endpoint,"GET")
+  searchDataList.value=recipeList.value.value.map((val)=>{return val.name})
+  totalItems.value=recipeList.value.value.length
+})
 </script>
 <script>
 definePageMeta({
@@ -199,5 +211,11 @@ export default {
   position: relative;  /* Position it relative to its natural flow */
 }
 
-
+.card-heading{
+ color:black;
+ padding-bottom:20px;
+ padding-left:80px;
+ font-size: x-large;
+ 
+}
 </style>
