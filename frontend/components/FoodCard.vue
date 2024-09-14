@@ -9,16 +9,18 @@
     </div>
 
     <!-- More Options Icon -->
-    <div class="ml-auto" @click="toggleMiniCard">
+    <div class="ml-auto" @click="selectMeal">
       <i class="fas fa-ellipsis-v text-gray-600"></i>
     </div>
 
     <FoodCardNutrients 
-    v-if="showMiniCard" 
-    :nutritionInfo="cardInfo.recipe.nutrition_info"
-    :visible="showMiniCard" 
-    @close="toggleMiniCard" 
-    @remove="removeMeal"/>
+        v-if="showMiniCard" 
+        :nutritionInfo="cardInfo.recipe.nutrition_info"
+        :visible="showMiniCard" 
+        :showButtons="isToday"  
+        @close="toggleMiniCard" 
+        @remove="removeMeal" 
+        @editMeal="$emit('editMeal', $event)"/>
   </div>
 </template>
 
@@ -29,9 +31,14 @@ const props = defineProps({
   cardInfo: {
     type: Object,
     required: true
+  },
+  isToday: {
+    type: Boolean,
+    required: true
   }
 });
-const emit = defineEmits(['removeMeal']);
+
+const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
 const showMiniCard = ref(false);
 
@@ -39,27 +46,22 @@ const toggleMiniCard = () => {
   showMiniCard.value = !showMiniCard.value;
 };
 
+const selectMeal = () => {
+  toggleMiniCard();
+  console.log('Meal selected:', props.cardInfo);
+  emit('selectMeal', props.cardInfo); // Emit the selected meal data
+};
+
 const removeMeal = async () => {
-  // cardInfo.mealLoggingId, cardInfo.mealDate, cardInfo.mealType
-  console.log({
+  let result = await useApi("/meal-logging/delete", "DELETE", {
     "mealDate": props.cardInfo.created_at,
     "mealLoggingId": props.cardInfo.id,
     "mealType": props.cardInfo.type
-  })
-  let result = await useApi("/meal-logging/delete","DELETE",{
-    "mealDate": props.cardInfo.created_at,
-    "mealLoggingId": props.cardInfo.id,
-    "mealType": props.cardInfo.type
-  })
-  console.log(result)
-  // if(result.isError) {
-  //   useToast().error("Deletion Failed!")
-  // }
-  // else {
-  //   useToast().success("Meal Deleted!")
-  // }
+  });
+  console.log(result);
 };
 </script>
+
 
 <style scoped>
 .food-card {
