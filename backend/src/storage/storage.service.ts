@@ -19,11 +19,8 @@ export class StorageService {
 
     async handleUpload(fileUploadDTO: FileUploadDTO, entry: any, repository: any, transactionalEntityManager: EntityManager){
         try {
-            console.log("saving files")
             const storage_links = await this.uploadFile(fileUploadDTO, transactionalEntityManager);
             
-            console.log("updating links");
-
             const saved = await this.updateStorageLinks(storage_links, entry, repository, transactionalEntityManager);
             return true;
         } catch (e) {
@@ -41,7 +38,7 @@ export class StorageService {
      * @example
      * {
      *  "thumbnail": "storage_id",
-     *  "content": ["storage_id", "storage_id"]
+     *  "content": {"storage_id", "storage_id"}
      * }
      */
     async uploadFile(fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
@@ -66,7 +63,7 @@ export class StorageService {
                     promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, fileUploadDTO.path, bucket, transactionalEntityManager));
                 } else {
                     var fs = require('fs');
-                    const local_path = join(__dirname, '../../src/storage/uploaded/', fileUploadDTO.path, '/');
+                    const local_path = join(__dirname, '../../uploaded/', fileUploadDTO.path, '/');
                     if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
                     promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
                 }
@@ -79,15 +76,15 @@ export class StorageService {
                         return this.uploadToFirebase(file_format_DTO, fileUploadDTO.path, bucket, transactionalEntityManager);
                     } else {
                         var fs = require('fs');
-                        const local_path = join(__dirname, '../../src/storage/uploaded/', fileUploadDTO.path, '/');
+                        const local_path = join(__dirname, '../../uploaded/', fileUploadDTO.path, '/');
                         if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
                         return this.saveToLocal(file_format_DTO, local_path, transactionalEntityManager);
                     }
                 });
                 promises.push(...content_promises);
                 const content_ids = await Promise.all(content_promises);
-                content_ids.forEach((id) => {
-                    storage_links['content'].push(id);
+                content_ids.forEach((id, index) => {
+                    storage_links['content'][`${index}`](id);
                 });
             }
 
@@ -311,5 +308,20 @@ export class StorageService {
         }
     }
     
+    async getDefaultImage(){
+        if (process.env.SAVE_FIREBASE === "true"){
+            const bucket = getStorage().bucket();
+            const file = bucket.file('default/default.png');
+            const [url] = await file.getSignedUrl({
+                action: 'read',
+                expires: '03-09-2491', // Long expiration date
+            });
+            return url;
+        }
+        else {
+            const default_path = join(__dirname, '../../uploaded/default/default.png');
+            return default_path;
+        }
+    }
     
 }
