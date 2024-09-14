@@ -34,6 +34,11 @@
 </template>
 <script setup>
 import MealData from '../../classes/mealData.js'
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+
 
 
 defineOptions({
@@ -51,7 +56,8 @@ const myMealNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const myMaxNutritientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const summaryData = ref([])
 const recipePortion = []
-const mealType = "Breakfast"
+// const mealType = "Breakfast"
+const mealType = ref(route.query.mealType || "");
 
 onMounted(async () => {
   await useApi("/dietary","GET")
@@ -100,10 +106,12 @@ const calculateNutrition = async () => {
   currentDate.setHours(0,0,0,0);
   currentDate = currentDate.toISOString();
 
+  console.log(mealType.value);
+
   let body = {
     "mealDate": `${currentDate}`,
     "recipeIdPortions": recipePortion.value,
-    "mealType": `${mealType}`
+    "mealType": `${mealType.value}`
   };
 
   let result = await useApi("/meal-log-summary/calculate", "POST", body);
@@ -152,7 +160,7 @@ const handleDoneClick = async () => {
       "mealDate": `${currentDate}`,
       "recipeIdPortions": recipePortion,
       "nutritionAfter": nutritionAfter[2],
-      "mealType": mealType
+      "mealType":`${mealType.value}`
     };
 
     let result = await useApi("/meal-log-summary/add", "POST", body);
