@@ -15,7 +15,9 @@
             <StomachMealCard  v-model="tempMealData[i]"/>
           </div>
         </div>
-        <ButtonGreen @click="navigateTo('/summary')">Summary</ButtonGreen>
+        <nuxt-link :to="{ path: '/summary', query: { mealType: mealType } }">
+                  <ButtonGreen>Summary</ButtonGreen>
+        </nuxt-link>
       </div>
       
 
@@ -39,6 +41,10 @@ const props = defineProps({
   isSidebarOpen: {
       type: Boolean,
       default: false
+  },
+  mealType: {
+    type: String,
+    required: true
   },
 })
 const tempMealData = ref([])
