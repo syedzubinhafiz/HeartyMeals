@@ -10,9 +10,12 @@ export class EducationalContent{
 
     @Column({type:'varchar'})
     title: string 
+
+    @Column({type:'varchar'})
+    summary: string
     
-    @Column({type: 'json'})
-    content: Array<JSON>;
+    @Column({type: 'text', array: true})
+    content: string[];
 
     @Column({type: 'json', nullable: true})
     storage_links: JSON;

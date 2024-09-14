@@ -13,5 +13,5 @@ export class EducationalContentDTO{
 
     @ArrayNotEmpty()
     @ValidateNested({ each: true })
-    readonly content: Array<JSON>;
+    readonly content: string[];
 }

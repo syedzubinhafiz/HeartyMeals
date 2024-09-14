@@ -20,22 +20,17 @@ export class EducationController {
     @Post('add')
     async upload(@Body() payload: AddEducationalContentDTO){
         try {
-            // await this.entityManager.transaction(async transactionalEntityManager => {
-            //     const entry =  this.educationalContentService.uploadContent(payload, transactionalEntityManager);
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const entry =  this.educationalContentService.uploadContent(payload, transactionalEntityManager);
 
-            //     if (payload.files){
-            //         await this.storageService.handleUpload();
-            //     }
-            // });
+                if (payload.files){
+                    await this.storageService.handleUpload();
+                }
+            });
             return new HttpException('Educational content uploaded successfully', HttpStatus.OK);
         }
         catch (e){
             throw new HttpException('Failed to upload educational content', HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Post('delete')
-    delete(@Body() payload){
-        return this.educationalContentService.deleteContent(payload.eduId);
     }
 }

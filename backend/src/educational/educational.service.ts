@@ -24,38 +24,14 @@ export class EducationalService {
      */
     async uploadContent(addEducationalContentDTO: AddEducationalContentDTO, transactionalEntityManager: EntityManager){
 
-        // content that passed in should be like this 
-        // [ <block of text>, <block of image/video>, <block of text>]
-        // create a saved_content array []
-        var saved_content = [];
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-
-        for (const item of addEducationalContentDTO.educationalContent.content){
-            if (item['type'] === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item['info']
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        }
 
         // create and save an entry of educational content object to the database first to obtain the uuid of the object.
         var new_entry = new EducationalContent();
         new_entry.title = addEducationalContentDTO.educationalContent.title;
         new_entry.summary = addEducationalContentDTO.educationalContent.summary;
-        new_entry.content = saved_content;
+        new_entry.content = addEducationalContentDTO.educationalContent.content;
         new_entry.storage_links = {} as JSON;
+        
         // create an entry with no links first (to get the edu_id for path)
         try {
             return await transactionalEntityManager.save(new_entry);
