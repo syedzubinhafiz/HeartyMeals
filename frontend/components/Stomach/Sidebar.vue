@@ -15,7 +15,9 @@
             <StomachMealCard  v-model="modelValue[i]"/>
           </div>
         </div>
-        <ButtonGreen>Summary</ButtonGreen>
+        <nuxt-link :to="{ path: '/summary', query: { mealType: mealType } }">
+                  <ButtonGreen>Summary</ButtonGreen>
+        </nuxt-link>
       </div>
       
 
@@ -36,6 +38,10 @@ const props = defineProps({
   isSidebarOpen: {
       type: Boolean,
       default: false
+  },
+  mealType: {
+    type: String,
+    required: true
   },
 })
 

@@ -69,7 +69,7 @@
     <div class="text-black">
 
       <!-- Sidebar Component -->
-      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen"/>
+      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen" :mealType="mealType" />
       <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
@@ -89,12 +89,17 @@ import MealData from '../../classes/mealData.js'
 import NutrientData from '../../classes/nutrientData.js'
 
 import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
 
 const searchValue = ref("");
 const meals = ref([]);
 const isSidebarOpen = ref(false);
 const isPopupOpen = ref(false);
 const searchDataList = ref([]);
+
+const route = useRoute()
+const mealType = ref(route.query.mealType || "");
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
