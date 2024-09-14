@@ -22,11 +22,12 @@
                   <!-- Custom content for the expanded section will go here -->
                   <slot></slot>
                   <!-- Green Button -->
-                   <nuxt-link to="add-meals">
-                  <button class="add-dishes-button mt-4">
-                      <i class="fas fa-plus mr-2"></i>Add Dishes
-                  </button>
-                </nuxt-link>
+                  <nuxt-link :to="{ path: '/add-meals', query: { mealType: title } }">
+                      <button class="add-dishes-button mt-4">
+                          <i class="fas fa-plus mr-2"></i>Add Dishes
+                      </button>
+                  </nuxt-link>
+
               </div>
           </transition>
       </div>

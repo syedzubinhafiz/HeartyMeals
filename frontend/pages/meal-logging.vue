@@ -26,56 +26,87 @@
                     <div>
                         <FoodCard 
                             v-for="(card, index) in breakfastList" 
-                            :key="index" :cardInfo="card" 
+                            :key="index" 
+                            :cardInfo="card" 
+                            :isToday="isToday"  
                             class="mb-4" 
-                            @removeMeal="removeMeal('breakfastList', index)"/>
+                            @removeMeal="removeMeal('breakfastList', index)"
+                            @editMeal="openEditMealPopup(card)"
+                            @selectMeal="setSelectedMeal"/>
                     </div>
                 </Mealcardlist>
     
                 <Mealcardlist title="Lunch" :itemsCount="lunchList.length" route="/lunch">
                     <div>
-                        <FoodCard v-for="(card, index) in lunchList" :key="index" :cardInfo="card" class="mb-4"/>
-                    </div>
+                        <FoodCard 
+                            v-for="(card, index) in lunchList" 
+                            :key="index" 
+                            :cardInfo="card" 
+                            :isToday="isToday"  
+                            class="mb-4" 
+                            @removeMeal="removeMeal('lunchList', index)"
+                            @editMeal="openEditMealPopup(card)"
+                            @selectMeal="setSelectedMeal"/>                    
+                        </div>
                 </Mealcardlist>
     
                 <Mealcardlist title="Dinner" :itemsCount="dinnerList.length" route="/dinner">
                     <div>
-                        <FoodCard v-for="(card, index) in dinnerList" :key="index" :cardInfo="card" class="mb-4"/>
-                    </div>
+                        <FoodCard 
+                            v-for="(card, index) in dinnerList" 
+                            :key="index" 
+                            :cardInfo="card" 
+                            :isToday="isToday"  
+                            class="mb-4" 
+                            @removeMeal="removeMeal('dinnerList', index)"
+                            @editMeal="openEditMealPopup(card)"
+                            @selectMeal="setSelectedMeal"/>                    
+                        </div>
                 </Mealcardlist>
     
                 <Mealcardlist title="Other" :itemsCount="otherList.length" route="/other">
                     <div>
-                        <FoodCard v-for="(card, index) in otherList" :key="index" :cardInfo="card" class="mb-4"/>
+                        <FoodCard 
+                            v-for="(card, index) in otherList" 
+                            :key="index" 
+                            :cardInfo="card" 
+                            :isToday="isToday"  
+                            class="mb-4" 
+                            @removeMeal="removeMeal('otherList', index)"
+                            @editMeal="openEditMealPopup(card)"
+                            @selectMeal="setSelectedMeal"/>
                     </div>
                 </Mealcardlist>
             </div>
 
-
                 <div class="nutrient-widget-container section justify-end h-screen ">
                     <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
                 </div>
-
-            
             <img :src="backgroundImage" class="background-image" />
         </div>
-
-        <div class=""></div>
   
         <div class="section flex flex-col justify-end fixed-footer ">
             <Footer />
         </div>
+
+        <EditMealPopUp 
+            v-if="showEditPopup" 
+            :key="selectedMealData?.id" 
+            :visible="showEditPopup" 
+            :mealData="selectedMealData.value" 
+            @close="toggleEditPopup" 
+            @save="saveMealChanges"
+        /> 
     </div>
 </template>
 
   
 <script setup>
-    import { ref, computed, onMounted, watch } from 'vue';
+    import { ref, computed, onMounted, watch, toRaw } from 'vue';
     import backgroundImage from '/assets/img/meal-logging-bg.png';
     import NutrientData from '../../classes/nutrientData.js'
   
     const currentDate = ref(new Date());
-    
     
     const formattedDate = computed(() => {
         return currentDate.value.toLocaleDateString('en-GB', {
@@ -87,10 +118,57 @@
 
     const previousDate = () => {
         const newDate = new Date(currentDate.value);
-        newDate.setDate(newDate.getDate() - 1);
-        currentDate.value = newDate;
+        const today = new Date();
+        
+        // Calculate the date 7 days ago from today
+        const oneWeekAgo = new Date(today);
+        oneWeekAgo.setDate(today.getDate() - 7);
+        
+        // If the new date is before the "oneWeekAgo" date, don't allow it to change
+        if (newDate > oneWeekAgo) {
+            newDate.setDate(newDate.getDate() - 1);
+            currentDate.value = newDate;
+        } else {
+            alert("You can only view up to 7 days of history.");
+        }
     };
-  
+
+    const fetchDataForCurrentDate = async () => {
+        console.log(currentDate.value)
+
+        let formattedCurrentDate = new Date(currentDate.value);
+        console.log(formattedCurrentDate)
+        
+        let formattedISODate = formattedCurrentDate.toISOString();
+        console.log(formattedISODate)
+
+        
+        //formattedCurrentDate.setUTCHours(formattedCurrentDate.getUTCHours() + 8);
+        let formattedISODate8 = formattedCurrentDate.toISOString();
+        console.log(formattedISODate8);
+
+
+        let result = await useApi(`/user/budget?date=${formattedISODate8}`, "GET");
+        console.log(result);
+
+        maxNutrientData.value = NutrientData.fromApi2(result.value[0]);
+        nutrientData.value = NutrientData.fromApi2(result.value[1]);
+
+        let mealLoggingRecipes = await useFillData().fillMealLogging();
+        console.log(mealLoggingRecipes)
+        
+        let meals = await useApi(`/meal-logging/get?date=${formattedISODate8}`, "GET");
+        console.log(meals)
+        breakfastList.value = meals.value["Breakfast"];
+        lunchList.value = meals.value["Lunch"];
+        dinnerList.value = meals.value["Dinner"];
+        otherList.value = meals.value["Other"]; 
+    };
+
+    watch(currentDate, async () => {
+        await fetchDataForCurrentDate();
+    });
+
     const today = new Date();
     const nextDate = () => {
     const newDate = new Date(currentDate.value);
@@ -102,43 +180,70 @@
         }
         };
     
-    import image1 from 'assets/img/LandingPage/image1.jpeg';
-    import image2 from 'assets/img/LandingPage/image2.jpeg';
-    import image3 from 'assets/img/LandingPage/image3.jpeg';
-    import image4 from 'assets/img/LandingPage/image4.jpeg';
-    import defaultImage from 'assets/img/LandingPage/image4.jpeg';
-    // const breakfastList = [
-    //     {
-    //         name: "Egg Sandwich",
-    //         image: image4
-    //     }
-    // ];
-    // const lunchList = [
-    //     {
-    //         name: "Egg Sandwich",
-    //         image: image4
-    //     }
-    // ];
-    // const dinnerList = [
-    //     {
-    //         name: "Egg Sandwich",
-    //         image: image4
-    //     }
-    // ];
-    // const otherList = [
-    //     {
-    //         name: "Egg Sandwich",
-    //         image: image1
-    //     },
-    //     {
-    //         name: "Salad",
-    //         image: image2
-    //     },
-    //     {
-    //         name: "Cucumber",
-    //         image: image3
-    //     }
-    // ];
+    const isToday = computed(() => {
+        return (
+        currentDate.value.getFullYear() === today.getFullYear() &&
+        currentDate.value.getMonth() === today.getMonth() &&
+        currentDate.value.getDate() === today.getDate()
+        );
+    });
+
+
+    const showEditPopup = ref(false);
+    const selectedMealData = ref(null);
+
+    const setSelectedMeal = (mealData) => {
+    selectedMealData.value = { ...mealData }; // Ensure a copy is created
+    console.log("Selected Meal Data:", selectedMealData.value);
+};
+
+    const toggleEditPopup = () => {
+        showEditPopup.value = !showEditPopup.value;
+    };
+
+    const openEditMealPopup = (mealInfo) => {
+        console.log("Before assignment:", mealInfo);
+        selectedMealData.value = mealInfo ? { ...mealInfo } : {}; // Ensure it's an object
+        console.log("After assignment:", selectedMealData.value);
+        showEditPopup.value = true;
+        console.log("Popup visibility:", showEditPopup.value);
+
+    };
+
+    const saveMealChanges = async (updatedMealInfo) => {
+        console.log("mealdate: ", selectedMealData.value.created_at);
+        console.log("id", selectedMealData.value.id);    
+        console.log("portion", updatedMealInfo.portionSize);
+        console.log("mealtype", updatedMealInfo.mealType);
+
+        let currentDate = new Date()
+        currentDate.setUTCHours(-8, 0, 0, 0)
+        currentDate = currentDate.toISOString()
+
+        const portionSize = Number(updatedMealInfo.portionSize);
+        const mealType = String(updatedMealInfo.mealType);
+        
+        // Make API call to update the meal in the backend
+        const result = await useApi("/meal-logging/update", "POST", {
+            "mealDate": currentDate,
+            "mealLoggingId": selectedMealData.value.id,
+            "portion": portionSize,
+            "mealType": mealType
+        });
+
+        console.log("Update Meal API response:", result);
+
+        if (result && !result.isError) {
+            // Update was successful, close the popup
+            showEditPopup.value = false;
+
+            // Optionally, you could refresh the meal data here
+            await fetchDataForCurrentDate();
+        } else {
+            // Handle the error, maybe show a toast notification
+            console.error("Failed to update the meal:", result?.message || "Unknown error");
+        }
+    };
 
     const breakfastList = ref([]);
     const lunchList = ref([]);
@@ -148,11 +253,12 @@
     const maxNutrientData = ref(null)
     const nutrientData = ref(null)
 
-    onMounted(async () => {
+    onMounted(async () => {  
         await useApi("/dietary","GET")
         let recipes = await useFillData().fillRecipes()
-        console.log(recipes)
         let mealLoggingRecipes = await useFillData().fillMealLogging()
+        await fetchDataForCurrentDate();   
+
         // let mealLoggingRecipes = {
         //     "Breakfast": [],
         //     "Lunch": [
@@ -181,23 +287,19 @@
         //         },
         //     ]
         // }
-        console.log(mealLoggingRecipes)
-        breakfastList.value = mealLoggingRecipes.value["Breakfast"]
-        lunchList.value = mealLoggingRecipes.value["Lunch"]
-        dinnerList.value = mealLoggingRecipes.value["Dinner"]
-        otherList.value = mealLoggingRecipes.value["Other"]
-
-        let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
-        currentDate = currentDate.toISOString()
-
-        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
-        console.log(result)
-
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-        nutrientData.value = NutrientData.fromApi2(result.value[1])
+        // console.log(mealLoggingRecipes)
+        // breakfastList.value = mealLoggingRecipes.value["Breakfast"]
+        // lunchList.value = mealLoggingRecipes.value["Lunch"]
+        // dinnerList.value = mealLoggingRecipes.value["Dinner"]
+        // otherList.value = mealLoggingRecipes.value["Other"]
+        // let currentDate = new Date()
+        // currentDate.setUTCHours(-8, 0, 0, 0)
+        // currentDate = currentDate.toISOString()
+        // let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+        // maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+        // nutrientData.value = NutrientData.fromApi2(result.value[1])
+        
     })
-
 </script>
   
 <style scoped>
