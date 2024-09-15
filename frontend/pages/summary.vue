@@ -33,6 +33,7 @@
 </div>
 </template>
 <script setup>
+import { warn } from 'vue';
 import MealData from '../../classes/mealData.js'
 import { useRoute } from 'vue-router';
 
@@ -61,17 +62,18 @@ const mealType = ref(route.query.mealType || "");
 
 onMounted(async () => {
   await useApi("/dietary","GET")
-  let mealLoggingData = await useFillData().fillMealLogging()
-  // console.log(mealLoggingData.value)
-  mealLoggingData = mealLoggingData.value["Breakfast"]
-    .concat(mealLoggingData.value["Lunch"])
-    .concat(mealLoggingData.value["Dinner"])
-    .concat(mealLoggingData.value["Other"])
-  summaryData.value = mealLoggingData
-  console.log(summaryData.value[0].recipe.id)
-  tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
-  console.log(tempMealData.value)
+  summaryData.value = useMealLogging().unsavedMealList.value
   console.log(summaryData.value)
+  // console.log(mealLoggingData.value)
+  // mealLoggingData = mealLoggingData.value["Breakfast"]
+  //   .concat(mealLoggingData.value["Lunch"])
+  //   .concat(mealLoggingData.value["Dinner"])
+  //   .concat(mealLoggingData.value["Other"])
+  // summaryData.value = mealLoggingData
+  // console.log(summaryData.value[0].recipe.id)
+  // tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
+  // console.log(tempMealData.value)
+  // console.log(summaryData.value)
 
 
 
@@ -81,19 +83,18 @@ onMounted(async () => {
   currentDate = currentDate.toISOString();
 
   recipePortion.value = summaryData.value.map(item => ({
-    recipeId: item.recipe.id,
-    portion: item.portion
+    recipeId: item.id,
+    portion: item.servings
   }));
 
   await calculateNutrition();
 });
 
-const updatePortions = ({ recipeId, portion }) => {
-  const index = recipePortion.value.findIndex(item => item.recipeId === recipeId);
-  if (index !== -1) {
-    recipePortion.value[index].portion = portion;
-    console.log(recipePortion.value);
-  }
+const updatePortions = () => {
+  recipePortion.value = summaryData.value.map(item => ({
+    recipeId: item.id,
+    portion: item.servings
+  }));
   calculateNutrition();
 };
 
@@ -115,6 +116,7 @@ const calculateNutrition = async () => {
   };
 
   let result = await useApi("/meal-log-summary/calculate", "POST", body);
+  console.log(recipePortion.value)
   console.log(result);
 
   userBudget.calories = (result.value[0].calories);
@@ -155,23 +157,23 @@ const handleDoneClick = async () => {
   currentDate = currentDate.toISOString();
 
   for (let i = 0; i < summaryData.value.length; i++) {
-    const nutritionAfter = await calculateNutrition();
-    let body = {
-      "mealDate": `${currentDate}`,
-      "recipeIdPortions": recipePortion,
-      "nutritionAfter": nutritionAfter[2],
-      "mealType":`${mealType.value}`
-    };
-
-    let result = await useApi("/meal-log-summary/add", "POST", body);
-    console.log(result);
-
+    let currentDate = new Date()
+    currentDate.setUTCHours(-8, 0, 0, 0)
+    currentDate = currentDate.toISOString()
+    let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
+    if(result.isError) {
+      useToast().error("Meal logging failed!")
+      console.log(result)
+      return 
+    }
    
   }
+  useMealLogging().unsavedMealList.value = []
   navigateTo('/meal-logging');
 };
 
-
+console.log("-------------")
+console.log(useMealLogging().unsavedMealList)
 
 
 </script>
@@ -276,6 +278,7 @@ const handleDoneClick = async () => {
 
 <script>
 import NutrientData from '~/classes/nutrientData';
+import { useMealLogging } from '~/composables/mealLogging.js';
 
 
 

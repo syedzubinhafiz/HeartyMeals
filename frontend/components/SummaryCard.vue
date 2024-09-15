@@ -3,11 +3,11 @@
     <div class="card-header">
       <div class="item-number">{{ itemNumber }}.</div>
       <div class="item-image">
-        <img :src="item.imgSrc" :alt="item.recipe.name">
+        <img :src="item.imgSrc" :alt="item.name">
       </div>
       <div class="item-details">
-        <h3 class="item-title">{{ item.recipe.name }}</h3>
-        <p class="item-description">{{ item.recipe.description }}</p>
+        <h3 class="item-title">{{ item.name }}</h3>
+        <p class="item-description">{{ item.description }}</p>
         <p class="more-details">Click to show nutrition information.</p>
       </div>
       <div class="serving-selector">
@@ -22,37 +22,37 @@
         <div class="nutrition-item">
         <img :src="getIcon('Calories')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Calories</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.calories }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.calories }}mg</span>
       </div>
 
       <div class="nutrition-item">
         <img :src="getIcon('Carbohydrates')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Carbohydrates</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.totalCarbohydrate }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.carbohydrtates }}mg</span>
       </div>
 
       <div class="nutrition-item">
         <img :src="getIcon('Protein')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Protein</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.protein }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.protein }}mg</span>
       </div>
 
       <div class="nutrition-item">
         <img :src="getIcon('Fats')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Fats</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.fat }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.fats }}mg</span>
       </div>
 
       <div class="nutrition-item">
         <img :src="getIcon('Sodium')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Sodium</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.sodium }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.sodium }}mg</span>
       </div>
 
       <div class="nutrition-item">
         <img :src="getIcon('Cholesterol')" alt="icon" class="nutrition-icon"/>
         <span class="nutrition-key">Cholesterol</span>
-        <span class="nutrition-value">{{ item.recipe.nutrition_info.cholesterol }}mg</span>
+        <span class="nutrition-value">{{ item.nutrientData.cholesterol }}mg</span>
       </div>
       </div>
     </div>
@@ -75,7 +75,7 @@ export default {
 
   data() {
     return {
-      servings: this.item.portion,
+      servings: this.item.servings,
       options: [0.25, 0.5, 0.75, 1, 2],
       isExpanded: false,
       nutritionIcons: {
@@ -97,10 +97,9 @@ export default {
       return this.nutritionIcons[key.toLowerCase()] || '';
     },
     updateServings() {
-      this.$emit('update-servings', {
-        recipeId: this.item.recipe.id,
-        portion: this.servings
-      });
+      this.item.servings = this.servings
+      this.$emit('update-servings');
+
     }
   }
 }
