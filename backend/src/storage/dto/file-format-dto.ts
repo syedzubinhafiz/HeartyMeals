@@ -4,6 +4,14 @@ import { StorageType } from "../enum/storage.enum";
 export class FileFormatDTO {
     /**
      * @example
+     * test.jpg
+     */
+    @IsString()
+    @IsNotEmpty()
+    fileName: string;
+
+    /**
+     * @example
      * "image/jpeg"
      */
     @IsEnum(StorageType)

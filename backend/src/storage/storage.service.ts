@@ -7,6 +7,7 @@ import { getStorage, getDownloadURL } from 'firebase-admin/storage'
 import { createWriteStream, promises as fs } from 'fs';
 import { join } from 'path';
 import { FileUploadDTO } from './dto/file-upload-dto';
+import { FileFormatDTO } from './dto/file-format-dto';
 
 @Injectable()
 export class StorageService {
@@ -51,7 +52,7 @@ export class StorageService {
         try {
             const storage_links: any = {};
             storage_links['thumbnail'] = null
-            storage_links['content'] = [];
+            storage_links['content'] = {};
 
             const promises: Promise<string>[] = [];
             // get bucket
@@ -84,7 +85,7 @@ export class StorageService {
                 promises.push(...content_promises);
                 const content_ids = await Promise.all(content_promises);
                 content_ids.forEach((id, index) => {
-                    storage_links['content'][`${index}`](id);
+                    storage_links['content'][`${index}`] = id;
                 });
             }
 
@@ -176,41 +177,28 @@ export class StorageService {
      * @param storageIds - storage ids to get the file in an array
      * @returns a list of download urls of the files
      */
-    async getFiles(storageIds: string[]){
+    async getFiles(storageId: string){
         // data validation. if storage id is valid it will run, else it will throw error.
         try {
-            var entries = await this.storageRepository.find({
-                where: {
-                    storage_id: In(storageIds)
-                }
+            var entry = await this.storageRepository.findOneBy({
+                    storage_id: storageId
             });
 
-            if (entries.length === 0) {
+            if (entry == null || entry == undefined) {
                 throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
-            }
-    
-            if (entries.length !== storageIds.length) {
-                throw new HttpException('Not all storage IDs were found in the database.', HttpStatus.BAD_REQUEST);
             }
 
             if (process.env.SAVE_FIREBASE === "true")  {
                 const bucket = getStorage().bucket();
-
-                const download_url_promises = entries.map(async (entry) => {
-                    const file = bucket.file(entry.file_path);
-                    const [url] = await file.getSignedUrl({
-                        action: 'read',
-                        expires: '03-09-2491', // Long expiration date
-                    });
-                    return url;
+                const file = bucket.file(entry.file_path);
+                const [url] = await file.getSignedUrl({
+                    action: 'read',
+                    expires: '03-09-2491', // Long expiration date
                 });
-
-                return Promise.all(download_url_promises);
+                return url;
             }
             else {
-                return entries.map((entry) => {
-                    return entry.file_path;
-                });
+                return entry.file_path;
             }
         }
         catch (e){
@@ -226,7 +214,7 @@ export class StorageService {
      * @param transactionalEntityManager - transactional entity manager to handle the transaction
      * @returns promise that resolves to the storage id of the file
      */
-    async uploadToFirebase(file: any, upload_path: string, bucket: any, transactionalEntityManager: any): Promise<string> {
+    async uploadToFirebase(file: FileFormatDTO, upload_path: string, bucket: any, transactionalEntityManager: any): Promise<string> {
         const file_path = `${upload_path}/${file.fileName}`;
         const buffer = Buffer.from(file.fileDataInBase64, 'base64');
         const file_upload = bucket.file(file_path);
@@ -260,7 +248,7 @@ export class StorageService {
      * @param transactionalEntityManager - transactional entity manager to handle the transaction
      * @returns promise that resolves to the storage id of the file
      */
-    async saveToLocal(file: any, local_path: string, transactionalEntityManager: any): Promise<string> {
+    async saveToLocal(file: FileFormatDTO, local_path: string, transactionalEntityManager: any): Promise<string> {
         const file_path = `${local_path}/${file.fileName}`;
         const buffer = Buffer.from(file.fileDataInBase64, 'base64');
         const write_stream = createWriteStream(file_path);
