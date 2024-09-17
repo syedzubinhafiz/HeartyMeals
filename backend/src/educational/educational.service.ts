@@ -161,14 +161,22 @@ export class EducationalService {
                 id: educationalContentId
             });
 
-
+            // set the thumbnail link
+            if (edu_content.storage_links['thumbnail'] != null){
+                edu_content.storage_links['thumbnail'] = await this.storageService.getFiles(edu_content.storage_links['thumbnail']);
+            }
+            else {
+                edu_content.storage_links['thumbnail'] = this.storageService.getDefaultImage();
+            }
             // post process to get all the links into the content array
             // get all the links first, loop all keys in the storage_ids to form an array
             var links = {};
 
             // get the actual links from the storage service 
-            for (const keys in edu_content.storage_links){
-                links[keys] = await this.storageService.getDownloadURL(edu_content.storage_links[keys]);
+            if (edu_content.storage_links['content'] != null){
+                for (const keys in edu_content.storage_links['content']){
+                    links[keys] = await this.storageService.getFiles(edu_content.storage_links['content'][keys]);
+                }
             }
             
             // update the content with the links
