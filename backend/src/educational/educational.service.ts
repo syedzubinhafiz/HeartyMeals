@@ -125,4 +125,8 @@ export class EducationalService {
         // return new entry
         return await this.educatinoalContentRepository.save(entry);
     }
+
+    getPath(eduId){
+        return `educational_content/${eduId}`;
+    }
 }

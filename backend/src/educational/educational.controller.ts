@@ -21,10 +21,13 @@ export class EducationController {
     async upload(@Body() payload: AddEducationalContentDTO){
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
-                const entry =  this.educationalContentService.uploadContent(payload, transactionalEntityManager);
+                const entry =  await this.educationalContentService.uploadContent(payload, transactionalEntityManager);
 
                 if (payload.files){
-                    await this.storageService.handleUpload();
+                    const path = this.educationalContentService.getPath(entry.id);
+                    payload.files.path = path;
+                    
+                    await this.storageService.handleUpload(payload.files, entry, EducationalContent, transactionalEntityManager);
                 }
             });
             return new HttpException('Educational content uploaded successfully', HttpStatus.OK);
