@@ -119,7 +119,7 @@ const setFocusWithDelay = async (focused) => {
             isFocused.value = focused
         }
     },
-    100)
+    300)
 }
 
 const getName = (item) => {
