@@ -31,7 +31,6 @@ export class RecipeController {
 
                 // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
                 var upload_path = "";
-                var upload_path = "";
                 if (is_custom){
                     await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
                     // get path for custom recipe
@@ -42,7 +41,6 @@ export class RecipeController {
                     upload_path = this.recipeService.getPath(null, new_recipe.id, new_recipe.dietary.id);
                 }
 
-                console.log("uploading recipe files")
                 if (payload.files != undefined){
                     const files = payload.files;
                     files.path = upload_path;
@@ -116,8 +114,14 @@ export class RecipeController {
             // Return the recipe list or recipe details based on the pagination
             if (page_number != 0 && page_size != 0){
 
+                var recipe_list = recipes as Recipe[];
+
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                }
+
                 return {
-                    data: recipes,
+                    data: recipe_list,
                     page_number,
                     page_size,
                     total_recipe,
@@ -125,11 +129,19 @@ export class RecipeController {
                 }
             // If pagination is not required return the recipe list
             } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
-                return recipes;
+                var recipe_list = recipes as Recipe[];
+
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                }
+
+                return recipe_list;
 
             // If recipeId is provided return the recipe details with components info 
             }else {
                 const recipe = recipes as Recipe;
+
+                recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
 
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
                 return {

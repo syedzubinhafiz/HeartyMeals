@@ -30,7 +30,7 @@ export class Component{
     amount: number;
 
     @Column({
-        type: 'json', 
+        type: 'jsonb', 
         default: {
             'thumbnail': '',
             'content': {}

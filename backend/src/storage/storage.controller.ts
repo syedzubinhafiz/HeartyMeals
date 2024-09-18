@@ -41,7 +41,7 @@ export class StorageController {
     @Get('get')
     async get(@Query("id") payload){
         try {
-            return this.storageService.getFiles(payload);
+            return this.storageService.getLink(payload);
         }
         catch (e){
             return new HttpException(e.message, e.status);

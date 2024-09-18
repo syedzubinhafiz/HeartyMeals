@@ -21,7 +21,7 @@ export class StorageService {
     async handleUpload(fileUploadDTO: FileUploadDTO, entry: any, repository: any, transactionalEntityManager: EntityManager){
         try {
             const storage_links = await this.uploadFile(fileUploadDTO, transactionalEntityManager);
-            
+
             const saved = await this.updateStorageLinks(storage_links, entry, repository, transactionalEntityManager);
             return true;
         } catch (e) {
@@ -43,11 +43,6 @@ export class StorageService {
      * }
      */
     async uploadFile(fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
-        // validate if there are files to upload
-        if ((fileUploadDTO.thumbnail == undefined || fileUploadDTO.thumbnail == null) && (fileUploadDTO.content == undefined || fileUploadDTO.content == null)){
-            return {};
-        }
-
         // get path for upload
         try {
             const storage_links: any = {};
@@ -69,6 +64,10 @@ export class StorageService {
                     promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
                 }
                 storage_links['thumbnail'] = await promises[promises.length - 1];
+            }
+            else {
+                // set default storage id for thumbnail
+                storage_links['thumbnail'] = "f4b20835-cb31-4893-9463-b9c89a5eaa3a";
             }
             // if got content to upload
             if (fileUploadDTO.content) {
@@ -98,6 +97,126 @@ export class StorageService {
         }
     }
 
+    /**
+     * Local method to upload file to firebase storage
+     * @param file - file data
+     * @param upload_path - path to upload the file
+     * @param bucket - firebase storage bucket
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns promise that resolves to the storage id of the file
+     */
+    async uploadToFirebase(file: FileFormatDTO, upload_path: string, bucket: any, transactionalEntityManager: any): Promise<string> {
+        const file_path = `${upload_path}/${file.fileName}`;
+        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
+        const file_upload = bucket.file(file_path);
+    
+        const stream = file_upload.createWriteStream({
+            metadata: {
+                contentType: file.fileType,
+            },
+        });
+
+        return new Promise<string>((resolve, reject) => {
+            stream.on('error', reject);
+    
+            stream.on('finish', async () => {
+                try {
+                    // Generate the permanent link
+                    const [url] = await file_upload.getSignedUrl({
+                        action: 'read',
+                        expires: '01-01-2500' // Set a far future date for permanent link
+                    });
+
+                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, url, transactionalEntityManager);
+                    resolve(storage_object.storage_id);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+    
+            stream.end(buffer);
+        });
+    }
+
+    /**
+     * Local method to save file to local storage
+     * @param file - file data
+     * @param local_path - path to save the file
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns promise that resolves to the storage id of the file
+     */
+    async saveToLocal(file: FileFormatDTO, local_path: string, transactionalEntityManager: any): Promise<string> {
+        const file_path = `${local_path}/${file.fileName}`;
+        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
+        const write_stream = createWriteStream(file_path);
+    
+        return new Promise<string>((resolve, reject) => {
+            write_stream.on('error', reject);
+    
+            write_stream.on('finish', async () => {
+                try {
+                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, file_path,transactionalEntityManager);
+                    resolve(storage_object.storage_id);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+    
+            write_stream.end(buffer);
+        });
+    }
+
+    /**
+     * Local method to create and save the file entry to database using given information
+     * @param file_path - path of the file
+     * @param file_type - type of the file
+     * @param file_size - size of the file
+     * @param transactionalEntityManager - transactional entity manager to handle the transaction
+     * @returns 
+     */
+    async saveToDatabase(file_path: string, file_type: StorageType, file_size: number, link: string, transactionalEntityManager: any): Promise<Storage> {
+        const new_storage = new Storage();
+        new_storage.file_path = file_path;
+        new_storage.type = file_type as StorageType;
+        new_storage.size = file_size;
+        new_storage.link = link;
+    
+        return transactionalEntityManager.save(new_storage);
+    }
+
+    private async updateStorageLinks(storageLinks: Object, entry: any, repository: any, transactionalEntityManager: EntityManager) {
+        try {
+            entry.storage_links = storageLinks;
+            await transactionalEntityManager.save(repository, entry);
+            return true;
+        } catch (error) {
+            throw new HttpException(`Error during update: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get a public file link from firebase storage by retriving entry from databases
+     * @param storageIds - storage ids to get the file in an array
+     * @returns a list of download urls of the files
+     */
+    async getLink(storageId: string){
+        // data validation. if storage id is valid it will run, else it will throw error.
+        try {
+            var entry = await this.storageRepository.findOneBy({
+                    storage_id: storageId
+            });
+
+            if (entry == null || entry == undefined) {
+                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+            }
+
+            return entry.link;
+        }
+        catch (e){
+            throw e;
+        }
+    }
+    
     /**
      * Delete the file from firebase storage (or local) and delete the entry from database
      * @param storageIds - storage ids to delete the file in an array
@@ -171,145 +290,4 @@ export class StorageService {
             throw new HttpException(`Transaction setup error: ${e.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    /**
-     * Get a public file link from firebase storage by retriving entry from databases
-     * @param storageIds - storage ids to get the file in an array
-     * @returns a list of download urls of the files
-     */
-    async getFiles(storageId: string){
-        // data validation. if storage id is valid it will run, else it will throw error.
-        try {
-            var entry = await this.storageRepository.findOneBy({
-                    storage_id: storageId
-            });
-
-            if (entry == null || entry == undefined) {
-                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
-            }
-
-            if (process.env.SAVE_FIREBASE === "true")  {
-                const bucket = getStorage().bucket();
-                const file = bucket.file(entry.file_path);
-                const [url] = await file.getSignedUrl({
-                    action: 'read',
-                    expires: '03-09-2491', // Long expiration date
-                });
-                return url;
-            }
-            else {
-                return entry.file_path;
-            }
-        }
-        catch (e){
-            throw e;
-        }
-    }
-
-    /**
-     * Local method to upload file to firebase storage
-     * @param file - file data
-     * @param upload_path - path to upload the file
-     * @param bucket - firebase storage bucket
-     * @param transactionalEntityManager - transactional entity manager to handle the transaction
-     * @returns promise that resolves to the storage id of the file
-     */
-    async uploadToFirebase(file: FileFormatDTO, upload_path: string, bucket: any, transactionalEntityManager: any): Promise<string> {
-        const file_path = `${upload_path}/${file.fileName}`;
-        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
-        const file_upload = bucket.file(file_path);
-    
-        const stream = file_upload.createWriteStream({
-            metadata: {
-                contentType: file.fileType,
-            },
-        });
-
-        return new Promise<string>((resolve, reject) => {
-            stream.on('error', reject);
-    
-            stream.on('finish', async () => {
-                try {
-                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, transactionalEntityManager);
-                    resolve(storage_object.storage_id);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-    
-            stream.end(buffer);
-        });
-    }
-
-    /**
-     * Local method to save file to local storage
-     * @param file - file data
-     * @param local_path - path to save the file
-     * @param transactionalEntityManager - transactional entity manager to handle the transaction
-     * @returns promise that resolves to the storage id of the file
-     */
-    async saveToLocal(file: FileFormatDTO, local_path: string, transactionalEntityManager: any): Promise<string> {
-        const file_path = `${local_path}/${file.fileName}`;
-        const buffer = Buffer.from(file.fileDataInBase64, 'base64');
-        const write_stream = createWriteStream(file_path);
-    
-        return new Promise<string>((resolve, reject) => {
-            write_stream.on('error', reject);
-    
-            write_stream.on('finish', async () => {
-                try {
-                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, transactionalEntityManager);
-                    resolve(storage_object.storage_id);
-                } catch (e) {
-                    reject(e);
-                }
-            });
-    
-            write_stream.end(buffer);
-        });
-    }
-
-    /**
-     * Local method to create and save the file entry to database using given information
-     * @param file_path - path of the file
-     * @param file_type - type of the file
-     * @param file_size - size of the file
-     * @param transactionalEntityManager - transactional entity manager to handle the transaction
-     * @returns 
-     */
-    async saveToDatabase(file_path: string, file_type: StorageType, file_size: number, transactionalEntityManager: any): Promise<Storage> {
-        const new_storage = new Storage();
-        new_storage.file_path = file_path;
-        new_storage.type = file_type as StorageType;
-        new_storage.size = file_size;
-    
-        return transactionalEntityManager.save(new_storage);
-    }
-
-    private async updateStorageLinks(storageLinks: Object, entry: any, repository: any, transactionalEntityManager: EntityManager) {
-        try {
-            entry.storage_links = storageLinks;
-            await transactionalEntityManager.save(repository, entry);
-            return true;
-        } catch (error) {
-            throw new HttpException(`Error during update: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-    
-    async getDefaultImage(){
-        if (process.env.SAVE_FIREBASE === "true"){
-            const bucket = getStorage().bucket();
-            const file = bucket.file('default/default.png');
-            const [url] = await file.getSignedUrl({
-                action: 'read',
-                expires: '03-09-2491', // Long expiration date
-            });
-            return url;
-        }
-        else {
-            const default_path = join(__dirname, '../../uploaded/default/default.png');
-            return default_path;
-        }
-    }
-    
 }

@@ -9,7 +9,7 @@ export class AddComponentDTO {
     @Type(()=> ComponentDTO)
     readonly component: ComponentDTO;
 
-    @IsOptional()
+    @IsNotEmpty()
     @Type(() => FileUploadDTO)
-    files?: FileUploadDTO;
+    files: FileUploadDTO;
 }

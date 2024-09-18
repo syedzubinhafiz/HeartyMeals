@@ -63,10 +63,8 @@ export class ComponentController {
                     const files = payload[index].files;
                     files.path = upload_path;
     
-                    console.log("uploading component files");
                     if (files != undefined) {
                         await this.storageService.handleUpload(files, new_component, Component, transactionalEntityManager);
-                        console.log("Files uploaded successfully");
                     }
                 }
             });
@@ -109,12 +107,18 @@ export class ComponentController {
         
 
         // Get the list of ingredients
-    const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page_number, page_size, pagination, search);
-        
+        const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page_number, page_size, pagination, search);
+
+        var component_ingredient_list = component_list as Component[];
+
+        for (const component of component_ingredient_list){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+    
         // Return the list of ingredients along with pagination details
         if (pagination){
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total,
                 page_number,
                 page_size,
@@ -122,7 +126,7 @@ export class ComponentController {
             };
         } else {
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total
             };
         }
@@ -160,12 +164,17 @@ export class ComponentController {
 
         // Get the list of seasonings
         const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.SEASONING, page_number, page_size, pagination, search);
-        
+
+        var component_ingredient_list = component_list as Component[];
+
+        for (const component of component_ingredient_list){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
 
         // Return the list of seasonings along with pagination details
         if (pagination){
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total,
                 page_number,
                 page_size,
@@ -173,7 +182,7 @@ export class ComponentController {
             };
         } else {
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total
             };
         }

@@ -14,13 +14,7 @@ export class EducationalContent{
     @Column({type: 'json'})
     content: Array<JSON>;
 
-    @Column({
-        type: 'json', 
-        default: {
-            'thumbnail': '',
-            'content': {}
-        }
-    })
+    @Column({type: 'json', nullable: true})
     storage_links: JSON;
 
     @Column({
