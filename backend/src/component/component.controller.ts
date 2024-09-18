@@ -134,6 +134,9 @@ export class ComponentController {
         }
     }
 
-
+    @Get("measuring-units")
+    getMeasuringUnits(){
+        return this.commonService.getMeasuringUnits();
+    }
 
 }
