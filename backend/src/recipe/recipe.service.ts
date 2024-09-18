@@ -22,12 +22,12 @@ export class RecipeService {
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        @InjectRepository(Recipe)
-        private recipeRepository: Repository<Recipe>,
         @InjectRepository(UserAllergy)
         private userAllergyRepository: Repository<UserAllergy>,
         @InjectRepository(RecipeComponent)
-        private recipeComponentRepository: Repository<RecipeComponent>
+        private recipeComponentRepository: Repository<RecipeComponent>,
+        @InjectRepository(Recipe)
+        private recipeRepository: Repository<Recipe>,
 
     ){}
 
@@ -38,57 +38,264 @@ export class RecipeService {
      * @returns 
      */
    
-    public async addRecipe(decoded, recipeDTO: RecipeDTO, transactionalEntityManager: EntityManager): Promise<[Recipe, boolean]> {
+    public async addRecipe(decoded: any, recipeDTO: RecipeDTO, transactionalEntityManager: EntityManager): Promise<[Recipe, boolean]> {
 
-        let is_custom = true;
-        let user = await this.userRepository.findOne({
-            where: {
-                user_id: decoded['sub']
+        try{
+            let is_custom = true;
+            let user = await this.userRepository.findOne({
+                where: {
+                    user_id: decoded['sub']
+                }
+            });
+    
+            if (user == null) {
+                throw new Error("User not found");
             }
-        });
-
-        if (user == null) {
-            throw new Error("User not found");
-        }
-
-        if (user.user_role == UserRole.ADMIN) {
-            user = null;
-            is_custom = false;
-        }
-
-        const new_recipe = new Recipe();
-
-        const cuisine_type = await this.cuisineRepository.findOne({
-            where: {
-                id: recipeDTO.cuisineId
+    
+            if (user.user_role == UserRole.ADMIN) {
+                user = null;
+                is_custom = false;
             }
-        });
-
-        const dietary_type = await this.dietaryRepository.findOne({
-            where: {
-                id: recipeDTO.dietaryId
+    
+            const new_recipe = new Recipe();
+    
+            const cuisine_type = await this.cuisineRepository.findOne({
+                where: {
+                    id: recipeDTO.cuisineId
+                }
+            });
+    
+            const dietary_type = await this.dietaryRepository.findOne({
+                where: {
+                    id: recipeDTO.dietaryId
+                }
+            });
+    
+            new_recipe.name = recipeDTO.name;
+            new_recipe.description = recipeDTO.description;
+            new_recipe.instruction = recipeDTO.instruction;
+            new_recipe.serving_size = recipeDTO.servingSize;
+            new_recipe.nutrition_info = recipeDTO.nutritionInformation;
+            new_recipe.recommended_meal_time = recipeDTO.mealTimeRecommendation;
+            new_recipe.user = user;
+            new_recipe.cuisine = cuisine_type;
+            new_recipe.dietary = dietary_type;
+            new_recipe.preparation_time = recipeDTO.preparationTime;
+    
+            if (user == null) {
+                new_recipe.visibility = Visibility.PUBLIC;
+                new_recipe.is_approved = true;
             }
-        });
-
-        new_recipe.name = recipeDTO.name;
-        new_recipe.description = recipeDTO.description;
-        new_recipe.instruction = recipeDTO.instruction;
-        new_recipe.serving_size = recipeDTO.servingSize;
-        new_recipe.nutrition_info = recipeDTO.nutritionInformation;
-        new_recipe.recommended_meal_time = recipeDTO.mealTimeRecommendation;
-        new_recipe.user = user;
-        new_recipe.cuisine = cuisine_type;
-        new_recipe.dietary = dietary_type;
-        new_recipe.preparation_time = recipeDTO.preparationTime;
-
-        if (user == null) {
-            new_recipe.visibility = Visibility.PUBLIC;
-            new_recipe.is_approved = true;
+    
+            // TODO: Add image upload logic here
+            return [await transactionalEntityManager.save(new_recipe), is_custom];
+        } catch (e) {
+            throw new HttpException(e.message, 400);
         }
-
-        // TODO: Add image upload logic here
-        return [await transactionalEntityManager.save(new_recipe), is_custom];
+        
     }
+
+
+    /**
+     *  This function is used to get the recipe based on the search criteria
+     * @param decodedHeaders  Access token containing user information
+     * @param page  Page number
+     * @param pageSize  Page size
+     * @param search  Search string
+     * @param cuisineIds  filter by cuisine ids
+     * @param dietaryIds  filter by dietary ids
+     * @param foodCategoryIds  filter by food category ids
+     * @param mealTypes  filter by meal type
+     * @param pagination Pagination flag
+     * @param recipeId  Recipe ID to get the recipe details (optional)
+     * @returns  Recipe list based on the search criteria or recipe details based on the recipeId
+     */
+    async getRecipe(
+        decodedHeaders: any, 
+        page: number, 
+        pageSize:number,
+        search: string|null,
+        cuisineIds: string[],
+        dietaryIds: string[],
+        foodCategoryIds: string[],
+        mealTypes: string[], 
+        pagination: boolean = true,
+        recipeId: string = null
+    ): Promise<[Recipe[]|Recipe, number]>{
+
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+        
+
+        // get user prefered dietary
+        if (recipeId == null){        
+
+            // get user allergies 
+            const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
+            .select('user_allergy.food_cat_id')
+            .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+            .getMany();
+
+            // Get all food category ids that the user is allergic to
+            const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
+
+            //Get all official recipes that is public and recipe that belongs to the user
+            const query = this.recipeRepository.createQueryBuilder("recipe")
+            .leftJoinAndSelect("recipe.user", "user")
+            .select([
+                'recipe.id', 
+                'recipe.name', 
+                'recipe.description', 
+                'recipe.recommended_meal_time', 
+                'recipe.is_approved', 
+                'recipe.visibility', 
+                'recipe.storage_links',
+                'user.user_id'
+            ])
+            .where(
+                new Brackets((qb) => {
+                    qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                      .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
+                }))
+            .andWhere(`
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
+                    WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
+                )
+            `, { user_allergy_food_category_ids });
+        
+            
+            // Get user selected cuisine
+            if (cuisineIds.length > 0){
+                query.andWhere("recipe.cuisine_id IN (:...ids)", {ids:cuisineIds })
+            }
+
+            // Get user selected dietary
+            if (dietaryIds.length > 0){
+                query.andWhere("recipe.dietary_id IN (:...dietaryIds)", { dietaryIds })
+            }
+
+            // Get user selected food category
+            if (foodCategoryIds.length > 0){
+                query.andWhere("recipe.related_food_categories && ARRAY[:...foodCategoryIds]::text[]", { foodCategoryIds })
+            }
+
+            // Get user selected meal type
+            if (mealTypes.length > 0) {
+                query.andWhere(
+                    mealTypes.map(meal => `recipe.recommended_meal_time->>'${meal}' = 'true'`).join(' AND ')
+                );
+            }
+            
+            // Search for recipe
+            if (search != null){
+                query.andWhere("recipe.name ILIKE :search OR recipe.description ILIKE :search", { search: `%${search}%` })
+            }
+
+            // Pagination
+            if (pagination){
+                query.skip(skip)
+                .take(take)
+            };
+            
+            const [result, length] = await query.getManyAndCount();
+
+            return [result, length]
+
+
+        } else {
+            //Get recipe based on recipeId
+            const  recipe = await this.recipeRepository.findOne({
+                where: {
+                    id: recipeId
+                }
+            })
+
+            if (recipe == null){
+                throw new HttpException("Recipe not found", 400)
+            }
+
+            //Check if recipe belongs to the user
+            if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
+                throw new HttpException("Recipe does not belong to user", 400)
+            }
+
+
+            if (recipe.visibility === Visibility.PRIVATE && recipe.user === null){
+                throw new HttpException("Recipe is not available", 400)
+            }
+
+            return [recipe, 1]
+
+        }
+    }
+    
+
+    /**
+     * This function is used to get the recently added recipes
+     * @param decodedHeaders  Access token containing user information
+     * @param page  Page number
+     * @param pageSize  Page size
+     * @returns List of recently added recipes
+     */
+    async getRecentlyAddedList(
+        decodedHeaders: any, 
+        page: number, 
+        pageSize: number
+    ):Promise<[Recipe[], number]>{
+
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+
+         // get user allergies 
+         const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
+         .select('user_allergy.food_cat_id')
+         .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+         .getMany();
+
+         // Get all food category ids that the user is allergic to
+         const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
+
+         //Get all official recipes that is public and recipe that belongs to the user 
+         // filter out recipes that contains food categories that the user is allergic to
+         //Sort the recipes by created_at in descending order
+         const [result, length] = await this.recipeRepository.createQueryBuilder("recipe")
+         .leftJoinAndSelect("recipe.user", "user")
+         .select([
+            'recipe.id', 
+            'recipe.name', 
+            'recipe.description', 
+            'recipe.recommended_meal_time', 
+            'recipe.is_approved', 
+            'recipe.visibility', 
+            'recipe.storage_links',
+            'recipe.created_at',
+            'user.user_id'
+        ])
+         .where(
+             new Brackets((qb) => {
+                 qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                   .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
+             }))
+         .andWhere(`
+             NOT EXISTS (
+                 SELECT 1 
+                 FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
+                 WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
+             )
+         `, { user_allergy_food_category_ids })
+         .orderBy("recipe.created_at", "DESC")
+         .skip(skip)
+         .take(pageSize)
+         .getManyAndCount();
+
+         //Get all official recipes that is public and recipe that belongs to the user
+         return [result, length]
+
+    }
+
 
     /**
      * This function updates the nutrition info of a recipe
@@ -116,8 +323,8 @@ export class RecipeService {
         
         let result =  new NutritionInfoDTO();
 
-        // Loop through all recipe components and calculate the total nutrition info
-        recipeComponentList.forEach((recipeComponent) => {
+         // Loop through all recipe components and calculate the total nutrition info
+         recipeComponentList.forEach((recipeComponent) => {
             const multiplier =  recipeComponent.amount / recipeComponent.component.amount;
 
             result.calories += multiplier * recipeComponent.component.nutrition_info.calories;
@@ -191,197 +398,13 @@ export class RecipeService {
         }
     } 
 
-
-    /**
-     *  This function is used to get the recipe based on the search criteria
-     * @param decodedHeaders  Access token containing user information
-     * @param page  Page number
-     * @param pageSize  Page size
-     * @param search  Search string
-     * @param cuisineIds  filter by cuisine ids
-     * @param dietaryIds  filter by dietary ids
-     * @param foodCategoryIds  filter by food category ids
-     * @param mealTypes  filter by meal type
-     * @param pagination Pagination flag
-     * @param recipeId  Recipe ID to get the recipe details (optional)
-     * @returns  Recipe list based on the search criteria or recipe details based on the recipeId
-     */
-    async getRecipe(
-        decodedHeaders: any, 
-        page: number, 
-        pageSize:number,
-        search: string|null,
-        cuisineIds: string[],
-        dietaryIds: string[],
-        foodCategoryIds: string[],
-        mealTypes: string[], 
-        pagination: boolean = true,
-        recipeId: string = null
-    ): Promise<[Recipe[]|Recipe, number]>{
-
-        // Calculate the number of items to skip
-        const skip = (page - 1) * pageSize;
-        const take = pageSize;
-        
-
-        // get user prefered dietary
-        if (recipeId == null){        
-
-            // get user allergies 
-            const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
-            .select('user_allergy.food_cat_id')
-            .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
-            .getMany();
-
-            // Get all food category ids that the user is allergic to
-            const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
-
-            //Get all official recipes that is public and recipe that belongs to the user
-            const query = this.recipeRepository.createQueryBuilder("recipe")
-            .leftJoinAndSelect("recipe.user", "user")
-            .select([
-               'recipe.id', 
-               'recipe.name', 
-               'recipe.description', 
-               'recipe.recommended_meal_time', 
-               'recipe.is_approved', 
-               'recipe.visibility', 
-               'recipe.storage_links',
-               'user.user_id'
-           ])
-            .where(
-                new Brackets((qb) => {
-                    qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
-                      .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
-                }))
-            .andWhere(`
-                NOT EXISTS (
-                    SELECT 1 
-                    FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
-                    WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
-                )
-            `, { user_allergy_food_category_ids });
-        
-            
-            // Get user selected cuisine
-            if (cuisineIds.length > 0){
-                query.andWhere("recipe.cuisine_id IN (:...ids)", {ids:cuisineIds })
-            }
-
-            // Get user selected dietary
-            if (dietaryIds.length > 0){
-                query.andWhere("recipe.dietary_id IN (:...dietaryIds)", { dietaryIds })
-            }
-
-            // Get user selected food category
-            if (foodCategoryIds.length > 0){
-                query.andWhere("recipe.related_food_categories && ARRAY[:...foodCategoryIds]::text[]", { foodCategoryIds })
-            }
-
-            // Get user selected meal type
-            if (mealTypes.length > 0) {
-                query.andWhere(
-                    mealTypes.map(meal => `recipe.recommended_meal_time->>'${meal}' = 'true'`).join(' AND ')
-                );
-            }
-            
-            // Search for recipe
-            if (search != null){
-                query.andWhere("recipe.name ILIKE :search OR recipe.description ILIKE :search", { search: `%${search}%` })
-            }
-
-            // Pagination
-            if (pagination){
-                query.skip(skip)
-                .take(take)
-            };
-            
-            const result = await query.getMany();
-
-            return [result, result.length]
-
-
-        } else {
-            //Get recipe based on recipeId
-            const  recipe = await this.recipeRepository.findOne({
-                where: {
-                    id: recipeId
-                }
-            })
-
-            //Check if recipe belongs to the user
-            if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
-                throw new HttpException("Recipe does not belong to user", 400)
-            } else {
-                return [recipe, 1];
-            }
-
-
+    getPath(userId: string = null, recipeId: string, dietaryId: string): string {
+        if (userId != null){
+            return `/user/${userId}/custom_recipe/${recipeId}`;
         }
+        else {
+            return `official_recipe/dietary/${dietaryId}/${recipeId}`;
+        }
+        
     }
-    
-
-    /**
-     * This function is used to get the recently added recipes
-     * @param decodedHeaders  Access token containing user information
-     * @param page  Page number
-     * @param pageSize  Page size
-     * @returns List of recently added recipes
-     */
-    async getRecentlyAddedList(
-        decodedHeaders: any, 
-        page: number, 
-        pageSize: number
-    ):Promise<[Recipe[], number]>{
-
-        // Calculate the number of items to skip
-        const skip = (page - 1) * pageSize;
-
-         // get user allergies 
-         const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
-         .select('user_allergy.food_cat_id')
-         .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
-         .getMany();
-
-         // Get all food category ids that the user is allergic to
-         const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
-
-         //Get all official recipes that is public and recipe that belongs to the user 
-         // filter out recipes that contains food categories that the user is allergic to
-         //Sort the recipes by created_at in descending order
-         const result = await this.recipeRepository.createQueryBuilder("recipe")
-         .leftJoinAndSelect("recipe.user", "user")
-         .select([
-            'recipe.id', 
-            'recipe.name', 
-            'recipe.description', 
-            'recipe.recommended_meal_time', 
-            'recipe.is_approved', 
-            'recipe.visibility', 
-            'recipe.storage_links',
-            'recipe.created_at',
-            'user.user_id'
-        ])
-         .where(
-             new Brackets((qb) => {
-                 qb.where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC })
-                   .orWhere("recipe.user_id = :user_id", { user_id: decodedHeaders['sub'] });
-             }))
-         .andWhere(`
-             NOT EXISTS (
-                 SELECT 1 
-                 FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
-                 WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
-             )
-         `, { user_allergy_food_category_ids })
-         .orderBy("recipe.created_at", "DESC")
-         .skip(skip)
-         .take(pageSize)
-         .getMany();
-
-         //Get all official recipes that is public and recipe that belongs to the user
-         return [result, result.length]
-
-    }
-
 }

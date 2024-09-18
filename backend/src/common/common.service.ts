@@ -1,9 +1,6 @@
 import { MeasuringUnit, conversionFactors, handMeasurementsToGrams } from "src/component/enum/measuring-unit.enum";
 import * as jwt from 'jsonwebtoken';
 
-import { User } from "src/user/user.entity";
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Gender } from "src/user/enum/gender.enum";
 import { NutritionSettingDTO } from "src/user/dto/nutrition-setting-dto";
 import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
@@ -59,6 +56,30 @@ export class CommonService{
             throw new Error('Invalid token');
         }
     }
+
+    /**
+     * Checks the date format
+     * @param date - date to validate
+     * @returns true if the date is in the format of YYYY-MM-DDTHH:MM:SS.SSS+-HHMM else false
+     */
+    validateDate(date: string): boolean{
+        // check for valid date format
+        const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
+        if (!date || !date_pattern.test(date)) { return false; }
+        return true;
+    }
+
+    /**
+     * Checks if the two dates are the same day
+     * @param date1 - first date in Date object
+     * @param date2 - second date in Date object
+     * @returns true if the two dates are the same day, else false
+     */
+    isSameDay(date1: Date, date2: Date): boolean {
+        return (
+            date1.toDateString() === date2.toDateString()
+        );
+      }
 
 
     /**
@@ -167,29 +188,7 @@ export class CommonService{
         return nutrition_budget;
    }
 
-    /**
-     * Checks the date format
-     * @param date - date to validate
-     * @returns true if the date is in the format of YYYY-MM-DDTHH:MM:SS.SSS+-HHMM else false
-     */
-    validateDate(date: string): boolean{
-        // check for valid date format
-        const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
-        if (!date || !date_pattern.test(date)) { return false; }
-        return true;
-    }
-
-    /**
-     * Checks if the two dates are the same day
-     * @param date1 - first date in Date object
-     * @param date2 - second date in Date object
-     * @returns true if the two dates are the same day, else false
-     */
-    isSameDay(date1: Date, date2: Date): boolean {
-        return (
-            date1.toDateString() === date2.toDateString()
-        );
-      }
+    
 
     calculateNutritionAfter(userDailyBudget: Object, recipeNutritionList: Object[]): JSON{
         var nutrition_after = {} as JSON;

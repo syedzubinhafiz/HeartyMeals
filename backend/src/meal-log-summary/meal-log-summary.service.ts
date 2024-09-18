@@ -66,65 +66,7 @@ export class MealLogSummaryService {
             throw new HttpException(e, 400);
         }
 
-    }
-
-        /**
-     * Get the remaining budget of a user in a specific date
-     * @param decodedHeaders - decoded headers from the request
-     * @param dateString - date to get the remaining budget, in string
-     * @returns remaining budget of a user in a specific date
-     */
-        async getRemainingBudget(decodedHeaders: any, dateString: DateValidationDTO = null){
-            if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
-    
-            const user_id = decodedHeaders['sub'];
-    
-            const user_object = await this.userRepository.findOneBy({ user_id: user_id });
-    
-            var date = null;
-            if (dateString == null){
-                date = new Date().toISOString().split('T')[0];
-            }
-            else {
-                date = new Date(dateString.date.split('T')[0]);
-            }
-            
-            var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('user_id = :user_id', {user_id: user_id})
-                .andWhere('date = :meal_date', {meal_date: date})
-                .getOne();
-    
-            var daily_budget = user_object.daily_budget as JSON;
-            delete daily_budget["water_intake"];
-    
-            if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
-    
-                meal_logging_summary_entry = new MealLogSummary();
-                meal_logging_summary_entry.user = user_object;
-                meal_logging_summary_entry.date = date;
-                meal_logging_summary_entry.remaining_nutrients = daily_budget;
-    
-                try {
-                    await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
-                } catch (e) {
-                    throw new Error("Error saving meal logging summary entry");
-                }
-    
-                return [daily_budget, meal_logging_summary_entry.remaining_nutrients, false];
-            }
-            else {
-                var flag = false;
-                for (const key in meal_logging_summary_entry.remaining_nutrients) {
-                    if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
-                        flag = true;
-                        break;
-                    }
-                  }
-    
-                return [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
-            }
-        }
-    
+    }    
 
     /**
      * Calculate the nutrition info before logging the meal and after logging the meal
@@ -212,7 +154,7 @@ export class MealLogSummaryService {
 
         // get meal logging object with recipe object
         const meal_logging_object = await this.mealLoggingRepository.findOne({
-            where: { id: remomveMealLoggingIdDTO.mealLoggingId, is_consumed: false },
+            where: { id: remomveMealLoggingIdDTO.mealLoggingId },
             relations: ['recipe'],
         });
 
@@ -232,7 +174,6 @@ export class MealLogSummaryService {
         if (!found){
             throw new HttpException(`Meal logging id ${remomveMealLoggingIdDTO.mealLoggingId} not found in ${remomveMealLoggingIdDTO.mealType}`, 404);
         }
-
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType] = meal_logging_summary_entry.food_consumed[remomveMealLoggingIdDTO.mealType].filter(meal_logging_id => meal_logging_id !== remomveMealLoggingIdDTO.mealLoggingId);
 
@@ -396,4 +337,58 @@ export class MealLogSummaryService {
         return true;
     }
     
+    /* @param decodedHeaders - decoded headers from the request
+     * @param dateString - date to get the remaining budget, in string
+     * @returns remaining budget of a user in a specific date
+     */
+    async getRemainingBudget(decodedHeaders: any, dateString: DateValidationDTO = null){
+        if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
+
+        const user_id = decodedHeaders['sub'];
+
+        const user_object = await this.userRepository.findOneBy({ user_id: user_id });
+
+        var date = null;
+        if (dateString == null){
+            date = new Date().toISOString().split('T')[0];
+        }
+        else {
+            date = new Date(dateString.date.split('T')[0]);
+        }
+        
+        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+            .where('user_id = :user_id', {user_id: user_id})
+            .andWhere('date = :meal_date', {meal_date: date})
+            .getOne();
+
+        var daily_budget = user_object.daily_budget as JSON;
+        delete daily_budget["water_intake"];
+
+        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
+
+            meal_logging_summary_entry = new MealLogSummary();
+            meal_logging_summary_entry.user = user_object;
+            meal_logging_summary_entry.date = date;
+            meal_logging_summary_entry.remaining_nutrients = daily_budget;
+
+            try {
+                await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+            } catch (e) {
+                throw new Error("Error saving meal logging summary entry");
+            }
+
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, false];
+        }
+        else {
+            var flag = false;
+            for (const key in meal_logging_summary_entry.remaining_nutrients) {
+                if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
+                    flag = true;
+                    break;
+                }
+              }
+
+            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
+        }
+    }
 }

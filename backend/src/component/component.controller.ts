@@ -1,15 +1,20 @@
-import { Body, Controller, Get, Headers, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Header, Headers, HttpException, Post, Query } from '@nestjs/common';
 import { ComponentService } from './component.service';
 import { AddComponentDTO } from './dto/add-component-dto';
 import { CommonService } from 'src/common/common.service';
 import { ComponentType } from './enum/type.enum';
+import { StorageService } from 'src/storage/storage.service';
+import { EntityManager } from 'typeorm';
+import { Component } from './component.entity';
 
 @Controller('component')
 export class ComponentController {
 
     constructor(
         private componentService: ComponentService,
-        private commonService: CommonService
+        private commonService: CommonService,
+        private readonly entityManager: EntityManager,
+        private storageService: StorageService,
     ){}
 
     /**
@@ -19,7 +24,24 @@ export class ComponentController {
      */
     @Post('add')
     async add(@Body() payload: AddComponentDTO){
-        return this.componentService.add(payload);
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const new_component = await this.componentService.add(payload.component, transactionalEntityManager) as Component;
+
+                // get path for component
+                const upload_path = this.componentService.getPath(new_component.foodCategory.id, new_component.id);
+
+                if (payload.files != undefined){
+                    payload.files.path = upload_path;
+
+                    await this.storageService.handleUpload(payload.files, new_component, Component, transactionalEntityManager);
+                }
+            });
+            return new HttpException("Component added successfully", 200);
+        } catch (e) {
+            console.error('Transaction failed:', e);
+            throw new HttpException(e.message, 400);
+        }
     }
     
     /**
@@ -28,8 +50,29 @@ export class ComponentController {
      * @returns status of the operation
      */
     @Post('add/bulk')
-    async addBulk(@Body() payload: AddComponentDTO[]){
-        return this.componentService.addBulk(payload);
+    async addBulk( @Body() payload: AddComponentDTO[]){
+        try {
+            const components = payload.map((component) => component.component);
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const new_components = await this.componentService.addBulk(components, transactionalEntityManager) as Component[];
+
+                for (const [index, new_component] of new_components.entries()) {
+                    // get path for component
+                    const upload_path = this.componentService.getPath(new_component.foodCategory.id, new_component.id);
+
+                    const files = payload[index].files;
+                    files.path = upload_path;
+    
+                    if (files != undefined) {
+                        await this.storageService.handleUpload(files, new_component, Component, transactionalEntityManager);
+                    }
+                }
+            });
+            return new HttpException("Component added successfully", 200);
+        } catch (e) {
+            console.error('Transaction failed:', e);
+            throw new HttpException(e.message, 400);
+        }
     }
 
     /**
@@ -64,12 +107,18 @@ export class ComponentController {
         
 
         // Get the list of ingredients
-    const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page_number, page_size, pagination, search);
-        
+        const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.INGREDIENT, page_number, page_size, pagination, search);
+
+        var component_ingredient_list = component_list as Component[];
+
+        for (const component of component_ingredient_list){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+    
         // Return the list of ingredients along with pagination details
         if (pagination){
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total,
                 page_number,
                 page_size,
@@ -77,7 +126,7 @@ export class ComponentController {
             };
         } else {
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total
             };
         }
@@ -115,12 +164,17 @@ export class ComponentController {
 
         // Get the list of seasonings
         const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.SEASONING, page_number, page_size, pagination, search);
-        
+
+        var component_ingredient_list = component_list as Component[];
+
+        for (const component of component_ingredient_list){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
 
         // Return the list of seasonings along with pagination details
         if (pagination){
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total,
                 page_number,
                 page_size,
@@ -128,13 +182,12 @@ export class ComponentController {
             };
         } else {
             return {
-                data: component_list,
+                data: component_ingredient_list,
                 total
             };
         }
     }
 
 
-    //
 
 }

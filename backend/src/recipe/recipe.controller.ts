@@ -1,27 +1,26 @@
-import { Body, Controller, Delete, Get, Headers, HttpException, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Delete, Headers, HttpException, Param, Post, Query } from '@nestjs/common';
 import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/user.entity';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm'; 
 import { RecipeService } from './recipe.service';
 import { RecipeComponentService } from 'src/recipe-component/recipe-component.service';
-import { Recipe } from './recipe.entity';
-import { CommonService } from 'src/common/common.service';
 import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
+import { CommonService } from 'src/common/common.service';
+import { Recipe } from './recipe.entity';
+import { StorageService } from 'src/storage/storage.service';
 
 @Controller('recipe')
 export class RecipeController {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
-        private recipeService: RecipeService,
-        private recipeComponentService: RecipeComponentService,
-        private commonService: CommonService,
+        private readonly recipeService: RecipeService,
+        private readonly recipeComponentService: RecipeComponentService,
         @InjectEntityManager() 
         private readonly entityManager: EntityManager,
         private recipeComponentArchiveService: RecipeComponentArchiveService,
-    ){}
-    
+        private readonly commonService: CommonService,
+        private storageService: StorageService,
+    ) {}
+
     @Post('add')
     async createRecipe(@Headers() header: any, @Body() payload: AddRecipeDTO) {
         const decoded = this.commonService.decodeHeaders(header.authorization);
@@ -31,8 +30,21 @@ export class RecipeController {
                 const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components, transactionalEntityManager)
 
                 // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
+                var upload_path = "";
                 if (is_custom){
                     await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
+                    // get path for custom recipe
+                    upload_path = this.recipeService.getPath(decoded['sub'] as string, new_recipe.id, new_recipe.dietary.id);
+                }
+                else {
+                    // get path for official recipe
+                    upload_path = this.recipeService.getPath(null, new_recipe.id, new_recipe.dietary.id);
+                }
+
+                if (payload.files != undefined){
+                    const files = payload.files;
+                    files.path = upload_path;
+                    await this.storageService.handleUpload(files, new_recipe, Recipe, transactionalEntityManager);
                 }
             });
             return new HttpException("Recipe added successfully", 200);
@@ -42,44 +54,7 @@ export class RecipeController {
         }
     }
 
-    
-    /**
-     * Endpoint to delete a recipe
-     * @param headers header containing the authorization token
-     * @param recipeId recipe id to delete
-     * @returns  HttpException
-     */
-    @Delete('delete')
-    async deleteRecipe(@Headers() headers: any, @Body('recipeId') recipeId: string) {
 
-        const authHeader = headers.authorization;
-        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
-    
-        try {
-
-            // Transaction to delete recipe and its components
-            await this.entityManager.transaction(async transactionalEntityManager => {
-
-                // Call delete recipe business logic to delete a recipe
-                await this.recipeService.deleteRecipe(decodedHeaders, recipeId, transactionalEntityManager);
-
-                // Call delete recipe component business logic to delete recipe components
-                const recipeComponents = await this.recipeComponentService.deleteRecipeComponent(recipeId, transactionalEntityManager);
-
-                // Call add to archive business logic to add recipe components to archive
-                await this.recipeComponentArchiveService.addToArchive(recipeComponents, transactionalEntityManager);
-
-            });
-
-            return new HttpException("Recipe deleted successfully", 200);
-
-        } catch (e) {
-
-            throw new HttpException(e.message, 400);
-
-        }
-    }
-    
 
     /**
      *  This endpoint is used to get the recipe based on the search criteria
@@ -137,8 +112,15 @@ export class RecipeController {
             )
             // Return the recipe list or recipe details based on the pagination
             if (page_number != 0 && page_size != 0){
+
+                var recipe_list = recipes as Recipe[];
+
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                }
+
                 return {
-                    data: recipes,
+                    data: recipe_list,
                     page_number,
                     page_size,
                     total_recipe,
@@ -146,11 +128,19 @@ export class RecipeController {
                 }
             // If pagination is not required return the recipe list
             } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
-                return recipes;
+                var recipe_list = recipes as Recipe[];
+
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                }
+
+                return recipe_list;
 
             // If recipeId is provided return the recipe details with components info 
             }else {
                 const recipe = recipes as Recipe;
+
+                recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
 
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
                 return {
@@ -161,7 +151,7 @@ export class RecipeController {
         } catch (e) {
             return new HttpException(e.message, 400)
         }
-        
+
     }
 
 
@@ -207,6 +197,44 @@ export class RecipeController {
     @Get('get-components')
     async getRecipeComponents(@Query("recipeId") recipeId: string){
         return await this.recipeComponentService.getRecipeComponents(recipeId)
+    }
+    
+
+    /**
+     * Endpoint to delete a recipe
+     * @param headers header containing the authorization token
+     * @param recipeId recipe id to delete
+     * @returns  HttpException
+     */
+    @Delete('delete')
+    async deleteRecipe(@Headers() headers: any, @Body('recipeId') recipeId: string) {
+
+        const authHeader = headers.authorization;
+        const decodedHeaders = this.commonService.decodeHeaders(authHeader);
+    
+        try {
+
+            // Transaction to delete recipe and its components
+            await this.entityManager.transaction(async transactionalEntityManager => {
+
+                // Call delete recipe business logic to delete a recipe
+                await this.recipeService.deleteRecipe(decodedHeaders, recipeId, transactionalEntityManager);
+
+                // Call delete recipe component business logic to delete recipe components
+                const recipeComponents = await this.recipeComponentService.deleteRecipeComponent(recipeId, transactionalEntityManager);
+
+                // Call add to archive business logic to add recipe components to archive
+                await this.recipeComponentArchiveService.addToArchive(recipeComponents, transactionalEntityManager);
+
+            });
+
+            return new HttpException("Recipe deleted successfully", 200);
+
+        } catch (e) {
+
+            throw new HttpException(e.message, 400);
+
+        }
     }
     
 }

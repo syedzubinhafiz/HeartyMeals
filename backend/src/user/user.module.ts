@@ -14,6 +14,7 @@ import { Recipe } from 'src/recipe/recipe.entity';
 import { MealLoggingService } from 'src/meal-logging/meal-logging.service';
 
 
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, Country, Dietary, Ethnicity, MealLogSummary, MealLogging, Recipe])

@@ -1,13 +1,14 @@
 import { RecipeComponentDTO } from './dto/recipe-component-dto';
 import { InjectEntityManager, InjectRepository } from "@nestjs/typeorm";
 import { Component } from "../component/component.entity";
-import { In, EntityManager, Repository } from "typeorm";
-import { Injectable } from "@nestjs/common";
+import { EntityManager, In, Repository } from "typeorm";
+import { HttpException, Injectable } from "@nestjs/common";
 import { Recipe } from "../recipe/recipe.entity";
 import { CommonService } from 'src/common/common.service';
 import { RecipeComponent } from './recipe-component.entity';
 import { ComponentType } from 'src/component/enum/type.enum';
 import e from 'express';
+import { Visibility } from 'src/recipe/enum/visibility.enum';
 
 @Injectable()
 export class RecipeComponentService{
@@ -23,6 +24,7 @@ export class RecipeComponentService{
 
     ){}
 
+    // Function Documentation ady added in different branch
     public async addRecipeComponent(recipe: Recipe, componentList: RecipeComponentDTO[], transactionalEntityManager: EntityManager){
         try {
             // Extract all component IDs from the componentList
@@ -75,6 +77,8 @@ export class RecipeComponentService{
         }
     }
 
+
+    
     /**
      * This function deletes all recipe components associated with a recipe
      * @param recipeId Recipe Id to be deleted
@@ -108,38 +112,58 @@ export class RecipeComponentService{
      */
     async getRecipeComponents(recipeId: string){
 
-        // Get all the components of the recipe
-        const recipe_component_list =  await this.recipeComponentRepository.find({
-            where: { recipe_id: recipeId},  
-        })
+        try {
+            const recipe = await this.recipeRepository.findOne({
+                where: { 
+                    id: recipeId,
+                 }
+            });
 
-        const seasonings = [];
-        const ingredient = [];
-        
-        // Iterate over the recipe components and separate them into ingridients and seasonings
-        recipe_component_list.forEach(recipe_component => {
-            if (recipe_component.component.component_type == ComponentType.INGREDIENT){
-                ingredient.push ({
-                    component_id: recipe_component.component.id,
-                    name: recipe_component.component.name,
-                    amount: recipe_component.amount,
-                    unit: recipe_component.component.unit,
-                    storage_links: recipe_component.component.storage_links
-                });
-            } else {
-                seasonings.push( {
-                    component_id: recipe_component.component.id,
-                    name: recipe_component.component.name,
-                    amount: recipe_component.amount,
-                    unit: recipe_component.component.unit,
-                    storage_links: recipe_component.component.storage_links
-                });
+            if (recipe == null){
+                throw new HttpException("Recipe not found", 400);
             }
-        });
-
-        return {
-            ingredient: ingredient,
-            seasonings: seasonings
+    
+    
+            if (recipe.visibility == Visibility.PRIVATE && recipe.user == null){
+                throw new HttpException("Recipe is not available", 400);
+            }
+    
+            // Get all the components of the recipe
+            const recipe_component_list =  await this.recipeComponentRepository.find({
+                where: { recipe_id: recipeId},  
+            })
+    
+            const seasonings = [];
+            const ingredient = [];
+            
+            // Iterate over the recipe components and separate them into ingridients and seasonings
+            recipe_component_list.forEach(recipe_component => {
+                if (recipe_component.component.component_type == ComponentType.INGREDIENT){
+                    ingredient.push ({
+                        component_id: recipe_component.component.id,
+                        name: recipe_component.component.name,
+                        amount: recipe_component.amount,
+                        unit: recipe_component.component.unit,
+                        storage_links: recipe_component.component.storage_links
+                    });
+                } else {
+                    seasonings.push( {
+                        component_id: recipe_component.component.id,
+                        name: recipe_component.component.name,
+                        amount: recipe_component.amount,
+                        unit: recipe_component.component.unit,
+                        storage_links: recipe_component.component.storage_links
+                    });
+                }
+            });
+    
+            return {
+                ingredient: ingredient,
+                seasonings: seasonings
+            }
+        } catch(e) {
+            return e;
         }
+        
     }
 }

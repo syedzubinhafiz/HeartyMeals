@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Headers, HttpException, Post, Query } from "@nestjs/common";
+import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
@@ -7,7 +8,6 @@ import { EntityManager } from "typeorm";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { AddMealLoggingDTO } from "src/meal-logging/dto/add-meal-logging-dto";
 import { MealLoggingService } from "src/meal-logging/meal-logging.service";
-import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 
 @Controller('meal-log-summary')
@@ -58,6 +58,20 @@ export class MealLogSummaryController {
             return new HttpException(e.message, 400);
         }
 
+    }    
+
+    @Post('remove')
+    async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemoveMealLoggingIdDTO){
+        try {
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+
+            await this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload, this.entityManager);
+
+            return new HttpException("Meal logging removed successfully", 200);
+        } catch (e){
+            return new HttpException(e.message, 400)
+        }
     }
 
     @Get('budget')
@@ -74,20 +88,4 @@ export class MealLogSummaryController {
         }
     }
 
-    
-
-    @Post('remove')
-    async removeMealLoggingId(@Headers() headers: any, @Body() payload: RemoveMealLoggingIdDTO){
-        try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-
-            await this.mealLogSummaryService.removeMealLoggingId(decoded_headers, payload, this.entityManager);
-
-            return new HttpException("Meal logging removed successfully", 200);
-        } catch (e){
-            return new HttpException(e.message, 400)
-        }
-    }
-    
 }

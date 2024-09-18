@@ -1,11 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Component } from './component.entity';
-import { In, Repository } from 'typeorm';
-import { AddComponentDTO } from './dto/add-component-dto';
+import { EntityManager, In, Repository } from 'typeorm';
 import { FoodCategory } from 'src/food-category/foodCategory.entity';
 import { UserAllergy } from 'src/allergy/user_allergy.entity';
 import { ComponentType } from './enum/type.enum';
+import { ComponentDTO } from './dto/component-dto';
 
 @Injectable()
 export class ComponentService {
@@ -25,7 +25,7 @@ export class ComponentService {
      * @param payload component details
      * @returns status of the operation
      */
-    async add(payload: AddComponentDTO) {
+    async add(payload: ComponentDTO, transactionalEntityManager: EntityManager) {
 
         
         const new_component =  new Component();
@@ -52,12 +52,10 @@ export class ComponentService {
 
         // Save the new component
         try{
-            await this.componentRepository.save(new_component);
+            return await transactionalEntityManager.save(new_component);
         } catch {
-            return new HttpException("Error saving component", 400);
+            throw new HttpException("Error saving component", 400);
         }
-
-        return new HttpException("Component added successfully", 200);
     }
 
     /**
@@ -65,7 +63,7 @@ export class ComponentService {
      * @param payloads list of components to be added
      * @returns status of the operation
      */
-    async addBulk(payloads: AddComponentDTO[]) {
+    async addBulk(payloads: ComponentDTO[], transactionalEntityManager: EntityManager) {
 
         // Get all unique foodCategoryIds from the payloads
         const food_category_ids = [...new Set(payloads.map(payload => payload.foodCategoryId))];
@@ -80,38 +78,36 @@ export class ComponentService {
         });
     
         const new_components: Component[] = [];
-    
-        // Create new components from the payloads
-        for (const payload of payloads) {
-            const selected_category = food_category_map.get(payload.foodCategoryId);
-    
-            if (!selected_category) {
-                return new HttpException(`Food category not found for ID ${payload.foodCategoryId}`, 400);
-            }
-
-            const new_component = new Component();
-            new_component.name = payload.name;
-            new_component.component_type = payload.componentType;
-            new_component.nutrition_info = payload.nutritionInformation;
-            new_component.unit = payload.unit;
-            new_component.amount = payload.amount;
-            new_component.foodCategory = selected_category;
-    
-            // Add storage links
-            new_component.storage_links = JSON.parse("{}");
-            
-            new_components.push(new_component);
-        }
-    
-        // Save all new components in a single batch insert
         try {
-            await this.componentRepository.save(new_components);
+            // Create new components from the payloads
+            for (const payload of payloads) {
+                const selected_category = food_category_map.get(payload.foodCategoryId);
+        
+                if (!selected_category) {
+                    throw new HttpException(`Food category not found for ID ${payload.foodCategoryId}`, 400);
+                }
+
+                const new_component = new Component();
+                new_component.name = payload.name;
+                new_component.component_type = payload.componentType;
+                new_component.nutrition_info = payload.nutritionInformation;
+                new_component.unit = payload.unit;
+                new_component.amount = payload.amount;
+                new_component.foodCategory = selected_category;
+        
+                // Add storage links
+                new_component.storage_links = JSON.parse("{}");
+                
+                new_components.push(new_component);
+            }
+        
+            // Save all new components in a single batch insert
+        
+            return await transactionalEntityManager.save(new_components);
         } catch (error) {
             console.error(error);
-            return new HttpException("Error saving components", 400);
+            throw new HttpException("Error saving components", 400);
         }
-    
-        return new HttpException("Components added successfully", 200);
     }
 
     /**
@@ -167,11 +163,13 @@ export class ComponentService {
                 .take(take);
         }
         
-        const result = await query.getMany();
+        const [result, length] = await query.getManyAndCount();
 
-        return  [result, result.length];
+        return  [result, length];
     }
     
     
-
+    getPath(foodCategoryId: string, entryId: string): string {
+        return `component/${foodCategoryId}/${entryId}`;
+    }
 }

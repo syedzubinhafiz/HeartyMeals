@@ -148,10 +148,10 @@ export class MealLoggingService {
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .where("meal_logging.id = :id", { id: deleteMealLoggingDTO.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
-                .andWhere("meal_logging.deleted_at IS NULL")
+                .andWhere("meal_logging.deleted_at IS NULL")    
                 .getOne()
 
-            if (!entry || entry == null){ throw new HttpException("Meal logging entry isnot found or already consumed.", 404); }
+            if (!entry || entry == null){ throw new HttpException("Meal logging entry is not found or already consumed.", 404); }
 
             // Check if meal can be deleted
             const result = this.checkDate(entry.consumed_date_time);
@@ -219,13 +219,14 @@ export class MealLoggingService {
      */
     async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
-            const mealDate = new Date(payload.mealDate);
+            const mealDate = new Date(payload.mealDate.split('T')[0]);
             // validate date 
             const result = this.checkDate(mealDate);
+
+            // update to past: error
             if (result.editable == false){ throw new Error (result.message); }
             // update to future: error
             if (result.planning == true){ throw new Error ("Cannot update meal to future."); }
-
 
             // validate meal logging id 
             // returns a list of meal logging objects found

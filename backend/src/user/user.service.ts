@@ -25,7 +25,7 @@ export class UserService {
         private dietaryRepository: Repository<Dietary>,
         @InjectRepository(Ethnicity)
         private ethnicityRepository: Repository<Ethnicity>,
-        private commonService: CommonService
+        private commonService: CommonService,
     ){}
 
     

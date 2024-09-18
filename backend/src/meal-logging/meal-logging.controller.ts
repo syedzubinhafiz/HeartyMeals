@@ -54,7 +54,6 @@ export class MealLoggingController {
             await this.entityManager.transaction(async transactionalEntityManager => {
                 const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
-                // TODO: recalculate the nutrition summary
                 const update_meal_logging_summary = new UpdateMealLoggingSummaryDTO();
                 update_meal_logging_summary.mealLoggingId = payload.mealLoggingId;
                 update_meal_logging_summary.oldMealType = old_meal_type;
@@ -81,14 +80,13 @@ export class MealLoggingController {
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
-                // TODO: call meal logging summary to remove the meal logging id from the list
+
                 const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
                 removeMealLoggingIdDTO.mealLoggingId = payload.mealLoggingId;
                 removeMealLoggingIdDTO.date = payload.mealDate;
                 removeMealLoggingIdDTO.mealType = payload.mealType;
 
                 const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
-
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
             return new HttpException("Meal is deleted.", 200);
