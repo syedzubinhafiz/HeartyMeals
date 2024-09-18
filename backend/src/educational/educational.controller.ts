@@ -2,16 +2,12 @@ import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Query,
 import { EducationalService } from './educational.service';
 import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
 import { EntityManager, Repository } from 'typeorm';
-import { User } from 'src/user/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { StorageService } from 'src/storage/storage.service';
 import { EducationalContent } from './educational.entity';
 
 @Controller('education')
 export class EducationController {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
         private educationalContentService: EducationalService,
         private readonly entityManager: EntityManager,
         private storageService: StorageService,
