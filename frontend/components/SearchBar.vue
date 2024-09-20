@@ -3,7 +3,7 @@
     <div class="relative m-0 p-0 space-x-2 border-gray-500 border w-fit" @click="() => {isFocused = true}">
         <i class="bi bi-search ml-1"></i>
         <Input type="text" class="border-none outline-none" v-model="inputValue" placeholder="Search..." @blur="() => {setFocusWithDelay(false)}"/>
-        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm mt-2 w-full max-h-40 overflow-y-auto" v-if="isFocused && inputValue.length > 0">
+        <div class="absolute z-50 p-2 bg-custom-overlay-light rounded-sm shadow-sm mt-2 w-full max-h-40 overflow-y-auto" v-if="isFocused">
             <div v-for="item in filterData()" :key="getID(item)">
                 <button :onClick="()=>setValue(item)" class="h-full w-full flex justify-start">{{ getName(item) }}</button>
             </div>
@@ -106,7 +106,7 @@ const setFocusWithDelay = async (focused) => {
     setTimeout(()=>{
         isFocused.value = focused
     },
-    100)
+    300)
 }
 
 const getName = (item) => {
