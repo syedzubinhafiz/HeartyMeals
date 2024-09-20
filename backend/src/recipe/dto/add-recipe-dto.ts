@@ -17,6 +17,6 @@ export class AddRecipeDTO{
 
     @IsNotEmpty()
     @Type(() => FileUploadDTO)
-    files: FileUploadDTO;
+    files: FileUploadDTO = new FileUploadDTO();
 
 }

@@ -118,6 +118,7 @@ export class RecipeController {
 
                 for (const recipe of recipe_list){
                     recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    delete recipe.instruction;
                 }
 
                 return {
@@ -131,8 +132,10 @@ export class RecipeController {
             } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
                 var recipe_list = recipes as Recipe[];
 
+                // post processing to get thumbnail link and remove instruction
                 for (const recipe of recipe_list){
                     recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    delete recipe.instruction;
                 }
 
                 return recipe_list;
@@ -141,9 +144,28 @@ export class RecipeController {
             }else {
                 const recipe = recipes as Recipe;
 
+                // get link for thumbnail
                 recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
 
+                // Loop through the storage links content and replace the instruction src index with the corresponding storage link
+                for (const [index, storage_id] of Object.entries(recipe.storage_links['content'])) {
+                    const link = await this.storageService.getLink(storage_id as string);
+                    recipe.instruction = recipe.instruction.map(instruction =>
+                        instruction.includes(`src="${index}"`) ? instruction.replace(`src="${index}"`, `src="${link}"`) : instruction
+                    );
+                }
+
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
+
+
+                // get link for components
+                for (const component of recipe_component_list.ingredient){
+                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                }
+                for (const component of recipe_component_list.seasonings){
+                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                }
+
                 return {
                     recipe: recipe,
                     components: recipe_component_list
@@ -179,9 +201,16 @@ export class RecipeController {
         // Call the getRecentlyAddedList business logic to get the recently added recipe list
         const[recipe_list, total_recipe] = await this.recipeService.getRecentlyAddedList(decoded_headers, page_number, page_size);
 
+        var recipe_list_with_thumbnail = recipe_list as Recipe[];
+
+        for (const recipe of recipe_list_with_thumbnail){
+            recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+            delete recipe.instruction;
+        }
+
         // Return the recently added recipe list with pagination info
         return {
-            data: recipe_list,
+            data: recipe_list_with_thumbnail,
             total_recipe,
             page_number,
             page_size,
@@ -197,7 +226,17 @@ export class RecipeController {
      */
     @Get('get-components')
     async getRecipeComponents(@Query("recipeId") recipeId: string){
-        return await this.recipeComponentService.getRecipeComponents(recipeId)
+        const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipeId);
+
+        // get link for components
+        for (const component of recipe_component_list.ingredient){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+        for (const component of recipe_component_list.seasonings){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+
+        return recipe_component_list;
     }
     
 

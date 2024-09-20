@@ -11,5 +11,5 @@ export class AddComponentDTO {
 
     @IsNotEmpty()
     @Type(() => FileUploadDTO)
-    files: FileUploadDTO;
+    files: FileUploadDTO = new FileUploadDTO();
 }
