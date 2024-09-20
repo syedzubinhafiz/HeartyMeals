@@ -26,7 +26,7 @@
         <div class="search-result-container" @scroll="onScroll">
           <div class="search-result-item-display">
             <div v-for="item in searchResults" :key="item.id" class="search-result-item">
-              <img :src="item.icon" alt="item icon" class="item-icon" style="max-height: 70%; max-width: 70%;">
+              <img :src="item.storage_links.thumbnail" alt="item icon" class="item-icon" style="max-height: 70%; max-width: 70%;">
               <span style="align-content: center;">{{ item.name }}</span>
               <button @click="addItem(item)" aria-label="Add {{ item.name }}" class="add-component-button">+</button>
             </div>
@@ -43,7 +43,7 @@
         <div class="selected-item-container">
           <div class="selected-item-display">
             <div v-for="item in selectedItems" :key="item.id" class="selected-item">
-              <img :src="item.icon" alt="item icon" class="item-icon" style="max-height: 70%; max-width: 70%;">
+              <img :src="item.storage_links.thumbnail" alt="item icon" class="item-icon" style="max-height: 70%; max-width: 70%;">
               <span>{{ item.name }}</span>
               <button @click="removeItem(item)" aria-label="Remove {{ item.name }}" class="remove-component-button">-</button>
             </div>
