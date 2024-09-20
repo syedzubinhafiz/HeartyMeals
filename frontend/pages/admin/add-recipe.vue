@@ -29,7 +29,7 @@
                 @click="triggerFileInput" 
                 v-if="!imageUrl"
                 >
-                    <input type="file" @change="handleFileUpload" class="hidden" ref="fileInput" />
+                    <input type="file" @change="handleFileUpload" class="hidden" ref="fileInput" accept="image/*"/>
                     <p class="text-gray-500">Upload Thumbnail</p>
                 </div>
 
@@ -176,10 +176,10 @@
             <!-- Instruction -->
             <div class="form-group" style="grid-column:span 2; grid-template-rows: 20% 80%; grid-gap: 15px; margin-right: 2.5%;">
                 <label class="form-label-format" style="grid-column: span 3;" >Instruction</label>
-                <div class="form-normal-text-input" style="grid-column: span 3;">
+                <div class="form-normal-text-input" style="grid-column: span 3; padding-bottom: 7%;">
                     <!-- TODO: Put your rich text editior here -->
+                      <TinyMCE ref="tinymceComponent"/>
                 </div>
-
             </div>
 
             <!-- Nutrition Info -->
@@ -272,6 +272,14 @@ const selected_dietary = ref(null);
 
 const isLoading = ref(false)
 
+const fileDetails = ref({
+  name: null,
+  type: null,
+  base64: null,
+});
+
+const tinymceComponent = ref(null);
+
 // Fetch data from the backend
 try {
   const token = localStorage.getItem('accessToken');
@@ -339,6 +347,11 @@ const handleFileUpload = (event) => {
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
+      fileDetails.value = {
+        name: file.name,
+        type: file.type,
+        base64: e.target.result.split(',')[1]
+      };
       imageUrl.value = e.target.result;
     };
     reader.readAsDataURL(file);
@@ -346,6 +359,11 @@ const handleFileUpload = (event) => {
 };
 
 const removeImage = () => {
+  fileDetails.value = {
+    name: null,
+    type: null,
+    base64: null,
+  };
   imageUrl.value = null;
 };
 
@@ -471,6 +489,51 @@ const validateForm = () => {
   return isValid;
 };
 
+const getInstruction = () => {
+  // Simply log the current content from the editor
+  const tempDiv = document.createElement('div');
+  const editorInstance = tinymceComponent.value.editorInstance;
+  const fileNames = tinymceComponent.value.fileNames;
+  tempDiv.innerHTML = editorInstance.getContent();
+
+  let index = 0; // Initialize an index for images/videos
+  const file_upload_dto_array = []; // Array to store image/video sources in order
+
+  // Loop through all child nodes in the content
+  tempDiv.querySelectorAll('img, video').forEach((node) => {
+    const regex = /^data:(.*?);base64,(.*)$/;
+    if (node.nodeName === 'IMG') {
+      const match = node.src.match(regex);
+      const mimeType = match[1];
+      const base64Data = match[2];
+
+      // Store the original image src in the orderedSources array
+      file_upload_dto_array.push({ fileName: fileNames[index], fileType: mimeType, fileDataInBase64: base64Data });
+      
+      // Replace the image src with the current index
+      node.src = `${index}`; 
+    } else if (node.nodeName === 'VIDEO') {
+      const videoSource = node.querySelector('source');
+      if (videoSource) {
+        const match = videoSource.src.match(regex);
+        const mimeType = match[1];
+        const base64Data = match[2];
+
+        // Store the original video source in the orderedSources array
+        file_upload_dto_array.push({ fileName: fileNames[index], fileType: mimeType, fileDataInBase64: base64Data });
+        
+        // Replace the video src with the current index
+        videoSource.src = `${index}`;
+      }
+    }
+    index++; // Increment the index for each image/video
+  });
+  
+  // Now convert each <p> element into a string and store it in an array
+  const paragraphsArray = Array.from(tempDiv.querySelectorAll('p')).map(p => p.outerHTML);
+  return { paragraphsArray, file_upload_dto_array };
+};
+
 const gatherRecipeData = async () => {
   if (!validateForm()) {
     return;
@@ -506,12 +569,14 @@ const gatherRecipeData = async () => {
     }))
   ];
 
+  const { paragraphsArray, file_upload_dto_array } = getInstruction();
+
   const recipeData = {
     recipe: {
       name: document.getElementById('name').value,
       preparationTime: String(parseFloat(document.getElementById('prep-time').value) || 0) + ' minutes',
       description: document.getElementById('description').value,
-      instruction: [], // Assuming instructions are handled separately
+      instruction: paragraphsArray, // Assuming instructions are handled separately
       servingSize: parseFloat(document.getElementById('serving-size').value) || 0,
       nutritionInformation,
       mealTimeRecommendation,
@@ -519,7 +584,11 @@ const gatherRecipeData = async () => {
       cuisineId: selected_cuisine.value,
       dietaryId: selected_dietary.value
     },
-    components
+    components,
+    files: {
+      thumbnail: fileDetails.value,
+      content: file_upload_dto_array
+    },
   };
 
   try {

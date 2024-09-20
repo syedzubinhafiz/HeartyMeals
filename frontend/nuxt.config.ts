@@ -17,7 +17,8 @@ export default defineNuxtConfig({
       greensheartAccountClientId: "greensheart",
       greensheartAccountScope: "openid profile email",
       webURL: "",
-      baseURL: "http://localhost:3001" // Add your base URL here
+      baseURL: "http://localhost:3001", // Add your base URL here
+      tinyMCEKey: "5xd0rqlwc0evl0pm1xyxcy0ztd40yr061ss8azv8um8694bu",
     },
   },
   plugins: [
