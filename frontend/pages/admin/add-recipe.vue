@@ -137,7 +137,7 @@
             <div class="form-group">
             <CollapsibleSection :title="`Selected Ingredient (${selectedIngredients.length})`" style="grid-column: span 3; width: 100%;">
                 <div v-for="ingredient in selectedIngredients" :key="ingredient.id" class="selected-component-item">
-                <img :src="ingredient.image" :alt="ingredient.name" class="w-20 h-20 mr-2" />
+                <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" class="w-20 h-20 mr-2" />
                 <p class="selected-item-name">{{ ingredient.name }}</p>
                 <input type="number" v-model="ingredient.serving" class="form-normal-text-input" placeholder="Enter Serving" min="1" step="0.01" />
                 <SingleSelectionDropdown
@@ -157,7 +157,7 @@
             <div class="form-group">
             <CollapsibleSection :title="`Selected Seasoning (${selectedSeasonings.length})`" style="grid-column: span 3;">
                 <div v-for="seasoning in selectedSeasonings" :key="seasoning.id" class="selected-component-item">
-                <img :src="seasoning.image" :alt="seasoning.name" class="w-20 h-20 mr-2" />
+                <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" class="w-20 h-20 mr-2" />
                 <p class="selected-item-name">{{ seasoning.name }}</p>
                 <input type="number" v-model="seasoning.serving" class="form-normal-text-input" placeholder="Enter Serving" min="0" step="0.01" />
                 <SingleSelectionDropdown
@@ -273,9 +273,9 @@ const selected_dietary = ref(null);
 const isLoading = ref(false)
 
 const fileDetails = ref({
-  name: null,
-  type: null,
-  base64: null,
+  fileName: null,
+  fileType: null,
+  fileDataInBase64: null,
 });
 
 const tinymceComponent = ref(null);
@@ -348,9 +348,9 @@ const handleFileUpload = (event) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       fileDetails.value = {
-        name: file.name,
-        type: file.type,
-        base64: e.target.result.split(',')[1]
+        fileName: file.name,
+        fileType: file.type,
+        fileDataInBase64: e.target.result.split(',')[1],
       };
       imageUrl.value = e.target.result;
     };
@@ -360,9 +360,9 @@ const handleFileUpload = (event) => {
 
 const removeImage = () => {
   fileDetails.value = {
-    name: null,
-    type: null,
-    base64: null,
+    fileName: null,
+    fileType: null,
+    fileDataInBase64: null,
   };
   imageUrl.value = null;
 };
