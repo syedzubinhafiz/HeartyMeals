@@ -147,6 +147,7 @@ export class RecipeService {
                 'recipe.id', 
                 'recipe.name', 
                 'recipe.description', 
+                'recipe.instruction',
                 'recipe.recommended_meal_time', 
                 'recipe.is_approved', 
                 'recipe.visibility', 
