@@ -183,7 +183,7 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
         meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
         meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["fats"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["fat"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
         meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
         meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
 
@@ -204,8 +204,8 @@ export class MealLogSummaryService {
         if (meal_logging_summary_entry.remaining_nutrients["protein"] > daily_budget["protein"]){
             meal_logging_summary_entry.remaining_nutrients["protein"] = daily_budget["protein"];
         }
-        if (meal_logging_summary_entry.remaining_nutrients["fats"] > daily_budget["fats"]){
-            meal_logging_summary_entry.remaining_nutrients["fats"] = daily_budget["fats"];
+        if (meal_logging_summary_entry.remaining_nutrients["fat"] > daily_budget["fat"]){
+            meal_logging_summary_entry.remaining_nutrients["fat"] = daily_budget["fat"];
         }
         if (meal_logging_summary_entry.remaining_nutrients["sodium"] > daily_budget["sodium"]){
             meal_logging_summary_entry.remaining_nutrients["sodium"] = daily_budget["sodium"];
