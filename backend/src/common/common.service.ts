@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import { Gender } from "src/user/enum/gender.enum";
 import { NutritionSettingDTO } from "src/user/dto/nutrition-setting-dto";
 import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
+import { NutritionInfoDTO } from "src/recipe/dto/nutrition-info-dto";
 
 
 export class CommonService{
@@ -215,4 +216,10 @@ export class CommonService{
 
         return nutrition_after;
     }
+
+
+    getMeasuringUnits(){
+        return MeasuringUnit;
+    }
+
 }
