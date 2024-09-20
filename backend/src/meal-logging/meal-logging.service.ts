@@ -219,7 +219,7 @@ export class MealLoggingService {
      */
     async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
-            const mealDate = new Date(payload.mealDate.split('T')[0]);
+            const mealDate = new Date(payload.mealDate);
             // validate date 
             const result = this.checkDate(mealDate);
 

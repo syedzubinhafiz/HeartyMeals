@@ -41,7 +41,7 @@ export class MealLogSummaryService {
         const user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
 
         // get the date only
-        const meal_logging_summary_date = new Date(addMealLoggingSummaryDTO.mealDate.split('T')[0]);
+        const meal_logging_summary_date = new Date(addMealLoggingSummaryDTO.mealDate);
 
         // get the entry
         // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
@@ -145,7 +145,7 @@ export class MealLogSummaryService {
         if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, 400); }
 
         const user_id = decodedHeaders['sub'];
-        const date = new Date(remomveMealLoggingIdDTO.date.split('T')[0]);
+        const date = new Date(remomveMealLoggingIdDTO.date);
 
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_id})
@@ -188,7 +188,7 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
 
         const dateValidationDTO = new DateValidationDTO();
-        dateValidationDTO.date = remomveMealLoggingIdDTO.date.split('T')[0];
+        dateValidationDTO.date = remomveMealLoggingIdDTO.date;
 
         const nutrition_list = await this.getRemainingBudget(decodedHeaders, dateValidationDTO);
 
@@ -230,7 +230,7 @@ export class MealLogSummaryService {
      */
     async updateNutritionBudget(decodedHeaders: any, updatemealLoggingSummaryDTO: UpdateMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
         try {     
-            const meal_logging_date = new Date(updatemealLoggingSummaryDTO.mealDate.split('T')[0]);
+            const meal_logging_date = new Date(updatemealLoggingSummaryDTO.mealDate);
 
             var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
                     .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
@@ -348,13 +348,7 @@ export class MealLogSummaryService {
 
         const user_object = await this.userRepository.findOneBy({ user_id: user_id });
 
-        var date = null;
-        if (dateString == null){
-            date = new Date().toISOString().split('T')[0];
-        }
-        else {
-            date = new Date(dateString.date.split('T')[0]);
-        }
+        var date = date = new Date(dateString.date);            
         
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_id})
