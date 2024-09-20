@@ -23,15 +23,26 @@ export const useUserInfo = () => {
     }
     const { $toast } = useNuxtApp();
 
-    const signup = async (gender,countryID,nyhaLevel,dietaryId,ethnicityId,medicalInfo,foodCategory) => {
+    const signup = async (age,height,weight,gender,countryID,nyhaLevel,dietaryId,ethnicityId,medicalInfo,foodCategory) => {
         // main user call
+        console.log(age)
         let result = await useApi("/user/signup","POST",{
+            age: age,
+            height: height,
+            weight: weight,            
             gender: gender,
             countryId: countryID,
             nyhaLevel: nyhaLevel,
             dietaryId: dietaryId,
             ethnicityId: ethnicityId,
-            medicalInfo: medicalInfo
+            medicalInfo: medicalInfo,
+            "userNutritionSetting": {
+                "carbsPercentage": 0.4, //range from 0 to 1
+                "proteinPercentage": 0.4, //range from 0 to 1
+                "fatPercentage": 0.2, //range from 0 to 1
+                "cholesterolLevel": "High",
+                "activityLevel": 3
+            }
         })
         // if an error occurs, show a toast and exit
         if(result.isError) {

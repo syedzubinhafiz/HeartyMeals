@@ -1,7 +1,7 @@
 <template>
 	<div class="space-x-2">
 		<label v-if="name!=''" :for="name">{{ name }}</label>
-		<select :id="name" v-model="inputValue" class="rounded-md bg-custom-overlay-light">
+		<select :id="name" v-model="inputValue" :class="`rounded-md ${color}`">
 			<option v-for="optionIndex in Array(options.length).keys()" :value="computedOptionValues[optionIndex]">{{ options[optionIndex] }}</option>
 		</select>
 	</div>
@@ -28,6 +28,10 @@ const props = defineProps({
 	optionValues: {
 		type: Array,
 		default: null,
+	},
+	color: {
+		type: String,
+		default: "bg-custom-overlay-light",
 	},
 });
 
