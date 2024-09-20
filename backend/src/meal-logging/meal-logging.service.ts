@@ -65,7 +65,7 @@ export class MealLoggingService {
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.consumed_date_time = meal_date;
-                new_meal_logging.is_consumed = false;
+                new_meal_logging.is_consumed = true;
                 new_meal_logging.type = mealLoggingDTO.mealType;
                 new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
@@ -233,7 +233,6 @@ export class MealLoggingService {
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .where("meal_logging.id = :id", { id: payload.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
-                .andWhere("meal_logging.is_consumed = false")
                 .getOne()
 
             if (!entry || entry == undefined){ 
