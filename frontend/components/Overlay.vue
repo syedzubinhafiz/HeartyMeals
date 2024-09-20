@@ -11,7 +11,6 @@ defineOptions({
 
 const props = defineProps({
 	level: {
-		type: Number,
 		default: 1,
 	},
     colour: {
