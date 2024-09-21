@@ -162,9 +162,6 @@ export class RecipeController {
                 for (const component of recipe_component_list.ingredient){
                     component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
                 }
-                for (const component of recipe_component_list.seasonings){
-                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
-                }
 
                 return {
                     recipe: recipe,
@@ -232,10 +229,7 @@ export class RecipeController {
         for (const component of recipe_component_list.ingredient){
             component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
         }
-        for (const component of recipe_component_list.seasonings){
-            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
-        }
-
+        
         return recipe_component_list;
     }
     
