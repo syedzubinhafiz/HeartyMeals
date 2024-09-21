@@ -185,6 +185,15 @@ export class CommonService{
             "water_intake": water_intake
         }
 
+        // Round the values to 2 decimal places
+        nutrition_budget.calories = parseFloat(nutrition_budget.calories.toFixed(2));
+        nutrition_budget.carbs = parseFloat(nutrition_budget.carbs.toFixed(2));
+        nutrition_budget.protein = parseFloat(nutrition_budget.protein.toFixed(2));
+        nutrition_budget.fat = parseFloat(nutrition_budget.fat.toFixed(2));
+        nutrition_budget.sodium = parseFloat(nutrition_budget.sodium.toFixed(2));
+        nutrition_budget.cholesterol = parseFloat(nutrition_budget.cholesterol.toFixed(2));
+        nutrition_budget.water_intake = parseFloat(nutrition_budget.water_intake.toFixed(2));
+
         return nutrition_budget;
    }
 
@@ -212,6 +221,14 @@ export class CommonService{
             nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
             nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
         }
+
+        // Round the values to 2 decimal places
+        nutrition_after["calories"] = parseFloat(nutrition_after["calories"].toFixed(2));
+        nutrition_after["protein"] = parseFloat(nutrition_after["protein"].toFixed(2));
+        nutrition_after["carbs"] = parseFloat(nutrition_after["carbs"].toFixed(2));
+        nutrition_after["fat"] = parseFloat(nutrition_after["fat"].toFixed(2));
+        nutrition_after["cholesterol"] = parseFloat(nutrition_after["cholesterol"].toFixed(2));
+        nutrition_after["sodium"] = parseFloat(nutrition_after["sodium"].toFixed(2))
 
         return nutrition_after;
     }
