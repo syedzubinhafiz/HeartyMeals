@@ -106,7 +106,7 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useNuxtApp } from '#app';
 import { useToast } from 'vue-toast-notification';
 import SingleSelectionDropdown from '~/components/Dropdown/SingleSelectionDropdown.vue';
@@ -117,6 +117,26 @@ defineOptions({
 
 definePageMeta({
   layout: "emptylayout",
+});
+
+// reset form fields on page load
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  title.value = '';
+  summary.value = '';
+  titleCount.value = 100;
+  summaryCount.value = 300;
+});
+
+// Function to handle beforeunload event
+const handleBeforeUnload = (event) => {
+  event.preventDefault();
+  event.returnValue = ''; // This is required for the prompt to show in some browsers
+};
+
+// Remove event listener when the component is unmounted
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
 });
 
 const { $axios } = useNuxtApp();
@@ -253,6 +273,16 @@ const validateForm = () => {
   // Check if visibility is selected
   if (!selected_visibility.value) {
     useToast().error("Visibility is required");
+    isValid = false;
+  }
+
+  if (!fileDetails.value.fileDataInBase64) {
+    useToast().error("Thumbnail is required");
+    isValid = false;
+  }
+
+  if (!tinymceComponent.value.editorInstance.getContent()) {
+    useToast().error("Content is required");
     isValid = false;
   }
 
