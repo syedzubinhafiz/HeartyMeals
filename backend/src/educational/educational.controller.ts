@@ -1,44 +1,35 @@
-import { Body, Controller, Get, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { EducationalService } from './educational.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { EducationalContentDTO } from './dto/edu-content-dto';
-import { Repository } from 'typeorm';
-import { User } from 'src/user/user.entity';
-import { UserRole } from 'src/user/enum/user-role.enum';
-import { InjectRepository } from '@nestjs/typeorm';
+import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
+import { EntityManager, Repository } from 'typeorm';
+import { StorageService } from 'src/storage/storage.service';
+import { EducationalContent } from './educational.entity';
 
 @Controller('education')
 export class EducationController {
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
         private educationalContentService: EducationalService,
+        private readonly entityManager: EntityManager,
+        private storageService: StorageService,
     ){}
 
-    @Post('upload')
-    @UseInterceptors(FilesInterceptor('files[]'))
-    async upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
-        payload = JSON.parse(payload);
+    @Post('add')
+    async upload(@Body() payload: AddEducationalContentDTO){
         try {
-            let user = await this.userRepository.findOne({
-                where: {
-                    user_id: payload.userId
+            await this.entityManager.transaction(async transactionalEntityManager => {
+                const entry =  await this.educationalContentService.uploadContent(payload, transactionalEntityManager);
+
+                if (payload.files){
+                    const path = this.educationalContentService.getPath(entry.id);
+                    payload.files.path = path;
+                    
+                    await this.storageService.handleUpload(payload.files, entry, EducationalContent, transactionalEntityManager);
                 }
             });
-
-            if (user.user_role !=  UserRole.ADMIN){
-                return "Error: Must be admin to be able to upload educational content.";
-            }
-
-            return this.educationalContentService.uploadContent(payload.title, payload.content, files);
+            return new HttpException('Educational content uploaded successfully', HttpStatus.OK);
         }
         catch (e){
-            return e;
+            throw new HttpException('Failed to upload educational content', HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @Post('delete')
-    delete(@Body() payload){
-        return this.educationalContentService.deleteContent(payload.eduId);
     }
 }

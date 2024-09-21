@@ -23,8 +23,8 @@ export default {
       tinymceInit: {
         height: 500,
         menubar: true,
-        plugins: 'image media link',
-        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | image media',
+        plugins: 'image media link lists',
+        toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | image media',
         file_picker_types: 'image media',
         file_picker_callback: this.filePickerCallback,
       },
