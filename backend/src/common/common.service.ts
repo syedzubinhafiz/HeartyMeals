@@ -133,7 +133,7 @@ export class CommonService{
     * @param calories - daily calories intake
     * @param userNutritionSetting - user nutrition setting
     * @param nyhaLevel - user nyha level
-    * @returns an object with daily nutrition budget (calories, carbs, protein, fats, sodium, cholesterol, water_intake) in kcal, g, g, g, mg, mg, ml
+    * @returns an object with daily nutrition budget (calories, carbs, protein, fat, sodium, cholesterol, water_intake) in kcal, g, g, g, mg, mg, ml
     */
    calculateNutritionBudget(calories: number, userNutritionSetting: NutritionSettingDTO, nyhaLevel: number){
 
@@ -180,7 +180,7 @@ export class CommonService{
             "calories": calories,
             "carbs": calories * userNutritionSetting.carbsPercentage / 4,
             "protein": calories * userNutritionSetting.proteinPercentage / 4,
-            "fats": calories * userNutritionSetting.fatPercentage / 9,
+            "fat": calories * userNutritionSetting.fatPercentage / 9,
             "sodium": sodium_intake,
             "cholesterol": cholesterol_intake,
             "water_intake": water_intake
@@ -197,7 +197,7 @@ export class CommonService{
         nutrition_after["calories"] = userDailyBudget["calories"];
         nutrition_after["protein"] = userDailyBudget["protein"];
         nutrition_after["carbs"] = userDailyBudget["carbs"];
-        nutrition_after["fats"] = userDailyBudget["fats"];
+        nutrition_after["fat"] = userDailyBudget["fat"];
         nutrition_after["cholesterol"] = userDailyBudget["cholesterol"];
         nutrition_after["sodium"] = userDailyBudget["sodium"];
 
@@ -209,7 +209,7 @@ export class CommonService{
             nutrition_after["calories"] -= recipe_nutrition["calories"] * meal_logging_portion / recipe_portion;
             nutrition_after["protein"] -= recipe_nutrition["protein"] * meal_logging_portion / recipe_portion;
             nutrition_after["carbs"] -= recipe_nutrition["totalCarbohydrate"] * meal_logging_portion / recipe_portion;
-            nutrition_after["fats"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
+            nutrition_after["fat"] -= recipe_nutrition["fat"] * meal_logging_portion / recipe_portion;
             nutrition_after["cholesterol"] -= recipe_nutrition["cholesterol"]* meal_logging_portion / recipe_portion;
             nutrition_after["sodium"] -= recipe_nutrition["sodium"] * meal_logging_portion / recipe_portion;
         }
