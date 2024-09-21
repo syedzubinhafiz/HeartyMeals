@@ -16,8 +16,19 @@
         <form class="form-format" @submit.prevent>
             <!-- Title -->
             <div class="form-group">
-                <label class="form-label-format" for="title">Title</label>
-                <input type="text" id="title" class="form-normal-text-input" placeholder="Enter educational content title" style="grid-column: span 2;"/>
+              <label class="form-label-format" for="title">Title</label>
+              <textarea 
+                type="text" 
+                id="title" 
+                class="form-normal-text-input" 
+                placeholder="Enter educational content title" 
+                style="grid-column: span 2;"
+                v-model="title"
+                @input="updateTitleCount"
+                maxlength="100">
+              </textarea>
+              <span class="char-count"></span>
+              <span class="char-count">{{ titleCount }} characters remaining</span>
             </div>
             
             <!-- Thumbnail -->
@@ -44,7 +55,17 @@
             <!-- Summary -->
             <div class="form-group" style="grid-row: span 3;">
                 <label class="form-label-format" for="summary">Summary</label>
-                <textarea id="summary" class="form-normal-text-input" placeholder="Enter summary" style="grid-column: span 2;"></textarea>
+                <textarea 
+                  id="summary" 
+                  class="form-normal-text-input" 
+                  placeholder="Enter summary" 
+                  style="grid-column: span 2;"
+                  v-model="summary"
+                  @input="updateSummaryCount"
+                  maxlength="300">
+                </textarea>
+                <span class="char-count"></span>
+                <span class="char-count">{{ summaryCount }} characters remaining</span>
             </div>
 
             <!-- Visibility -->
@@ -63,7 +84,7 @@
             
             <!-- Instruction -->
             <div class="form-group" style="grid-column:span 2; grid-template-rows: 20% 80%; grid-gap: 15px; margin-right: 2.5%;">
-                <label class="form-label-format" style="grid-column: span 3;" >Instruction</label>
+                <label class="form-label-format" style="grid-column: span 3;" >Content</label>
                 <div class="form-normal-text-input" style="grid-column: span 3; padding-bottom: 7%;">
                     <TinyMCE ref="tinymceComponent"/>
                 </div>
@@ -105,6 +126,11 @@ const visibility_dropdown_option = ref([
   { id: 'Unlisted', display: 'Unlisted' }
 ]);
 
+const title = ref('');
+const summary = ref('');
+const titleCount = ref(100);
+const summaryCount = ref(300);
+
 const fileInput = ref(null);
 const imageUrl = ref(null);
 const fileDetails = ref({
@@ -112,12 +138,20 @@ const fileDetails = ref({
   fileType: null,
   fileDataInBase64: null,
 });
-const tinymceComponent = ref(null);
 
+const tinymceComponent = ref(null);
 
 const selected_visibility = ref(null);
 
 const isLoading = ref(false)
+
+const updateTitleCount = () => {
+  titleCount.value = 100 - title.value.length;
+};
+
+const updateSummaryCount = () => {
+  summaryCount.value = 300 - summary.value.length;
+};
 
 // for updating selected visibility, cuisine and dietary
 const updateSelectedVisibility = (id) => {
@@ -257,11 +291,11 @@ const gatherEducationalContentData = async () => {
       }
     });
     if (response.data.status === 200) {
-      useToast().success("Recipe added successfully!");
+      useToast().success("Educational content added successfully!");
     }
   } catch (error) {
     if (error.response && error.response.data.status === 400) {
-      useToast().error("Failed to add recipe");
+      useToast().error("Failed to add educational content");
     } else {
       useToast().error("An unexpected error occurred");
     }
@@ -312,24 +346,6 @@ const gatherEducationalContentData = async () => {
     margin-bottom: 15px;
 }
 
-.nutrition-group {
-    display: grid;
-    max-width: 80%;
-    grid-template-columns: 60% 10% 15% 15%;
-    margin-bottom: 15px;
-}
-
-.nutrition-unit-format{
-    font-family: 'Overpass', sans-serif;
-    font-weight: 600; /* SemiBold */
-    font-size: 15px;
-    align-self: center;
-    margin-left: 5px;
-    letter-spacing: normal; /* Auto */
-    text-transform: none; /* No text transformation */
-    text-align: left;
-}
-
 .form-normal-text-input {
     width: 100%;
     padding: 5px;
@@ -337,6 +353,13 @@ const gatherEducationalContentData = async () => {
     background-color: rgba(255, 255, 255, 0.8);
     border: 1.5px solid #8B8585;
     border-radius: 5px;
+}
+
+.char-count {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #666;
 }
 
 .form-label-format {
@@ -347,44 +370,6 @@ const gatherEducationalContentData = async () => {
     letter-spacing: normal; /* Auto */
     text-transform: none; /* No text transformation */
     text-align: left; /* Left align */
-}
-
-
-.checkbox-group-grid {
-    display: grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap: 10px;
-}
-
-.selected-component-item{
-    display: grid;
-    column-gap: 15px;
-    margin: 10px;
-    grid-template-columns: 15% 30% 10% 25% 10%;
-    background-color: #FFFEF1;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    border-radius: 20px;
-    align-items: center;
-
-}
-
-.remove-component-button{
-    font-family: 'Overpass', sans-serif;
-    font-size:  35px;
-    font-weight: 500;
-    color:red;
-}
-
-.selected-item-name{
-    font-family: 'Overpass', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.large-checkbox {
-    width: 20px;
-    height: 20px;
 }
 
 .submit-button{
@@ -411,7 +396,6 @@ const gatherEducationalContentData = async () => {
   align-items: center;
   z-index: 1000;
 }
-
 .spinner {
   border: 16px solid #f3f3f3;
   border-top: 16px solid #3498db;
