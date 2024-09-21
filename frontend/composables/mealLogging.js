@@ -1,4 +1,5 @@
 export const useMealLogging = () => {
     const unsavedMealList = useState("mealList", () => useCookie("mealList"));
-    return {unsavedMealList}
+    const mealType = useState("mealType", () => useCookie("mealType"));
+    return {unsavedMealList,mealType}
 }

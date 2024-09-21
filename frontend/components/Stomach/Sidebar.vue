@@ -15,9 +15,9 @@
             <StomachMealCard  v-model="useMealLogging().unsavedMealList.value[i]"/>
           </div>
         </div>
-        <nuxt-link :to="{ path: '/summary', query: { mealType: mealType } }">
-                  <ButtonGreen>Summary</ButtonGreen>
-        </nuxt-link>
+        <ButtonGreen @click="onToSummary">
+          Summary
+        </ButtonGreen>
       </div>
       
 
@@ -72,4 +72,9 @@ const computedSidebarOpen = computed({
 const toggleSidebar = () => {
   computedSidebarOpen.value = false;
 };
+
+const onToSummary = () => {
+  useMealLogging().mealType.value = props.mealType
+  navigateTo(`/summary`)
+}
 </script>

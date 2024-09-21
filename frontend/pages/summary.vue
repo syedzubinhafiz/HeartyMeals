@@ -58,7 +58,7 @@ const myMaxNutritientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const summaryData = ref([])
 const recipePortion = []
 // const mealType = "Breakfast"
-const mealType = ref(route.query.mealType || "");
+const mealType = ref(useMealLogging().mealType.value || "");
 
 onMounted(async () => {
   await useApi("/dietary","GET")

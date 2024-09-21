@@ -103,7 +103,7 @@ const isPopupOpen = ref(false);
 const searchDataList = ref([]);
 
 const route = useRoute()
-const mealType = ref(route.query.mealType || "");
+const mealType = ref(useMealLogging().mealType.value || "");
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
