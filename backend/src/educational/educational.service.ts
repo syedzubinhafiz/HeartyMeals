@@ -30,7 +30,6 @@ export class EducationalService {
         new_entry.title = addEducationalContentDTO.educationalContent.title;
         new_entry.summary = addEducationalContentDTO.educationalContent.summary;
         new_entry.content = addEducationalContentDTO.educationalContent.content;
-        new_entry.storage_links = {} as JSON;
         
         // create an entry with no links first (to get the edu_id for path)
         try {

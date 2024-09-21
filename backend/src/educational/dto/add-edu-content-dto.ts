@@ -10,10 +10,6 @@ export class AddEducationalContentDTO{
     educationalContent: EducationalContentDTO;
 
     @IsOptional()
-    @IsString()
-    educationalContentId: string;
-
-    @IsOptional()
     @Type(()=> FileUploadDTO)
     files: FileUploadDTO;
 
