@@ -12,7 +12,7 @@
       </div>
       <div class="serving-selector">
         <label for="servings">Servings:</label>
-        <select v-model="servings" id="servings" @change="updateServings" @click.stop>
+        <select class="text-black" v-model="servings" id="servings" @change="updateServings" @click.stop>
           <option class="option-button" v-for="value in options" :key="value" :value="value">{{ value }}</option>
         </select>
       </div>
@@ -186,7 +186,6 @@ export default {
 
 .option-button {
   background-color: white;
-  color: white;
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
