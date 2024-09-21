@@ -94,9 +94,6 @@ export class ComponentService {
                 new_component.unit = payload.unit;
                 new_component.amount = payload.amount;
                 new_component.foodCategory = selected_category;
-        
-                // Add storage links
-                new_component.storage_links = JSON.parse("{}");
                 
                 new_components.push(new_component);
             }
