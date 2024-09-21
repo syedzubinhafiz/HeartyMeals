@@ -1,5 +1,32 @@
 
 export const useFillData = () => {
+    const createComponent = async (componentType,name,amount,unit,foodCategoryId,calories,totalCarbohydrate,protein,fat,sodium,cholesterol) => {
+        return await useApi("/component/add","POST",{
+            "component": {
+                "name": name,
+                "amount": amount,
+                "unit": unit,
+                "componentType": componentType,
+                "foodCategoryId": foodCategoryId,
+                "nutritionInformation": {
+                    "fat": fat,
+                    "sodium": sodium,
+                    "protein": protein,
+                    "calories": calories,
+                    "cholesterol": cholesterol,
+                    "saturatedFat": fat,
+                    "totalCarbohydrate": totalCarbohydrate
+                }
+            },
+            "files": {
+                "thumbnail": {
+                    "fileName": "beef.jpg",
+                    "fileType": "image/jpeg",
+                    "fileDataInBase64": await useSampleImages(1)
+                }
+            }
+        })
+    }
     const fillIngredients = async () => {
         // get
         let data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
@@ -7,108 +34,31 @@ export const useFillData = () => {
         if(data.value.data.length==0) {
             const foodCategoryList = await useApi("/food_category/get","GET")
             let results = ""
-            results = await useApi("/component/add","POST",{
-                "name": "beef",
-                "amount": 100,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="RED MEAT")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 300,
-                    "totalCarbohydrate": 100,
-                    "protein": 100,
-                    "fat": 100,
-                    "sodium": 2,
-                    "cholesterol": 50,
-                }
-            })
+            let foodCategoryId = ""
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="RED MEAT")[0].id
+            results = createComponent("Ingredient","beef",100,"g",foodCategoryId,300,100,100,100,2,50)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "potato",
-                "amount": 200,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 100,
-                    "totalCarbohydrate": 200,
-                    "protein": 50,
-                    "fat": 20,
-                    "sodium": 0,
-                    "cholesterol": 50,
-                }
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Ingredient","potato",200,"g",foodCategoryId,100,200,50,20,0,50)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "fish",
-                "amount": 100,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SEAFOOD")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 200,
-                    "totalCarbohydrate": 50,
-                    "protein": 200,
-                    "fat": 20,
-                    "sodium": 2,
-                    "cholesterol": 20,
-                }
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SEAFOOD")[0].id
+            results = createComponent("Ingredient","fish",100,"g",foodCategoryId,200,50,200,20,2,20)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "tomato",
-                "amount": 120,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 100,
-                    "totalCarbohydrate": 100,
-                    "protein": 80,
-                    "fat": 20,
-                    "sodium": 0,
-                    "cholesterol": 10,
-                }
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Ingredient","tomato",120,"g",foodCategoryId,100,100,80,20,0,10)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "pork",
-                "amount": 50,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PORK")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 300,
-                    "totalCarbohydrate": 100,
-                    "protein": 200,
-                    "fat": 120,
-                    "sodium": 3,
-                    "cholesterol": 50,
-                }
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PORK")[0].id
+            results = createComponent("Ingredient","pork",50,"g",foodCategoryId,300,100,200,120,3,50)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "plutonium",
-                "amount": 170,
-                "unit": "g",
-                "componentType": "Ingredient",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PEANUT")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {
-                    "calories": 400,
-                    "totalCarbohydrate": 100,
-                    "protein": 100,
-                    "fat": 100,
-                    "sodium": 20,
-                    "cholesterol": 50,
-                }
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PEANUT")[0].id
+            results = createComponent("Ingredient","plutonium",170,"g",foodCategoryId,400,100,100,100,20,50)
             console.log(results)
+
             data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
         }
         return data
@@ -120,66 +70,32 @@ export const useFillData = () => {
         if(data.value.data.length==0) {
             const foodCategoryList = await useApi("/food_category/get","GET")
             let results = ""
-            results = await useApi("/component/add","POST",{
-                "name": "Salt",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+            let foodCategoryId = ""
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","Salt",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "Pepper",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","Pepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "Wasabi",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","Wasabi",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "MSG",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","MSG",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "Arsenic",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","Arsenic",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
-            results = await useApi("/component/add","POST",{
-                "name": "Blackpepper",
-                "amount": 1,
-                "unit": "tbsp",
-                "componentType": "Seasoning",
-                "foodCategoryId": foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id,
-                // "cuisineId": "bec8033b-d449-49c8-a2f2-c3c2c9d7bc38",
-                "nutritionInformation" : {}
-            })
+
+            foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
+            results = createComponent("Seasoning","Blackpepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
+
             data = await useApi("/component/seasonings?page=1&pageSize=100","GET")
         }
         return data
@@ -527,5 +443,5 @@ export const useFillData = () => {
 
         return data
     }
-    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createMeal}
+    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createComponent, createMeal}
 }

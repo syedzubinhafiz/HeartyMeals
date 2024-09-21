@@ -86,6 +86,7 @@ const openOverlay = async (meal) => {
   isOverlayVisible.value = true
 }
 watch(searchValue,async ()=>{
+  await useApi("/dietary","GET")
   let endpoint = "/recipe/get"
   if(searchValue.value!=""){
     endpoint=`/recipe/get?search=${searchValue.value}`
