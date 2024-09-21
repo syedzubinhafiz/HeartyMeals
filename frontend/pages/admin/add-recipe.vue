@@ -486,6 +486,12 @@ const validateForm = () => {
     checkComponents(selectedSeasonings.value, "Seasoning");
   }
 
+  // check if instruction is empty
+  if (!tinymceComponent.value.editorInstance.getContent()) {
+    useToast().error("Instruction is required");
+    isValid = false;
+  }
+
   return isValid;
 };
 
