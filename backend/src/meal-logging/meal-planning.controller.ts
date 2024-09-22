@@ -1,14 +1,12 @@
-import { Body, Controller, Delete, Get, Headers, HttpException, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Param, Post, Query } from "@nestjs/common";
 import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
-import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
-import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
-import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
-import { UpdateMealLoggingSummaryDTO } from "src/meal-log-summary/dto/update-meal-logging-summary-dto";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
-import { RemoveMealLoggingIdDTO } from "src/meal-log-summary/dto/remove-meal-logging-id-dto";
+import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
+import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
+
 
 @Controller('meal-planning')
 export class MealPlanningController {
@@ -23,21 +21,20 @@ export class MealPlanningController {
     /**
      * Get method to get all the meals in a specific date
      * @param headers - headers that contains the authorization token
-     * @param payload - payload that contains the userId and the date requested to get the meals from
+     * @param date - date requested to get the meals from
+     * @param timeZone - timezone of the user
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
-    async getMealsPerDay(@Headers() headers, @Query('date') date: string,){
+    async getMealsPerDay(@Headers() headers, @Query('date') date: string, @Query('timeZone') timeZone: string){
     try {
-        const auth_header = headers.authorization;
-        const decoded_headers = this.commonService.decodeHeaders(auth_header);
-        const dateValidationDTO = new DateValidationDTO();
-        dateValidationDTO.date = date;
+            const auth_header = headers.authorization;
+            const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-        return await this.mealLoggingService.getMealsPerDay(decoded_headers, dateValidationDTO);
+            return await this.mealLoggingService.getMealsPerDay(decoded_headers, date, timeZone);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
     }
 
@@ -51,20 +48,24 @@ export class MealPlanningController {
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
+                // update meal logging 
                 const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
-                const update_meal_logging_summary = new UpdateMealLoggingSummaryDTO();
-                update_meal_logging_summary.mealLoggingId = payload.mealLoggingId;
-                update_meal_logging_summary.oldMealType = old_meal_type;
-                update_meal_logging_summary.newMealType = payload.mealType;
-                update_meal_logging_summary.mealDate = payload.mealDate;
-
-                await this.mealLoggingSummaryService.updateNutritionBudget(decoded_headers, update_meal_logging_summary, transactionalEntityManager);
+                // update meal logging summary 
+                await this.mealLoggingSummaryService.updateNutritionBudget(
+                    decoded_headers, 
+                    payload.mealLoggingId,
+                    payload.mealDate,
+                    payload.systemDate,
+                    payload.timeZone,
+                    old_meal_type,
+                    payload.mealType,
+                    transactionalEntityManager);
             });
-            return new HttpException("Meal is updated.", 200);
+            return new HttpException("Meal is updated.", HttpStatus.OK);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
     }
 
@@ -79,20 +80,23 @@ export class MealPlanningController {
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
+
+                const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(
+                    decoded_headers,
+                    payload.mealDate,
+                    payload.systemDate,
+                    payload.timeZone,
+                    payload.mealLoggingId,
+                    payload.mealType,
+                    transactionalEntityManager
+                );
                 
-                const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
-                removeMealLoggingIdDTO.mealLoggingId = payload.mealLoggingId;
-                removeMealLoggingIdDTO.date = payload.mealDate;
-                removeMealLoggingIdDTO.mealType = payload.mealType;
-
-                const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
-
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
-            return new HttpException("Meal is deleted.", 200);
+            return new HttpException("Meal is deleted.", HttpStatus.OK);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
         
     }

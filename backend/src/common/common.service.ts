@@ -56,19 +56,7 @@ export class CommonService{
             throw new Error('Invalid token');
         }
     }
-
-    /**
-     * Checks the date format
-     * @param date - date to validate
-     * @returns true if the date is in the format of YYYY-MM-DDTHH:MM:SS.SSS+-HHMM else false
-     */
-    validateDate(date: string): boolean{
-        // check for valid date format
-        const date_pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{4}$/;
-        if (!date || !date_pattern.test(date)) { return false; }
-        return true;
-    }
-
+    
     /**
      * Checks if the two dates are the same day
      * @param date1 - first date in Date object

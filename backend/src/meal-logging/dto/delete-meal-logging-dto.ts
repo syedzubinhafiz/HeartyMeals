@@ -4,9 +4,26 @@ import { MealType } from "src/meal-type.enum";
 
 export class DeleteMealLoggingDTO{
 
+    /**
+     * @example "2024-09-22"
+     */
     @IsNotEmpty()
     @IsDateString()
     readonly mealDate: string;
+
+    /**
+     * @example "2024-09-22"
+     */
+    @IsNotEmpty()
+    @IsDateString()
+    readonly systemDate: string;
+
+    /**
+     * @example "Asia/Kuala_Lumpur"
+     */
+    @IsNotEmpty()
+    @IsString()
+    readonly timeZone: string;
 
     @IsString()
     @IsNotEmpty()
