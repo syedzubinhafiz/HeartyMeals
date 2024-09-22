@@ -76,7 +76,7 @@ export default {
   data() {
     return {
       servings: this.item.servings,
-      options: [0.25, 0.5, 0.75, 1, 2],
+      options: [0.25, 0.5, 0.75, 1, 2, 3, 4],
       isExpanded: false,
       nutritionIcons: {
         calories: '/assets/img/Calories-Icon.svg',
