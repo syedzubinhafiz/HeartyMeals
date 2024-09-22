@@ -12,42 +12,42 @@
                             <img src="/assets/img/macroEnergy.svg" alt="icon" width="16" height="16">
                             <p>Calories</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.calories}}kcal</span>
+                        <span>{{+meal.recipe.nutrition_info.calories.toFixed(2)}}kcal</span>
                     </div>
                     <div class="flex justify-between p-2 space-x-5">
                         <span class="flex space-x-1">
                             <img src="/assets/img/macroCarb.svg" alt="icon" width="16" height="16">
                             <p>Carbohydrates</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.totalCarbohydrate}}g</span>
+                        <span>{{+meal.recipe.nutrition_info.totalCarbohydrate.toFixed(2)}}g</span>
                     </div>
                     <div class="flex justify-between p-2 space-x-5">
                         <span class="flex space-x-1">
                             <img src="/assets/img/macroProtein.svg" alt="icon" width="16" height="16">
                             <p>Proteins</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.protein}}g</span>
+                        <span>{{+meal.recipe.nutrition_info.protein.toFixed(2)}}g</span>
                     </div>
                     <div class="flex justify-between p-2 space-x-5">
                         <span class="flex space-x-1">
                             <img src="/assets/img/macroFat.svg" alt="icon" width="10" height="10">
                             <p>Fats</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.fat}}g</span>
+                        <span>{{+meal.recipe.nutrition_info.fat.toFixed(2)}}g</span>
                     </div>
                     <div class="flex justify-between p-2 space-x-5">
                         <span class="flex space-x-1">
                             <img src="/assets/img/macroSodium.svg" alt="icon" width="16" height="16">
                             <p>Sodium</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.sodium}}g</span>
+                        <span>{{+meal.recipe.nutrition_info.sodium.toFixed(2)}}g</span>
                     </div>
                     <div class="flex justify-between p-2 space-x-5">
                         <span class="flex space-x-1">
                             <img src="/assets/img/cholesterolsIcon.png" alt="icon" width="16" height="16">
                             <p>Cholesterol</p>
                         </span>
-                        <span>{{meal.recipe.nutrition_info.cholesterol}}g</span>
+                        <span>{{+meal.recipe.nutrition_info.cholesterol.toFixed(2)}}g</span>
                     </div>
                 </div>
             </div>
