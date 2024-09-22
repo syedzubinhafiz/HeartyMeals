@@ -13,7 +13,9 @@
       <i class="fas fa-ellipsis-v text-gray-600"></i>
     </div>
 
-    <FoodCardNutrients 
+    <!-- Popup -->
+    <div ref="popupRef">
+      <FoodCardNutrients 
         v-if="showMiniCard" 
         :nutritionInfo="cardInfo.recipe.nutrition_info"
         :visible="showMiniCard" 
@@ -21,11 +23,12 @@
         @close="toggleMiniCard" 
         @remove="removeMeal" 
         @editMeal="$emit('editMeal', $event)"/>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   cardInfo: {
@@ -41,13 +44,15 @@ const props = defineProps({
 const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
 const showMiniCard = ref(false);
+const popupRef = ref(null);
 
 const toggleMiniCard = () => {
   showMiniCard.value = !showMiniCard.value;
 };
 
 const selectMeal = () => {
-  toggleMiniCard();
+  window.addEventListener('click', handleClickOutside);
+  setTimeout(()=>{toggleMiniCard();},300)
   console.log('Meal selected:', props.cardInfo);
   emit('selectMeal', props.cardInfo); // Emit the selected meal data
 };
@@ -60,13 +65,27 @@ const removeMeal = async () => {
   });
   console.log(result);
 };
-</script>
 
+// Function to handle clicks outside of the popup
+const handleClickOutside = (event) => {
+  if (popupRef.value && !popupRef.value.contains(event.target) && showMiniCard.value) {
+    setTimeout(()=>{
+      showMiniCard.value = false;
+      window.removeEventListener('click', handleClickOutside);
+    },
+    300)
+  }
+};
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside);
+});
+</script>
 
 <style scoped>
 .food-card {
   background-color: #F3EADA; /* Use your preferred background color */
-  position: relative; /* Ensure the position is relative so that the child absolute element is positioned relative to this parent */
+  position: relative;
 }
 
 .food-image {
@@ -76,6 +95,6 @@ const removeMeal = async () => {
 }
 
 .food-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add a hover effect */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 </style>

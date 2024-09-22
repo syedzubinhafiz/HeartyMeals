@@ -88,15 +88,17 @@
         <div class="section flex flex-col justify-end fixed-footer ">
             <Footer />
         </div>
-
-        <EditMealPopUp 
+        <div ref="popupRef">
+            <EditMealPopUp 
             v-if="showEditPopup" 
             :key="selectedMealData?.id" 
             :visible="showEditPopup" 
             :mealData="selectedMealData.value" 
             @close="toggleEditPopup" 
             @save="saveMealChanges"
-        /> 
+            />
+        </div>
+
     </div>
 </template>
 
@@ -202,14 +204,32 @@
         showEditPopup.value = !showEditPopup.value;
     };
 
+    const popupRef = ref(null);
+
+
     const openEditMealPopup = (mealInfo) => {
         console.log("Before assignment:", mealInfo);
         selectedMealData.value = mealInfo ? { ...mealInfo } : {}; // Ensure it's an object
         console.log("After assignment:", selectedMealData.value);
-        showEditPopup.value = true;
+        window.addEventListener('click', handleOutsideClick);
+        setTimeout(()=>{toggleEditPopup();},300)
         console.log("Popup visibility:", showEditPopup.value);
 
     };
+
+    const handleOutsideClick = (event) => {
+        if (popupRef.value && !popupRef.value.contains(event.target) && showEditPopup.value) {
+            setTimeout(()=>{
+            showEditPopup.value = false;
+            window.removeEventListener('click', handleOutsideClick);
+            },
+            300)
+        }
+    };
+
+    onUnmounted(() => {
+        window.removeEventListener('click', handleOutsideClick);
+    });
 
     const saveMealChanges = async (updatedMealInfo) => {
         console.log("mealdate: ", selectedMealData.value.created_at);
