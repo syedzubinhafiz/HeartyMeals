@@ -421,22 +421,23 @@ export const useFillData = () => {
         currentDate = currentDate.toISOString()
         // get
         let data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
+        console.log(data)
         // if no data, fill
         if(data.value.Breakfast.length==0 && data.value.Lunch.length==0 && data.value.Dinner.length==0 && data.value.Other.length==0) {
             const recipes = await fillRecipes()
             let recipe = null
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
-            console.log(createMeal(currentDate,recipe,"Breakfast",2))
+            console.log(await createMeal(currentDate,recipe,"Breakfast",2))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id
-            console.log(createMeal(currentDate,recipe,"Lunch",2))
+            console.log(await createMeal(currentDate,recipe,"Lunch",2))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id
-            console.log(createMeal(currentDate,recipe,"Other",1))
+            console.log(await createMeal(currentDate,recipe,"Other",1))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
-            console.log(createMeal(currentDate,recipe,"Other",1))
+            console.log(await createMeal(currentDate,recipe,"Other",1))
 
             data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
         }

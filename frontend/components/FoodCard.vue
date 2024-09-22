@@ -38,6 +38,9 @@ const props = defineProps({
   isToday: {
     type: Boolean,
     required: true
+  },
+  mealList: {
+    default: []
   }
 });
 
@@ -64,6 +67,13 @@ const removeMeal = async () => {
     "mealType": props.cardInfo.type
   });
   console.log(result);
+  if(result.isError || result.value?.status != 200) {
+    useToast().error("Deletion failed!")
+  }
+  else {
+    useToast().success("Meal deleted!")
+    props.mealList.splice(props.mealList.indexOf(props.cardInfo), 1); 
+  }
 };
 
 // Function to handle clicks outside of the popup

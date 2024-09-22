@@ -28,9 +28,9 @@
                             v-for="(card, index) in breakfastList" 
                             :key="index" 
                             :cardInfo="card" 
-                            :isToday="isToday"  
+                            :isToday="isToday" 
+                            v-model:mealList="breakfastList" 
                             class="mb-4" 
-                            @removeMeal="removeMeal('breakfastList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
                     </div>
@@ -43,8 +43,8 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
+                            v-model:mealList="lunchList" 
                             class="mb-4" 
-                            @removeMeal="removeMeal('lunchList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>                    
                         </div>
@@ -57,8 +57,8 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
+                            v-model:mealList="dinnerList" 
                             class="mb-4" 
-                            @removeMeal="removeMeal('dinnerList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>                    
                         </div>
@@ -71,8 +71,8 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
+                            v-model:mealList="otherList" 
                             class="mb-4" 
-                            @removeMeal="removeMeal('otherList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
                     </div>
