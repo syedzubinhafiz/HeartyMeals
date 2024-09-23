@@ -4,7 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { Visibility } from '../recipe/enum/visibility.enum';
-import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
 
 @Injectable()
 export class EducationalService {
@@ -86,26 +85,6 @@ export class EducationalService {
     }
 
     /**
-     * Mark the educational content object as deleted
-     * @param eduId - educational content id
-     * @returns updated educational content
-     */
-    async deleteContent(eduId){
-        // get the entry
-        try {
-            var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
-
-            // soft delete
-            entry.deleted_at = new Date();
-            entry.visibility = Visibility.PRIVATE;
-            return await this.educatinoalContentRepository.save(entry);
-            }
-        catch (e){
-            return e;
-        }
-    }
-
-    /**
      * Get Educational Content based on the search criteria, or get the educational content based on the educational content id
      * @param page - page number
      * @param pageSize - page size
@@ -133,7 +112,6 @@ export class EducationalService {
                 'educational_content.id', 
                 'educational_content.title', 
                 'educational_content.summary',
-                'educational_content.content', 
                 'educational_content.storage_links',
                 'educational_content.visibility'                
             ])
@@ -153,6 +131,11 @@ export class EducationalService {
             
             const result = await query.getMany();
 
+            for (const edu_content of result){
+                // set the thumbnail link
+                edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            }
+
             return [result, result.length]
         
         }
@@ -162,12 +145,8 @@ export class EducationalService {
             });
 
             // set the thumbnail link
-            if (edu_content.storage_links['thumbnail'] != null){
-                edu_content.storage_links['thumbnail'] = await this.storageService.getFiles(edu_content.storage_links['thumbnail']);
-            }
-            else {
-                edu_content.storage_links['thumbnail'] = this.storageService.getDefaultImage();
-            }
+            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            
             // post process to get all the links into the content array
             // get all the links first, loop all keys in the storage_ids to form an array
             var links = {};
@@ -175,7 +154,7 @@ export class EducationalService {
             // get the actual links from the storage service 
             if (edu_content.storage_links['content'] != null){
                 for (const keys in edu_content.storage_links['content']){
-                    links[keys] = await this.storageService.getFiles(edu_content.storage_links['content'][keys]);
+                    links[keys] = await this.storageService.getLink(edu_content.storage_links['content'][keys]);
                 }
             }
             
@@ -186,9 +165,12 @@ export class EducationalService {
 
             return [edu_content, 1];
         }
-
     }
 
+
+
+
+    
     /**
      * Take current educational content id and edit the content 
      * @param eduId - educational content id 
@@ -198,65 +180,54 @@ export class EducationalService {
      * @returns newly updated educational content object
      */
     async editContent(eduId, title, content, files){
-        // data validation 
-        if (title == null || content == null || files.length <= 0){
-            return "Either title, content, or files is empty";
-        }
+        // // data validation 
+        // if (title == null || content == null || files.length <= 0){
+        //     return "Either title, content, or files is empty";
+        // }
 
-        // get edu_content object
-        var entry = await this.getContent(eduId);
+        // // get edu_content object
+        // var entry = await this.getContent(eduId);
 
-        var saved_content = []
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-        content.forEach(item => {
-            if (item.type === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item.info
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        });
+        // var saved_content = []
+        // // for each element in the array passed in, create a json object with "type" and " content"
+        // // check if it is text or files
+        // // if text, save the type as "text", content as the actual text, and put into the saved_content array 
+        // // if files, save the type as "files", content as the index of the files in the files array
+        // var file_counter = 0;
+        // content.forEach(item => {
+        //     if (item.type === "text"){
+        //         saved_content.push({
+        //             "type": "text",
+        //             "content": item.info
+        //         });
+        //     }
+        //     else { 
+        //         saved_content.push({
+        //             "type": "files",
+        //             "content": file_counter
+        //         });
+        //         file_counter += 1;
+        //     }
+        // });
 
-        // upload file
-        // get json link
-        // prepare the path first 
-        var path = `${entry.id}`;
+        // // upload file
+        // // get json link
+        // // prepare the path first 
+        // var path = `${entry.id}`;
 
         // call the upload method 
         // by passing the data to the method 
         var json_links = {} as JSON;
-        await this.storageService.uploadFile(path, files).then(async function(result) {
-            if (typeof(result) === "string"){
-                return result;
-            }
-            else {
-                for (var key in result){
-                    json_links[key] = result[key];
-                }
-            } 
-        });
 
+        // entry.title = title;
+        // entry.content = saved_content;
+        // entry.storage_links = json_links;
 
-        entry.title = title;
-        entry.content = saved_content;
-        entry.storage_links = json_links;
-
-        // update entry
-        // update updatedAt() column
-        entry.updatedAt = new Date();
-        // return new entry
-        return await this.educatinoalContentRepository.save(entry);
+        // // update entry
+        // // update updatedAt() column
+        // entry.updatedAt = new Date();
+        // // return new entry
+        // return await this.educatinoalContentRepository.save(entry);
     }
 
     replaceSrcInArray(strings, replacements) {
