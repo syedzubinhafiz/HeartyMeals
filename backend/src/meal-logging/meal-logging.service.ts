@@ -9,6 +9,7 @@ import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
+import { AddMealLoggingSummaryDTO } from "src/meal-log-summary/dto/add-meal-logging-summary-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -24,39 +25,28 @@ export class MealLoggingService {
     /**
      * Log meals based on the meal type
      * @param decodedHeaders - decoded headers from the request
-     * @param mealDateTime - date string in the format YYYY-MM-DDTHH:MM:SS.SSS
-     * @param timeZone - timezone string
-     * @param recipeIds - a list of recipe ids
-     * @param mealType - meal type enum
+     * @param addMealLoggingSummaryDTO - payload that contains the meal logging details
      * @param transactionalEntityManager - transactional entity manager
      * @returns the saved entries in the database
      * 
      * @example addMealLogging(decodedHeaders, '2021-10-10T12:00:00', '2021-10-10T12:00:00', 'Asia/Singapore', [{recipeId: 1, portion: 1}, {recipeId: 2, portion: 2}], MealType.BREAKFAST, transactionalEntityManager)
      */
-    async addMealLogging(
-        decodedHeaders: any, 
-        mealDateTime: string, 
-        systemDateTime: string, 
-        timeZone: string, 
-        recipeIds: Object[], 
-        mealType: MealType, 
-        transactionalEntityManager: EntityManager
-    ){
+    async addMealLogging(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO,transactionalEntityManager: EntityManager){
         var all_entries = []
         try {
             // Get user object
             var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
             // Validate date 
-            if (!this.isValidMealDate(mealDateTime, systemDateTime, timeZone)){
+            if (!this.isValidMealDate(addMealLoggingSummaryDTO.mealDateTime, addMealLoggingSummaryDTO.systemDateTime, addMealLoggingSummaryDTO.timeZone)){
                 throw new HttpException("Cannot add meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
             };
 
             // get the date in ISO format (with timezone into account)
-            const meal_date = new Date(this.getISOStringWithTimezone(mealDateTime, timeZone));
+            const meal_date = new Date(this.getISOStringWithTimezone(addMealLoggingSummaryDTO.mealDateTime, addMealLoggingSummaryDTO.timeZone));
 
             // Get all the recipe objects from the recipe ids
-            const all_recipe_ids = recipeIds.map(recipeJSON => recipeJSON['recipeId']);
+            const all_recipe_ids = addMealLoggingSummaryDTO.recipeIdPortions.map(recipeJSON => recipeJSON['recipeId']);
             const recipes_object = await this.recipeRepository.findBy({
                  id: In(all_recipe_ids),
             });
@@ -65,7 +55,7 @@ export class MealLoggingService {
             const recipeMap = new Map(recipes_object.map(recipe => [recipe.id, recipe]));
 
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
-            const results = await Promise.all(recipeIds.map(async recipeJSON => {
+            await Promise.all(addMealLoggingSummaryDTO.recipeIdPortions.map(async recipeJSON => {
                 // Validate recipeId
                 const recipe_object = recipeMap.get(recipeJSON['recipeId']);
                 if (!recipe_object) {
@@ -76,7 +66,7 @@ export class MealLoggingService {
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.consumed_date_time = meal_date;
                 new_meal_logging.is_consumed = true;
-                new_meal_logging.type = mealType;
+                new_meal_logging.type = addMealLoggingSummaryDTO.mealType;
                 new_meal_logging.portion = recipeJSON['portion'];
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
@@ -98,8 +88,9 @@ export class MealLoggingService {
     /**
      * Get all the meals of a user in a specific day
      * @param decodedHeaders - decoded headers from the request
-     * @param date - date string in the format YYYY-MM-DDTHH:MM:SS.SSS 
-     * @returns a list of lists of meals 
+     * @param mealDate - date requested to get the meals from
+     * @param timeZone - timezone of the user
+     * @returns a list of lists of meals sorted in meal types
      */
     async getMealsPerDay(decodedHeaders: any, mealDate: string, timeZone: string){
         try {
@@ -107,13 +98,13 @@ export class MealLoggingService {
             var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
             // get the start and end of the day 
-            const startOfDay = `${mealDate} 00:00:00`;
-            const endOfDay = `${mealDate} 23:59:59`;
+            const start_of_day = `${mealDate} 00:00:00`;
+            const end_of_day = `${mealDate} 23:59:59`;
             
             // get all the meals recoreded in a day using time zone
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .leftJoinAndSelect("meal_logging.recipe", "recipe")
-                .where('meal_logging.consumed_date_time AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay', { timeZone: timeZone, startOfDay: startOfDay, endOfDay: endOfDay })
+                .where('meal_logging.consumed_date_time AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay', { timeZone: timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
                 .andWhere("meal_logging.deleted_at IS NULL")
                 .getMany()
@@ -173,11 +164,18 @@ export class MealLoggingService {
 
     /**
      * Update the meal logging to a different day
+     * @param decodedHeaders - decoded headers from the request
      * @param payload - payload that contains the meal logging id and the new date
+     *  @param transactionalEntityManager - transactional entity manager
      * @returns the updated meal logging object
      */
     async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
+            // validate date
+            if (!this.isValidMealDate(payload.mealDate, payload.systemDate, payload.timeZone)){
+                throw new HttpException("Cannot update meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
+            }
+
             // validate meal logging id 
             // returns a list of meal logging objects found
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
@@ -185,10 +183,6 @@ export class MealLoggingService {
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .getOneOrFail()
 
-            // validate date
-            if (!this.isValidMealDate(payload.mealDate, payload.systemDate, payload.timeZone)){
-                throw new HttpException("Cannot update meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
-            }
             // save the previous meal type
             const old_meal_type = entry.type;
 
@@ -220,22 +214,23 @@ export class MealLoggingService {
     /**
      * Check if the date is within 7 days from now and today
      * @param mealDateTime - date string in the format YYYY-MM-DDTHH:MM:SS.SSS or YYYY-MM-DD
+     * @param systemDateTime - date string in the format YYYY-MM-DDTHH:MM:SS.SSS or YYYY-MM-DD
      * @param timeZone - timezone string
      * @returns true if the date is within 7 days from now and today
      */
     isValidMealDate(mealDateTime: string, systemDateTime: string, timeZone: string): boolean {
-        const mealDate = parseISO(mealDateTime);
-        const zonedMealDate = toDate(mealDate.toISOString(), { timeZone });
+        const meal_date = parseISO(mealDateTime);
+        const zoned_meal_date = toDate(meal_date.toISOString(), { timeZone });
 
-        const systemDate = parseISO(systemDateTime);
-        const zonedSystemDate = toDate(systemDate.toISOString(), { timeZone });
+        const system_date = parseISO(systemDateTime);
+        const zoned_system_date = toDate(system_date.toISOString(), { timeZone });
 
-        const sevenDaysFromNow = addDays(zonedMealDate, 7);
+        const seven_days_from_now = addDays(zoned_meal_date, 7);
       
-        const isPast = isBefore(zonedMealDate, zonedSystemDate);
-        const isBeyondSevenDays = isAfter(zonedMealDate, sevenDaysFromNow);
+        const is_past = isBefore(zoned_meal_date, zoned_system_date);
+        const is_beyond_seven_days = isAfter(zoned_meal_date, seven_days_from_now);
       
-        return !isPast && !isBeyondSevenDays;
+        return !is_past && !is_beyond_seven_days;
     }
 
     /**

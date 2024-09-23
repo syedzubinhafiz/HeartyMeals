@@ -25,14 +25,7 @@ export class MealLogSummaryController {
             await this.entityManager.transaction(async transactionalEntityManager => {
                 // use transactionalEntityManager to perform operations with transactions
 
-                const meal_logging_ids = await this.mealLoggingService.addMealLogging(
-                    decoded_headers, 
-                    addMealLoggingSummaryDTO.mealDateTime,
-                    addMealLoggingSummaryDTO.systemDateTime,
-                    addMealLoggingSummaryDTO.timeZone, 
-                    addMealLoggingSummaryDTO.recipeIdPortions,
-                    addMealLoggingSummaryDTO.mealType,
-                    transactionalEntityManager);
+                const meal_logging_ids = await this.mealLoggingService.addMealLogging(decoded_headers, addMealLoggingSummaryDTO, transactionalEntityManager);
                 
                 await this.mealLogSummaryService.addMealLoggingSummary(decoded_headers, addMealLoggingSummaryDTO, meal_logging_ids, transactionalEntityManager);
             });

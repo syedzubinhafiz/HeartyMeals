@@ -39,6 +39,7 @@ export class MealLoggingController {
 
     /**
      * Post method to update the meal logging to change to another day
+     * @param headers - headers that contains the authorization token
      * @param payload - payload that contains the meal logging id and the new date
      * @returns HttpException 200 if the meal is updated 
      */
@@ -51,15 +52,7 @@ export class MealLoggingController {
                 const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
                 // update meal logging summary 
-                await this.mealLoggingSummaryService.updateNutritionBudget(
-                    decoded_headers, 
-                    payload.mealLoggingId,
-                    payload.mealDate,
-                    payload.systemDate,
-                    payload.timeZone,
-                    old_meal_type,
-                    payload.mealType,
-                    transactionalEntityManager);
+                await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
             });
             return new HttpException("Meal is updated.", HttpStatus.OK);
         }
@@ -71,7 +64,7 @@ export class MealLoggingController {
     /**
      * Post method to delete meal logging entries
      * @param headers - headers that contains the authorization token
-     * @param payload - payload that contains a list of meal logging ids
+     * @param payload - payload that contains the DTO
      * @returns HttpException 200 when the meal is deleted 
      */
     @Delete('delete')
@@ -80,15 +73,7 @@ export class MealLoggingController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
 
-                const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(
-                    decoded_headers,
-                    payload.mealDate,
-                    payload.systemDate,
-                    payload.timeZone,
-                    payload.mealLoggingId,
-                    payload.mealType,
-                    transactionalEntityManager
-                );
+                await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers,payload,transactionalEntityManager);
                 
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });

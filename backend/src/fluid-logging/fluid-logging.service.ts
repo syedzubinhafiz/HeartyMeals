@@ -86,7 +86,6 @@ export class FluidLoggingService {
         const endOfDay = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 23:59:59`;
 
         // get the fluid logging entry for the user on the given date and userid
-        // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
             .where('user_id = :user_id', { user_id: user_object.user_id })
             .andWhere('logging_date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateFluidLoggingDTO.timeZone, startOfDay: startOfDay, endOfDay: endOfDay })
