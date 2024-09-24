@@ -3,7 +3,7 @@
     <div class="relative text-center w-64">
       <div class="relative z-10 flex flex-col space-y-5 items-center translate-y-12">
         <P>{{ label }}</P>
-        <P>{{ value }}/{{ maxValue }}ml</P>
+        <P>{{ intakeAmount }}/{{ maxValue }} {{ intakeUnit }}</P>
         <button @click="showOverlay = true" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
           <img src="../../assets/img/Water Droplet.png" alt="Water Base" class="w-4 h-4 mr-2" />
           <p>Log Intake</p>
@@ -16,16 +16,13 @@
     <div v-if="showOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
       <div class="bg-[#F3EADA] p-10 rounded-xl shadow-xl w-96 h-64 flex flex-col justify-center items-center">
         <button @click="showOverlay = false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 z-50" style="top: calc(50% - 120px); right: calc(50% - 180px);">
-  &times;
-</button>
-        <p class="text-xl font-semibold mb-4 text-center">Enter the amount</p>
+          &times;
+        </button>
+        <p class="text-xl font-semibold mb-4 text-center">Enter Water Consumed</p>
         <div class="flex items-center space-x-7">
-          <input type="number" v-model="intakeAmount" class="border border-gray-300 rounded-xl shadow-xl p-2 text-center w-24" />
-          <select v-model="intakeUnit" class="border border-gray-300 rounded-xl shadow-xl p-2">
-            <option value="ml">ml</option>
-            <option value="L">L</option>
-          </select>
-        </div>
+        <input type="number" v-model="waterConsumed" class="border border-gray-300 rounded-xl shadow-xl p-2 text-center w-24" />
+        <span>mL</span>
+      </div>
         <button @click="logIntake" class="mt-4 bg-[#87A98D] text-white py-2 px-4 rounded flex items-center justify-center">
           <span>&#10003;</span>
           <p class="ml-2">Done</p>
@@ -36,6 +33,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed } from 'vue';
+
 defineOptions({
   name: "NutrientBar",
 });
@@ -45,34 +44,92 @@ const props = defineProps({
     type: String,
     default: "Remaining Water Intake",
   },
-  value: {
-    type: Number,
-    default: 1500,
-  },
   maxValue: {
     type: Number,
     default: 2000,
   },
-  icon:{
+  icon: {
     type: String,
-    default:""
+    default: ""
   }
 });
 
+console.log(props.label)
 const bgFile = computed(() => {
-  return `water${Math.round(props.value/props.maxValue*10)}.png`;
+  const percentage = Math.round(Math.min(1,Math.max(intakeAmount.value / props.maxValue,0)) * 10);
+  console.log(percentage)
+  return `water${percentage}.png`;
 });
 
 const showOverlay = ref(false);
 const intakeAmount = ref(0);
-const intakeUnit = ref("ml");
+const intakeUnit = ref("mL");
+const waterConsumed = ref(0);
+const maxValue = ref(props.maxValue)
 
-function logIntake() {
-  console.log(`Logged ${intakeAmount.value} ${intakeUnit.value}`);
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  await fetchFluidLogging();  // Fetch data when component mounts
+});
+
+async function fetchFluidLogging() {
+  try {
+    let currentDate = new Date();
+    currentDate.setUTCHours(-8, 0, 0, 0);
+    currentDate = currentDate.toISOString();
+    const response = await useApi(`/fluid-logging/get?date=${currentDate}&timeZone=Asia/Malaysia`, "GET");
+    console.log(response)
+    intakeAmount.value = response.value.remaining_fluid
+
+  } catch (error) {
+    console.error('Error fetching fluid logging data:', error);
+  }
+}
+
+async function logIntake() {
+  console.log(`Consumed ${waterConsumed.value} mL`);
+
+  
+  let currentDate = new Date();
+  currentDate.setUTCHours(-8, 0, 0, 0);
+  currentDate = currentDate.toISOString();
   showOverlay.value = false;
+
+  const result = await useApi("/fluid-logging/update","POST",{
+    "loggingDate": currentDate,
+    "waterIntake": waterConsumed.value
+  })
+  console.log(result)
+  if(result.isError) {
+    useToast().error("Fluid logging failed!")
+  }
+  else {
+    useToast().success(result.value.response)
+    fetchFluidLogging()
+  }
+
+  // remainingIntake.value = maxValue.value - intakeAmount.value;
+
+  // let currentDate = new Date();
+  // currentDate.setUTCHours(-8, 0, 0, 0);
+  // currentDate = currentDate.toISOString();
+
+  // try {
+  //   const updateFluidLogging = await useApi('/fluid-logging/update', 'POST', {
+  //     loggingDate: currentDate,
+  //     waterIntake: intakeAmount.value 
+  //   });
+
+  //   if (updateFluidLogging && updateFluidLogging.success) {
+  //     console.log("Data updated successfully", updateFluidLogging);
+  //     await fetchFluidLogging(); 
+  //   } else {
+  //     console.error("Failed to update the database", updateFluidLogging);
+  //   }
+  // } catch (error) {
+  //   console.error("Error updating fluid logging:", error);
+  // }
 }
 </script>
 
-<style scoped>
-/* Add any additional custom styles here if necessary */
-</style>
+
