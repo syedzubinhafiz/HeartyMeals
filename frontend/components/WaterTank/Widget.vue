@@ -4,7 +4,7 @@
       <div class="relative z-10 flex flex-col space-y-5 items-center translate-y-12">
         <P>{{ label }}</P>
         <P>{{ intakeAmount }}/{{ maxValue }} {{ intakeUnit }}</P>
-        <button @click="showOverlay = true" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
+        <button @click="openOverlay" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
           <img src="../../assets/img/Water Droplet.png" alt="Water Base" class="w-4 h-4 mr-2" />
           <p>Log Intake</p>
         </button>
@@ -14,20 +14,23 @@
 
     <!-- Overlay -->
     <div v-if="showOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
-      <div class="bg-[#F3EADA] p-10 rounded-xl shadow-xl w-96 h-64 flex flex-col justify-center items-center">
-        <button @click="showOverlay = false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 z-50" style="top: calc(50% - 120px); right: calc(50% - 180px);">
-          &times;
-        </button>
-        <p class="text-xl font-semibold mb-4 text-center">Enter Water Consumed</p>
-        <div class="flex items-center space-x-7">
-        <input type="number" v-model="waterConsumed" class="border border-gray-300 rounded-xl shadow-xl p-2 text-center w-24" />
-        <span>mL</span>
+      <div ref="popupRef">
+        <div class="bg-[#F3EADA] p-10 rounded-xl shadow-xl w-96 h-64 flex flex-col justify-center items-center" >
+          <button @click="showOverlay = false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 z-50" style="top: calc(50% - 120px); right: calc(50% - 180px);">
+            &times;
+          </button>
+          <p class="text-xl font-semibold mb-4 text-center">Enter Water Consumed</p>
+          <div class="flex items-center space-x-7">
+          <input type="number" v-model="waterConsumed" class="border border-gray-300 rounded-xl shadow-xl p-2 text-center w-24" />
+          <span>mL</span>
+        </div>
+          <button @click="logIntake" class="mt-4 bg-[#87A98D] text-white py-2 px-4 rounded flex items-center justify-center">
+            <span>&#10003;</span>
+            <p class="ml-2">Done</p>
+          </button>
+        </div>
       </div>
-        <button @click="logIntake" class="mt-4 bg-[#87A98D] text-white py-2 px-4 rounded flex items-center justify-center">
-          <span>&#10003;</span>
-          <p class="ml-2">Done</p>
-        </button>
-      </div>
+
     </div>
   </div>
 </template>
@@ -66,6 +69,25 @@ const intakeAmount = ref(0);
 const intakeUnit = ref("mL");
 const waterConsumed = ref(0);
 const maxValue = ref(props.maxValue)
+const popupRef = ref(null)
+
+const openOverlay = () => {
+  window.addEventListener('click', handleOutsideClick);
+  setTimeout(()=>{showOverlay.value = true;},300) 
+}
+
+const handleOutsideClick = (event) => {
+  if (popupRef.value && !popupRef.value.contains(event.target) && showOverlay.value) {
+    setTimeout(()=>{
+      showOverlay.value = false;
+      window.removeEventListener('click', handleOutsideClick);
+    },300)
+  }
+};
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleOutsideClick);
+});
 
 onMounted(async () => {
   await useApi("/dietary","GET")
