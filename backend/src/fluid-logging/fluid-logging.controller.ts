@@ -2,7 +2,6 @@ import { Body, Controller, Get, Headers, HttpException, Post, Query } from '@nes
 import { FluidLoggingService } from './fluid-logging.service';
 import { CommonService } from 'src/common/common.service';
 import { UpdateFluidLoggingDTO } from './dto/update-fluid-logging-dto';
-import { DateValidationDTO } from 'src/common/dto/date-validation-dto';
 
 @Controller('fluid-logging')
 export class FluidLoggingController {
@@ -13,15 +12,12 @@ export class FluidLoggingController {
     ){}
 
     @Get('get')
-    async getFluidLogging(@Headers() headers: any, @Query("date") date) {
+    async getFluidLogging(@Headers() headers: any, @Query("dateTime") date, @Query("timeZone") timeZone){
         const auth_header = headers.authorization;
         const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-        const dateValidationDTO = new DateValidationDTO();
-        dateValidationDTO.date = date;
-
         try {
-            return await this.fluidLoggingService.getFluidLogging(decoded_headers, dateValidationDTO);
+            return await this.fluidLoggingService.getFluidLogging(decoded_headers, date, timeZone);
         } catch (e) {
             return new HttpException(e.message, 500);
         }

@@ -5,9 +5,16 @@ import { MealType } from "src/meal-logging/enum/meal-type.enum";
 
 export class CalculateMealLoggingSummaryDTO{
 
+    /**
+     * @example "2024-09-22T08:11:22:33"
+     */
     @IsNotEmpty()
     @IsDateString()
-    readonly mealDate: string;
+    readonly mealDateTime: string;
+
+    @IsNotEmpty()
+    @IsString()
+    readonly timeZone: string;
     
     /**
      * @example

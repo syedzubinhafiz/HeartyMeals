@@ -5,9 +5,26 @@ import { MealType } from "src/meal-logging/enum/meal-type.enum";
 
 export class AddMealLoggingSummaryDTO{
     
+    /**
+     * @example "2024-09-22T08:11:22:33"
+     */
     @IsNotEmpty()
     @IsDateString()
-    mealDate: string;
+    readonly mealDateTime: string;
+
+    /**
+     * @example "2024-09-22T08:11:22:33"
+     */
+    @IsNotEmpty()
+    @IsDateString()
+    readonly systemDateTime: string;
+
+    /**
+     * @example "Asia/Kuala_Lumpur"
+     */
+    @IsNotEmpty()
+    @IsString()
+    readonly timeZone: string;
     
     /**
      * @example
@@ -20,23 +37,12 @@ export class AddMealLoggingSummaryDTO{
     @Type(() => RecipePortionDTO)
     readonly recipeIdPortions: RecipePortionDTO[];
 
-    /**
-     * @example
-     * {
-     *  mealLoggingIds: ["5f9d7b4b-1b3b-4b3b-8b3b-3b3b3b3b3b3b"]
-     * }
-     */
-    @IsOptional()
-    @Transform(({ value }) => (value === undefined ? {} : value))
-    mealLoggingIds: string[];
-
-
     @IsNotEmpty()
     @IsEnum(MealType)
-    mealType: MealType;
+    readonly mealType: MealType;
 
     @IsOptional()
     @Transform(({ value }) => (value === undefined ? {} : value))
-    nutritionAfter: JSON;
+    readonly nutritionAfter: JSON;
 
 }
