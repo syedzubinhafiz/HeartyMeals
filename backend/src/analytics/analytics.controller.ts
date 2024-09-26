@@ -15,7 +15,7 @@ export class AnalyticsController {
     /**
      *  This method is used to get the daily analytics.
      * @param headers   headers contains the authorization token.
-     * @param payload   payload contains the date.
+     * @param payload   payload contains the date and time zo.
      * @returns         returns the analytics data.
      */
     @Get('daily')
@@ -24,7 +24,8 @@ export class AnalyticsController {
         try {
             return this.analyticsService.getDailyAnalytics(
                 this.commonService.decodeHeaders(headers.authorization), 
-                payload.date
+                payload.date,
+                payload.timeZone
             );
         } catch (e){
             return new HttpException(e.message, 400);
@@ -35,7 +36,7 @@ export class AnalyticsController {
     /**
      * This endpoint is used to get the monthly analytics.
      * @param headers       headers contains the authorization token.
-     * @param payload       payload contains the start date and end date.
+     * @param payload       payload contains the start date, end date and time zone.
      * @returns             returns the analytics data.
      */
     @Get('weekly')
@@ -49,6 +50,7 @@ export class AnalyticsController {
                 this.commonService.decodeHeaders(headers.authorization),  
                 payload.startDate, 
                 payload.endDate,
+                payload.timeZone,
                 7
             );
         } catch (e){
@@ -61,7 +63,7 @@ export class AnalyticsController {
     /**
      * This endpoint is used to get the monthly analytics.
      * @param headers       headers contains the authorization token.
-     * @param payload       payload contains the start date and end date.
+     * @param payload       payload contains the start date, end date and timezone.
      * @returns             returns the analytics data.
      */
     @Get('monthly')
@@ -75,12 +77,12 @@ export class AnalyticsController {
                 this.commonService.decodeHeaders(headers.authorization), 
                 payload.startDate, 
                 payload.endDate,
+                payload.timeZone,
                 30
             );
         } catch (e){
             return new HttpException(e.message, 400);
         }
-
     }
     
 }

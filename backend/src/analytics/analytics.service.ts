@@ -6,6 +6,8 @@ import { AddRecipeDTO } from 'src/recipe/dto/add-recipe-dto';
 import { RecipeDTO } from 'src/recipe/dto/recipe-dto';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
+import { addDays, format } from 'date-fns';
+
 
 
 // [name for frontend, nutrition budget name in user table]
@@ -44,14 +46,17 @@ export class AnalyticsService {
      * @param date                  date of the analytics
      * @returns                     analytics result
      */
-    async getDailyAnalytics(decodedHeaders: any, date: string) {
+    async getDailyAnalytics(decodedHeaders: any, date: string, timeZone: string) {
 
         try{
 
             const user =  await this.userRepository.findOneByOrFail({user_id: decodedHeaders['sub']});
-
+            
+            const start_of_date =  `${date} 00:00:00`;
+            const end_of_date =  `${date} 23:59:59`;
+            
             const meal_logging_summary = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('meal_log_summary.date = :date', { date })
+                .where('meal_log_summary.date AT TIME ZONE :timeZone BETWEEN :start_of_day AND :end_of_day', { timeZone: timeZone, start_of_day: start_of_date, end_of_day: end_of_date })
                 .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
                 .getOne();
 
@@ -215,24 +220,24 @@ export class AnalyticsService {
      * @param numberOfDays      number of days in the date range
      * @returns                 analytics result
      */
-    async getAnalyticsByDate(decodedHeaders: any, startDate: string, endDate: string, numberOfDays: number) {
 
-        try{
-            const user =  await this.userRepository.findOneByOrFail({user_id: decodedHeaders['sub']});
+    async getAnalyticsByDate(decodedHeaders: any, startDate: string, endDate: string, timeZone: string, numberOfDays: number) {
+        try {
+            const user = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
+
+            const start_date_start_of_date = `${startDate} 00:00:00`;
+            const end_date_end_of_date = `${endDate} 23:59:59`;
 
             const meal_logging_summary_list = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('meal_log_summary.date BETWEEN :startDate AND :endDate', { startDate, endDate })
-                .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
+                .where('meal_log_summary.date AT TIMEZONE :timeZone BETWEEN :start_of_date AND :end_of_date', { timeZone: timeZone, start_of_date: start_date_start_of_date, end_of_date: end_date_end_of_date })
+                .andWhere('meal_log_summary.user_id = :user_id', { user_id: decodedHeaders['sub'] })
                 .orderBy('meal_log_summary.date', 'ASC')
                 .getMany();
-
-
 
             const result = {
                 "start_date": startDate,
                 "end_date": endDate,
-            }
-
+            };
 
             DATA_LIST.forEach((data) => {
                 result[data[0]] = {
@@ -240,11 +245,8 @@ export class AnalyticsService {
                     "average_daily": 0,
                     "difference": 0,
                     "percentage_of_daily_budget": 0,
-                    "days": [
-
-                    ]
+                    "days": []
                 };
-                
             });
 
             const total_consumption = {
@@ -263,45 +265,51 @@ export class AnalyticsService {
                 "cholesterol": 0,
                 "sodium": 0
             };
-            
 
-            // Go through each of the meal logging summary and calculate the total consumption
+            // Generate a list of all dates between startDate and endDate
+            const allDates = [];
+            let currentDate = new Date(startDate);
+            const endDateObj = new Date(endDate);
+            while (currentDate <= endDateObj) {
+                allDates.push(format(currentDate, 'yyyy-MM-dd'));
+                currentDate = addDays(currentDate, 1);
+            }
+
+            // Create a map of meal log summaries by date for quick lookup
+            const mealLogSummaryMap = new Map();
             meal_logging_summary_list.forEach((meal_log_summary) => {
-              
-                // Go through each of the nutrient and calculate the total consumption for each day
+                mealLogSummaryMap.set(format(new Date(meal_log_summary.date), 'yyyy-MM-dd'), meal_log_summary);
+            });
+
+            // Go through each date and calculate the total consumption
+            allDates.forEach((date) => {
+                const meal_log_summary = mealLogSummaryMap.get(date);
                 DATA_LIST.forEach((nutrient) => {
-
-                    // Calculate the nutrient consumption for the day
-                    let nutrient_comsumption = parseFloat(user.daily_budget[nutrient[1]].toFixed(2) ) - parseFloat(meal_log_summary.remaining_nutrients[nutrient[1]].toFixed(2));
-
-                    // If the remaining nutrients is negative, then the user has exceeded the daily budget
-                    if ( parseFloat(meal_log_summary.remaining_nutrients[nutrient[1]].toFixed(2)) >= 0){
-                        day_under_budget[nutrient[0]] += 1;
-
+                    let nutrient_consumption = 0;
+                    if (meal_log_summary) {
+                        nutrient_consumption = parseFloat(user.daily_budget[nutrient[1]].toFixed(2)) - parseFloat(meal_log_summary.remaining_nutrients[nutrient[1]].toFixed(2));
                     }
-
-                    // Update the result with the nutrient consumption for the day
+                    if (nutrient_consumption >= 0) {
+                        day_under_budget[nutrient[0]] += 1;
+                    }
                     result[nutrient[0]]["days"].push({
-                        "date": meal_log_summary.date,
-                        "consumption": parseFloat(nutrient_comsumption.toFixed(2))
+                        "date": date,
+                        "consumption": parseFloat(nutrient_consumption.toFixed(2))
                     });
-
-                    // Update the total consumption for the day
-                    total_consumption[nutrient[0]] += nutrient_comsumption
+                    total_consumption[nutrient[0]] += nutrient_consumption;
                 });
             });
 
             // Calculate the average daily consumption and the difference between the daily budget and the average daily consumption
             DATA_LIST.forEach((nutrient) => {
-                result[nutrient[0]]["average_daily"] = parseFloat((total_consumption[nutrient[0]] / meal_logging_summary_list.length).toFixed(2));
-                result[nutrient[0]]["difference"] = parseFloat((user.daily_budget[nutrient[1]] - result[nutrient[0]]["average_daily"]).toFixed(2)); 
-                result[nutrient[0]]["percentage_of_daily_budget"] = parseFloat((day_under_budget[nutrient[0]] / meal_logging_summary_list.length * 100).toFixed(2));
+                result[nutrient[0]]["average_daily"] = parseFloat((total_consumption[nutrient[0]] / numberOfDays).toFixed(2));
+                result[nutrient[0]]["difference"] = parseFloat((user.daily_budget[nutrient[1]] - result[nutrient[0]]["average_daily"]).toFixed(2));
+                result[nutrient[0]]["percentage_of_daily_budget"] = parseFloat((day_under_budget[nutrient[0]] / numberOfDays * 100).toFixed(2));
             });
 
             return result;
-        } catch (e){
+        } catch (e) {
             throw new Error(e.message);
-
         }
     }
 }
