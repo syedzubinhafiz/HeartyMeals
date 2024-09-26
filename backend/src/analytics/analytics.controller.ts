@@ -24,8 +24,7 @@ export class AnalyticsController {
         try {
             return this.analyticsService.getDailyAnalytics(
                 this.commonService.decodeHeaders(headers.authorization), 
-                payload.date,
-                payload.timeZone
+                payload
             );
         } catch (e){
             return new HttpException(e.message, 400);

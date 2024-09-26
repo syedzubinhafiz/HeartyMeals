@@ -7,6 +7,7 @@ import { RecipeDTO } from 'src/recipe/dto/recipe-dto';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { addDays, format } from 'date-fns';
+import { getDailyAnalyticsDTO } from './dto/get-analythics-dto';
 
 
 
@@ -46,17 +47,17 @@ export class AnalyticsService {
      * @param date                  date of the analytics
      * @returns                     analytics result
      */
-    async getDailyAnalytics(decodedHeaders: any, date: string, timeZone: string) {
+    async getDailyAnalytics(decodedHeaders: any, payload: getDailyAnalyticsDTO) {
 
         try{
 
             const user =  await this.userRepository.findOneByOrFail({user_id: decodedHeaders['sub']});
             
-            const start_of_date =  `${date} 00:00:00`;
-            const end_of_date =  `${date} 23:59:59`;
+            const start_of_date =  `${payload.date} 00:00:00`;
+            const end_of_date =  `${payload.date} 23:59:59`;
             
             const meal_logging_summary = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('meal_log_summary.date AT TIME ZONE :timeZone BETWEEN :start_of_day AND :end_of_day', { timeZone: timeZone, start_of_day: start_of_date, end_of_day: end_of_date })
+                .where('meal_log_summary.date AT TIME ZONE :timeZone BETWEEN :start_of_day AND :end_of_day', { timeZone: payload.timeZone, start_of_day: start_of_date, end_of_day: end_of_date })
                 .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
                 .getOne();
 
