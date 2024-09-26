@@ -16,6 +16,7 @@ export class AddRecipeDTO{
     readonly components: RecipeComponentDTO[];
 
     @IsNotEmpty()
+    @ValidateNested()
     @Type(() => FileUploadDTO)
     readonly files: FileUploadDTO;
 

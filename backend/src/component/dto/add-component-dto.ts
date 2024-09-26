@@ -6,10 +6,12 @@ import { ComponentDTO } from "./component-dto";
 export class AddComponentDTO {
 
     @IsNotEmpty()
+    @ValidateNested()
     @Type(()=> ComponentDTO)
     readonly component: ComponentDTO;
 
     @IsNotEmpty()
+    @ValidateNested()
     @Type(() => FileUploadDTO)
     readonly files: FileUploadDTO;
 }

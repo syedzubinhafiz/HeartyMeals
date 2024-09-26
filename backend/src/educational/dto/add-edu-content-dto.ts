@@ -6,10 +6,12 @@ import { FileUploadDTO } from "../../storage/dto/file-upload-dto";
 export class AddEducationalContentDTO{
 
     @IsNotEmpty()
+    @ValidateNested()
     @Type(()=> EducationalContentDTO)
     educationalContent: EducationalContentDTO;
 
     @IsNotEmpty()
+    @ValidateNested()
     @Type(()=> FileUploadDTO)
     readonly files: FileUploadDTO;
 
