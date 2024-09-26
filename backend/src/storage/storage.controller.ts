@@ -16,7 +16,7 @@ export class StorageController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
 
-                const storage_links = await this.storageService.uploadFile(fileUploadDTO, transactionalEntityManager);
+                const storage_links = await this.storageService.uploadFile("path", fileUploadDTO, transactionalEntityManager);
             });
             return new HttpException("Files uploaded successfully.", 200);
         } catch (e) {

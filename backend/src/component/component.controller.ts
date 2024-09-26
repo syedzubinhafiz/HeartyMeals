@@ -28,13 +28,11 @@ export class ComponentController {
             await this.entityManager.transaction(async transactionalEntityManager => {
                 const new_component = await this.componentService.add(payload.component, transactionalEntityManager) as Component;
 
-                // get path for component
-                const upload_path = this.componentService.getPath(new_component.foodCategory.id, new_component.id);
-
                 if (payload.files != undefined){
-                    payload.files.path = upload_path;
+                    // get path for component
+                    const upload_path = this.componentService.getPath(new_component.foodCategory.id, new_component.id);
 
-                    await this.storageService.handleUpload(payload.files, new_component, Component, transactionalEntityManager);
+                    await this.storageService.handleUpload(upload_path, payload.files, new_component, Component, transactionalEntityManager);
                 }
             });
             return new HttpException("Component added successfully", 200);
@@ -61,10 +59,9 @@ export class ComponentController {
                     const upload_path = this.componentService.getPath(new_component.foodCategory.id, new_component.id);
 
                     const files = payload[index].files;
-                    files.path = upload_path;
-    
+                    
                     if (files != undefined) {
-                        await this.storageService.handleUpload(files, new_component, Component, transactionalEntityManager);
+                        await this.storageService.handleUpload(upload_path, files, new_component, Component, transactionalEntityManager);
                     }
                 }
             });
