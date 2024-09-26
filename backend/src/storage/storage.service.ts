@@ -54,7 +54,7 @@ export class StorageService {
             // get bucket
             const bucket = (process.env.SAVE_FIREBASE === "true") ? getStorage().bucket() : null;
             // if got thumbnail to upload
-            if (fileUploadDTO.thumbnail) {
+            if (fileUploadDTO.thumbnail && (fileUploadDTO.thumbnail.fileName && fileUploadDTO.thumbnail.fileDataInBase64 && fileUploadDTO.thumbnail.fileDataInBase64)) {
                 if (process.env.SAVE_FIREBASE === "true") {
                     promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, path, bucket, transactionalEntityManager));
                 } else {

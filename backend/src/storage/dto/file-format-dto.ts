@@ -8,7 +8,7 @@ export class FileFormatDTO {
      */
     @IsString()
     @IsNotEmpty()
-    fileName: string;
+    readonly fileName: string;
 
     /**
      * @example
@@ -16,7 +16,7 @@ export class FileFormatDTO {
      */
     @IsEnum(StorageType)
     @IsNotEmpty()
-    fileType: StorageType;
+    readonly fileType: StorageType;
 
     /**
      * @example
@@ -24,5 +24,5 @@ export class FileFormatDTO {
      */
     @IsString()
     @IsNotEmpty()
-    fileDataInBase64: string;
+    readonly fileDataInBase64: string;
 }
