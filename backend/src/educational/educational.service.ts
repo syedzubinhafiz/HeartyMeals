@@ -136,54 +136,54 @@ export class EducationalService {
      * @returns newly updated educational content object
      */
     async editContent(eduId, title, content, files){
-        // data validation 
-        if (title == null || content == null || files.length <= 0){
-            return "Either title, content, or files is empty";
-        }
+        // // data validation 
+        // if (title == null || content == null || files.length <= 0){
+        //     return "Either title, content, or files is empty";
+        // }
 
-        // get edu_content object
-        var entry = await this.getContent(eduId);
+        // // get edu_content object
+        // var entry = await this.getContent(eduId);
 
-        var saved_content = []
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-        content.forEach(item => {
-            if (item.type === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item.info
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        });
+        // var saved_content = []
+        // // for each element in the array passed in, create a json object with "type" and " content"
+        // // check if it is text or files
+        // // if text, save the type as "text", content as the actual text, and put into the saved_content array 
+        // // if files, save the type as "files", content as the index of the files in the files array
+        // var file_counter = 0;
+        // content.forEach(item => {
+        //     if (item.type === "text"){
+        //         saved_content.push({
+        //             "type": "text",
+        //             "content": item.info
+        //         });
+        //     }
+        //     else { 
+        //         saved_content.push({
+        //             "type": "files",
+        //             "content": file_counter
+        //         });
+        //         file_counter += 1;
+        //     }
+        // });
 
-        // upload file
-        // get json link
-        // prepare the path first 
-        var path = `${entry.id}`;
+        // // upload file
+        // // get json link
+        // // prepare the path first 
+        // var path = `${entry.id}`;
 
-        // call the upload method 
-        // by passing the data to the method 
-        var json_links = {} as JSON;
+        // // call the upload method 
+        // // by passing the data to the method 
+        // var json_links = {} as JSON;
 
-        entry.title = title;
-        entry.content = saved_content;
-        entry.storage_links = json_links;
+        // entry.title = title;
+        // entry.content = saved_content;
+        // entry.storage_links = json_links;
 
-        // update entry
-        // update updatedAt() column
-        entry.updatedAt = new Date();
-        // return new entry
-        return await this.educatinoalContentRepository.save(entry);
+        // // update entry
+        // // update updatedAt() column
+        // entry.updatedAt = new Date();
+        // // return new entry
+        // return await this.educatinoalContentRepository.save(entry);
     }
 
     replaceSrcInArray(strings, replacements) {
