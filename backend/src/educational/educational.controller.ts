@@ -26,9 +26,8 @@ export class EducationController {
 
                 if (payload.files){
                     const path = this.educationalContentService.getPath(entry.id);
-                    payload.files.path = path;
                     
-                    await this.storageService.handleUpload(payload.files, entry, EducationalContent, transactionalEntityManager);
+                    await this.storageService.handleUpload(path, payload.files, entry, EducationalContent, transactionalEntityManager);
                 }
             });
             return new HttpException('Educational content uploaded successfully', HttpStatus.OK);

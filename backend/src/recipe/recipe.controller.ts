@@ -42,9 +42,7 @@ export class RecipeController {
                 }
 
                 if (payload.files != undefined){
-                    const files = payload.files;
-                    files.path = upload_path;
-                    await this.storageService.handleUpload(files, new_recipe, Recipe, transactionalEntityManager);
+                    await this.storageService.handleUpload(upload_path, payload.files, new_recipe, Recipe, transactionalEntityManager);
                 }
             });
             return new HttpException("Recipe added successfully", 200);

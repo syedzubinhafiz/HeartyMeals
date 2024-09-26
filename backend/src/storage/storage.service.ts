@@ -18,9 +18,9 @@ export class StorageService {
     ){}
 
 
-    async handleUpload(fileUploadDTO: FileUploadDTO, entry: any, repository: any, transactionalEntityManager: EntityManager){
+    async handleUpload(path: string, fileUploadDTO: FileUploadDTO, entry: any, repository: any, transactionalEntityManager: EntityManager){
         try {
-            const storage_links = await this.uploadFile(fileUploadDTO, transactionalEntityManager);
+            const storage_links = await this.uploadFile(path, fileUploadDTO, transactionalEntityManager);
 
             const saved = await this.updateStorageLinks(storage_links, entry, repository, transactionalEntityManager);
             return true;
@@ -28,6 +28,7 @@ export class StorageService {
             throw new HttpException(e.message, e.status);
         }
     }
+
 
     /**
      * Upload the file to firebase storage (or local) and save the entry to database
@@ -42,7 +43,7 @@ export class StorageService {
      *  "content": {"storage_id", "storage_id"}
      * }
      */
-    async uploadFile(fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
+    async uploadFile(path: string, fileUploadDTO: FileUploadDTO, transactionalEntityManager: EntityManager){
         // get path for upload
         try {
             const storage_links: any = {};
@@ -52,14 +53,13 @@ export class StorageService {
             const promises: Promise<string>[] = [];
             // get bucket
             const bucket = (process.env.SAVE_FIREBASE === "true") ? getStorage().bucket() : null;
-
             // if got thumbnail to upload
             if (fileUploadDTO.thumbnail) {
                 if (process.env.SAVE_FIREBASE === "true") {
-                    promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, fileUploadDTO.path, bucket, transactionalEntityManager));
+                    promises.push(this.uploadToFirebase(fileUploadDTO.thumbnail, path, bucket, transactionalEntityManager));
                 } else {
                     var fs = require('fs');
-                    const local_path = join(__dirname, '../../uploaded/', fileUploadDTO.path, '/');
+                    const local_path = join(__dirname, '../../uploaded/', path, '/');
                     if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
                     promises.push(this.saveToLocal(fileUploadDTO.thumbnail, local_path, transactionalEntityManager));
                 }
@@ -73,10 +73,10 @@ export class StorageService {
             if (fileUploadDTO.content) {
                 const content_promises = fileUploadDTO.content.map(async file_format_DTO => {
                     if (process.env.SAVE_FIREBASE === "true") {
-                        return this.uploadToFirebase(file_format_DTO, fileUploadDTO.path, bucket, transactionalEntityManager);
+                        return this.uploadToFirebase(file_format_DTO, path, bucket, transactionalEntityManager);
                     } else {
                         var fs = require('fs');
-                        const local_path = join(__dirname, '../../uploaded/', fileUploadDTO.path, '/');
+                        const local_path = join(__dirname, '../../uploaded/', path, '/');
                         if (!fs.existsSync(local_path)){ fs.mkdirSync(local_path, { recursive: true }); }
                         return this.saveToLocal(file_format_DTO, local_path, transactionalEntityManager);
                     }

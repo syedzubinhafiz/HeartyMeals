@@ -9,8 +9,8 @@ export class AddEducationalContentDTO{
     @Type(()=> EducationalContentDTO)
     educationalContent: EducationalContentDTO;
 
-    @IsOptional()
+    @IsNotEmpty()
     @Type(()=> FileUploadDTO)
-    files: FileUploadDTO;
+    readonly files: FileUploadDTO;
 
 }
