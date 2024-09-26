@@ -2,35 +2,35 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <div>
-    <!-- Card Container -->
-    <div class="card-container p-3 rounded-lg shadow-md mb-6">
-      <!-- Clickable Header Section -->
-      <div @click="toggleExpand" class="card-header flex items-center justify-between cursor-pointer">
-        <div class="flex items-center">
-          <h3 class="font-bold text-lg mr-4">{{ title }}</h3>
-          <p class="text-sm text-gray-600">{{ itemsCount }} items</p>
-        </div>
-        <div :class="{'rotate-90': isExpanded}">
-          <!-- Arrow icon -->
-          <i class="fas fa-chevron-right"></i>
-        </div>
+      <!-- Card Container -->
+      <div class="card-container p-3 rounded-lg shadow-md mb-6">
+          <!-- Clickable Header Section -->
+          <div @click="toggleExpand" class="card-header flex items-center justify-between cursor-pointer">
+              <div class="flex items-center">
+                  <h3 class="font-bold text-lg mr-4">{{ title }}</h3>
+                  <p class="text-sm text-gray-600">{{ itemsCount }} items</p>
+              </div>
+              <div :class="{'rotate-90': isExpanded}">
+                  <!-- Arrow icon -->
+                  <i class="fas fa-chevron-right"></i>
+              </div>
+          </div>
+
+          <!-- Expanded Content -->
+          <transition name="expand">
+              <div v-if="isExpanded" class="mt-4">
+                  <!-- Custom content for the expanded section will go here -->
+                  <slot></slot>
+                  <!-- Green Button -->
+                  <nuxt-link :to="{ path: '/add-meals', query: { mealType: title } }">
+                      <button class="add-dishes-button mt-4">
+                          <i class="fas fa-plus mr-2"></i>Add Dishes
+                      </button>
+                  </nuxt-link>
+
+              </div>
+          </transition>
       </div>
-
-      <!-- Expanded Content -->
-      <transition name="expand">
-        <div v-if="isExpanded" class="mt-4">
-          <!-- Custom content for the expanded section will go here -->
-          <slot></slot>
-          <!-- Green Button -->
-          <nuxt-link :to="{ path: '/add-meals', query: { mealType: title } }">
-              <button class="add-dishes-button mt-4">
-                  <i class="fas fa-plus mr-2"></i>Add Dishes
-              </button>
-          </nuxt-link>
-
-        </div>
-      </transition>
-    </div>
   </div>
 </template>
 
