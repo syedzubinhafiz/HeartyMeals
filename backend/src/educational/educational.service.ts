@@ -41,20 +41,92 @@ export class EducationalService {
     }
 
     /**
-     * Get Educational Content
-     * @param eduId - educational id
-     * @returns educational content object
+     * Get Educational Content based on the search criteria, or get the educational content based on the educational content id
+     * @param page - page number
+     * @param pageSize - page size
+     * @param search - search query
+     * @param pagination - pagination flag
+     * @param educationalContentId - educational content id (Optional)
+     * @returns list of educational content or educational content object
      */
-    async getContent(eduId){
+    async getEducationalContent(
+        page: number, 
+        pageSize:number,
+        search: string|null,
+        pagination: boolean = true,
+        educationalContentId: string = null
+    ): Promise<[EducationalContent[]|EducationalContent, number]>{
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+
+        if (educationalContentId == null){
         // get file from repository
-        try {
-            return await this.educatinoalContentRepository.findOneBy({id: eduId});
+        
+            const query = this.educatinoalContentRepository.createQueryBuilder("educational_content")
+            .select([
+                'educational_content.id', 
+                'educational_content.title', 
+                'educational_content.summary',
+                'educational_content.storage_links',
+                'educational_content.visibility'                
+            ])
+            .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
+                
+
+            // Search for educational content through summary or title
+            if (search != null){
+                query.andWhere("educational_content.title ILIKE :search OR educational_content.summary ILIKE :search", { search: `%${search}%` })
+            }
+
+            // Pagination
+            if (pagination){
+                query.skip(skip)
+                .take(take)
+            };
+            
+            const [result, no_of_results] = await query.getManyAndCount();
+
+            for (const edu_content of result){
+                // set the thumbnail link
+                edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            }
+
+            return [result, no_of_results]
+        
         }
-        catch (e){
-            return e;
+        else {
+            const edu_content = await this.educatinoalContentRepository.findOneBy({
+                id: educationalContentId
+            });
+
+            // set the thumbnail link
+            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            
+            // post process to get all the links into the content array
+            // get all the links first, loop all keys in the storage_ids to form an array
+            var links = {};
+
+            // get the actual links from the storage service 
+            if (edu_content.storage_links['content'] != null){
+                for (const keys in edu_content.storage_links['content']){
+                    links[keys] = await this.storageService.getLink(edu_content.storage_links['content'][keys]);
+                }
+            }
+            
+            // update the content with the links
+            const updated_content = this.replaceSrcInArray(edu_content.content, links);
+
+            edu_content.content = updated_content;
+
+            return [edu_content, 1];
         }
     }
 
+
+
+
+    
     /**
      * Take current educational content id and edit the content 
      * @param eduId - educational content id 
@@ -113,6 +185,16 @@ export class EducationalService {
         // return new entry
         return await this.educatinoalContentRepository.save(entry);
     }
+
+    replaceSrcInArray(strings, replacements) {
+        return strings.map(str => {
+          Object.keys(replacements).forEach(key => {
+            const regex = new RegExp(`src="${key}"`, 'g');
+            str = str.replace(regex, `src="${replacements[key]}"`);
+          });
+          return str;
+        });
+    }      
 
     getPath(eduId){
         return `educational_content/${eduId}`;
