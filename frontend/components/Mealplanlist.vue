@@ -51,7 +51,9 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  isPast: Boolean
+  isPast: Boolean,
+  isToday: Boolean,
+  isFuture: Boolean
 });
 
 console.log(props.isPast)
