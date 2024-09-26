@@ -1,10 +1,7 @@
 <template>
-    <div class="relative w-screen z-40 bg-custom-bg">
-        <Header />
-    
-
+  <div class="relative w-screen z-40 bg-custom-bg">
+    <Header />
     <div class="meal-planning">
-
       <!-- Header with Date Navigation -->
       <div class="flex items-center justify-center py-8">
         <button @click="previousWeek" class="text-custom-bg-green px-2">
@@ -21,55 +18,53 @@
   
       <!-- Meal Days (Monday to Sunday) -->
       <!-- Parent Component -->
-<div class="meal-days-grid">
-  <MealDay 
-    v-for="(day, index) in daysOfWeek" 
-    :key="index" 
-    :dayName="day.dayName" 
-    :formattedDate="day.formattedDate" 
-    :breakfastList="day.breakfastList" 
-    :lunchList="day.lunchList" 
-    :dinnerList="day.dinnerList" 
-    :otherList="day.otherList" 
-    :isToday="day.isToday" 
-    :isPast="day.isPast" 
-    :isFuture="day.isFuture" 
-  />
-</div>
-
-      
+      <div class="meal-days-grid">
+        <MealDay 
+          v-for="(day, index) in daysOfWeek" 
+          :key="index" 
+          :dayName="day.dayName" 
+          :formattedDate="day.formattedDate" 
+          :breakfastList="day.breakfastList" 
+          :lunchList="day.lunchList" 
+          :dinnerList="day.dinnerList" 
+          :otherList="day.otherList" 
+          :isToday="day.isToday" 
+          :isPast="day.isPast" 
+          :isFuture="day.isFuture" 
+        />
+      </div>
     </div>
     <div class="section flex flex-col justify-end fixed-footer ">
         <Footer />
     </div>
-</div>
-  </template>
+  </div>
+</template>
   
-  <script setup>
-  import { ref, computed } from 'vue';
+<script setup>
+import { ref, computed } from 'vue';
+
+const currentDate = ref(new Date());
+const daysOfWeek = ref(generateWeekMeals(currentDate.value));
+
+const previousWeek = () => {
+  currentDate.value.setDate(currentDate.value.getDate() - 7);
+  daysOfWeek.value = generateWeekMeals(currentDate.value);
+};
+
+const nextWeek = () => {
+  currentDate.value.setDate(currentDate.value.getDate() + 7);
+  daysOfWeek.value = generateWeekMeals(currentDate.value);
+};
+
+const weekRange = computed(() => {
+  const startOfWeek = new Date(currentDate.value);
+  const endOfWeek = new Date(currentDate.value);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+  endOfWeek.setDate(endOfWeek.getDate() - endOfWeek.getDay() + 7);
+  return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
+});
   
-  const currentDate = ref(new Date());
-  const daysOfWeek = ref(generateWeekMeals(currentDate.value));
-  
-  const previousWeek = () => {
-    currentDate.value.setDate(currentDate.value.getDate() - 7);
-    daysOfWeek.value = generateWeekMeals(currentDate.value);
-  };
-  
-  const nextWeek = () => {
-    currentDate.value.setDate(currentDate.value.getDate() + 7);
-    daysOfWeek.value = generateWeekMeals(currentDate.value);
-  };
-  
-  const weekRange = computed(() => {
-    const startOfWeek = new Date(currentDate.value);
-    const endOfWeek = new Date(currentDate.value);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-    endOfWeek.setDate(endOfWeek.getDate() - endOfWeek.getDay() + 7);
-    return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
-  });
-  
-  function generateWeekMeals(date) {
+function generateWeekMeals(date) {
   const weekMeals = [];
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const today = new Date();
@@ -94,20 +89,20 @@
 }
 
   
-  function formatDate(date) {
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'long', // Use 'long' to get full month name
-    });
-  }
+function formatDate(date) {
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'long', // Use 'long' to get full month name
+  });
+}
+
+function isToday(day) {
+  const today = new Date();
+  return day.toDateString() === today.toDateString();
+}
+</script>
   
-  function isToday(day) {
-    const today = new Date();
-    return day.toDateString() === today.toDateString();
-  }
-  </script>
-  
-  <style scoped>
+<style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
     * {
         font-family: 'Overpass', sans-serif;
@@ -141,6 +136,6 @@
     width: 100%;
     z-index: 1000; 
     background-color: inherit; 
-}
-  </style>
+  }
+</style>
   

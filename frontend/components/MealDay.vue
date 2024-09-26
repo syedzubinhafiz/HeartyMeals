@@ -1,92 +1,92 @@
 <template>
-    <div class="meal-day"
-         :class="{
-           'today-day': isToday,
-           'past-day': isPast,
-           'future-day': isFuture
-         }">
-        <!-- Day of the week and date display -->
-        <div
-          class="day-header"
-          :class="{
-            'today-header': isToday,
-            'past-header': isPast,
-            'future-header': isFuture
-          }"
-        >
-          <div class="day-name">{{ dayName }}</div>
-          <div class="day-date">{{ formattedDate }}</div>
-        </div>
-    
-        <!-- Meal card lists (Breakfast, Lunch, Dinner, and Other) -->
-        <Mealplanlist 
-            class="meal-list" 
-            title="Breakfast" 
-            :itemsCount="breakfastList.length"
-            :isPast="isPast"  
-            route="/add-meal">
-          <FoodCard
-            v-for="(card, index) in breakfastList"
-            :key="index"
-            :cardInfo="card"
-            :isToday="isToday"
-            @removeMeal="removeMeal('breakfastList', index)"
-            @editMeal="openEditMealPopup(card)"
-          />
-        </Mealplanlist>
-    
-        <Mealplanlist 
-            class="meal-list" 
-            title="Lunch" 
-            :itemsCount="lunchList.length" 
-            :isPast="isPast" 
-            route="/add-meal">
-          <FoodCard
-            v-for="(card, index) in lunchList"
-            :key="index"
-            :cardInfo="card"
-            :isToday="isToday"
-            @removeMeal="removeMeal('lunchList', index)"
-            @editMeal="openEditMealPopup(card)"
-          />
-        </Mealplanlist>
-    
-        <Mealplanlist 
-            class="meal-list" 
-            title="Dinner" 
-            :itemsCount="dinnerList.length" 
-            :isPast="isPast" 
-            route="/add-meal">
-          <FoodCard
-            v-for="(card, index) in dinnerList"
-            :key="index"
-            :cardInfo="card"
-            :isToday="isToday"
-            @removeMeal="removeMeal('dinnerList', index)"
-            @editMeal="openEditMealPopup(card)"
-          />
-        </Mealplanlist>
-    
-        <Mealplanlist 
-            class="meal-list" 
-            title="Other" 
-            :itemsCount="otherList.length" 
-            :isPast="isPast" 
-            route="/add-meal">
-          <FoodCard
-            v-for="(card, index) in otherList"
-            :key="index"
-            :cardInfo="card"
-            :isToday="isToday"
-            @removeMeal="removeMeal('otherList', index)"
-            @editMeal="openEditMealPopup(card)"
-          />
-        </Mealplanlist>
-      </div>
-  </template>
+  <div class="meal-day"
+        :class="{
+          'today-day': isToday,
+          'past-day': isPast,
+          'future-day': isFuture
+        }">
+    <!-- Day of the week and date display -->
+    <div
+      class="day-header"
+      :class="{
+        'today-header': isToday,
+        'past-header': isPast,
+        'future-header': isFuture
+      }"
+    >
+      <div class="day-name">{{ dayName }}</div>
+      <div class="day-date">{{ formattedDate }}</div>
+    </div>
+
+    <!-- Meal card lists (Breakfast, Lunch, Dinner, and Other) -->
+    <Mealplanlist 
+        class="meal-list" 
+        title="Breakfast" 
+        :itemsCount="breakfastList.length"
+        :isPast="isPast"  
+        route="/add-meal">
+      <FoodCard
+        v-for="(card, index) in breakfastList"
+        :key="index"
+        :cardInfo="card"
+        :isToday="isToday"
+        @removeMeal="removeMeal('breakfastList', index)"
+        @editMeal="openEditMealPopup(card)"
+      />
+    </Mealplanlist>
+
+    <Mealplanlist 
+        class="meal-list" 
+        title="Lunch" 
+        :itemsCount="lunchList.length" 
+        :isPast="isPast" 
+        route="/add-meal">
+      <FoodCard
+        v-for="(card, index) in lunchList"
+        :key="index"
+        :cardInfo="card"
+        :isToday="isToday"
+        @removeMeal="removeMeal('lunchList', index)"
+        @editMeal="openEditMealPopup(card)"
+      />
+    </Mealplanlist>
+
+    <Mealplanlist 
+        class="meal-list" 
+        title="Dinner" 
+        :itemsCount="dinnerList.length" 
+        :isPast="isPast" 
+        route="/add-meal">
+      <FoodCard
+        v-for="(card, index) in dinnerList"
+        :key="index"
+        :cardInfo="card"
+        :isToday="isToday"
+        @removeMeal="removeMeal('dinnerList', index)"
+        @editMeal="openEditMealPopup(card)"
+      />
+    </Mealplanlist>
+
+    <Mealplanlist 
+        class="meal-list" 
+        title="Other" 
+        :itemsCount="otherList.length" 
+        :isPast="isPast" 
+        route="/add-meal">
+      <FoodCard
+        v-for="(card, index) in otherList"
+        :key="index"
+        :cardInfo="card"
+        :isToday="isToday"
+        @removeMeal="removeMeal('otherList', index)"
+        @editMeal="openEditMealPopup(card)"
+      />
+    </Mealplanlist>
+  </div>
+</template>
   
   
-  <script setup>
+<script setup>
   import { ref, computed } from 'vue';
   import Mealplanlist from './Mealplanlist.vue';
   import FoodCard from './FoodCard.vue';
@@ -130,9 +130,9 @@
   const openEditMealPopup = (meal) => {
     console.log('Edit meal', meal);
   };
-  </script>
-  
-  <style scoped>
+</script>
+
+<style scoped>
   /* General styling for each type of day */
   .meal-day {
     padding: 5px;
@@ -189,6 +189,6 @@
     padding-bottom: 5px;
     color: #fff;
   }
-  </style>
+</style>
   
   
