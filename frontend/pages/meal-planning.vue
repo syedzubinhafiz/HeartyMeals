@@ -44,7 +44,7 @@
 import { ref, computed } from 'vue';
 
 const currentDate = ref(new Date());
-const daysOfWeek = ref(generateWeekMeals(currentDate.value));
+const daysOfWeek = ref([]);
 
 const previousWeek = () => {
   currentDate.value.setDate(currentDate.value.getDate() - 7);
@@ -64,22 +64,24 @@ const weekRange = computed(() => {
   return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
 });
   
-function generateWeekMeals(date) {
+async function generateWeekMeals(date) {
   const weekMeals = [];
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const today = new Date();
 
   for (let i = 0; i < 7; i++) {
     const day = new Date(date);
+    day.setUTCHours(-8, 0, 0, 0)
     day.setDate(date.getDate() - date.getDay() + i + 1);
-
+    let meals = await useApi(`/meal-logging/get?date=${day.toISOString()}`,"GET")
+    console.log(meals)
     weekMeals.push({
       dayName: dayNames[day.getDay()],
       formattedDate: formatDate(day),
-      breakfastList: [], // Insert real or dummy data here
-      lunchList: [], // Insert real or dummy data here
-      dinnerList: [], // Insert real or dummy data here
-      otherList: [], // Insert real or dummy data here
+      breakfastList: meals.value["Breakfast"], // Insert real or dummy data here
+      lunchList: meals.value["Lunch"], // Insert real or dummy data here
+      dinnerList: meals.value["Dinner"], // Insert real or dummy data here
+      otherList: meals.value["Other"], // Insert real or dummy data here
       isToday: isToday(day),
       isPast: day < today && !isToday(day),
       isFuture: day > today && !isToday(day),
@@ -100,6 +102,12 @@ function isToday(day) {
   const today = new Date();
   return day.toDateString() === today.toDateString();
 }
+
+onMounted(async () => {
+  await useApi("/dietary","GET")
+
+  daysOfWeek.value = await generateWeekMeals(currentDate.value)
+})
 </script>
   
 <style scoped>
