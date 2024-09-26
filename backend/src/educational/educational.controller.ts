@@ -32,7 +32,7 @@ export class EducationController {
             pagination,
             educationalContentId
         )
-        // Return the recipe list or recipe details based on the pagination
+        // Return the educational content list or educational content details based on the pagination
         if (page_number != 0 && page_size != 0){
             return {
                 data: educational_contents,
@@ -41,17 +41,15 @@ export class EducationController {
                 total_educational_content,
                 totalPages: Math.ceil(total_educational_content / page_size)
             }
-        // If pagination is not required return the recipe list
+        // If pagination is not required return the educational content list
         } else if( page_number == 0 && page_size == 0 && educationalContentId == null){ 
             return educational_contents;
 
-        // If recipeId is provided return the recipe details with components info 
+        // If educationalContentId is provided return the educational content details
         }else {
             const educational_content = educational_contents as EducationalContent;
 
-            return {
-                educational_content: educational_content,
-            }
+            return educational_content;            
         }
     }
 }
