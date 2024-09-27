@@ -143,6 +143,12 @@ export default {
           }
         });
         const data = response.data;
+
+        if (data.data.length === 0) {
+          this.isLoading = false;
+          return;
+        }
+        
         this.searchResults = [...this.searchResults, ...data.data];
         this.totalPages = data.totalPages;
         this.pageNumber += 1;
