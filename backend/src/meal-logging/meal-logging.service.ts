@@ -225,12 +225,12 @@ export class MealLoggingService {
         const system_date = parseISO(systemDateTime);
         const zoned_system_date = toDate(system_date.toISOString(), { timeZone });
 
-        const seven_days_from_now = addDays(zoned_meal_date, 7);
+        const six_days_from_now = addDays(zoned_meal_date, 6);
       
         const is_past = isBefore(zoned_meal_date, zoned_system_date);
-        const is_beyond_seven_days = isAfter(zoned_meal_date, seven_days_from_now);
+        const is_beyond_six_days = isAfter(zoned_meal_date, six_days_from_now);
       
-        return !is_past && !is_beyond_seven_days;
+        return !is_past && !is_beyond_six_days;
     }
 
     /**

@@ -66,8 +66,8 @@ export class MealLogSummaryService {
         }
         
         // add the new meal logging ids into the specified meal type in the meal logging summary 
-        meal_logging_summary_entry[addMealLoggingSummaryDTO.mealType] = [
-            ...meal_logging_summary_entry[addMealLoggingSummaryDTO.mealType],
+        meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType] = [
+            ...meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType],
             ...mealLoggingIds
         ];
         
@@ -205,12 +205,12 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType] = meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType].filter(meal_logging_id => meal_logging_id !== deleteMealLoggingDTO.mealLoggingId);
 
         // add the nutrition to the remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["fat"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["calories"] += (meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["carbs"] += (meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["protein"] += (meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["fat"] += (meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["sodium"] += (meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += (meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
 
         try {
             return (await transactionalEntityManager.save(meal_logging_summary_entry)).id;
