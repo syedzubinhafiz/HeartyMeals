@@ -209,5 +209,16 @@ export class RecipeController {
 
         }
     }
+
+    /**
+     * Endpoint to get the recipe of the day
+     * @param headers header containing the authorization token
+     * @returns Recipe of the day
+     */
+    @Get('recipe-of-the-day')
+    async getRecipeOfTheDay(@Headers() headers: any) {
+        const decoded = this.commonService.decodeHeaders(headers.authorization);
+        return await this.recipeService.getRecipeOfTheDay(decoded);
+    }
     
 }
