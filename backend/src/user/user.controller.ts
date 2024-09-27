@@ -42,12 +42,12 @@ export class UserController {
   }
 
   @Get('budget')
-    async getRemainingBudget(@Headers() headers, @Query("dateTime") date: string, @Query("timeZone") timeZone: string){
+    async getRemainingBudget(@Headers() headers, @Query("startDate") startDate: string, @Query("endDate") endDate: string, @Query("timeZone") timeZone: string){
         const authHeader = headers.authorization;
         const decodedHeaders = this.commonService.decodeHeaders(authHeader);
 
         try {
-            return this.mealLogSummaryService.getRemainingBudget(decodedHeaders, date, timeZone);
+            return this.mealLogSummaryService.getRemainingBudget(decodedHeaders, startDate, endDate, timeZone, null);
         } catch (e){
             return new HttpException(e.message, 400)
         }

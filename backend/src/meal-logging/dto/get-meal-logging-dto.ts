@@ -1,28 +1,21 @@
 import { ArrayNotEmpty, IsArray, IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, ValidateNested } from "class-validator";
 import { MealType } from "src/meal-type.enum";
 
-export class UpdateMealLoggingDTO{
+export class GetMealLoggingDTO{
 
     /**
      * @example "2024-09-22"
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly mealDate: string;
+    readonly startDate: string;
 
     /**
      * Optional: new meal date if user wants to change the meal date (meal planning)
      */
     @IsOptional()
     @IsDateString()
-    readonly newMealDate: string;
-
-    /**
-     * @example "2024-09-22"
-     */
-    @IsNotEmpty()
-    @IsDateString()
-    readonly systemDate: string;
+    readonly endDate: string;
 
     /**
      * @example "Asia/Kuala_Lumpur"
@@ -30,18 +23,4 @@ export class UpdateMealLoggingDTO{
     @IsNotEmpty()
     @IsString()
     readonly timeZone: string;
-
-    @IsNotEmpty()
-    @IsString()
-    readonly mealLoggingId: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    readonly portion: number;
-
-    @IsNotEmpty()
-    @IsEnum(MealType)
-    readonly mealType: MealType;
-
-
 }

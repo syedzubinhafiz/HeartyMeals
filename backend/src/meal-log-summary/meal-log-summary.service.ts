@@ -13,6 +13,8 @@ import { MealLoggingService } from "src/meal-logging/meal-logging.service";
 import { MealType } from "src/meal-type.enum";
 import { DeleteMealLoggingDTO } from "src/meal-logging/dto/delete-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "src/meal-logging/dto/update-meal-logging-dto";
+import { format, formatInTimeZone, toDate } from "date-fns-tz";
+import { eachDayOfInterval } from "date-fns";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -57,7 +59,7 @@ export class MealLogSummaryService {
 
             // if the entry does not exists, create a new entry
         if (meal_logging_summary_entry == null || meal_logging_summary_entry == undefined) {
-            await this.getRemainingBudget(decodedHeaders, addMealLoggingSummaryDTO.mealDateTime, addMealLoggingSummaryDTO.timeZone, transactionalEntityManager);
+            await this.getRemainingBudget(decodedHeaders, addMealLoggingSummaryDTO.mealDateTime, null, addMealLoggingSummaryDTO.timeZone, transactionalEntityManager);
 
             meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
                 .where('user_id = :user_id', {user_id: user_object.user_id})
@@ -66,8 +68,8 @@ export class MealLogSummaryService {
         }
         
         // add the new meal logging ids into the specified meal type in the meal logging summary 
-        meal_logging_summary_entry[addMealLoggingSummaryDTO.mealType] = [
-            ...meal_logging_summary_entry[addMealLoggingSummaryDTO.mealType],
+        meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType] = [
+            ...meal_logging_summary_entry.food_consumed[addMealLoggingSummaryDTO.mealType],
             ...mealLoggingIds
         ];
         
@@ -158,7 +160,7 @@ export class MealLogSummaryService {
             throw new HttpException(`User with ${decodedHeaders['sub']} not found`, HttpStatus.NOT_FOUND); 
         }
 
-        // validate date
+        // validate date - within today and 7 days in the future
         if (!this.mealLoggingService.isValidMealDate(deleteMealLoggingDTO.mealDate, deleteMealLoggingDTO.systemDate, deleteMealLoggingDTO.timeZone)){ 
             throw new HttpException(`"Cannot update meal loggings for past or future meals."`, HttpStatus.BAD_REQUEST); 
         }
@@ -205,12 +207,12 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType] = meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType].filter(meal_logging_id => meal_logging_id !== deleteMealLoggingDTO.mealLoggingId);
 
         // add the nutrition to the remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients["calories"] += meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["carbs"] += meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["protein"] += meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["fat"] += meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["sodium"] += meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
-        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size);
+        meal_logging_summary_entry.remaining_nutrients["calories"] += (meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["carbs"] += (meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["protein"] += (meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["fat"] += (meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["sodium"] += (meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += (meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
 
         try {
             return (await transactionalEntityManager.save(meal_logging_summary_entry)).id;
@@ -242,19 +244,54 @@ export class MealLogSummaryService {
                 .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
                 .getOne();
 
-            // remove from old food consumed meal type
-            meal_logging_summary_entry.food_consumed[oldMealType] = meal_logging_summary_entry.food_consumed[oldMealType].filter(meal_logging_id => meal_logging_id !== updateMealLoggingDTO.mealLoggingId);
+            if (updateMealLoggingDTO.newMealDate){
+                // meal planning
 
-            // add to new food consumed meal type
-            meal_logging_summary_entry.food_consumed[updateMealLoggingDTO.mealType].push(updateMealLoggingDTO.mealLoggingId);
+                // get the other date meal logging summary entry
+                var new_date_meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+                    .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                    .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateMealLoggingDTO.timeZone, startOfDay: `${updateMealLoggingDTO.newMealDate} 00:00:00`, endOfDay: `${updateMealLoggingDTO.newMealDate} 23:59:59` })
+                    .getOne();
 
-            // recalculate new date nutrition budget
-            await this.calculateNutritionBudget(decodedHeaders, 
-                meal_logging_summary_entry, 
-                updateMealLoggingDTO.mealDate,
-                updateMealLoggingDTO.timeZone,
-                transactionalEntityManager);
-            return true;
+                // put the meal logging id into the new date meal logging summary entry
+                new_date_meal_logging_summary_entry.food_consumed[updateMealLoggingDTO.mealType].push(updateMealLoggingDTO.mealLoggingId);
+
+                // recalculating the new date nutrition budget
+                await this.calculateNutritionBudget(decodedHeaders, 
+                    new_date_meal_logging_summary_entry, 
+                    updateMealLoggingDTO.newMealDate,
+                    updateMealLoggingDTO.timeZone,
+                    transactionalEntityManager);
+
+                // remove from old food consumed meal type
+                meal_logging_summary_entry.food_consumed[oldMealType] = meal_logging_summary_entry.food_consumed[oldMealType].filter(meal_logging_id => meal_logging_id !== updateMealLoggingDTO.mealLoggingId);
+
+                // recalculate old date nutrition budget
+                await this.calculateNutritionBudget(decodedHeaders, 
+                    meal_logging_summary_entry, 
+                    updateMealLoggingDTO.mealDate,
+                    updateMealLoggingDTO.timeZone,
+                    transactionalEntityManager);
+                
+                return true;
+            }
+            else {
+                // meal logging
+
+                // remove from old food consumed meal type
+                meal_logging_summary_entry.food_consumed[oldMealType] = meal_logging_summary_entry.food_consumed[oldMealType].filter(meal_logging_id => meal_logging_id !== updateMealLoggingDTO.mealLoggingId);
+
+                // add to new food consumed meal type
+                meal_logging_summary_entry.food_consumed[updateMealLoggingDTO.mealType].push(updateMealLoggingDTO.mealLoggingId);
+
+                // recalculate new date nutrition budget
+                await this.calculateNutritionBudget(decodedHeaders, 
+                    meal_logging_summary_entry, 
+                    updateMealLoggingDTO.mealDate,
+                    updateMealLoggingDTO.timeZone,
+                    transactionalEntityManager);
+                return true;
+            }
             
         } catch (e) {
             throw e;
@@ -315,55 +352,112 @@ export class MealLogSummaryService {
      * @param transactionalEntityManager - transactional entity manager
      * @returns a list containing the daily budget, remaining nutrients, and a flag indicating if the user has exceeded the budget
      */
-    async getRemainingBudget(decodedHeaders: any, dateTime: string = null, timeZone: string = null, transactionalEntityManager: EntityManager = null){
+    async getRemainingBudget(decodedHeaders: any, startDateTime: string, endDateTime: string = null, timeZone: string = null, transactionalEntityManager: EntityManager = null){
         if (!await this.userService.verifyUser(decodedHeaders)){ return new HttpException(`User with ${decodedHeaders['sub']} not found`, HttpStatus.NOT_FOUND); }
 
         const user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
         // get the start and end of the day 
-        const start_of_day = `${dateTime.split('T')[0]} 00:00:00`;
-        const end_of_day = `${dateTime.split('T')[0]} 23:59:59`;
+        const start_of_day = `${startDateTime.split('T')[0]} 00:00:00`;
 
-        // get entry
-        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+
+        var end_of_day = null;
+        // if endDateTime is not provided, set it to the end of the day
+        if (endDateTime != null) {
+            end_of_day = `${endDateTime.split('T')[0]} 23:59:59`;
+        }
+        else {
+            end_of_day = `${startDateTime.split('T')[0]} 23:59:59`;
+            endDateTime = startDateTime;
+        }
+
+        console.log(start_of_day, end_of_day);
+
+        // get entries
+        var meal_logging_summary_entries = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', { user_id: user_object.user_id })
             .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
-            .getOne();
+            .getMany();
 
-        var date = new Date(this.mealLoggingService.getISOStringWithTimezone(dateTime, timeZone));
+        // var date = new Date(this.mealLoggingService.getISOStringWithTimezone(startDateTime, timeZone));
 
         var daily_budget = user_object.daily_budget as JSON;
         delete daily_budget["water_intake"];
 
-        if (!meal_logging_summary_entry || meal_logging_summary_entry == null) {
+        // get the date range from startDateTime to endDateTime
+        const list_of_dates = this.listDatesWithTimezone(startDateTime.split('T')[0], endDateTime.split('T')[0], timeZone);
 
-            meal_logging_summary_entry = new MealLogSummary();
-            meal_logging_summary_entry.user = user_object;
-            meal_logging_summary_entry.date = date;
-            meal_logging_summary_entry.remaining_nutrients = daily_budget;
+        // map the entries by their date
+        const entries_grouped_by_date = meal_logging_summary_entries.reduce((acc, entry) => {
+            const zoned_date = toDate(entry.date, {timeZone});
+            const formatted_date = formatInTimeZone(zoned_date, timeZone, 'yyyy-MM-dd');
+        
+            if (!acc[formatted_date]) {
+                acc[formatted_date] = entry;
+            }
+        
+            return acc;
+        }, {});
 
+        var output = {};
+        var new_entries = [];
+
+        // find if the date is not in the entries, create a new entry
+        for (const date of list_of_dates) {
+            if (!(date in entries_grouped_by_date)) {
+                // date does not exists
+                // create new entry
+                const new_entry = new MealLogSummary();
+                new_entry.user = user_object;
+                new_entry.date = new Date(date);
+                new_entry.remaining_nutrients = daily_budget;
+
+                new_entries.push(new_entry);
+
+
+                output[date] = [daily_budget, daily_budget, false];
+            }
+            else {
+                // date exists
+                const meal_logging_summary_entry = entries_grouped_by_date[date];
+
+                var flag = false;
+                for (const key in meal_logging_summary_entry.remaining_nutrients) {
+                    if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
+                        flag = true;
+                        break;
+                    }
+                }
+
+                output[date] = [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
+            }
+        }
+
+        // if got new entries to save
+        if (new_entries.length > 0) {
             try {
                 if (transactionalEntityManager) {
-                    await transactionalEntityManager.save(meal_logging_summary_entry);
+                    await transactionalEntityManager.save(new_entries);
                 } else {
-                    await this.mealLogSummaryRepository.save(meal_logging_summary_entry);
+                    await this.mealLogSummaryRepository.save(new_entries);
                 }
             } catch (e) {
                 throw new Error("Error saving meal logging summary entry");
             }
-
-            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, false];
         }
-        else {
-            var flag = false;
-            for (const key in meal_logging_summary_entry.remaining_nutrients) {
-                if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {
-                    flag = true;
-                    break;
-                }
-              }
+        
 
-            return [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
-        }
+        return output;
+    }
+
+    listDatesWithTimezone(startDate: string, endDate: string, timeZone: string): string[] {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        const dates = eachDayOfInterval({ start, end }).map(date => {
+            return formatInTimeZone(date, timeZone, 'yyyy-MM-dd')
+        })
+
+        return dates;
     }
 }

@@ -6,6 +6,7 @@ import { EntityManager } from "typeorm";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
+import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
 
 
 @Controller('meal-planning')
@@ -26,12 +27,12 @@ export class MealPlanningController {
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
-    async getMealsPerDay(@Headers() headers, @Query('date') date: string, @Query('timeZone') timeZone: string){
+    async getMealsPerDay(@Headers() headers, @Query() payload: GetMealLoggingDTO){
     try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return await this.mealLoggingService.getMealsPerDay(decoded_headers, date, timeZone);
+            return await this.mealLoggingService.getMeals(decoded_headers, payload);
         }
         catch (e){
             return new HttpException(e.message, e.status);

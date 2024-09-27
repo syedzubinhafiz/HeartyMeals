@@ -6,6 +6,7 @@ import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
+import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
@@ -25,12 +26,12 @@ export class MealLoggingController {
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
-    async getMealsPerDay(@Headers() headers, @Query('date') date: string, @Query('timeZone') timeZone: string){
+    async getMealsPerDay(@Headers() headers, @Query() payload: GetMealLoggingDTO){
     try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return await this.mealLoggingService.getMealsPerDay(decoded_headers, date, timeZone);
+            return await this.mealLoggingService.getMeals(decoded_headers, payload);
         }
         catch (e){
             return new HttpException(e.message, e.status);

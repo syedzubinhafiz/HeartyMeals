@@ -10,6 +10,7 @@ import { Recipe } from "src/recipe/recipe.entity";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { AddMealLoggingSummaryDTO } from "src/meal-log-summary/dto/add-meal-logging-summary-dto";
+import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -37,7 +38,7 @@ export class MealLoggingService {
             // Get user object
             var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
-            // Validate date 
+            // Validate date - between today and next 7 days
             if (!this.isValidMealDate(addMealLoggingSummaryDTO.mealDateTime, addMealLoggingSummaryDTO.systemDateTime, addMealLoggingSummaryDTO.timeZone)){
                 throw new HttpException("Cannot add meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
             };
@@ -65,11 +66,20 @@ export class MealLoggingService {
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.consumed_date_time = meal_date;
-                new_meal_logging.is_consumed = true;
                 new_meal_logging.type = addMealLoggingSummaryDTO.mealType;
                 new_meal_logging.portion = recipeJSON['portion'];
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
+
+                if (addMealLoggingSummaryDTO.mealDateTime === addMealLoggingSummaryDTO.systemDateTime){
+                    // meal logging
+                    new_meal_logging.is_consumed = true;
+                }
+                else {
+                    // meal planning
+                    new_meal_logging.is_consumed = false;
+                }
+
                 
                 all_entries.push(new_meal_logging)
             }));
@@ -86,55 +96,87 @@ export class MealLoggingService {
 
 
     /**
-     * Get all the meals of a user in a specific day
+     * Get all the meals of a user based on the start and end date
+     * 
      * @param decodedHeaders - decoded headers from the request
-     * @param mealDate - date requested to get the meals from
+     * @param startDate - start date requested to get the meals from
+     * @param endDate - end date requested to get the meals from
      * @param timeZone - timezone of the user
      * @returns a list of lists of meals sorted in meal types
      */
-    async getMealsPerDay(decodedHeaders: any, mealDate: string, timeZone: string){
+    async getMeals(decodedHeaders: any, getMealLoggingDTO: GetMealLoggingDTO){
         try {
             // Get user object
             var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
             // get the start and end of the day 
-            const start_of_day = `${mealDate} 00:00:00`;
-            const end_of_day = `${mealDate} 23:59:59`;
+            const start_of_day = `${getMealLoggingDTO.startDate} 00:00:00`;
+
+            var end_date = getMealLoggingDTO.endDate;
+            if (getMealLoggingDTO.endDate === null){
+                end_date = getMealLoggingDTO.startDate;
+            }
+
+            const end_of_day = `${end_date} 23:59:59`;
             
             // get all the meals recoreded in a day using time zone
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .leftJoinAndSelect("meal_logging.recipe", "recipe")
-                .where('meal_logging.consumed_date_time AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay', { timeZone: timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
+                .where('meal_logging.consumed_date_time AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay', { timeZone: getMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
                 .andWhere("meal_logging.deleted_at IS NULL")
-                .getMany()
+                .orderBy("meal_logging.consumed_date_time", "ASC")
+                .getMany();
         }
         catch (e){
             throw e;
         }
 
-        // sort them by their meal type
-        var sorted = {
-            "Breakfast": [],
-            "Lunch": [],
-            "Dinner": [],
-            "Other": []
+        // Group entries by date
+        const entries_group_by_date = entries.reduce((acc, entry) => {
+            const date = entry.consumed_date_time.toISOString().split('T')[0]; // Extract the date part
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(entry);
+            return acc;
+        }, {});
+
+        var output = [];
+
+        // for each date
+        for (const date in entries_group_by_date){
+            // sort them by their meal type
+            var sorted = {
+                "Breakfast": [],
+                "Lunch": [],
+                "Dinner": [],
+                "Other": []
+            }
+
+            // get the entries for each date
+            // sort by meal type
+            entries_group_by_date[date].forEach(entry => {
+                if (entry.type == MealType.BREAKFAST){
+                    sorted["Breakfast"].push(entry);
+                }
+                else if (entry.type == MealType.LUNCH){
+                    sorted["Lunch"].push(entry);
+                }
+                else if (entry.type == MealType.DINNER){
+                    sorted["Dinner"].push(entry);
+                }
+                else {
+                    sorted["Other"].push(entry);
+                }
+            });
+            output.push({
+                'date': date,
+                'meals': sorted
+            });
         }
-        entries.forEach(entry => {
-            if (entry.type == MealType.BREAKFAST){
-                sorted["Breakfast"].push(entry);
-            }
-            else if (entry.type == MealType.LUNCH){
-                sorted["Lunch"].push(entry);
-            }
-            else if (entry.type == MealType.DINNER){
-                sorted["Dinner"].push(entry);
-            }
-            else {
-                sorted["Other"].push(entry);
-            }
-        });
-        return sorted;
+
+        return output;
     }
 
     /**
@@ -176,6 +218,10 @@ export class MealLoggingService {
                 throw new HttpException("Cannot update meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
             }
 
+            if (payload.newMealDate && !this.isValidMealDate(payload.newMealDate, payload.systemDate, payload.timeZone)){
+                throw new HttpException("Cannot meal loggings to a date that is in the past or 7 days in the future.", HttpStatus.BAD_REQUEST);
+            }
+
             // validate meal logging id 
             // returns a list of meal logging objects found
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
@@ -191,11 +237,37 @@ export class MealLoggingService {
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
+            // meal planning - change the consumsed date time to other date
+            if (payload.newMealDate){
+                entry.consumed_date_time = new Date(this.getISOStringWithTimezone(payload.newMealDate, payload.timeZone));
+            }
+
             await transactionalEntityManager.save(entry);
             return old_meal_type;
         } catch (e) {
             throw e;
         }
+    }
+
+    /**
+     * Mark a meal is consumed
+     * @param mealLoggingId - meal logging id of the meal
+     * @returns true when the meal is marked consumed
+     */
+    async markMealConsumed(mealLoggingId: string){
+        // validate and get meal logging entry
+        const entry = await this.mealLoggingRepository.findOneByOrFail({id: mealLoggingId, is_consumed: false});
+
+        entry.is_consumed = true;
+
+        try {
+            await this.mealLoggingRepository.save(entry);
+            return true;
+        }
+        catch {
+            throw new HttpException("Error marking food consumed", HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+        
     }
     
     /**
@@ -225,12 +297,12 @@ export class MealLoggingService {
         const system_date = parseISO(systemDateTime);
         const zoned_system_date = toDate(system_date.toISOString(), { timeZone });
 
-        const seven_days_from_now = addDays(zoned_meal_date, 7);
+        const six_days_from_now = addDays(zoned_system_date, 6);
       
         const is_past = isBefore(zoned_meal_date, zoned_system_date);
-        const is_beyond_seven_days = isAfter(zoned_meal_date, seven_days_from_now);
+        const is_beyond_six_days = isAfter(zoned_meal_date, six_days_from_now);
       
-        return !is_past && !is_beyond_seven_days;
+        return !is_past && !is_beyond_six_days;
     }
 
     /**
@@ -248,8 +320,6 @@ export class MealLoggingService {
         const parsed_today = new Date(this.getISOStringWithTimezone(todayDate, timeZone));
         const parsed_date = new Date(this.getISOStringWithTimezone(date, timeZone));
 
-        return parsed_today.getUTCFullYear() === parsed_date.getUTCFullYear() &&
-        parsed_today.getUTCMonth() === parsed_date.getUTCMonth() &&
-        parsed_today.getUTCDate() === parsed_date.getUTCDate();
+        return isSameDay(parsed_date, parsed_today);
     }
 }
