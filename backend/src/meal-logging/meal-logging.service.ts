@@ -11,6 +11,7 @@ import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { AddMealLoggingSummaryDTO } from "src/meal-log-summary/dto/add-meal-logging-summary-dto";
 import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
+import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
 
 @Injectable()
 export class MealLoggingService {
@@ -254,10 +255,11 @@ export class MealLoggingService {
      * @param mealLoggingId - meal logging id of the meal
      * @returns true when the meal is marked consumed
      */
-    async markMealConsumed(mealLoggingId: string){
+    async markMealConsumed(markMealConsumedDTO: MarkMealConsumedDTO){
         // validate and get meal logging entry
-        const entry = await this.mealLoggingRepository.findOneByOrFail({id: mealLoggingId, is_consumed: false});
+        const entry = await this.mealLoggingRepository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
 
+        entry.consumed_date_time = new Date(this.getISOStringWithTimezone(markMealConsumedDTO.dateTime, markMealConsumedDTO.timeZone));
         entry.is_consumed = true;
 
         try {

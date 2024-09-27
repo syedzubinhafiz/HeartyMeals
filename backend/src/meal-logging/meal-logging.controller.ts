@@ -7,6 +7,7 @@ import { EntityManager } from "typeorm";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
 import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
+import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
 
 @Controller('meal-logging')
 export class MealLoggingController {
@@ -79,6 +80,20 @@ export class MealLoggingController {
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
             return new HttpException("Meal is deleted.", HttpStatus.OK);
+        }
+        catch (e){
+            return new HttpException(e.message, e.status);
+        }
+        
+    }
+
+    @Post('mark_consume')
+    async markConsume(@Body() payload: MarkMealConsumedDTO){
+        try {
+                
+            await this.mealLoggingService.markMealConsumed(payload);
+
+            return new HttpException("Meal is consumed.", HttpStatus.OK);
         }
         catch (e){
             return new HttpException(e.message, e.status);
