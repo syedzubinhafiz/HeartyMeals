@@ -198,7 +198,7 @@
             </div>
             
             <!-- Add Button  -->
-            <div style="grid-column: span 2; ">
+            <div style="grid-column: span 2; display: flex; align-items: center; justify-content: center;">
                 <button type="submit" class="submit-button" @click="gatherRecipeData">Add Recipe</button>
             </div>
         </form>
@@ -484,6 +484,12 @@ const validateForm = () => {
 
   if (selectedSeasonings.value.length > 0) {
     checkComponents(selectedSeasonings.value, "Seasoning");
+  }
+
+  // check if instruction is empty
+  if (!tinymceComponent.value.editorInstance.getContent()) {
+    useToast().error("Instruction is required");
+    isValid = false;
   }
 
   return isValid;
