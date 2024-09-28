@@ -154,8 +154,6 @@ export class RecipeController {
 
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
 
-                console.log(recipe_component_list);
-
                 // get link for components
                 for (const component of recipe_component_list.ingredient){
                     component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
@@ -229,6 +227,9 @@ export class RecipeController {
 
         // get link for components
         for (const component of recipe_component_list.ingredient){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+        for (const component of recipe_component_list.seasonings){
             component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
         }
         
