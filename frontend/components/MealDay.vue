@@ -14,6 +14,7 @@
         'future-header': isFuture
       }"
     >
+      <div v-if="mealOverbudget" class="absolute w-6 h-6 bg-red-600 rounded-full text-white flex items-center justify-center -translate-x-3 -translate-y-3">!</div>
       <div class="day-name">{{ dayName }}</div>
       <div class="day-date">{{ formattedDate }}</div>
     </div>
@@ -118,7 +119,11 @@
     },
     isToday: Boolean,
     isPast: Boolean,
-    isFuture: Boolean
+    isFuture: Boolean,
+    mealOverbudget: {
+      type: Boolean,
+      default: false
+    }
   });
 
   console.log(props.isPast)

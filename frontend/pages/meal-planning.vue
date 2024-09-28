@@ -31,6 +31,7 @@
           :isToday="day.isToday" 
           :isPast="day.isPast" 
           :isFuture="day.isFuture" 
+          :mealOverbudget="day.mealOverbudget"
         />
       </div>
     </div>
@@ -74,6 +75,13 @@ async function generateWeekMeals(date) {
     day.setUTCHours(-8, 0, 0, 0)
     day.setDate(date.getDate() - date.getDay() + i + 1);
     let meals = await useApi(`/meal-logging/get?date=${day.toISOString()}`,"GET")
+    let mealBudget = await useApi(`/user/budget?date=${day.toISOString()}`, "GET");
+    let remainingNutrients = mealBudget.value[1]
+    let mealOverbudget = false
+    if(remainingNutrients.calories<0 || remainingNutrients.carbs<0 || remainingNutrients.cholesterol<0 || remainingNutrients.fats<0 || remainingNutrients.protein<0 || remainingNutrients.sodium<0) {
+      mealOverbudget = true
+    }
+    console.log(mealOverbudget)
     console.log(meals)
     weekMeals.push({
       dayName: dayNames[day.getDay()],
@@ -85,6 +93,7 @@ async function generateWeekMeals(date) {
       isToday: isToday(day),
       isPast: day < today && !isToday(day),
       isFuture: day > today && !isToday(day),
+      mealOverbudget: mealOverbudget
     });
   }
   return weekMeals;
