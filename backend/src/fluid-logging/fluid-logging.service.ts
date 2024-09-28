@@ -7,6 +7,7 @@ import { UpdateFluidLoggingDTO } from "./dto/update-fluid-logging-dto";
 import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { formatInTimeZone } from "date-fns-tz";
+import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
 export class FluidLoggingService {
     constructor(
         @InjectRepository(FluidLogging)
@@ -82,18 +83,21 @@ export class FluidLoggingService {
         const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
 
         // get the start and end of the day 
-        const startOfDay = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 00:00:00`;
-        const endOfDay = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 23:59:59`;
+        const start_of_day = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 00:00:00`;
+        const end_of_day = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 23:59:59`;
 
+        // unit conversion - convert given unit to ml
+        var converted_water_intake = this.commonService.convertUnit(updateFluidLoggingDTO.measuringUnit, updateFluidLoggingDTO.waterIntake, MeasuringUnit.MILLILITER);
+        
         // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
             .where('user_id = :user_id', { user_id: user_object.user_id })
-            .andWhere('logging_date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateFluidLoggingDTO.timeZone, startOfDay: startOfDay, endOfDay: endOfDay })
+            .andWhere('logging_date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateFluidLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
             .getOne();
 
         // deduct from the latest record
         const previous_remaining_fluid_record = entry.logging_history[entry.logging_history.length - 1];
-        const remaining_fluid = previous_remaining_fluid_record["remaining_fluid"] - updateFluidLoggingDTO.waterIntake
+        const remaining_fluid = previous_remaining_fluid_record["remaining_fluid"] - converted_water_intake
 
         const latest_remaining_fluid = {} as JSON;
         latest_remaining_fluid["date"] = updateFluidLoggingDTO.loggingDateTime;

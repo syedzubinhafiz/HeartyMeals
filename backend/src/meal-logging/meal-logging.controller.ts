@@ -32,7 +32,18 @@ export class MealLoggingController {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return await this.mealLoggingService.getMeals(decoded_headers, payload);
+            const meals = await this.mealLoggingService.getMeals(decoded_headers, payload);
+
+            const budget = await this.mealLoggingSummaryService.getRemainingBudget(decoded_headers, payload.startDate, payload.endDate, payload.timeZone, null);
+
+            // for each date, put the budget in the meals
+            for (const date in meals){
+                if (budget[date]){
+                    meals[date].budget = budget[date];
+                }
+            }
+
+            return meals;
         }
         catch (e){
             return new HttpException(e.message, e.status);
@@ -51,10 +62,15 @@ export class MealLoggingController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
                 // update meal logging 
-                const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
+                const [old_meal_type, updated] = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
-                // update meal logging summary 
-                await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
+                if (!updated){
+                    throw new HttpException("Meal is not updated.", HttpStatus.OK);
+                }
+                else {
+                    // update meal logging summary 
+                    await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
+                }
             });
             return new HttpException("Meal is updated.", HttpStatus.OK);
         }

@@ -6,18 +6,18 @@ import { MealType } from "src/meal-logging/enum/meal-type.enum";
 export class AddMealLoggingSummaryDTO{
     
     /**
-     * @example "2024-09-22T08:11:22:33"
+     * @example "2024-09-22"
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly mealDateTime: string;
+    readonly mealDate: string;
 
     /**
      * @example "2024-09-22T08:11:22:33"
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly systemDateTime: string;
+    readonly userLocalDateTime: string;
 
     /**
      * @example "Asia/Kuala_Lumpur"

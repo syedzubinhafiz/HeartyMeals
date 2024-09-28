@@ -16,7 +16,7 @@ export class DeleteMealLoggingDTO{
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly systemDate: string;
+    readonly userLocalDate: string;
 
     /**
      * @example "Asia/Kuala_Lumpur"
