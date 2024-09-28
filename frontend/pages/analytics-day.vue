@@ -3,23 +3,28 @@
     <!-- Header Section -->
     <Header />
 
-    <!-- Page Title and Date Selector -->
+    <!-- Page Title, Time Frame Switcher, and Date Selector -->
     <div class="container mx-auto px-4 py-6">
+      <!-- Title and Time Frame Switcher -->
       <div class="flex justify-between items-center">
         <h1 class="text-3xl font-semibold text-gray-800">Diet Analytics</h1>
-        <!-- Date Selector -->
-        <div class="flex items-center space-x-4">
-          <button class="text-gray-700"><i class="fas fa-chevron-left"></i></button>
-          <span class="text-lg text-gray-700">24 April 2024</span>
-          <button class="text-gray-700"><i class="fas fa-chevron-right"></i></button>
+        <!-- Time Frame Switcher -->
+        <div class="flex space-x-4">
+          <button class="px-4 py-2 bg-green-200 text-green-900 font-medium rounded-full">Day</button>
+          <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Week</button>
+          <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Month</button>
         </div>
       </div>
 
-      <!-- Time Frame Switcher -->
-      <div class="flex justify-end space-x-4 mt-4">
-        <button class="px-4 py-2 bg-green-200 text-green-900 font-medium rounded-full">Day</button>
-        <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Week</button>
-        <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Month</button>
+      <!-- Date Selector (Below Title) -->
+      <div class="flex space-x-4 mt-4">
+        <button class="text-gray-700">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="text-lg text-black">24 April 2024</span>
+        <button class="text-gray-700">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
 
