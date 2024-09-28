@@ -15,10 +15,12 @@ export default defineNuxtConfig({
       greensheartAccountIssuer: "https://accounts.greensheart.com/realms/greensheart",
       greensheartAccountClientId: "greensheart",
       greensheartAccountScope: "openid profile email",
+      baseURL: "http://localhost:3001",
       webURL:"",
     },
   },
   plugins: [
+    '~/plugins/axios.js',
     '~/plugins/toast.js'
   ],
 })

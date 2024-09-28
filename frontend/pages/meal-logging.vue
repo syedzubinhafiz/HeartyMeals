@@ -85,7 +85,7 @@
             <img :src="backgroundImage" class="background-image" />
         </div>
   
-        <div class="section flex flex-col justify-end fixed-footer ">
+        <div class="section flex flex-col justify-end fixed-footer " style="z-index: 0;">
             <Footer />
         </div>
 

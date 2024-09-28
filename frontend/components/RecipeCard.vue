@@ -2,20 +2,21 @@
   <div class="card" @click="$emit('openOverlay','meal')">
     <!-- Only show this section if the recipe is admin approved -->
     <div v-if="isCustomRecipe" class="top-right">
-  <img 
-    :src="isAdminApproved ? '/assets/img/checkMark.svg' : '/assets/img/warning.png'" 
-    alt="Info Icon" 
-    class="info-icon" 
-    @mouseover.stop="showTooltip = true" 
-    @mouseleave.stop="showTooltip = false"
-    @click.stop
-  />
-  <div v-if="showTooltip" 
-     :class="isAdminApproved ? 'tooltip tooltip-approved' : 'tooltip tooltip-pending'">
-  <p>{{ isAdminApproved ? 'Approved by Admin' : 'Custom Recipe - Pending Approval' }}</p>
-</div>
-
-</div>
+      <img 
+        :src="isAdminApproved ? '/assets/img/checkMark.svg' : '/assets/img/warning.png'" 
+        alt="Info Icon" 
+        class="info-icon" 
+        @mouseover.stop="showTooltip = true" 
+        @mouseleave.stop="showTooltip = false"
+        @click.stop
+      />
+      <div 
+        v-if="showTooltip" 
+        :class="isAdminApproved ? 'tooltip tooltip-approved' : 'tooltip tooltip-pending'"
+        >
+        <p>{{ isAdminApproved ? 'Approved by Admin' : 'Custom Recipe - Pending Approval' }}</p>
+      </div>
+    </div>
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
@@ -99,6 +100,7 @@ const props = defineProps({
   padding: 15px;
   box-sizing: border-box;
   position:relative;
+
 }
 
 .top-section {
@@ -109,13 +111,13 @@ const props = defineProps({
 
 .image-container {
   flex-shrink: 0;
-  width: 90px;
+  width: 25%;
   padding: 2px;
   position:relative;
 }
 
 .img {
-  width: 100%;
+  width: 70%;
   height: auto;
   border-radius: 8px;
 }

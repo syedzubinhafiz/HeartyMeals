@@ -9,8 +9,8 @@
         <button @click="toggleSidebar" class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white">
           <i class="bi bi-list text-2xl"></i>
         </button>
-        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="" />
-        
+        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/temp')" />
+       
       </div>
     </div>
   <!-- sidebar -->
@@ -25,37 +25,37 @@
       <nav class="mt-5">
         <ul>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/temp')">
               <i class="bi bi-house mr-2"></i> Home
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black"  @click.prevent="navigateTo('/meal-logging')">
               <i class="bi bi-journals mr-2"></i> Meal Logging
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/recipe-library')">
               <i class="bi bi-basket mr-2"></i> Recipe Library
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/meal-planning')">
               <i class="bi bi-card-list mr-2"></i> Meal Planning
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
               <i class="bi bi-graph-up mr-2"></i> Diet Analytics
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
               <i class="bi bi-easel mr-2"></i> Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
               <i class="bi bi-person mr-2"></i> Profile Page
             </a>
           </li>
@@ -83,3 +83,10 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 </script>
+
+
+<style scoped>
+.clickable-img{
+  cursor: pointer;
+}
+</style>
