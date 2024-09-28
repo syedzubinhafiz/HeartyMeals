@@ -33,36 +33,36 @@
       <!-- Left Column: Meal Cards -->
       <div class="col-span-2 grid grid-cols-2 gap-6">
         <!-- Breakfast Card -->
-        <div class="bg-card-beige rounded-lg p-6 shadow-card">
-          <div class="flex justify-between items-start mb-4">
+        <div class="bg-card-beige rounded-lg p-4 shadow-card w-100 h-32 flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-2">
             <div>
-              <h1 class="text-xl font-bold text-black">Breakfast</h1>
-              <h3 class="text-sm text-gray-800 mt-2">Scrambled Eggs and Hash Browns</h3>
+              <h1 class="text-lg font-bold text-black">Breakfast</h1>
+              <!-- <h3 class="text-sm text-gray-800 mt-2">Scrambled Eggs and Hash Browns</h3> -->
             </div>
-            <div class="bg-calories-yellow text-black px-4 py-1 rounded-lg text-sm shadow-sm">
+            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-xs shadow-sm">
               Calories <span class="font-bold">500kcal</span>
             </div>
           </div>
 
           <!-- Nutrition Info Grid -->
-          <div class="grid grid-cols-5 gap-2 text-sm text-center mt-6">
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+          <div class="grid grid-cols-5 gap-0 text-xs">
+            <div class="nutrition-item bg-protein-bg p-2 text-center">
               <p class="text-gray-800">Protein</p>
               <p class="font-bold text-black">20g</p>
             </div>
-            <div class="nutrition-item bg-highlight-yellow p-1 rounded-md">
+            <div class="nutrition-item bg-highlight-yellow p-2 text-center">
               <p class="text-gray-800">Carbs</p>
               <p class="font-bold text-black">30g</p>
             </div>
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+            <div class="nutrition-item bg-protein-bg p-2 text-center">
               <p class="text-gray-800">Cholesterol</p>
               <p class="font-bold text-black">10g</p>
             </div>
-            <div class="nutrition-item bg-highlight-yellow p-1 rounded-md">
+            <div class="nutrition-item bg-highlight-yellow p-2 text-center">
               <p class="text-gray-800">Fats</p>
               <p class="font-bold text-black">5g</p>
             </div>
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+            <div class="nutrition-item bg-protein-bg p-2 text-center">
               <p class="text-gray-800">Sodium</p>
               <p class="font-bold text-black">0.1g</p>
             </div>
@@ -196,5 +196,41 @@ definePageMeta({
 
 .mb-4 {
   margin-bottom: 1rem;
+}
+
+.w-64 {
+  width: 16rem;
+}
+
+.h-64 {
+  height: 16rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
 }
 </style>
