@@ -407,7 +407,7 @@ export class RecipeService {
      * @param decodedHeaders Access token containing user information
      * @returns Recipe of the day for the user
      */
-    async getRecipeOfTheDay(decodedHeaders: any): Promise<Recipe>{
+    async getRecipeOfTheDay(decodedHeaders: any){
 
         const user =  await this.userRepository.findOneBy({
             user_id: decodedHeaders['sub']
@@ -430,7 +430,6 @@ export class RecipeService {
             recipe_of_the_day =  new RecipeOfTheDay();
             recipe_of_the_day.user = user;
             recipe_of_the_day.date = new Date();   
-            console.log("date is null")
         }
 
         // Check if the date in entry is not the current date
@@ -473,7 +472,12 @@ export class RecipeService {
             this.recipeOfTheDayRepository.save(recipe_of_the_day);
         }
         
-
-       return recipe_of_the_day.recipe 
+        // TODO: storage link
+        return {
+            id: recipe_of_the_day.recipe.id,
+            name: recipe_of_the_day.recipe.name,
+            description: recipe_of_the_day.recipe.description,
+            nutrition_info: recipe_of_the_day.recipe.nutrition_info,
+        }
     } 
 }
