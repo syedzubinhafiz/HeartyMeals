@@ -137,7 +137,7 @@
         console.log(currentDate.value)
 
         let formattedCurrentDate = new Date(currentDate.value);
-        formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
+        // formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
         console.log(formattedCurrentDate)
         
         let formattedISODate = formattedCurrentDate.toISOString();
@@ -218,7 +218,7 @@
         console.log("mealtype", updatedMealInfo.mealType);
 
         let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
+        // currentDate.setUTCHours(-8, 0, 0, 0)
         currentDate = currentDate.toISOString()
 
         const portionSize = Number(updatedMealInfo.portionSize);

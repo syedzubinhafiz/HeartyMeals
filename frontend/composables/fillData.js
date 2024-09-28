@@ -501,7 +501,7 @@ export const useFillData = () => {
     }
     const fillMealLogging = async() => {
         let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
+        // currentDate.setUTCHours(-8, 0, 0, 0)
         currentDate = currentDate.toISOString()
         // get
         let data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")

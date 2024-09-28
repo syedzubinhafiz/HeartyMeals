@@ -72,7 +72,7 @@ async function generateWeekMeals(date) {
 
   for (let i = 0; i < 7; i++) {
     const day = new Date(date);
-    day.setUTCHours(-8, 0, 0, 0)
+    // day.setUTCHours(-8, 0, 0, 0)
     day.setDate(date.getDate() - date.getDay() + i + 1);
     let meals = await useApi(`/meal-logging/get?date=${day.toISOString()}`,"GET")
     let mealBudget = await useApi(`/user/budget?date=${day.toISOString()}`, "GET");
