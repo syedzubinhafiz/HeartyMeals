@@ -46,14 +46,14 @@ import { ref, computed } from 'vue';
 const currentDate = ref(new Date());
 const daysOfWeek = ref([]);
 
-const previousWeek = () => {
+const previousWeek = async () => {
   currentDate.value.setDate(currentDate.value.getDate() - 7);
-  daysOfWeek.value = generateWeekMeals(currentDate.value);
+  daysOfWeek.value = await generateWeekMeals(currentDate.value);
 };
 
-const nextWeek = () => {
+const nextWeek = async () => {
   currentDate.value.setDate(currentDate.value.getDate() + 7);
-  daysOfWeek.value = generateWeekMeals(currentDate.value);
+  daysOfWeek.value = await generateWeekMeals(currentDate.value);
 };
 
 const weekRange = computed(() => {
