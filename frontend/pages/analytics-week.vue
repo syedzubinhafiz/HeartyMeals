@@ -3,14 +3,16 @@
   <div class="analytics-container">
     <Header/>
     <main class="main-content">
+      <div class="top-section">
       <h1 class="title">Diet Analytics</h1>
-
       <div class="content-wrapper">
-        <div class="view-selector">
-          <button :class="{ active: view === 'day' }" @click="setView('day')">Day</button>
-          <button :class="{ active: view === 'week' }" @click="setView('week')">Week</button>
-          <button :class="{ active: view === 'month' }" @click="setView('month')">Month</button>
-        </div>
+          <div class="view-selector">
+            <button :class="{ active: view === 'day' }" @hover="" @click="setView('day')">Day</button>
+            <button :class="{ active: view === 'week' }" @click="setView('week')">Week</button>
+            <button :class="{ active: view === 'month' }" @click="setView('month')">Month</button>
+          </div>
+      </div>
+    </div>
 
         <div class="date-navigation">
           <button class="nav-arrow" @click="prevWeek">‹</button>
@@ -23,15 +25,14 @@
             <div class="metrics-grid">
               <div v-for="metric in metrics" :key="metric.title" :class="['metric-card', metric.className]">
                 <h3 class="metric-title">
-                  <span class="metric-icon">
-                      <img :src="metric.icon" alt="" />
+                  <span class="metric-icon-wrapper">
+                      <img :src="metric.icon" alt="" class="metric-icon"/>
                   </span>
                   {{ metric.title }}
                 </h3>
                 <div class="metric-content">
-                  <div v-for="(value, key) in metric.data" :key="key" class="metric-row">
-                    <span>{{ key }}</span>
-                    <span :class="{ 'positive': value.startsWith('-'), 'negative': value.startsWith('+') }">
+                  <div v-for="(value, key, index) in metric.data" :key="key" :class="['metric-row', { 'with-border': index < Object.keys(metric.data).length - 1 }]">                    <span class="metric-label">{{ key }}</span>
+                    <span :class="['metric-value', { 'positive': value.startsWith('-'), 'negative': value.startsWith('+') }]">
                       {{ value }}
                     </span>
                   </div>
@@ -44,6 +45,7 @@
             <div class="chart-container">
               <h3 class="chart-title">Daily Protein Intake</h3>
               <Line :data="chartData" :options="chartOptions" />
+              <div class="chart-legend-wrapper">
               <div class="chart-legend">
                 <button v-for="dataset in datasets" :key="dataset" 
                         :class="['legend-item', { active: activeDataset === dataset }]" 
@@ -52,9 +54,9 @@
                 </button>
               </div>
             </div>
+            </div>
           </div>
 
-      </div>
       </div>
     </main>
     <Footer/>
@@ -175,7 +177,7 @@ const chartData = ref({
       backgroundColor: '#000000',
       data: [80, 80, 80, 80, 80, 80, 80],
       borderWidth: 2,
-      pointRadius: 0
+      pointRadius: 4
     },
     {
       label: 'Actual',
@@ -202,7 +204,7 @@ const chartOptions = {
   },
   plugins: {
     legend: {
-      display: false
+      display: true
     }
   }
 }
@@ -220,8 +222,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro&display=swap');
+*{
+    font-family: 'Overpass', sans-serif;
+}
+
+.top-section{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 50%;
+}
 .analytics-container {
-  font-family: Arial, sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -229,7 +242,6 @@ onMounted(() => {
 
 .main-content {
   padding: 1rem;
-  flex-grow: 1;
 }
 
 .content-wrapper {
@@ -238,23 +250,26 @@ onMounted(() => {
 }
 
 .title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
+  font-size: 48px;
+  margin: 0;
+  font-weight: bold;
 }
 
 .view-selector {
+  background-color: #ffffff;
+  border-radius: 20px;
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+
 }
 
 .view-selector button {
-  background-color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
-  margin-left: 0.5rem;
   border-radius: 20px;
   cursor: pointer;
+  color: #718096;
 }
 
 .view-selector button.active {
@@ -262,24 +277,28 @@ onMounted(() => {
   color: white;
 }
 
+.view-selector button:hover {
+  background-color: #02B5B1;
+  color: white;
+}
+
 .date-navigation {
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .nav-arrow {
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 36px;
   cursor: pointer;
   color: #1e5e5e;
 }
 
 .date-range {
   margin: 0 1rem;
-  font-weight: bold;
+  font-size: 36px;
 }
 
 .layout-container {
@@ -288,8 +307,13 @@ onMounted(() => {
 }
 
 .chart-section {
+  background-color: #F3EADA;
   flex: 1;
   min-width: 0; /* Allows the flex item to shrink below its minimum content size */
+  height: 550px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
 }
 
 .metrics-section {
@@ -305,27 +329,41 @@ onMounted(() => {
 }
 
 .metric-card {
-  background-color: #f0f0f0;
+  background-color: #F3EADA;
   border-radius: 10px;
-  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
 }
 
 .metric-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
   font-style: bold;
+  border-radius: 10px;
+
 }
 
-.metric-icon {
-  margin-right: 0.5rem;
+.metric-icon-wrapper {
+  margin: 0.5rem;
+}
+
+.metric-icon{
+  width: 30px;
+  height: 30px;
 }
 
 .metric-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.25rem;
+}
+
+.metric-row.with-border {
+  border-bottom: 1px solid #000000;
+}
+.metric-content {
+  margin: 1rem;
 }
 
 .positive {
@@ -337,38 +375,63 @@ onMounted(() => {
 }
 
 .chart-container {
-  background-color: #f7f3eb;
+  /* background-color: #f7f3eb; */
   border-radius: 10px;
   padding: 1rem;
-  height: 300px;
+  height: 400px;
   display: flex;
   flex-direction: column;
 }
 
 .chart-title {
-  font-size: 1.2rem;
+  font-size: 40px;
   margin-bottom: 1rem;
 }
 
 .chart-legend {
   display: flex;
   justify-content: center;
-  margin-top: auto;
-  padding-top: 1rem;
+  margin-bottom: 1rem;
+  background-color: #FFFEF1;
+  width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+}
+
+
+.chart-legend-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 .legend-item {
-  background: none;
+  transition: opacity 0.3s;
   border: none;
   padding: 0.5rem 1rem;
   cursor: pointer;
   opacity: 0.5;
+  padding: 0.5rem 1rem;
+  margin-left: 0.5rem;
+  border-radius: 20px;
 }
 
 .legend-item.active {
   opacity: 1;
   font-weight: bold;
+  background-color: #87A98D;
+  color: white;
 }
+
+.legend-item:hover {
+  opacity: 1;
+  font-weight: bold;
+  background-color: #02B5B1;
+  color: white;
+}
+
+
 
 /* Color classes for metric cards */
 .calories .metric-title { background-color: #B8B396; }
@@ -380,6 +443,10 @@ onMounted(() => {
 
 /* Responsive layout */
 @media (max-width: 768px) {
+  .top-section{
+    flex-direction: column;
+    align-items: flex-start;
+  }
   .layout-container {
     flex-direction: column;
   }
@@ -390,8 +457,7 @@ onMounted(() => {
   }
   
   .view-selector {
-    order: -1;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
   }
   
   .date-navigation {
