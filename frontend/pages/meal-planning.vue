@@ -118,6 +118,8 @@ onMounted(async () => {
   await useApi("/dietary","GET")
 
   daysOfWeek.value = await generateWeekMeals(currentDate.value)
+  useToast().info("note: please mark meals as consumed after eating them!")
+
 })
 </script>
   
