@@ -174,7 +174,7 @@ onMounted(async () => {
   .meal-planning {
     padding-left: 20px;
     padding-right: 20px;
-    padding-bottom: 100px;
+    padding-bottom: 1000px;
   }
 
   .bg-custom-bg {

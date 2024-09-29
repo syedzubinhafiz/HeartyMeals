@@ -35,7 +35,7 @@
     </div>
 
     <!-- Consume button -->
-    <div class="flex justify-between">
+    <div v-if="showButtons" class="flex justify-between">
       <button
         class="p-2 rounded-lg w-full"
         :class="isConsumed ? 'bg-gray-400' : 'bg-green-400'"
