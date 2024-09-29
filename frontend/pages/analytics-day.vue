@@ -4,12 +4,14 @@
     <Header />
 
     <!-- Page Title, Time Frame Switcher, and Date Selector -->
-    <div class="container mx-auto px-4 py-6">
+    <div class="container mx-auto px-4 py-6 relative">
       <!-- Title and Time Frame Switcher -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center space-x-4">
-          <h1 class="text-4xl font-semibold">Diet Analytics</h1>
-          <!-- Time Frame Switcher (Moved closer to the header) -->
+        <!-- Left-aligned Diet Analytics Header -->
+        <h1 class="text-4xl font-semibold">Diet Analytics</h1>
+
+        <!-- Centered Time Frame Switcher -->
+        <div class="mt-4 md:mt-0 md:absolute md:left-1/2 md:transform md:-translate-x-1/2">
           <div class="view-selector">
             <button :class="{ active: view === 'day' }" @click="setView('day')">Day</button>
             <button :class="{ active: view === 'week' }" @click="setView('week')">Week</button>
@@ -19,7 +21,7 @@
       </div>
 
       <!-- Date Selector (Below Title) -->
-      <div class="flex items-start justify-start space-x-4 mt-8">
+      <div class="flex items-start justify-start space-x-4 mt-4">
         <button @click="previousDate" class="text-gray-700 text-2xl">
           &lt;
         </button>
