@@ -22,18 +22,18 @@ export class MealPlanningController {
     /**
      * Get method to get all the meals in a specific date
      * @param headers - headers that contains the authorization token
-     * @param date - date requested to get the meals from
-     * @param timeZone - timezone of the user
+     * @param query - query that contains the date range requested to get the meals from
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
     async getMealsPerDay(@Headers() headers, @Query() payload: GetMealLoggingDTO){
     try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
 
+            // get meals
             const meals = await this.mealLoggingService.getMeals(decoded_headers, payload);
 
+            // get budget
             const budget = await this.mealLoggingSummaryService.getRemainingBudget(decoded_headers, payload.startDate, payload.endDate, payload.timeZone, null);
 
             // for each date, put the budget in the meals
@@ -64,11 +64,15 @@ export class MealPlanningController {
                 // update meal logging 
                 const [old_meal_type, updated] = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
+                // if there is no update to the meal logging
                 if (!updated){
-                    return new HttpException("Meal is not updated.", HttpStatus.OK);
+                    // return status OK
+                    throw new HttpException("Meal is not updated.", HttpStatus.OK);
                 }
-                // update meal logging summary 
-                await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
+                else {
+                    // update meal logging summary 
+                    await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
+                }
             });
             return new HttpException("Meal is updated.", HttpStatus.OK);
         }
@@ -89,8 +93,10 @@ export class MealPlanningController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
 
+                // remove from summary
                 await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers,payload,transactionalEntityManager);
                 
+                // remove from database
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
             return new HttpException("Meal is deleted.", HttpStatus.OK);

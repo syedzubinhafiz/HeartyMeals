@@ -8,6 +8,7 @@ import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { formatInTimeZone } from "date-fns-tz";
 import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
+import { conversionFactors, FluidUnit } from "./enum/fluid-unit-enum";
 export class FluidLoggingService {
     constructor(
         @InjectRepository(FluidLogging)
@@ -87,7 +88,7 @@ export class FluidLoggingService {
         const end_of_day = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 23:59:59`;
 
         // unit conversion - convert given unit to ml
-        var converted_water_intake = this.commonService.convertUnit(updateFluidLoggingDTO.measuringUnit, updateFluidLoggingDTO.waterIntake, MeasuringUnit.MILLILITER);
+        var converted_water_intake = this.convertFluidUnit(updateFluidLoggingDTO.waterIntake, updateFluidLoggingDTO.fluidUnit, FluidUnit.MILLILITER);
         
         // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
@@ -118,5 +119,20 @@ export class FluidLoggingService {
         }
 
         return [true, warning];
+    }
+
+    convertFluidUnit(originalAmount: number, originalUnit: FluidUnit, newUnit: FluidUnit): number{
+
+        if (originalUnit === newUnit) {
+            return originalAmount;
+        }
+    
+        // Convert grams to the target unit
+        if (conversionFactors[originalUnit] && conversionFactors[newUnit]) {
+            const amountInGramsOrMl = originalAmount * conversionFactors[originalUnit];
+            return amountInGramsOrMl / conversionFactors[newUnit];
+        }
+    
+        throw new Error(`Conversion from ${originalUnit} to ${newUnit} is not supported.`);
     }
 }

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, Min, Matches, IsDateString} from "class-validator";
-import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
+import { FluidUnit } from "../enum/fluid-unit-enum";
 
 
 export class UpdateFluidLoggingDTO{
@@ -17,7 +17,7 @@ export class UpdateFluidLoggingDTO{
     @Min(0)
     readonly waterIntake: number;    
 
-    @IsEnum(MeasuringUnit)
+    @IsEnum(FluidUnit)
     @IsNotEmpty()
-    readonly measuringUnit: MeasuringUnit;   
+    readonly fluidUnit: FluidUnit;   
 }

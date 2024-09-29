@@ -9,12 +9,10 @@ import { Recipe } from "src/recipe/recipe.entity";
 import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
-import { MealLoggingService } from "src/meal-logging/meal-logging.service";
 import { MealType } from "src/meal-type.enum";
 import { DeleteMealLoggingDTO } from "src/meal-logging/dto/delete-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "src/meal-logging/dto/update-meal-logging-dto";
-import { format, formatInTimeZone, fromZonedTime, toDate } from "date-fns-tz";
-import { eachDayOfInterval } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 @Injectable()
 export class MealLogSummaryService {
@@ -29,7 +27,6 @@ export class MealLogSummaryService {
         private recipeRepository: Repository<Recipe>,
         private commonService: CommonService,
         private userService: UserService,
-        private mealLoggingService: MealLoggingService
     ){}
 
     /**
@@ -38,7 +35,6 @@ export class MealLogSummaryService {
      * @param addMealLoggingSummaryDTO - DTO containing the meal logging ids and nutrition info
      * @param mealLoggingIds - meal logging ids to be added to the meal logging summary
      * @param transactionalEntityManager - transactional entity manager
-     * @returns true if the meal logging summary is added successfully
      * 
      */
     async addMealLoggingSummary(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO, mealLoggingIds: string[], transactionalEntityManager: EntityManager){
@@ -49,9 +45,7 @@ export class MealLogSummaryService {
         const start_of_day = `${addMealLoggingSummaryDTO.mealDate} 00:00:00`;
         const end_of_day = `${addMealLoggingSummaryDTO.mealDate} 23:59:59`;
 
-        // get the entry
-        // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
-        // or user will call to get daily budget which will get the entry also
+        // get meal logging summary entry
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_object.user_id})
             .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: addMealLoggingSummaryDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
@@ -68,7 +62,7 @@ export class MealLogSummaryService {
             ...mealLoggingIds
         ];
         
-
+        // set remaining nutrients
         meal_logging_summary_entry.remaining_nutrients = addMealLoggingSummaryDTO.nutritionAfter;
 
         try {
@@ -84,7 +78,7 @@ export class MealLogSummaryService {
      * Calculate the nutrition info before logging the meal and after logging the meal
      * @param decodedHeaders - headers from request
      * @param calculateMealLoggingSummaryDTO - DTO containing the meals that user selected and portion
-     * @returns [daily_budget, nutrition_before, nutrition_after]
+     * @returns [daily_budget, nutrition_before, nutrition_after, flag]
      */
     async calculateNutritionSummary(decodedHeaders: any, calculateMealLoggingSummaryDTO: CalculateMealLoggingSummaryDTO){
         try {
@@ -157,7 +151,6 @@ export class MealLogSummaryService {
      * @param decodedHeaders - headers from request
      * @param deleteMealLoggingDTO - DTO containing the meal logging id, meal type, meal date, user local date
      * @param transactionalEntityManager - transactional entity manager
-     * @returns true if the meal logging id is removed successfully
      */
     async removeMealLoggingId(decodedHeaders: any, deleteMealLoggingDTO: DeleteMealLoggingDTO,transactionalEntityManager: EntityManager){
         // remove the meal logging id from the meal logging summary
@@ -168,7 +161,7 @@ export class MealLogSummaryService {
 
         // validate date - within today and 7 days in the future
         if (!this.commonService.isWithinDateRange(deleteMealLoggingDTO.mealDate, deleteMealLoggingDTO.userLocalDate, deleteMealLoggingDTO.timeZone, 6)){ 
-            throw new HttpException(`"Cannot update meal loggings for past or future meals."`, HttpStatus.BAD_REQUEST); 
+            throw new HttpException(`Cannot update meal loggings for past or future meals.`, HttpStatus.BAD_REQUEST); 
         }
 
         // get user id
@@ -178,19 +171,24 @@ export class MealLogSummaryService {
         const start_of_day = `${deleteMealLoggingDTO.mealDate} 00:00:00`;
         const end_of_day = `${deleteMealLoggingDTO.mealDate} 23:59:59`;
 
-        // get the entry
-        // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
-        // or user will call to get daily budget which will get the entry also
+        // get meal logging summary entry
         var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_id})
             .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: deleteMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
             .getOne();
 
         // get meal logging object with recipe object
-        const meal_logging_object = await this.mealLoggingRepository.findOneOrFail({
-            where: { id: deleteMealLoggingDTO.mealLoggingId },
-            relations: ['recipe'],
-        });
+        const meal_logging_object = await this.mealLoggingRepository.createQueryBuilder('mealLogging')
+            .leftJoinAndSelect('mealLogging.recipe', 'recipe')
+            .select([
+                'mealLogging.id',
+                'mealLogging.portion',
+                'recipe.id',
+                'recipe.nutrition_info',
+                'recipe.serving_size'
+            ])
+            .where('mealLogging.id = :id', { id: deleteMealLoggingDTO.mealLoggingId })
+            .getOne();
 
         // find the meal logging id from the food consumed meal type
         var found = false;
@@ -208,12 +206,12 @@ export class MealLogSummaryService {
         meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType] = meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType].filter(meal_logging_id => meal_logging_id !== deleteMealLoggingDTO.mealLoggingId);
 
         // add the nutrition to the remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients["calories"] += (meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
-        meal_logging_summary_entry.remaining_nutrients["carbs"] += (meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
-        meal_logging_summary_entry.remaining_nutrients["protein"] += (meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
-        meal_logging_summary_entry.remaining_nutrients["fat"] += (meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
-        meal_logging_summary_entry.remaining_nutrients["sodium"] += (meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
-        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += (meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2);
+        meal_logging_summary_entry.remaining_nutrients["calories"] += parseFloat((meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        meal_logging_summary_entry.remaining_nutrients["carbs"] += parseFloat((meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        meal_logging_summary_entry.remaining_nutrients["protein"] += parseFloat((meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        meal_logging_summary_entry.remaining_nutrients["fat"] += parseFloat((meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        meal_logging_summary_entry.remaining_nutrients["sodium"] += parseFloat((meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += parseFloat((meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
@@ -229,7 +227,6 @@ export class MealLogSummaryService {
      * @param updateMealLoggingDTO - DTO containing the meal logging id, meal type, meal date, system date
      * @param oldMealType - old meal type
      * @param transactionalEntityManager - transactional entity manager
-     * @returns true when the meal logging summary is updated successfully
      */
     async updateMealLoggingSummary(decodedHeaders: any, updateMealLoggingDTO: UpdateMealLoggingDTO, oldMealType: MealType, transactionalEntityManager: EntityManager){
         try {     
@@ -237,34 +234,37 @@ export class MealLogSummaryService {
             const start_of_day = `${updateMealLoggingDTO.mealDate} 00:00:00`;
             const end_of_day = `${updateMealLoggingDTO.mealDate} 23:59:59`;
 
-            // get the entry
-            // the entry will always exist because user will always call to get the remaining budget before logging the meal which will get the entry
-            // or user will call to get daily budget which will get the entry also
+            const user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
+
+            // get meal logging summary entry
             var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                .where('user_id = :user_id', {user_id: user_object.user_id})
                 .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
                 .getOne();
 
+            // check if the meal date is changed
             if (updateMealLoggingDTO.newMealDate !== null && updateMealLoggingDTO.newMealDate !== updateMealLoggingDTO.mealDate) {
                 // meal planning
 
                 // get the other date meal logging summary entry
                 var new_date_meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                    .where('user_id = :user_id', {user_id: decodedHeaders['sub']})
+                    .where('user_id = :user_id', {user_id: user_object.user_id})
                     .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateMealLoggingDTO.timeZone, startOfDay: `${updateMealLoggingDTO.newMealDate} 00:00:00`, endOfDay: `${updateMealLoggingDTO.newMealDate} 23:59:59` })
                     .getOne();
+
+                
 
                 // put the meal logging id into the new date meal logging summary entry
                 new_date_meal_logging_summary_entry.food_consumed[updateMealLoggingDTO.mealType].push(updateMealLoggingDTO.mealLoggingId);
 
                 // recalculating the new date nutrition budget
-                await this.calculateNutritionBudget(new_date_meal_logging_summary_entry,transactionalEntityManager);
+                await this.calculateNutritionBudget(user_object, new_date_meal_logging_summary_entry, transactionalEntityManager);
 
                 // remove from old food consumed meal type
                 meal_logging_summary_entry.food_consumed[oldMealType] = meal_logging_summary_entry.food_consumed[oldMealType].filter(meal_logging_id => meal_logging_id !== updateMealLoggingDTO.mealLoggingId);
-
+                
                 // recalculate old date nutrition budget
-                await this.calculateNutritionBudget(meal_logging_summary_entry, transactionalEntityManager);
+                await this.calculateNutritionBudget(user_object, meal_logging_summary_entry, transactionalEntityManager);
             }
             else {
                 // meal logging
@@ -278,10 +278,10 @@ export class MealLogSummaryService {
                 }
 
                 // recalculate new date nutrition budget (because the portion may change)
-                await this.calculateNutritionBudget(meal_logging_summary_entry, transactionalEntityManager);
+                await this.calculateNutritionBudget(user_object, meal_logging_summary_entry, transactionalEntityManager);
             }
         } catch (e) {
-            throw e;
+            throw new HttpException(e, 400);
         }
     }
 
@@ -289,18 +289,19 @@ export class MealLogSummaryService {
      * Recalculate the nutrition budget after a meal logging is updated
      * @param mealLoggingSummaryEntry - meal logging summary entry
      * @param transactionalEntityManager - transactional entity manager
-     * @returns true when the nutrition budget is recalculated successfully
      */
-    async calculateNutritionBudget(mealLoggingSummaryEntry: MealLogSummary, transactionalEntityManager: EntityManager) {
+    async calculateNutritionBudget(user: User, mealLoggingSummaryEntry: MealLogSummary, transactionalEntityManager: EntityManager) {
         // get all the meal logging ids
         const combined_meal_logging_ids = mealLoggingSummaryEntry.food_consumed["Breakfast"].concat(
             mealLoggingSummaryEntry.food_consumed["Lunch"],
             mealLoggingSummaryEntry.food_consumed["Dinner"],
             mealLoggingSummaryEntry.food_consumed["Other"]
         );
-    
-        // get all the recipe objects
-        const meal_logging_objects = await this.mealLoggingRepository.createQueryBuilder('mealLogging')
+        
+        // if there are meal logging ids after the update
+        if (combined_meal_logging_ids.length > 0) {
+            // get all the recipe objects
+            const meal_logging_objects = await transactionalEntityManager.createQueryBuilder(MealLogging, 'mealLogging')
             .leftJoinAndSelect('mealLogging.recipe', 'recipe')
             .select([
                 'mealLogging.id',
@@ -311,26 +312,31 @@ export class MealLogSummaryService {
             ])
             .where('mealLogging.id IN (:...ids)', { ids: combined_meal_logging_ids })
             .getMany();
-    
-        // get the recipe id and recipe nutrition info 
-        const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {
-            return {
-                recipe_id: meal_logging_object.recipe.id,
-                nutrition_info: meal_logging_object.recipe.nutrition_info,
-                recipe_portion: meal_logging_object.recipe.serving_size,
-                meal_logging_portion: meal_logging_object.portion
-            }
-        });
-    
-        // get current remaining nutrients
-        const nutrition_list = mealLoggingSummaryEntry.remaining_nutrients;
-    
-        // recalculate the nutrition budget
-        const nutrition_after = this.commonService.calculateNutritionAfter(nutrition_list, recipe_nutrition_portion);
-    
-        mealLoggingSummaryEntry.remaining_nutrients = nutrition_after;
-        await transactionalEntityManager.save(mealLoggingSummaryEntry);
-        return true;
+
+            // get the recipe id and recipe nutrition info 
+            const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {
+                return {
+                    recipe_id: meal_logging_object.recipe.id,
+                    nutrition_info: meal_logging_object.recipe.nutrition_info,
+                    recipe_portion: meal_logging_object.recipe.serving_size,
+                    meal_logging_portion: meal_logging_object.portion
+                }
+            });
+
+            // get current remaining nutrients
+            const user_daily_budget = user.daily_budget as JSON;
+
+            // recalculate the nutrition budget
+            const nutrition_after = this.commonService.calculateNutritionAfter(user_daily_budget, recipe_nutrition_portion);
+
+            mealLoggingSummaryEntry.remaining_nutrients = nutrition_after;
+            await transactionalEntityManager.save(mealLoggingSummaryEntry);
+        }
+        else {
+            // if no meal logging ids, set the remaining nutrients to the daily budget
+            mealLoggingSummaryEntry.remaining_nutrients = user.daily_budget as JSON;
+            await transactionalEntityManager.save(mealLoggingSummaryEntry);
+        }
     }
     
     /**
@@ -347,7 +353,6 @@ export class MealLogSummaryService {
 
         // get the start and end of the day 
         const start_of_day = `${startDate} 00:00:00`;
-
         var end_of_day = null;
         // if endDateTime is not provided, set it to the end of the day
         if (endDate != null) {
@@ -358,7 +363,7 @@ export class MealLogSummaryService {
             endDate = startDate;
         }
 
-        // get entries
+        // get mutliple meal logging summary entries
         var meal_logging_summary_entries = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', { user_id: user_object.user_id })
             .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
@@ -369,6 +374,7 @@ export class MealLogSummaryService {
 
         // map the entries by their date
         const entries_grouped_by_date = meal_logging_summary_entries.reduce((acc, entry) => {
+            // ensure it is formatted to user's timezone
             const formatted_date = formatInTimeZone(entry.date, timeZone, 'yyyy-MM-dd');
         
             if (!acc[formatted_date]) {
@@ -395,6 +401,7 @@ export class MealLogSummaryService {
                 // date exists
                 const meal_logging_summary_entry = entries_grouped_by_date[date];
 
+                // check if any of the nutrients are negative
                 var flag = false;
                 for (const key in meal_logging_summary_entry.remaining_nutrients) {
                     if (meal_logging_summary_entry.remaining_nutrients[key] < 0) {

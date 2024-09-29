@@ -13,8 +13,6 @@ import { AddMealLoggingSummaryDTO } from "src/meal-log-summary/dto/add-meal-logg
 import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
 import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
 import { CommonService } from "src/common/common.service";
-import { time } from "console";
-import { start } from "repl";
 
 @Injectable()
 export class MealLoggingService {
@@ -37,13 +35,13 @@ export class MealLoggingService {
      * 
      * @example addMealLogging(decodedHeaders, '2021-10-10T12:00:00', '2021-10-10T12:00:00', 'Asia/Singapore', [{recipeId: 1, portion: 1}, {recipeId: 2, portion: 2}], MealType.BREAKFAST, transactionalEntityManager)
      */
-    async addMealLogging(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO,transactionalEntityManager: EntityManager){
+    async addMealLogging(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
         var all_entries = []
         try {
             // Get user object
             var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
-            // Validate date - between today and next 7 days
+            // Validate date - between today and next 6 days
             if (!this.commonService.isWithinDateRange(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.userLocalDateTime, addMealLoggingSummaryDTO.timeZone, 6)){
                 throw new HttpException("Cannot add meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
             };
@@ -59,7 +57,6 @@ export class MealLoggingService {
 
             // get the date in UTC
             const meal_date = fromZonedTime(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.timeZone);
-            const user_local_date = fromZonedTime(addMealLoggingSummaryDTO.userLocalDateTime, addMealLoggingSummaryDTO.timeZone);
 
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
             await Promise.all(addMealLoggingSummaryDTO.recipeIdPortions.map(async recipeJSON => {
@@ -78,7 +75,7 @@ export class MealLoggingService {
                 new_meal_logging.recipe = recipe_object;
 
                 // Check if the meal is consumed or planned
-                if (this.commonService.isSameDay(meal_date, user_local_date, addMealLoggingSummaryDTO.timeZone)){
+                if (!addMealLoggingSummaryDTO.isMealPlanning){
                     // meal logging
                     new_meal_logging.is_consumed = true;
                 }
@@ -94,7 +91,7 @@ export class MealLoggingService {
             // Save all recipes in one go
             const saved_entries = await transactionalEntityManager.save(all_entries);
 
-            // Return the ids of the saved entries
+            // Return the meal logging ids of the saved entries
             return saved_entries.map(entry => entry.id);
         } catch (e) {
             throw e; // Return error to controller
@@ -104,7 +101,6 @@ export class MealLoggingService {
 
     /**
      * Get all the meals of a user based on the start and end date
-     * 
      * @param decodedHeaders - decoded headers from the request
      * @param getMealLoggingDTO - DTO containing the start and end date
      * @returns a list of lists of meals sorted in meal types
@@ -116,7 +112,6 @@ export class MealLoggingService {
 
             // get the start and end of the day 
             const start_of_day = `${getMealLoggingDTO.startDate} 00:00:00`;
-
             var end_of_day = `${getMealLoggingDTO.endDate} 23:59:59`;
             if (getMealLoggingDTO.endDate == null || getMealLoggingDTO.endDate == undefined){
                 end_of_day = `${getMealLoggingDTO.startDate} 23:59:59`;
@@ -137,7 +132,7 @@ export class MealLoggingService {
             // Group entries by date
             const entries_group_by_date = entries.reduce((acc, entry) => {
                 // format to user local timezone
-                const date = formatInTimeZone(entry.consumed_date_time, getMealLoggingDTO.timeZone, "yyyy-MM-dd"); // Extract the date part
+                const date = formatInTimeZone(entry.consumed_date_time, getMealLoggingDTO.timeZone, "yyyy-MM-dd"); 
                 if (!acc[date]) {
                     acc[date] = [];
                 }
@@ -157,6 +152,7 @@ export class MealLoggingService {
                     "Other": []
                 }
 
+                // if there is any entry of meal logging for the date
                 if ((date in entries_group_by_date)){
                     // get the entries for each date
                     // sort by meal type
@@ -184,7 +180,7 @@ export class MealLoggingService {
             return output;
         }
         catch (e){
-            throw e;
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -192,6 +188,7 @@ export class MealLoggingService {
      * Delete a list of entries of meal logging
      * @param decodedHeaders - decoded headers from the request
      * @param deleteMealLoggingDTO - DTO containing the list of meal logging ids
+     * @param transactionalEntityManager - transactional entity manager
      * @returns delete result of all entries
      */
     async deleteMealLogging(decodedHeaders: any, deleteMealLoggingDTO: DeleteMealLoggingDTO, transactionalEntityManager: EntityManager){
@@ -206,7 +203,6 @@ export class MealLoggingService {
             entry.deleted_at = fromZonedTime(deleteMealLoggingDTO.mealDate, deleteMealLoggingDTO.timeZone);
             
             await transactionalEntityManager.save(entry);
-            return true;
         }
         catch (e){
             throw e;
@@ -214,7 +210,7 @@ export class MealLoggingService {
     }
 
     /**
-     * Update the meal logging to a different day
+     * Update the meal logging. Can change the date (meal planning), or just simply change the portion and meal type
      * @param decodedHeaders - decoded headers from the request
      * @param payload - payload that contains the meal logging id and the new date
      *  @param transactionalEntityManager - transactional entity manager
@@ -222,11 +218,12 @@ export class MealLoggingService {
      */
     async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager): Promise<[MealType, boolean]> {
         try {
-            // validate date
+            // validate if meal is within the 7 days range
             if (!this.commonService.isWithinDateRange(payload.mealDate, payload.userLocalDate, payload.timeZone, 6)){
                 throw new HttpException("Cannot update meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
             }
 
+            // validate if the new meal date user wishes to move the meal to is within the 7 days range
             if (payload.newMealDate && !this.commonService.isWithinDateRange(payload.newMealDate, payload.userLocalDate, payload.timeZone, 6)){
                 throw new HttpException("Cannot meal loggings to a date that is in the past or 7 days in the future.", HttpStatus.BAD_REQUEST);
             }
@@ -238,6 +235,7 @@ export class MealLoggingService {
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .getOneOrFail()
 
+            // quick check, if there is any update to the meal logging (portion, meal type and date)
             if (entry.portion == payload.portion && entry.type == payload.mealType && (this.commonService.isSameDay(payload.mealDate, payload.newMealDate, payload.timeZone))){
                 return [entry.type, false];
             }
@@ -251,7 +249,7 @@ export class MealLoggingService {
             entry.type = payload.mealType;
 
             // meal planning - change the consumsed date time to other date
-            if (payload.newMealDate){
+            if (payload.newMealDate !== null && payload.newMealDate !== payload.mealDate){
                 entry.consumed_date_time = fromZonedTime(payload.newMealDate, payload.timeZone);
             }
 
@@ -265,16 +263,15 @@ export class MealLoggingService {
     /**
      * Mark a meal is consumed
      * @param markMealConsumedDTO - DTO containing the meal logging id and the date time
-     * @returns true when the meal is marked consumed
      */
     async markMealConsumed(markMealConsumedDTO: MarkMealConsumedDTO){
-        // validate and get meal logging entry
-        const entry = await this.mealLoggingRepository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
-
-        entry.consumed_date_time = fromZonedTime(markMealConsumedDTO.dateTime, markMealConsumedDTO.timeZone);
-        entry.is_consumed = true;
-
         try {
+            // validate and get meal logging entry
+            const entry = await this.mealLoggingRepository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
+
+            entry.consumed_date_time = fromZonedTime(markMealConsumedDTO.dateTime, markMealConsumedDTO.timeZone);
+            entry.is_consumed = true;
+
             await this.mealLoggingRepository.save(entry);
         }
         catch {

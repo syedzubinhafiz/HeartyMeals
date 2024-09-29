@@ -60,7 +60,7 @@ export class CommonService{
     }
 
     /**
-     * Check if date 1 is in the past of date 2 and check if date 1 is after date 2 + numberOfDays
+     * Check if date 1 is within the date range of date 2 given number of days
      * @param date1 - date 1
      * @param date2 - date 2
      * @param timeZone - time zone
@@ -74,7 +74,27 @@ export class CommonService{
 
         const six_days_from_now = addDays(date_two_utc, numberOfDays);
 
-        return !isAfter(date_one_utc, six_days_from_now) && !isBefore(date_one_utc, date_two_utc);
+        return !this.isFirstDateAfterSecondDate(date_one_utc, six_days_from_now) && !this.isFirstDateBeforeSecondDate(date_one_utc, date_two_utc);
+    }
+
+    /**
+     * Check if date 1 is after date 2
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @returns true if date 1 is after date 2, false otherwise
+     */
+    isFirstDateAfterSecondDate(date1: Date, date2: Date): boolean {
+        return isAfter(date1, date2)
+    }
+
+    /**
+     * Check if date 1 is before date 2
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @returns true if date 1 is before date 2, false otherwise
+     */
+    isFirstDateBeforeSecondDate(date1: Date, date2: Date): boolean {
+        return isBefore(date1, date2)
     }
 
     /**
@@ -92,7 +112,7 @@ export class CommonService{
         if (typeof date2 === 'string') {
             date2 = new Date(formatInTimeZone(date2, timeZone, 'yyyy-MM-dd'));
         }
-        return isSameDay(new Date(formatInTimeZone(date1, timeZone, 'yyyy-MM-dd')), new Date(formatInTimeZone(date2, timeZone, 'yyyy-MM-dd')));
+        return isSameDay(date1, date2);
     }
 
     /**
