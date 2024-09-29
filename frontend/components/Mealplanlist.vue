@@ -1,6 +1,9 @@
-<template>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <div>
+
+ 
+  <template>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+ 
+  <div class="meal-list">
     <!-- Card Container with dynamic background color based on day type -->
     <div :class="['card-container', { 'prev-list': isPast, 'today-list': isToday, 'future-list': isFuture }]" class="p-1 rounded-lg shadow-md mb-2">
       <!-- Clickable Header Section -->
@@ -17,8 +20,8 @@
       <!-- Expanded Content (by default expanded) -->
       <transition name="expand">
         <div v-if="isExpanded" class="mt-1">
-          <!-- Add Meal button right below the title -->
-          <div class="button-container">
+          <!-- Add Meal button only for valid dates (today or within the next 7 days) -->
+          <div v-if="!isPast && !isTooFarInFuture" class="button-container">
             <button class="add-dishes-button" @click="onAddDishes">
               <i class="fas fa-plus mr-2"></i>Add Meal
             </button>
@@ -34,7 +37,6 @@
 
 <script setup>
 import { ref } from 'vue';
-
 
 const props = defineProps({
   title: {
@@ -56,6 +58,17 @@ const props = defineProps({
       type: String,
       default: (new Date()).toISOString()
   }
+});
+
+// Calculate if the day is more than 7 days into the future
+const isTooFarInFuture = computed(() => {
+  const today = new Date();
+  const dayToCheck = new Date(props.isoDate);
+  
+  // Calculate the difference in days between the current day and the given date
+  const diffInDays = Math.ceil((dayToCheck - today) / (1000 * 60 * 60 * 24));
+  
+  return diffInDays > 7; // Return true if the date is more than 7 days in the future
 });
 
 console.log(props.isPast)
