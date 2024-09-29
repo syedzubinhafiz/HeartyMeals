@@ -18,9 +18,12 @@
         :nutritionInfo="cardInfo.recipe.nutrition_info"
         :visible="showMiniCard" 
         :showButtons="isToday"  
+        :isConsumed="is_consumed"
         @close="toggleMiniCard" 
         @remove="removeMeal" 
-        @editMeal="$emit('editMeal', $event)"/>
+        @editMeal="$emit('editMeal', $event)"
+        @consumeMeal="toggleConsumed" 
+    />
   </div>
 </template>
 
@@ -37,6 +40,7 @@ const props = defineProps({
     required: true
   }
 });
+const is_consumed = ref(false);
 
 const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
@@ -59,6 +63,10 @@ const removeMeal = async () => {
     "mealType": props.cardInfo.type
   });
   console.log(result);
+};
+
+const toggleConsumed = () => {
+  is_consumed.value = !is_consumed.value;
 };
 </script>
 

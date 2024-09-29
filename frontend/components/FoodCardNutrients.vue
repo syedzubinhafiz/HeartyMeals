@@ -1,39 +1,53 @@
 <template>
   <div v-if="visible" class="mini-card bg-custom-bg-light p-4 rounded-lg shadow-lg absolute z-50" :style="customStyle">
-    <!-- Nutrient Details -->
+
     <div class="flex justify-between mb-2">
       <div>
-        <div class="flex items-centern mb-1">
-          <img src="/assets/img/carbIcon.png" alt="Carbs Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.totalCarbohydrate)}}g</span>
+        <div class="flex items-center mb-1">
+          <img src="/assets/img/carbIcon.png" alt="Carbs Icon" class="icon-style">
+          <span class="ml-2">{{ Math.round(nutritionInfo.totalCarbohydrate) }}g</span>
         </div>
         <div class="flex items-center mb-1">
-          <img src="/assets/img/proteinIcon.png" alt="Protein Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.protein)}}g</span>
+          <img src="/assets/img/proteinIcon.png" alt="Protein Icon" class="icon-style">
+          <span class="ml-2">{{ Math.round(nutritionInfo.protein) }}g</span>
         </div>
         <div class="flex items-center mb-1">
-          <img src="/assets/img/fatsIcon.png" alt="Fat Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.fat)}}g</span>
+          <img src="/assets/img/fatsIcon.png" alt="Fat Icon" class="icon-style">
+          <span class="ml-2">{{ Math.round(nutritionInfo.fat) }}g</span>
         </div>
       </div>
       <div>
         <div class="flex items-center mb-1">
-          <img src="/assets/img/cholesterolsIcon.png" alt="Sodium Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.cholesterol)}}g</span>
+          <img src="/assets/img/cholesterolsIcon.png" alt="Cholesterol Icon" class="icon-style">
+          <span class="ml-2">{{ Math.round(nutritionInfo.cholesterol) }}mg</span>
         </div>
         <div class="flex items-center mb-1">
-          <img src="/assets/img/sodiumIcon.png" alt="Fiber Icon" class="icon-style"><span class="ml-2">{{Math.round(nutritionInfo.dietaryFiber)}}g</span>
+          <img src="/assets/img/sodiumIcon.png" alt="Sodium Icon" class="icon-style">
+          <span class="ml-2">{{ Math.round(nutritionInfo.dietaryFiber) }}g</span>
         </div>
       </div>
     </div>
 
     <!-- Buttons (conditionally rendered) -->
-    <div v-if="showButtons" class="flex justify-between">
-      <button class="p-2 rounded-lg w-1/2 mr-2" @click="removeFood">Remove Food</button>
-      <button class="p-2 rounded-lg w-1/2" @click="emitEditMeal">Edit Meal</button>
+    <div v-if="showButtons" class="flex justify-between mb-2">
+      <button class="p-2 rounded-lg w-1/2 mr-2" @click="removeFood">Remove</button>
+      <button class="p-2 rounded-lg w-1/2" @click="emitEditMeal">Edit</button>
+    </div>
+
+    <!-- Consume button -->
+    <div class="flex justify-between">
+      <button
+        class="p-2 rounded-lg w-full"
+        :class="isConsumed ? 'bg-gray-400' : 'bg-green-400'"
+        @click="consumeMeal"
+      >
+        {{ isConsumed ? 'Consumed' : 'Consume Now' }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -47,27 +61,16 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
-  portionSize: {
-    type: String,
-    default: '1'
-  },
-  mealType: {
-    type: String,
-    default: 'breakfast'
+  isConsumed: {
+    type: Boolean,
+    required: true
   }
 });
 
-const emit = defineEmits(['close', 'remove', 'editMeal']);
+const emit = defineEmits(['close', 'remove', 'editMeal', 'consumeMeal']);
 
 const emitEditMeal = () => {
-  // console.log('Edit Meal button clicked with data:', {
-  //   portionSize: props.portionSize,
-  //   mealType: props.mealType
-  // });
-  emit('editMeal', {
-    portionSize: props.portionSize,
-    mealType: props.mealType
-  });
+  emit('editMeal');
 };
 
 const closeCard = () => {
@@ -79,31 +82,38 @@ const removeFood = () => {
   closeCard();
 };
 
-// Customize position based on props or default positioning
+const consumeMeal = () => {
+  emit('consumeMeal');
+};
+
 const customStyle = ref({
-top: '100%', // Position below the food card
-right: '0', // Align to the right edge of the food card
-transform: 'translateY(10px)' // Add some spacing
+  top: '100%',
+  right: '0',
+  transform: 'translateY(10px)'
 });
 </script>
 
 <style scoped>
+.mini-card {
+  background-color: #FFFEF1;
+  width: 200px;
+}
+
+.icon-style {
+  width: 20px;
+  height: 20px;
+}
 
 button {
   background-color: #b59f89;
   color: #fff;
 }
-.mini-card {
-background-color: #FFFEF1; /* Light background color for mini card */
-width: 200px; /* Adjust width as needed */
+
+.bg-green-400 {
+  background-color: #68D391;
 }
 
-.mini-card .fa-times {
-font-size: 1rem;
-}
-
-.icon-style {
-width: 20px; /* Adjust the size of the icons as needed */
-height: 20px;
+.bg-gray-400 {
+  background-color: #A0AEC0;
 }
 </style>

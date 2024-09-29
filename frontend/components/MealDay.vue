@@ -181,7 +181,6 @@ const fetchDataForCurrentDate = async () => {
 
   nutrientData.value = NutrientData.fromApi2(result.value[1]);
 
-  // Update the nutritionInfo with the fetched data
   nutritionInfo.value = {
     totalCarbohydrate: nutrientData.value.carbohydrtates,
     protein: nutrientData.value.protein,
@@ -213,7 +212,7 @@ onMounted(async () => {
 
 .popup {
   position: absolute;
-  top: 100%; /* Align the popup below the date */
+  top: 100%; 
   left: 50%;
   transform: translateX(-50%);
   background-color: white;
@@ -225,49 +224,45 @@ onMounted(async () => {
   min-width: 150px;
 }
 
-/* General styling for each type of day */
 .meal-day {
   padding: 5px;
   border-radius: 10px;
 }
 
-/* Adjust margin between the meal plan lists */
 .meal-list {
-  margin-bottom: 5px; /* Reduce margin between meal lists */
+  margin-bottom: 5px; 
 }
 
-/* Specific styles for different types of days */
 .today-day {
-  background-color: rgba(1, 91, 89, 0.3); /* Greenish for today */
+  background-color: rgba(1, 91, 89, 0.3); 
 }
 
 .past-day {
-  background-color: None; /* Grayish for past days */
+  background-color: None; 
 }
 
 .future-day {
-  background-color: None; /* Light red for future days */
+  background-color: None; 
 }
 
-/* Styling for each type of day header */
 .day-header {
   text-align: center;
   margin-bottom: 0.5rem;
   background: linear-gradient(to bottom, #F3EADA 50%, #8A6B55 50%);
   border-radius: 10px;
-  position: relative; /* Ensure the popup is positioned relative to the day header */
+  position: relative; 
 }
 
 .today-header {
-  background: linear-gradient(to bottom, #F3EADA 50%, #015B59 50%); /* Green for today */
+  background: linear-gradient(to bottom, #F3EADA 50%, #015B59 50%); 
 }
 
 .past-header {
-  background: linear-gradient(to bottom, #B0ACA5 50%, #111111 50%); /* Light brown for past days */
+  background: linear-gradient(to bottom, #B0ACA5 50%, #111111 50%); 
 }
 
 .future-header {
-  background: linear-gradient(to bottom, #F3EADA 50%, #8A6B55 50%); /* Orange for future days */
+  background: linear-gradient(to bottom, #F3EADA 50%, #8A6B55 50%); 
 }
 
 .day-name {
