@@ -23,7 +23,8 @@ export const useFillData = () => {
                     "fileName": "beef.jpg",
                     "fileType": "image/jpeg",
                     "fileDataInBase64": await useSampleImages(1)
-                }
+                },
+                "content": []
             }
         })
     }
@@ -36,27 +37,27 @@ export const useFillData = () => {
             let results = ""
             let foodCategoryId = ""
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="RED MEAT")[0].id
-            results = createComponent("Ingredient","beef",100,"g",foodCategoryId,300,100,100,100,2,50)
+            results = await createComponent("Ingredient","beef",100,"g",foodCategoryId,300,100,100,100,2,50)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Ingredient","potato",200,"g",foodCategoryId,100,200,50,20,0,50)
+            results = await createComponent("Ingredient","potato",200,"g",foodCategoryId,100,200,50,20,0,50)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SEAFOOD")[0].id
-            results = createComponent("Ingredient","fish",100,"g",foodCategoryId,200,50,200,20,2,20)
+            results = await createComponent("Ingredient","fish",100,"g",foodCategoryId,200,50,200,20,2,20)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Ingredient","tomato",120,"g",foodCategoryId,100,100,80,20,0,10)
+            results = await createComponent("Ingredient","tomato",120,"g",foodCategoryId,100,100,80,20,0,10)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PORK")[0].id
-            results = createComponent("Ingredient","pork",50,"g",foodCategoryId,300,100,200,120,3,50)
+            results = await createComponent("Ingredient","pork",50,"g",foodCategoryId,300,100,200,120,3,50)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="PEANUT")[0].id
-            results = createComponent("Ingredient","plutonium",170,"g",foodCategoryId,400,100,100,100,20,50)
+            results = await createComponent("Ingredient","plutonium",170,"g",foodCategoryId,400,100,100,100,20,50)
             console.log(results)
 
             data = await useApi("/component/ingredients?page=1&pageSize=100","GET")
@@ -73,27 +74,27 @@ export const useFillData = () => {
             let foodCategoryId = ""
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","Salt",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","Salt",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","Pepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","Pepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","Wasabi",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","Wasabi",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","MSG",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","MSG",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","Arsenic",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","Arsenic",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             foodCategoryId = foodCategoryList.value.filter((value) => value.type.toUpperCase()=="SOY BEAN")[0].id
-            results = createComponent("Seasoning","Blackpepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
+            results = await createComponent("Seasoning","Blackpepper",1,"tbsp",foodCategoryId,0,0,0,0,0,0)
             console.log(results)
 
             data = await useApi("/component/seasonings?page=1&pageSize=100","GET")
@@ -178,7 +179,15 @@ export const useFillData = () => {
                         "amount" : 50,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -211,7 +220,15 @@ export const useFillData = () => {
                         "amount" : 200,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -244,7 +261,15 @@ export const useFillData = () => {
                         "amount" : 100,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             })
             results = await useApi("/recipe/add","POST",{
                 "recipe": {
@@ -275,7 +300,15 @@ export const useFillData = () => {
                         "amount" : 20,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -307,7 +340,15 @@ export const useFillData = () => {
                         "amount" : 50,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -344,7 +385,15 @@ export const useFillData = () => {
                         "amount" : 5,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -381,7 +430,15 @@ export const useFillData = () => {
                         "amount" : 20,
                         "unit": "g"
                     }
-                ]
+                ],
+                "files": {
+                    "thumbnail": {
+                        "fileName": "beef.jpg",
+                        "fileType": "image/jpeg",
+                        "fileDataInBase64": await useSampleImages(1)
+                    },
+                    "content": []
+                }
             
             })
             console.log(results)
@@ -419,8 +476,9 @@ export const useFillData = () => {
         let currentDate = new Date()
         currentDate.setUTCHours(-8, 0, 0, 0)
         currentDate = currentDate.toISOString()
+        console.log(currentDate)
         // get
-        let data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
+        let data = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
         console.log(data)
         // if no data, fill
         if(data.value.Breakfast.length==0 && data.value.Lunch.length==0 && data.value.Dinner.length==0 && data.value.Other.length==0) {
@@ -439,7 +497,7 @@ export const useFillData = () => {
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
             console.log(await createMeal(currentDate,recipe,"Other",1))
 
-            data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
+            data = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
         }
 
         return data

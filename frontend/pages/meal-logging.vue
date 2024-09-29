@@ -160,7 +160,7 @@
         let mealLoggingRecipes = await useFillData().fillMealLogging();
         console.log(mealLoggingRecipes)
         
-        let meals = await useApi(`/meal-logging/get?date=${formattedISODate8}`, "GET");
+        let meals = await useApi(`/meal-logging/get?startDate=${formattedISODate8}&timeZone=Asia/Kuala_Lumpur`, "GET");
         console.log(meals)
         breakfastList.value = meals.value["Breakfast"];
         lunchList.value = meals.value["Lunch"];
