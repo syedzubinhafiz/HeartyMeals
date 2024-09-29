@@ -7,7 +7,7 @@
     <div class="container mx-auto px-4 py-6">
       <!-- Title and Time Frame Switcher -->
       <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-semibold text-gray-800">Diet Analytics</h1>
+        <h1 class="text-4xl font-semibold">Diet Analytics</h1>
         <!-- Time Frame Switcher -->
         <div class="flex space-x-4">
           <button class="px-4 py-2 bg-green-200 text-green-900 font-medium rounded-full">Day</button>
@@ -21,7 +21,7 @@
         <button class="text-gray-700">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <span class="text-lg text-black">24 April 2024</span>
+        <span class="text-2xl text-black">24 April 2024</span>
         <button class="text-gray-700">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -29,102 +29,104 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto grid grid-cols-3 gap-6 px-4 pb-6">
-      <!-- Left Column: Meal Cards -->
+    <div class="container mx-auto grid grid-cols-3 gap-6 px-4 pb-6 items-start">
+      <!-- Left Column: Meal Cards (col-span-2 means it takes up two-thirds of the width) -->
       <div class="col-span-2 grid grid-cols-2 gap-6">
         <!-- Breakfast Card -->
-        <div class="bg-card-beige rounded-lg p-4 shadow-card w-100 h-32 flex flex-col justify-between">
+        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
           <div class="flex justify-between items-center mb-2">
             <div>
-              <h1 class="text-lg font-bold text-black">Breakfast</h1>
-              <!-- <h3 class="text-sm text-gray-800 mt-2">Scrambled Eggs and Hash Browns</h3> -->
+              <h1 class="font-bold text-black">Breakfast</h1>
+              <h3 class="text-black mt-2">Scrambled Eggs and Hash Browns</h3>
             </div>
-            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-xs shadow-sm">
+            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
               Calories <span class="font-bold">500kcal</span>
             </div>
           </div>
 
           <!-- Nutrition Info Grid -->
-          <div class="grid grid-cols-5 gap-0 text-xs">
-            <div class="nutrition-item bg-protein-bg p-2 text-center">
-              <p class="text-gray-800">Protein</p>
-              <p class="font-bold text-black">20g</p>
-            </div>
-            <div class="nutrition-item bg-highlight-yellow p-2 text-center">
-              <p class="text-gray-800">Carbs</p>
-              <p class="font-bold text-black">30g</p>
-            </div>
-            <div class="nutrition-item bg-protein-bg p-2 text-center">
-              <p class="text-gray-800">Cholesterol</p>
-              <p class="font-bold text-black">10g</p>
-            </div>
-            <div class="nutrition-item bg-highlight-yellow p-2 text-center">
-              <p class="text-gray-800">Fats</p>
-              <p class="font-bold text-black">5g</p>
-            </div>
-            <div class="nutrition-item bg-protein-bg p-2 text-center">
-              <p class="text-gray-800">Sodium</p>
-              <p class="font-bold text-black">0.1g</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lunch Card -->
-        <div class="bg-card-beige rounded-lg p-6 shadow-card">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h1 class="text-xl font-bold text-black">Lunch</h1>
-              <h3 class="text-sm text-gray-800 mt-2">Pad Thai</h3>
-            </div>
-            <div class="bg-calories-yellow text-black px-4 py-1 rounded-lg text-sm shadow-sm">
-              Calories <span class="font-bold">1000kcal</span>
-            </div>
-          </div>
-
-          <!-- Nutrition Info Grid -->
-          <div class="grid grid-cols-5 gap-2 text-sm text-center mt-6">
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+          <div class="grid grid-cols-5 gap-0 text-md">
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Protein</p>
               <p class="font-bold text-black">10g</p>
             </div>
-            <div class="nutrition-item bg-highlight-yellow p-1 rounded-md">
+            <div class="nutrition-item bg-highlight-yellow p-1 text-center">
               <p class="text-gray-800">Carbs</p>
               <p class="font-bold text-black">40g</p>
             </div>
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Cholesterol</p>
               <p class="font-bold text-black">15g</p>
             </div>
-            <div class="nutrition-item bg-highlight-yellow p-1 rounded-md">
+            <div class="nutrition-item bg-highlight-yellow p-1 text-center">
               <p class="text-gray-800">Fats</p>
               <p class="font-bold text-black">0g</p>
             </div>
-            <div class="nutrition-item bg-protein-bg p-1 rounded-md">
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Sodium</p>
               <p class="font-bold text-black">0.3g</p>
             </div>
           </div>
         </div>
 
-        <!-- Dinner and Other Cards Unchanged -->
-        <div class="dinner-card bg-card-beige rounded-lg p-6 shadow-lg">
-          <h1 class="text-lg font-bold text-gray-900">Dinner</h1>
+        <!-- Lunch Card -->
+        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
+          <div class="flex justify-between items-center mb-2">
+            <div>
+              <h1 class="font-bold text-black">Lunch</h1>
+              <h3 class="text-gray-800 mt-2">Pad Thai</h3>
+            </div>
+            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
+              Calories <span class="font-bold">1000kcal</span>
+            </div>
+          </div>
+
+          <!-- Nutrition Info Grid -->
+          <div class="grid grid-cols-5 gap-0 text-md">
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
+              <p class="text-gray-800">Protein</p>
+              <p class="font-bold text-black">10g</p>
+            </div>
+            <div class="nutrition-item bg-highlight-yellow p-1 text-center">
+              <p class="text-gray-800">Carbs</p>
+              <p class="font-bold text-black">40g</p>
+            </div>
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
+              <p class="text-gray-800">Cholesterol</p>
+              <p class="font-bold text-black">15g</p>
+            </div>
+            <div class="nutrition-item bg-highlight-yellow p-1 text-center">
+              <p class="text-gray-800">Fats</p>
+              <p class="font-bold text-black">0g</p>
+            </div>
+            <div class="nutrition-item bg-protein-bg p-1 text-center">
+              <p class="text-gray-800">Sodium</p>
+              <p class="font-bold text-black">0.3g</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dinner and Other Cards (Matching dimensions with Breakfast) -->
+        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
+          <h1 class="font-bold text-black">Dinner</h1>
           <div class="bg-red-warning mt-4 text-black py-2 rounded-lg text-center">
             Meal not logged
           </div>
         </div>
 
-        <div class="other-card bg-card-beige rounded-lg p-6 shadow-lg">
-          <h1 class="text-lg font-bold text-gray-900">Other</h1>
+        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
+          <h1 class="font-bold text-black">Other</h1>
           <div class="bg-yellow-warning mt-4 text-black py-2 rounded-lg text-center">
             Meal yet to be logged
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Nutrient Widget -->
-      <div class="nutrient-widget-container col-span-1">
-        <NutrientWidget />
+      <!-- Right Column: Nutrient Widget (Ensuring it's aligned to the top of the container) -->
+      <div class="nutrient-widget-container self-start">
+        <div class="widget-content flex flex-col justify-start items-start"> <!-- Ensuring alignment at the top -->
+          <NutrientWidget />
+        </div>
       </div>
     </div>
   </div>
@@ -182,55 +184,23 @@ definePageMeta({
   background-color: #DDCB9C;
 }
 
-.mt-2 {
-  margin-top: 0.5rem;
+.nutrient-widget-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: auto;
 }
 
-.mt-4 {
-  margin-top: 1rem;
+.nutrient-widget {
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative;
+  align-self: flex-start;
+  height: auto;
 }
 
-.mt-6 {
-  margin-top: 1.5rem;
-}
 
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.w-64 {
-  width: 16rem;
-}
-
-.h-64 {
-  height: 16rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.text-lg {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
-}
-
-.p-4 {
-  padding: 1rem;
-}
-
-.px-3 {
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-
-.py-1 {
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
 </style>
