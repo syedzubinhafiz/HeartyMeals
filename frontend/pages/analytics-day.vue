@@ -7,9 +7,9 @@
     <div class="container mx-auto px-4 py-6">
       <!-- Title and Time Frame Switcher -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <h1 class="text-4xl font-semibold mb-4 md:mb-0">Diet Analytics</h1>
-        <!-- Time Frame Switcher -->
-        <div class="content-wrapper md:ml-8">
+        <div class="flex items-center space-x-4">
+          <h1 class="text-4xl font-semibold">Diet Analytics</h1>
+          <!-- Time Frame Switcher (Moved closer to the header) -->
           <div class="view-selector">
             <button :class="{ active: view === 'day' }" @click="setView('day')">Day</button>
             <button :class="{ active: view === 'week' }" @click="setView('week')">Week</button>
@@ -19,13 +19,13 @@
       </div>
 
       <!-- Date Selector (Below Title) -->
-      <div class="flex space-x-4 mt-4">
-        <button class="text-gray-700">
-          <i class="fas fa-chevron-left"></i>
+      <div class="flex items-start justify-start space-x-4 mt-8">
+        <button @click="previousDate" class="text-gray-700 text-2xl">
+          &lt;
         </button>
-        <span class="text-2xl text-black">30 October 2024</span>
-        <button class="text-gray-700">
-          <i class="fas fa-chevron-right"></i>
+        <span class="text-2xl text-black">{{ formattedDate }}</span>
+        <button @click="nextDate" class="text-gray-700 text-2xl">
+          &gt;
         </button>
       </div>
     </div>
@@ -335,6 +335,48 @@ const totalMealData = computed(() => {
   }
   return result;
 });
+
+// Date state and functions for date switcher
+const currentDate = ref(new Date());
+
+const formattedDate = computed(() => {
+  const date = currentDate.value;
+  return formatDate(date);
+});
+
+function formatDate(date) {
+  const day = date.getDate();
+  const suffix = getOrdinalSuffix(day);
+  const options = { month: 'long', year: 'numeric' };
+  const monthYear = date.toLocaleDateString('en-US', options);
+  return `${day}${suffix} ${monthYear}`;
+}
+
+function getOrdinalSuffix(day) {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
+}
+
+function previousDate() {
+  const date = new Date(currentDate.value);
+  date.setDate(date.getDate() - 1);
+  currentDate.value = date;
+}
+
+function nextDate() {
+  const date = new Date(currentDate.value);
+  date.setDate(date.getDate() + 1);
+  currentDate.value = date;
+}
 
 // View state and function
 const view = ref('day');
