@@ -36,6 +36,7 @@
           title="Breakfast" 
           :itemsCount="breakfastList.length"
           :isPast="isPast"  
+          :isoDate="isoDate"
           route="/add-meal">
         <Planningfoodcard
           v-for="(card, index) in breakfastList"
@@ -53,6 +54,7 @@
           title="Lunch" 
           :itemsCount="lunchList.length" 
           :isPast="isPast" 
+          :isoDate="isoDate"
           route="/add-meal">
         <Planningfoodcard
           v-for="(card, index) in lunchList"
@@ -70,6 +72,7 @@
           title="Dinner" 
           :itemsCount="dinnerList.length" 
           :isPast="isPast" 
+          :isoDate="isoDate"
           route="/add-meal">
         <Planningfoodcard
           v-for="(card, index) in dinnerList"
@@ -87,6 +90,7 @@
           title="Other" 
           :itemsCount="otherList.length" 
           :isPast="isPast" 
+          :isoDate="isoDate"
           route="/add-meal">
         <Planningfoodcard
           v-for="(card, index) in otherList"
@@ -110,6 +114,10 @@ import NutrientData from '../../classes/nutrientData.js'
 
 const props = defineProps({
   dayName: {
+    type: String,
+    required: true
+  },
+  isoDate: {
     type: String,
     required: true
   },

@@ -22,12 +22,9 @@
                   <!-- Custom content for the expanded section will go here -->
                   <slot></slot>
                   <!-- Green Button -->
-                  <nuxt-link :to="{ path: '/add-meals', query: { mealType: title } }">
-                      <button class="add-dishes-button mt-4">
-                          <i class="fas fa-plus mr-2"></i>Add Dishes
-                      </button>
-                  </nuxt-link>
-
+                  <button class="add-dishes-button mt-4" @click="onAddDishes">
+                      <i class="fas fa-plus mr-2"></i>Add Dishes
+                  </button>
               </div>
           </transition>
       </div>
@@ -49,6 +46,10 @@ const props = defineProps({
   route: {
       type: String,
       required: true
+  },
+  isoDate: {
+      type: String,
+      default: (new Date()).toISOString()
   }
 });
 
@@ -57,6 +58,12 @@ const isExpanded = ref(false);
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
+
+const onAddDishes = () => {
+  useMealLogging().unsavedMealList.value = []
+  useMealLogging().mealDate.value = props.isoDate
+  navigateTo(`/add-meals?mealType=${props.title}`)
+}
 </script>
 
 <style scoped>

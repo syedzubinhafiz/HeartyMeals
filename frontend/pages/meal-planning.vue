@@ -23,6 +23,7 @@
           v-for="(day, index) in daysOfWeek" 
           :key="index" 
           :dayName="day.dayName" 
+          :isoDate="day.isoDate"
           :formattedDate="day.formattedDate" 
           :breakfastList="day.breakfastList" 
           :lunchList="day.lunchList" 
@@ -85,6 +86,7 @@ async function generateWeekMeals(date) {
     console.log(meals)
     weekMeals.push({
       dayName: dayNames[day.getDay()],
+      isoDate: day.toISOString(),
       formattedDate: formatDate(day),
       breakfastList: meals.value["Breakfast"], // Insert real or dummy data here
       lunchList: meals.value["Lunch"], // Insert real or dummy data here

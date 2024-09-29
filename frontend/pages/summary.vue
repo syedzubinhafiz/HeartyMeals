@@ -157,10 +157,9 @@ const handleDoneClick = async () => {
   currentDate = currentDate.toISOString();
 
   for (let i = 0; i < summaryData.value.length; i++) {
-    let currentDate = new Date()
-    // currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
-    let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
+    let mealDate = useMealLogging().mealDate.value
+    console.log(mealDate)
+    let result = await useFillData().createMeal(mealDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
     if(result.isError) {
       useToast().error("Meal logging failed!")
       console.log(result)

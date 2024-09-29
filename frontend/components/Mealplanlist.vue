@@ -19,11 +19,9 @@
         <div v-if="isExpanded" class="mt-1">
           <!-- Add Meal button right below the title -->
           <div class="button-container">
-            <nuxt-link :to="{ path: '/add-meals', query: { mealType: title } }">
-              <button class="add-dishes-button">
-                <i class="fas fa-plus mr-2"></i>Add Meal
-              </button>
-            </nuxt-link>
+            <button class="add-dishes-button" @click="onAddDishes">
+              <i class="fas fa-plus mr-2"></i>Add Meal
+            </button>
           </div>
 
           <!-- Slot for other content like meal cards -->
@@ -53,7 +51,11 @@ const props = defineProps({
   },
   isPast: Boolean,
   isToday: Boolean,
-  isFuture: Boolean
+  isFuture: Boolean,
+  isoDate: {
+      type: String,
+      default: (new Date()).toISOString()
+  }
 });
 
 console.log(props.isPast)
@@ -63,6 +65,13 @@ const isExpanded = ref(true);
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
+
+
+const onAddDishes = () => {
+  useMealLogging().unsavedMealList.value = []
+  useMealLogging().mealDate.value = props.isoDate
+  navigateTo(`/add-meals?mealType=${props.title}`)
+}
 </script>
 
 <style scoped>
