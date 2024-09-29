@@ -71,7 +71,7 @@
       <!-- Sidebar Component -->
       <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen" :mealType="mealType" />
       <!-- Popup Overlay -->
-      <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
+      <CustomDishPopup v-model:isPopupOpen="isPopupOpen"  @close="closePopup" class="text-black"/>
     </div>
   </div>
   <AddMealsOverlay
@@ -91,6 +91,7 @@ definePageMeta({
 
 import MealData from '../../classes/mealData.js'
 import NutrientData from '../../classes/nutrientData.js'
+import CustomDishPopup from '~/components/CustomDish/Popup.vue';
 
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -113,6 +114,9 @@ const togglePopup = () => {
   isPopupOpen.value = !isPopupOpen.value;
 };
 
+const closePopup = () => {
+  isPopupOpen.value = false;
+};
 
 let mealData1 = new MealData("Regular Croissant","assets/img/croissant.svg","1 crossiant (80g)",1,
   new NutrientData(400,150,100,100,5,300)
