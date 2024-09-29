@@ -129,7 +129,7 @@
             newDate.setDate(newDate.getDate() - 1);
             currentDate.value = newDate;
         } else {
-            alert("You can only view up to 7 days of history.");
+            useToast().info("You can only view up to 7 days of history.")
         }
     };
 
@@ -174,7 +174,7 @@
     const nextDate = () => {
     const newDate = new Date(currentDate.value);
         if (newDate.toDateString() === today.toDateString()) {
-            alert("You can't log your meal for tomorrow, consider going to the meal planning page.");
+            useToast().info("You can't log your meal for tomorrow, consider going to the meal planning page.")
         } else {
             newDate.setDate(newDate.getDate() + 1);
             currentDate.value = newDate;
