@@ -448,7 +448,7 @@ const setView = (newView) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   top: 2.5rem; /* Adjust as needed */
   left: 0;   /* Adjust as needed */
-  width: 320px; /* Increased width for more space */
+  width: 380px; /* Increased width for more space */
 }
 
 /* Mini meal card inside tooltip */
