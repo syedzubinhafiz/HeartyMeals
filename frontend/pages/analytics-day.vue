@@ -183,20 +183,29 @@
         <!-- Dinner Card -->
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
           <h1 class="font-bold text-black text-xl leading-normal">Dinner</h1>
-          <div class="bg-red-warning mt-4 text-black py-2 rounded-lg text-center">
-            Meal not logged
+          <div class="bg-red-warning mt-4 text-black text-center py-2 rounded-lg flex items-center justify-between px-4">
+            <span>Meal not logged</span>
+            <img
+              src="../assets/img/Cancel.png"
+              alt="Cancel Icon"
+              class="w-auto h-auto"
+            />
           </div>
         </div>
 
         <!-- Other Card -->
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
           <h1 class="font-bold text-black text-xl leading-normal">Other</h1>
-          <div class="bg-yellow-warning mt-4 text-black py-2 rounded-lg text-center">
-            Meal yet to be logged
+          <div class="bg-yellow-warning mt-4 text-black py-2 rounded-lg flex items-center justify-between px-4">
+            <span>Meal yet to be logged</span>
+            <img
+              src="../assets/img/Box Important.png"
+              alt="Important Icon"
+              class="w-auto h-auto"
+            />
           </div>
         </div>
       </div>
-
       <!-- Right Column: Nutrient Widget -->
       <div class="nutrient-widget-container self-start">
         <div class="widget-content flex flex-col justify-start items-start">
