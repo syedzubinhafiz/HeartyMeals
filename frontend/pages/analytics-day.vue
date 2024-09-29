@@ -36,7 +36,7 @@
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
           <div class="flex justify-between items-center mb-2">
             <div>
-              <h1 class="font-bold text-black">Breakfast</h1>
+              <H1 class="font-bold text-black">Breakfast</H1>
               <h3 class="text-black mt-2">Scrambled Eggs and Hash Browns</h3>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
@@ -73,7 +73,7 @@
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
           <div class="flex justify-between items-center mb-2">
             <div>
-              <h1 class="font-bold text-black">Lunch</h1>
+              <H1 class="font-bold text-black">Lunch</H1>
               <h3 class="text-gray-800 mt-2">Pad Thai</h3>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
@@ -108,14 +108,14 @@
 
         <!-- Dinner and Other Cards (Matching dimensions with Breakfast) -->
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
-          <h1 class="font-bold text-black">Dinner</h1>
+          <H1 class="font-bold text-black">Dinner</H1>
           <div class="bg-red-warning mt-4 text-black py-2 rounded-lg text-center">
             Meal not logged
           </div>
         </div>
 
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
-          <h1 class="font-bold text-black">Other</h1>
+          <H1 class="font-bold text-black">Other</H1>
           <div class="bg-yellow-warning mt-4 text-black py-2 rounded-lg text-center">
             Meal yet to be logged
           </div>
