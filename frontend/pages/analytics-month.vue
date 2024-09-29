@@ -15,9 +15,9 @@
     </div>
 
         <div class="date-navigation">
-          <button class="nav-arrow" @click="prevWeek">‹</button>
-          <span class="date-range">{{ formattedStartDate }} - {{ formattedEndDate }}</span>
-          <button class="nav-arrow" @click="nextWeek">›</button>
+          <button class="nav-arrow" @click="prevMonth">‹</button>
+          <span class="date-range">{{ formattedStartDate }}</span>
+          <button class="nav-arrow" @click="nextMonth">›</button>
         </div>
 
       <div class="layout-container">
@@ -31,8 +31,7 @@
                   {{ metric.title }}
                 </h3>
                 <div class="metric-content">
-                  <div v-for="(value, key, index) in metric.data" :key="key" :class="['metric-row', { 'with-border': index < Object.keys(metric.data).length - 1 }]">
-                    <span class="metric-label">{{ key }}</span>
+                  <div v-for="(value, key, index) in metric.data" :key="key" :class="['metric-row', { 'with-border': index < Object.keys(metric.data).length - 1 }]">                    <span class="metric-label">{{ key }}</span>
                     <span :class="['metric-value', { 'positive': value.startsWith('-'), 'negative': value.startsWith('+') }]">
                       {{ value }}
                     </span>
@@ -87,203 +86,35 @@ definePageMeta({
   layout: "emptylayout"
 })
 
-const view = ref('week')
+const view = ref('month')
 const setView = (newView) => {
   view.value = newView
-  navigateTo(`/analytics-${newView}`)
+  navigateTo(`/analytics-${newView}`);
+
 }
-
-const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']
-const activeDataset = ref('Protein')
-
-const caloriesData = ref({
-  daily_budget: 2000,
-  days: [
-    { date: '2019-01-01', value: 2000 },
-    { date: '2019-01-02', value: 2200 },
-    { date: '2019-01-03', value: 1800 },
-    { date: '2019-01-04', value: 2100 },
-    { date: '2019-01-05', value: 1900 },
-    { date: '2019-01-06', value: 2300 },
-    { date: '2019-01-07', value: 2100 },
-    // More data points...
-  ]
-});
-
-const proteinData = ref({
-  daily_budget: 80,
-  days: [
-    { date: '2019-01-01', value: 70 },
-    { date: '2019-01-02', value: 60 },
-    { date: '2019-01-03', value: 90 },
-    { date: '2019-01-04', value: 80 },
-    { date: '2019-01-05', value: 70 },
-    { date: '2019-01-06', value: 60 },
-    { date: '2019-01-07', value: 50 },
-    // More data points...
-  ]
-});
-
-const carbsData = ref({
-  daily_budget: 120,
-  days: [
-    { date: '2019-01-01', value: 100 },
-    { date: '2019-01-02', value: 110 },
-    { date: '2019-01-03', value: 130 },
-    { date: '2019-01-04', value: 140 },
-    { date: '2019-01-05', value: 120 },
-    { date: '2019-01-06', value: 110 },
-    { date: '2019-01-07', value: 100 },
-    // More data points...
-  ]
-});
-
-const cholestrolData = ref({
-  daily_budget: 20,
-  days: [
-    { date: '2019-01-01', value: 15 },
-    { date: '2019-01-02', value: 10 },
-    { date: '2019-01-03', value: 5 },
-    { date: '2019-01-04', value: 20 },
-    { date: '2019-01-05', value: 15 },
-    { date: '2019-01-06', value: 10 },
-    { date: '2019-01-07', value: 5 },
-    // More data points...
-  ]
-});
-
-const fatsData = ref({
-  daily_budget: 60,
-  days: [
-    { date: '2019-01-01', value: 50 },
-    { date: '2019-01-02', value: 40 },
-    { date: '2019-01-03', value: 70 },
-    { date: '2019-01-04', value: 60 },
-    { date: '2019-01-05', value: 50 },
-    { date: '2019-01-06', value: 40 },
-    { date: '2019-01-07', value: 30 },
-    // More data points...
-  ]
-});
-
-const sodiumData = ref({
-  daily_budget: 2,
-  days: [
-    { date: '2019-01-01', value: 1.5 },
-    { date: '2019-01-02', value: 1.2 },
-    { date: '2019-01-03', value: 1.8 },
-    { date: '2019-01-04', value: 1.6 },
-    { date: '2019-01-05', value: 1.4 },
-    { date: '2019-01-06', value: 1.2 },
-    { date: '2019-01-07', value: 1.0 },
-    // More data points...
-  ]
-});
-
-
-
-const setActiveDataset = (dataset) => {
-  activeDataset.value = dataset
-  // Update chart data based on selected dataset
-  switch (dataset) {
-    case 'Protein':
-      chartData.value = proteinData
-      break
-    case 'Carbs':
-      chartData.value = carbsData
-      break
-    case 'Cholestrol':
-      chartData.value = cholestrolData
-      break
-    case 'Fats':
-      chartData.value = fatsData
-      break
-    case 'Sodium':
-      chartData.value = sodiumData
-      break
-  }
-}
-
-const chartData = computed(() => {
-  let activeData;
-  switch (activeDataset.value) {
-    case 'Calories':
-      activeData = caloriesData.value;
-      break;
-    case 'Protein':
-      activeData = proteinData.value;
-      break;
-    case 'Carbs':
-      activeData = carbsData.value;
-      break;
-    case 'Cholestrol':
-      activeData = cholestrolData.value;
-      break;
-    case 'Fats':
-      activeData = fatsData.value;
-      break;
-    case 'Sodium':
-      activeData = sodiumData.value;
-      break;
-  }
-
-  return {
-    labels: activeData.days.map(day => day.date),
-    datasets: [
-      {
-        label: 'Goal',
-        borderColor: '#000000',
-        backgroundColor: '#000000',
-        data: Array(activeData.days.length).fill(activeData.daily_budget),
-        borderWidth: 2,
-        pointRadius: 4
-      },
-      {
-        label: 'Actual',
-        borderColor: '#4CAF50',
-        backgroundColor: '#4CAF50',
-        data: activeData.days.map(day => day.value),
-        borderWidth: 2,
-        pointRadius: 4
-      }
-    ]
-  }
-});
-
-
 
 const currentDate = ref(new Date());
 const currentStartDate = ref(new Date(currentDate.value));
 
 const formattedStartDate = computed(() => {
-  currentStartDate.value.setDate(currentStartDate.value.getDate() - 6);  // Start date is 6 days before the end date
-  return currentStartDate.value.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-});
-
-const formattedEndDate = computed(() => {
   return currentDate.value.toLocaleDateString('en-GB', {
-    day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
 });
 
-const prevWeek = () => {
-  currentDate.value = new Date(currentDate.value.getTime() - 7 * 24 * 60 * 60 * 1000);
+const prevMonth = () => {
+  currentDate.value = new Date(currentDate.value.setMonth(currentDate.value.getMonth() - 1));
 };
 
-const nextWeek = () => {
-  const newDate = new Date(currentDate.value.getTime() + 7 * 24 * 60 * 60 * 1000);
+const nextMonth = () => {
+  const newDate = new Date(currentDate.value.setMonth(currentDate.value.getMonth() + 1));
   if (newDate <= new Date()) { 
     currentDate.value = newDate;
-  }else {
+  } else {
     alert("You cannot view future data");
   }
-};
+  };
 
 const metrics = [
   {
@@ -354,11 +185,40 @@ const metrics = [
   }
 ]
 
-
+const chartData = ref({
+  labels: ['21/04/2024', '22/04/2024', '23/04/2024', '24/04/2024', '25/04/2024', '26/04/2024', '27/04/2024'],
+  datasets: [
+    {
+      label: 'Goal',
+      borderColor: '#000000',
+      backgroundColor: '#000000',
+      data: [80, 80, 80, 80, 80, 80, 80],
+      borderWidth: 2,
+      pointRadius: 4
+    },
+    {
+      label: 'Actual',
+      borderColor: '#4CAF50',
+      backgroundColor: '#4CAF50',
+      data: [60, 40, 70, 50, 90, 0, 0],
+      borderWidth: 2,
+      pointRadius: 4
+    }
+  ]
+})
 
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      max: 100,
+      ticks: {
+        stepSize: 20
+      }
+    }
+  },
   plugins: {
     legend: {
       display: true
@@ -366,7 +226,12 @@ const chartOptions = {
   }
 }
 
-
+const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']
+const activeDataset = ref('Protein')
+const setActiveDataset = (dataset) => {
+  activeDataset.value = dataset
+  // Update chart data based on selected dataset
+}
 
 onMounted(async() => {
   const startDate = new Date(currentStartDate.value).toISOString().split('T')[0]
@@ -375,7 +240,7 @@ onMounted(async() => {
   console.log(`${startDate} `); //2024-09-23 
   console.log(endDate); //2024-09-29
 
-  let result = await useApi(`/analytics/weekly?startDate=${startDate}&endDate=${endDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+  const result = await useApi(`/analytics/weekly?startDate=${startDate}&endDate=${endDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
   console.log(result);
 
 
