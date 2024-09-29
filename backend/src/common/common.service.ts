@@ -4,6 +4,8 @@ import * as jwt from 'jsonwebtoken';
 import { Gender } from "src/user/enum/gender.enum";
 import { NutritionSettingDTO } from "src/user/dto/nutrition-setting-dto";
 import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { addDays, eachDayOfInterval, isAfter, isBefore, isSameDay } from "date-fns";
 import { NutritionInfoDTO } from "src/recipe/dto/nutrition-info-dto";
 
 
@@ -57,19 +59,80 @@ export class CommonService{
             throw new Error('Invalid token');
         }
     }
-    
-    /**
-     * Checks if the two dates are the same day
-     * @param date1 - first date in Date object
-     * @param date2 - second date in Date object
-     * @returns true if the two dates are the same day, else false
-     */
-    isSameDay(date1: Date, date2: Date): boolean {
-        return (
-            date1.toDateString() === date2.toDateString()
-        );
-      }
 
+    /**
+     * Check if date 1 is within the date range of date 2 given number of days
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @param timeZone - time zone
+     * @param numberOfDays - number of days
+     * @returns boolean - true if date 1 is within the date range, false otherwise
+     */
+    isWithinDateRange(date1: string, date2: string, timeZone: string, numberOfDays: number): boolean {
+        // convert the date to UTC
+        const date_one_utc = new Date(formatInTimeZone(date1, timeZone, 'yyyy-MM-dd'));
+        const date_two_utc = new Date(formatInTimeZone(date2, timeZone, 'yyyy-MM-dd'));
+
+        const six_days_from_now = addDays(date_two_utc, numberOfDays);
+
+        return !this.isFirstDateAfterSecondDate(date_one_utc, six_days_from_now) && !this.isFirstDateBeforeSecondDate(date_one_utc, date_two_utc);
+    }
+
+    /**
+     * Check if date 1 is after date 2
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @returns true if date 1 is after date 2, false otherwise
+     */
+    isFirstDateAfterSecondDate(date1: Date, date2: Date): boolean {
+        return isAfter(date1, date2)
+    }
+
+    /**
+     * Check if date 1 is before date 2
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @returns true if date 1 is before date 2, false otherwise
+     */
+    isFirstDateBeforeSecondDate(date1: Date, date2: Date): boolean {
+        return isBefore(date1, date2)
+    }
+
+    /**
+     * Check if date 1 is the same day as date 2
+     * @param date1 - date 1
+     * @param date2 - date 2
+     * @param timeZone - time zone
+     * @returns true if date 1 is the same day as date 2, false otherwise
+     */
+    isSameDay(date1: string | Date, date2: string | Date, timeZone: string): boolean {
+        // Convert to Date objects if they are strings
+        if (typeof date1 === 'string') {
+            date1 = new Date(formatInTimeZone(date1, timeZone, 'yyyy-MM-dd'));
+        }
+        if (typeof date2 === 'string') {
+            date2 = new Date(formatInTimeZone(date2, timeZone, 'yyyy-MM-dd'));
+        }
+        return isSameDay(date1, date2);
+    }
+
+    /**
+     * List all the dates between the start date and end date with the given time zone
+     * @param startDate - start date
+     * @param endDate - end date
+     * @param timeZone - time zone
+     * @returns list of dates in the format yyyy-MM-dd
+     */
+    listDatesWithTimezone(startDate: string, endDate: string, timeZone: string): string[] {
+        const start = fromZonedTime(startDate, timeZone);
+        const end = fromZonedTime(endDate, timeZone);
+
+        const dates = eachDayOfInterval({ start, end }).map(date => {
+            return formatInTimeZone(date, timeZone, 'yyyy-MM-dd')
+        })
+
+        return dates;
+    }
 
     /**
      * Calculate the calories required for intake based on user information

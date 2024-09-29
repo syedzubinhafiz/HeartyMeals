@@ -1,23 +1,23 @@
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 import { RecipePortionDTO } from "src/meal-logging/dto/recipe-portion-dto";
 import { MealType } from "src/meal-logging/enum/meal-type.enum";
 
 export class AddMealLoggingSummaryDTO{
     
     /**
-     * @example "2024-09-22T08:11:22:33"
+     * @example "2024-09-22"
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly mealDateTime: string;
+    readonly mealDate: string;
 
     /**
      * @example "2024-09-22T08:11:22:33"
      */
     @IsNotEmpty()
     @IsDateString()
-    readonly systemDateTime: string;
+    readonly userLocalDateTime: string;
 
     /**
      * @example "Asia/Kuala_Lumpur"
@@ -25,7 +25,11 @@ export class AddMealLoggingSummaryDTO{
     @IsNotEmpty()
     @IsString()
     readonly timeZone: string;
-    
+
+    @IsBoolean()
+    @IsNotEmpty()
+    readonly isMealPlanning: boolean = false;
+
     /**
      * @example
      * {

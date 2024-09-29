@@ -50,12 +50,12 @@ export class MealLogSummaryController {
     }    
 
     @Get('budget')
-    async getRemainingBudget(@Headers() headers, @Query("dateTime") date: string, @Query("timeZone") timeZone: string){
+    async getRemainingBudget(@Headers() headers, @Query("startDate") date: string, @Query("timeZone") timeZone: string){
         try {
             const auth_header = headers.authorization;
             const decoded_headers = this.commonService.decodeHeaders(auth_header);
 
-            return this.mealLogSummaryService.getRemainingBudget(decoded_headers, date, timeZone);
+            return this.mealLogSummaryService.getRemainingBudget(decoded_headers, date, null, timeZone, null);
         } catch (e){
             return new HttpException(e.message, 400)
         }
