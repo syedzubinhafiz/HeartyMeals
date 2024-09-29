@@ -434,7 +434,7 @@ export class RecipeService {
 
         // Check if the date in entry is not the current date
         if (
-            recipe_of_the_day.date.getDate() !== new Date().getDate() || 
+            recipe_of_the_day.date.toISOString().split('T')[0] !== new Date().toISOString().split('T')[0] || 
             recipe_of_the_day.recipe === undefined
         ){
           
@@ -469,6 +469,7 @@ export class RecipeService {
             query.orderBy("RANDOM()")
 
             recipe_of_the_day.recipe = await query.getOne();
+            recipe_of_the_day.date = new Date();
             this.recipeOfTheDayRepository.save(recipe_of_the_day);
         }
         
