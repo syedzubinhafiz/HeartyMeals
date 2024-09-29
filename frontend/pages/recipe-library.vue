@@ -58,6 +58,7 @@
     <RecipeOverlay
     :visible="isOverlayVisible"
     :meal="selectedRecipe"
+    :instruction="instruction"
     @closeOverlay="isOverlayVisible = false"
     />
     <footer class="footer">
@@ -91,6 +92,11 @@ const pageSize = ref(10);
 const totalPages = ref(1);
 
 // for overlay
+const recipeList = ref([])
+const searchValue = ref("");
+const searchDataList = ref([]);
+const instruction = ref('');
+
 const isOverlayVisible = ref(false)
 const selectedRecipe = ref(null)
 
@@ -205,6 +211,7 @@ const openOverlay = async (meal) => {
   console.log('here')
   const detailedRecipeInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
   selectedRecipe.value = detailedRecipeInfo
+  instruction.value = detailedRecipeInfo.value.recipe.instruction
   isOverlayVisible.value = true
 }
 

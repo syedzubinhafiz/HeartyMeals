@@ -52,17 +52,29 @@
           </div>
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
-            <p v-for="instruction of meal.value.recipe.instruction">{{ instruction }}</p>
+            <div v-for="(htmlString, index) in instruction" :key="index" v-html="htmlString"></div>
             <!-- Add more recipe details here -->
           </div>
           <div v-if="activeTab === 'ingredients'">
-            <p v-for="ingredient in props.meal.value.components.ingredient">
-              {{ `${ingredient.name}: ${ingredient.amount} ${ingredient.unit}` }}
-            </p>
-            <p v-for="seasoning in props.meal.value.components.seasonings">
-              {{ `${seasoning.name}: ${seasoning.amount} ${seasoning.unit}` }}
-            </p>
+            <!-- Ingredients Content -->
+            <div class="card-grid">
+              <div v-for="ingredient in props.meal.value.components.ingredient" :key="ingredient.name" class="card horizontal-card">
+                <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" />
+                <div class="card-content">
+                  <p class="card-title">{{ ingredient.name }}</p>
+                  <p class="card-details">{{ `Amount: ${ingredient.amount} ${ingredient.unit}` }}</p>
+                </div>
+              </div>
+
+              <div v-for="seasoning in props.meal.value.components.seasonings" :key="seasoning.name" class="card horizontal-card">
+                <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" />
+                <div class="card-content">
+                  <p class="card-title">{{ seasoning.name }}</p>
+                  <p class="card-details">{{ `Amount: ${seasoning.amount} ${seasoning.unit}` }}</p>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
         </div>
       </div>
@@ -75,7 +87,10 @@ const props = defineProps({
   },
   meal: {
     type: Object
-  }
+  },
+  instruction: {
+    type: String
+  },
 })
 
 </script>
@@ -264,5 +279,50 @@ export default {
 .nutrition-label img {
   margin-right: 10px; /* Adjusts space between icon and text */
 
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust the gap between cards as needed */
+  max-height: 400px; /* Set a fixed height for the container */
+  overflow: auto; /* Enable scrolling if content overflows */
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.horizontal-card {
+  flex-direction: row; /* Arrange content horizontally */
+  width: 100%; /* Full width for horizontal layout */
+}
+
+.card img {
+  max-width: 100px; /* Adjust the image size as needed */
+  border-radius: 4px;
+  margin-right: 16px; /* Space between image and text */
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 1em; /* Larger text for the title */
+  margin: 0;
+  font-weight: bold; /* Bold title for better readability */
+}
+
+.card-details {
+  font-size: 1em; /* Smaller text for the details */
+  margin: 4px 0 0; /* Adjust margin as needed */
 }
 </style>
