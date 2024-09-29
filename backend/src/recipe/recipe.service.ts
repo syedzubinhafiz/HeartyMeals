@@ -12,6 +12,7 @@ import { RecipeComponent } from 'src/recipe-component/recipe-component.entity';
 import { NutritionInfoDTO } from './dto/nutrition-info-dto';
 import { UserRole } from 'src/user/enum/user-role.enum';
 import { RecipeOfTheDay } from './recipe-of-the-day.entity';
+import { storage } from 'firebase-admin';
 
 @Injectable()
 export class RecipeService {
@@ -473,12 +474,12 @@ export class RecipeService {
             this.recipeOfTheDayRepository.save(recipe_of_the_day);
         }
         
-        // TODO: storage link
         return {
             id: recipe_of_the_day.recipe.id,
             name: recipe_of_the_day.recipe.name,
             description: recipe_of_the_day.recipe.description,
             nutrition_info: recipe_of_the_day.recipe.nutrition_info,
+            storage_links: recipe_of_the_day.recipe.storage_links
         }
     } 
 }
