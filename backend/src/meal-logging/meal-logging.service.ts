@@ -251,6 +251,7 @@ export class MealLoggingService {
             // meal planning - change the consumsed date time to other date
             if (payload.newMealDate !== null && payload.newMealDate !== payload.mealDate){
                 entry.consumed_date_time = fromZonedTime(payload.newMealDate, payload.timeZone);
+                entry.is_consumed = false;
             }
 
             await transactionalEntityManager.save(entry);
