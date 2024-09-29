@@ -49,7 +49,9 @@
                   @mouseleave="hideTooltip('Breakfast')"
                 />
               </div>
-              <h3 class="text-gray-800 mt-1">{{ mealsData.Breakfast[0].name }}</h3>
+              <h3 class="text-gray-800 mt-1">
+                {{ mealsData.Breakfast[0].name  }}
+              </h3>
               <!-- Tooltip (shown on hover) -->
               <div
                 v-if="tooltipVisible.Breakfast"
@@ -66,7 +68,7 @@
                       <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
                     </div>
                     <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
-                      Calories <span class="font-bold">{{ meal.calories }}</span>
+                      Calories <span class="font-bold">{{ meal.calories }}kcal</span>
                     </div>
                   </div>
                   <!-- Nutrition Info Grid -->
@@ -77,25 +79,29 @@
                       :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
                     >
                       <p class="text-gray-800">{{ key }}</p>
-                      <p class="font-bold text-black">{{ value }}</p>
+                      <p class="font-bold text-black">
+                        {{ formatNutrientValue(value, key) }}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">{{ mealsData.Breakfast[0].calories }}</span>
+              Calories <span class="font-bold">{{ totalMealData.Breakfast.totalCalories }}kcal</span>
             </div>
           </div>
           <!-- Nutrition Info Grid -->
           <div class="grid grid-cols-5 gap-0 text-md">
             <div
-              v-for="(value, key) in mealsData.Breakfast[0].nutrients"
-              :key="key"
-              :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
+              v-for="nutrient in nutrientOrder"
+              :key="nutrient"
+              :class="['nutrition-item', nutrientBgClass(nutrient), 'p-1', 'text-center']"
             >
-              <p class="text-gray-800">{{ key }}</p>
-              <p class="font-bold text-black">{{ value }}</p>
+              <p class="text-gray-800">{{ nutrient }}</p>
+              <p class="font-bold text-black">
+                {{ formatNutrientValue(totalMealData.Breakfast.totalNutrients[nutrient] || 0, nutrient) }}
+              </p>
             </div>
           </div>
         </div>
@@ -115,7 +121,9 @@
                   @mouseleave="hideTooltip('Lunch')"
                 />
               </div>
-              <h3 class="text-gray-800 mt-1">{{ mealsData.Lunch[0].name }}</h3>
+              <h3 class="text-gray-800 mt-1">
+                {{ mealsData.Lunch[0].name }}
+              </h3>
               <!-- Tooltip (shown on hover) -->
               <div
                 v-if="tooltipVisible.Lunch"
@@ -132,7 +140,7 @@
                       <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
                     </div>
                     <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
-                      Calories <span class="font-bold">{{ meal.calories }}</span>
+                      Calories <span class="font-bold">{{ meal.calories }}kcal</span>
                     </div>
                   </div>
                   <!-- Nutrition Info Grid -->
@@ -143,25 +151,29 @@
                       :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
                     >
                       <p class="text-gray-800">{{ key }}</p>
-                      <p class="font-bold text-black">{{ value }}</p>
+                      <p class="font-bold text-black">
+                        {{ formatNutrientValue(value, key) }}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">{{ mealsData.Lunch[0].calories }}</span>
+              Calories <span class="font-bold">{{ totalMealData.Lunch.totalCalories }}kcal</span>
             </div>
           </div>
           <!-- Nutrition Info Grid -->
           <div class="grid grid-cols-5 gap-0 text-md">
             <div
-              v-for="(value, key) in mealsData.Lunch[0].nutrients"
-              :key="key"
-              :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
+              v-for="nutrient in nutrientOrder"
+              :key="nutrient"
+              :class="['nutrition-item', nutrientBgClass(nutrient), 'p-1', 'text-center']"
             >
-              <p class="text-gray-800">{{ key }}</p>
-              <p class="font-bold text-black">{{ value }}</p>
+              <p class="text-gray-800">{{ nutrient }}</p>
+              <p class="font-bold text-black">
+                {{ formatNutrientValue(totalMealData.Lunch.totalNutrients[nutrient] || 0, nutrient) }}
+              </p>
             </div>
           </div>
         </div>
@@ -195,8 +207,9 @@
   <Footer />
 </template>
 
+
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 definePageMeta({
   layout: 'emptylayout',
@@ -228,29 +241,41 @@ function nutrientBgClass(nutrient) {
   }
 }
 
-// Meals data with detailed information
+// Function to format nutrient values with units
+function formatNutrientValue(value, nutrient) {
+  let unit = 'g'; // default unit
+  if (nutrient === 'Cholesterol') {
+    unit = 'mg';
+  }
+  return `${value}${unit}`;
+}
+
+// Define the order of nutrients
+const nutrientOrder = ['Protein', 'Carbs', 'Cholesterol', 'Fats', 'Sodium'];
+
+// Meals data with detailed information (calories and nutrients as numbers)
 const mealsData = {
   Breakfast: [
     {
       name: 'Scrambled Eggs and Hash Brown',
-      calories: '350kcal',
+      calories: 350, // Number in kcal
       nutrients: {
-        Protein: '12g',
-        Carbs: '28g',
-        Cholesterol: '200mg',
-        Fats: '15g',
-        Sodium: '0.5g',
+        Protein: 12, // in grams
+        Carbs: 28,
+        Cholesterol: 200, // in mg
+        Fats: 15,
+        Sodium: 0.5,
       },
     },
     {
       name: 'Mushroom Soup',
-      calories: '150kcal',
+      calories: 150,
       nutrients: {
-        Protein: '5g',
-        Carbs: '20g',
-        Cholesterol: '30mg',
-        Fats: '7g',
-        Sodium: '0.3g',
+        Protein: 5,
+        Carbs: 20,
+        Cholesterol: 30,
+        Fats: 7,
+        Sodium: 0.3,
       },
     },
     // Add more breakfast meals as needed
@@ -258,30 +283,58 @@ const mealsData = {
   Lunch: [
     {
       name: 'Pad Thai',
-      calories: '600kcal',
+      calories: 600,
       nutrients: {
-        Protein: '25g',
-        Carbs: '70g',
-        Cholesterol: '150mg',
-        Fats: '20g',
-        Sodium: '1.2g',
+        Protein: 25,
+        Carbs: 70,
+        Cholesterol: 150,
+        Fats: 20,
+        Sodium: 1.2,
       },
     },
     {
       name: 'Grilled Chicken',
-      calories: '400kcal',
+      calories: 400,
       nutrients: {
-        Protein: '35g',
-        Carbs: '5g',
-        Cholesterol: '85mg',
-        Fats: '10g',
-        Sodium: '0.8g',
+        Protein: 35,
+        Carbs: 5,
+        Cholesterol: 85,
+        Fats: 10,
+        Sodium: 0.8,
       },
     },
     // Add more lunch meals as needed
   ],
   // You can add more meal categories and their meals here
 };
+
+// Computed property to calculate total calories and nutrients for each meal category
+const totalMealData = computed(() => {
+  const result = {};
+  for (const [mealCategory, meals] of Object.entries(mealsData)) {
+    let totalCalories = 0;
+    const totalNutrients = {};
+
+    for (const meal of meals) {
+      // Sum calories
+      totalCalories += meal.calories;
+
+      // Sum nutrients
+      for (const [nutrient, value] of Object.entries(meal.nutrients)) {
+        if (!totalNutrients[nutrient]) {
+          totalNutrients[nutrient] = 0;
+        }
+        totalNutrients[nutrient] += value;
+      }
+    }
+
+    result[mealCategory] = {
+      totalCalories,
+      totalNutrients,
+    };
+  }
+  return result;
+});
 
 // View state and function
 const view = ref('day');
@@ -290,6 +343,7 @@ const setView = (newView) => {
   navigateTo(`/analytics-${newView}`);
 };
 </script>
+
 
 
 
@@ -475,3 +529,4 @@ const setView = (newView) => {
   }
 }
 </style>
+
