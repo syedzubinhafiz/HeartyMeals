@@ -49,7 +49,7 @@
                   @mouseleave="hideTooltip('Breakfast')"
                 />
               </div>
-              <h3 class="text-gray-800 mt-1">Scrambled Eggs and Hash Brown</h3>
+              <h3 class="text-gray-800 mt-1">{{ mealsData.Breakfast[0].name }}</h3>
               <!-- Tooltip (shown on hover) -->
               <div
                 v-if="tooltipVisible.Breakfast"
@@ -84,7 +84,18 @@
               </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">1000kcal</span>
+              Calories <span class="font-bold">{{ mealsData.Breakfast[0].calories }}</span>
+            </div>
+          </div>
+          <!-- Nutrition Info Grid -->
+          <div class="grid grid-cols-5 gap-0 text-md">
+            <div
+              v-for="(value, key) in mealsData.Breakfast[0].nutrients"
+              :key="key"
+              :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
+            >
+              <p class="text-gray-800">{{ key }}</p>
+              <p class="font-bold text-black">{{ value }}</p>
             </div>
           </div>
         </div>
@@ -95,7 +106,7 @@
             <!-- Adjusted flex container -->
             <div class="relative">
               <div class="flex items-center">
-                <h1 class="font-bold text-black text-xl leading-normal">Breakfast</h1>
+                <h1 class="font-bold text-black text-xl leading-normal">Lunch</h1>
                 <img
                   src="../assets/img/InformationIcon.png"
                   alt="info"
@@ -104,7 +115,7 @@
                   @mouseleave="hideTooltip('Lunch')"
                 />
               </div>
-              <h3 class="text-gray-800 mt-1">Scrambled Eggs and Hash Brown</h3>
+              <h3 class="text-gray-800 mt-1">{{ mealsData.Lunch[0].name }}</h3>
               <!-- Tooltip (shown on hover) -->
               <div
                 v-if="tooltipVisible.Lunch"
@@ -139,7 +150,18 @@
               </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">1000kcal</span>
+              Calories <span class="font-bold">{{ mealsData.Lunch[0].calories }}</span>
+            </div>
+          </div>
+          <!-- Nutrition Info Grid -->
+          <div class="grid grid-cols-5 gap-0 text-md">
+            <div
+              v-for="(value, key) in mealsData.Lunch[0].nutrients"
+              :key="key"
+              :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
+            >
+              <p class="text-gray-800">{{ key }}</p>
+              <p class="font-bold text-black">{{ value }}</p>
             </div>
           </div>
         </div>
@@ -271,6 +293,7 @@ const setView = (newView) => {
 
 
 
+
 <style>
 /* Page background color */
 .analytics-page {
@@ -371,7 +394,7 @@ const setView = (newView) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   top: 2.5rem; /* Adjust as needed */
   left: 0;   /* Adjust as needed */
-  width: 280px; /* Set a width for consistency */
+  width: 320px; /* Increased width for more space */
 }
 
 /* Mini meal card inside tooltip */
@@ -451,6 +474,4 @@ const setView = (newView) => {
     margin-top: -7rem; /* Adjust this value to move the widget higher or lower */
   }
 }
-
-
 </style>
