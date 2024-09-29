@@ -74,7 +74,9 @@ import carbsIcon from '/assets/img/Carbo-Icon.svg'
 import fatsIcon from '/assets/img/Olive-oil.svg'
 import sodiumIcon from '/assets/img/Salt.svg'
 import cholesterolIcon from '/assets/img/Egg.svg'
+import { useNuxtApp } from '#app'
 
+const {$axios} = useNuxtApp()
 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
@@ -96,94 +98,54 @@ const setView = (newView) => {
 const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']
 const activeDataset = ref('Protein')
 
-const caloriesData = ref({
-  daily_budget: 2000,
-  days: [
-    { date: '2019-01-01', value: 2000 },
-    { date: '2019-01-02', value: 2200 },
-    { date: '2019-01-03', value: 1800 },
-    { date: '2019-01-04', value: 2100 },
-    { date: '2019-01-05', value: 1900 },
-    { date: '2019-01-06', value: 2300 },
-    { date: '2019-01-07', value: 2100 },
-    // More data points...
-  ]
-});
 
-const proteinData = ref({
-  daily_budget: 80,
-  days: [
-    { date: '2019-01-01', value: 70 },
-    { date: '2019-01-02', value: 60 },
-    { date: '2019-01-03', value: 90 },
-    { date: '2019-01-04', value: 80 },
-    { date: '2019-01-05', value: 70 },
-    { date: '2019-01-06', value: 60 },
-    { date: '2019-01-07', value: 50 },
-    // More data points...
-  ]
-});
+const proteinData = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+  return {
+    daily_budget: weeklyData.value.protein.daily_budget,
+    days: weeklyData.value.protein.days
+  }
+})
 
-const carbsData = ref({
-  daily_budget: 120,
-  days: [
-    { date: '2019-01-01', value: 100 },
-    { date: '2019-01-02', value: 110 },
-    { date: '2019-01-03', value: 130 },
-    { date: '2019-01-04', value: 140 },
-    { date: '2019-01-05', value: 120 },
-    { date: '2019-01-06', value: 110 },
-    { date: '2019-01-07', value: 100 },
-    // More data points...
-  ]
-});
 
-const cholestrolData = ref({
-  daily_budget: 20,
-  days: [
-    { date: '2019-01-01', value: 15 },
-    { date: '2019-01-02', value: 10 },
-    { date: '2019-01-03', value: 5 },
-    { date: '2019-01-04', value: 20 },
-    { date: '2019-01-05', value: 15 },
-    { date: '2019-01-06', value: 10 },
-    { date: '2019-01-07', value: 5 },
-    // More data points...
-  ]
-});
+const carbsData = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+  return {
+    daily_budget: weeklyData.value.carbs.daily_budget,
+    days: weeklyData.value.carbs.days
+  }
+})
 
-const fatsData = ref({
-  daily_budget: 60,
-  days: [
-    { date: '2019-01-01', value: 50 },
-    { date: '2019-01-02', value: 40 },
-    { date: '2019-01-03', value: 70 },
-    { date: '2019-01-04', value: 60 },
-    { date: '2019-01-05', value: 50 },
-    { date: '2019-01-06', value: 40 },
-    { date: '2019-01-07', value: 30 },
-    // More data points...
-  ]
-});
 
-const sodiumData = ref({
-  daily_budget: 2,
-  days: [
-    { date: '2019-01-01', value: 1.5 },
-    { date: '2019-01-02', value: 1.2 },
-    { date: '2019-01-03', value: 1.8 },
-    { date: '2019-01-04', value: 1.6 },
-    { date: '2019-01-05', value: 1.4 },
-    { date: '2019-01-06', value: 1.2 },
-    { date: '2019-01-07', value: 1.0 },
-    // More data points...
-  ]
-});
+const cholestrolData = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+  return {
+    daily_budget: weeklyData.value.cholesterol.daily_budget,
+    days: weeklyData.value.cholesterol.days
+  }
+})
+
+const fatsData = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+  return {
+    daily_budget: weeklyData.value.fat.daily_budget,
+    days: weeklyData.value.fat.days
+  }
+})
+
+const sodiumData = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+  return {
+    daily_budget: weeklyData.value.sodium.daily_budget,
+    days: weeklyData.value.sodium.days
+  }
+})
 
 
 
 const setActiveDataset = (dataset) => {
   activeDataset.value = dataset
+  console.log('Active dataset:', proteinData.value)
   // Update chart data based on selected dataset
   switch (dataset) {
     case 'Protein':
@@ -192,167 +154,218 @@ const setActiveDataset = (dataset) => {
     case 'Carbs':
       chartData.value = carbsData
       break
-    case 'Cholestrol':
-      chartData.value = cholestrolData
-      break
     case 'Fats':
       chartData.value = fatsData
       break
     case 'Sodium':
       chartData.value = sodiumData
       break
+    case 'Cholestrol':
+      chartData.value = cholestrolData
+      break
   }
 }
 
 const chartData = computed(() => {
+  if (!weeklyData.value) return { labels: [], datasets: [] }; // Return empty chart data if weeklyData is not loaded
+
   let activeData;
+  let unit = '';
   switch (activeDataset.value) {
-    case 'Calories':
-      activeData = caloriesData.value;
-      break;
     case 'Protein':
-      activeData = proteinData.value;
+      activeData = weeklyData.value.protein;
+      unit = 'g';
       break;
     case 'Carbs':
-      activeData = carbsData.value;
+      activeData = weeklyData.value.carbs;
+      unit = 'g';
       break;
     case 'Cholestrol':
-      activeData = cholestrolData.value;
+      activeData = weeklyData.value.cholesterol;
+      unit = 'mg';
       break;
     case 'Fats':
-      activeData = fatsData.value;
+      activeData = weeklyData.value.fat;
+      unit = 'g';
       break;
     case 'Sodium':
-      activeData = sodiumData.value;
+      activeData = weeklyData.value.sodium;
+      unit = 'mg';
       break;
+    default:
+      activeData = weeklyData.value.calories;
+      unit = 'kcal';
   }
 
   return {
     labels: activeData.days.map(day => day.date),
     datasets: [
       {
-        label: 'Goal',
+        label: `Daily Budget (${unit})`,
         borderColor: '#000000',
-        backgroundColor: '#000000',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
         data: Array(activeData.days.length).fill(activeData.daily_budget),
         borderWidth: 2,
-        pointRadius: 4
+        pointRadius: 0,
+        fill: true
       },
       {
-        label: 'Actual',
+        label: `Daily Consumption (${unit})`,
         borderColor: '#4CAF50',
-        backgroundColor: '#4CAF50',
-        data: activeData.days.map(day => day.value),
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        data: activeData.days.map(day => day.consumption),
         borderWidth: 2,
-        pointRadius: 4
+        pointRadius: 4,
+        fill: true
       }
     ]
-  }
+  };
 });
 
 
 
 const currentDate = ref(new Date());
-const currentStartDate = ref(new Date(currentDate.value));
+currentDate.value.setDate(currentDate.value.getDate() + (7 - currentDate.value.getDay()))
 
-const formattedStartDate = computed(() => {
-  currentStartDate.value.setDate(currentStartDate.value.getDate() - 6);  // Start date is 6 days before the end date
-  return currentStartDate.value.toLocaleDateString('en-GB', {
+const startDate = computed(() => {
+  const start = new Date(currentDate.value)
+  start.setDate(start.getDate() - 6)
+  return start
+})
+
+const formattedStartDate = computed(() => formatDate(startDate.value))
+const formattedEndDate = computed(() => formatDate(currentDate.value))
+
+
+function formatDate(date) {
+  return date.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-  });
-});
+  })
+}
 
-const formattedEndDate = computed(() => {
-  return currentDate.value.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-});
+function prevWeek() {
+  currentDate.value = new Date(currentDate.value.getTime() - 7 * 24 * 60 * 60 * 1000)
+  
 
-const prevWeek = () => {
-  currentDate.value = new Date(currentDate.value.getTime() - 7 * 24 * 60 * 60 * 1000);
-};
 
-const nextWeek = () => {
-  const newDate = new Date(currentDate.value.getTime() + 7 * 24 * 60 * 60 * 1000);
-  if (newDate <= new Date()) { 
-    currentDate.value = newDate;
-  }else {
-    alert("You cannot view future data");
+}
+
+function nextWeek() {
+  const proposedDate = new Date(currentDate.value.getTime() + 7 * 24 * 60 * 60 * 1000)
+  if (proposedDate <= new Date()) {
+    currentDate.value = proposedDate
+  } else {
+    alert("You cannot view future data")
   }
-};
+}
 
-const metrics = [
-  {
-    title: 'Calories',
-    icon: caloriesIcon,
-    className: 'calories',
-    data: {
-      'Guideline per Day': '2000kcal',
-      'Average Daily Consumption': '2200kcal',
-      'Difference': '+200kcal',
-      '% Days Under Guideline': '50%'
-    }
-  },
-  {
-    title: 'Protein',
-    icon: proteinIcon,
-    className: 'protein',
-    data: {
-      'Guideline per Day': '80g',
-      'Average Daily Consumption': '56g',
-      'Difference': '-14g',
-      '% Days Under Guideline': '75%'
-    }
-  },
-  {
-    title: 'Carbohydrates',
-    icon: carbsIcon,
-    className: 'carbs',
-    data: {
-      'Guideline per Day': '120g',
-      'Average Daily Consumption': '130g',
-      'Difference': '+10g',
-      '% Days Under Guideline': '25%'
-    }
-  },
-  {
-    title: 'Cholesterols',
-    icon: cholesterolIcon,
-    className: 'cholesterol',
-    data: {
-      'Guideline per Day': '20g',
-      'Average Daily Consumption': '10g',
-      'Difference': '-10g',
-      '% Days Under Guideline': '100%'
-    }
-  },
-  {
-    title: 'Fats',
-    icon: fatsIcon,
-    className: 'fats',
-    data: {
-      'Guideline per Day': '60g',
-      'Average Daily Consumption': '52g',
-      'Difference': '-8g',
-      '% Days Under Guideline': '75%'
-    }
-  },
-  {
-    title: 'Sodium',
-    icon: sodiumIcon,
-    className: 'sodium',
-    data: {
-      'Guideline per Day': '2g',
-      'Average Daily Consumption': '1.8g',
-      'Difference': '-0.2g',
-      '% Days Under Guideline': '50%'
-    }
+const apiStartDate = computed(() => startDate.value.toISOString().split('T')[0])
+const apiEndDate = computed(() => currentDate.value.toISOString().split('T')[0])
+
+const weeklyData = ref(null)
+
+// Function to fetch data from API
+async function fetchWeeklyData() {
+  try {
+    const result = await $axios.get('/analytics/weekly', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
+        'Content-Type': 'application/json',
+      },
+      params: {
+        startDate: apiStartDate.value,
+        endDate: apiEndDate.value,
+        timeZone: 'Asia/Kuala_Lumpur'
+      }
+    })
+    weeklyData.value = result.data
+    console.log('Weekly data fetched:', weeklyData.value)
+    console.log(weeklyData.value.calories.days.map(day => day.date))
+  } catch (error) {
+    console.error('Error fetching weekly data:', error.response?.message || error.message)
   }
-]
+}
+
+// Watch for changes in currentDate and fetch new data
+watch(currentDate, fetchWeeklyData)
+
+fetchWeeklyData()
+
+const metrics = computed(() => {
+  if (!weeklyData.value) return [] // Return empty array if data is not yet loaded
+
+  return [
+    {
+      title: 'Calories',
+      icon: caloriesIcon,
+      className: 'calories',
+      data: {
+        'Guideline per Day': `${weeklyData.value.calories.daily_budget}kcal`,
+        'Average Daily Consumption': `${weeklyData.value.calories.average_daily}kcal`,
+        'Difference': `${weeklyData.value.calories.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.calories.percentage_of_daily_budget)}%`
+      }
+    },
+    {
+      title: 'Protein',
+      icon: proteinIcon,
+      className: 'protein',
+      data: {
+        'Guideline per Day': `${weeklyData.value.protein.daily_budget}g`,
+        'Average Daily Consumption': `${weeklyData.value.protein.average_daily}g`,
+        'Difference': `${weeklyData.value.protein.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.protein.percentage_of_daily_budget)}%`
+      }
+    },
+    {
+      title: 'Carbohydrates',
+      icon: carbsIcon,
+      className: 'carbs',
+      data: {
+        'Guideline per Day': `${weeklyData.value.carbs.daily_budget}g`,
+        'Average Daily Consumption': `${weeklyData.value.carbs.average_daily}g`,
+        'Difference': `${weeklyData.value.carbs.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.carbs.percentage_of_daily_budget)}%`
+      }
+    },
+    {
+      title: 'Cholesterols',
+      icon: cholesterolIcon,
+      className: 'cholesterol',
+      data: {
+        'Guideline per Day': `${weeklyData.value.cholesterol.daily_budget}g`,
+        'Average Daily Consumption': `${weeklyData.value.cholesterol.average_daily}g`,
+        'Difference': `${weeklyData.value.cholesterol.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.cholesterol.percentage_of_daily_budget)}%`
+      }
+    },
+    {
+      title: 'Fats',
+      icon: fatsIcon,
+      className: 'fats',
+      data: {
+        'Guideline per Day': `${weeklyData.value.fat.daily_budget}g`,
+        'Average Daily Consumption': `${weeklyData.value.fat.average_daily}g`,
+        'Difference': `${weeklyData.value.fat.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.fat.percentage_of_daily_budget)}%`
+      }
+    },
+    {
+      title: 'Sodium',
+      icon: sodiumIcon,
+      className: 'sodium',
+      data: {
+        'Guideline per Day': `${weeklyData.value.sodium.daily_budget}g`,
+        'Average Daily Consumption': `${weeklyData.value.sodium.average_daily.toFixed(0)}g`,
+        'Difference': `${weeklyData.value.sodium.difference}`,
+        '% Days Under Guideline': `${(weeklyData.value.sodium.percentage_of_daily_budget)}%`
+      }
+    }
+  ]
+})
+
 
 
 
@@ -367,19 +380,6 @@ const chartOptions = {
 }
 
 
-
-onMounted(async() => {
-  const startDate = new Date(currentStartDate.value).toISOString().split('T')[0]
-  const endDate = new Date(currentDate.value).toISOString().split('T')[0]
-
-  console.log(`${startDate} `); //2024-09-23 
-  console.log(endDate); //2024-09-29
-
-  let result = await useApi(`/analytics/weekly?startDate=${startDate}&endDate=${endDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
-  console.log(result);
-
-
-})
 </script>
 
 <style scoped>
