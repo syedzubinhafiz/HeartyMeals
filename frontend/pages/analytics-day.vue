@@ -21,7 +21,7 @@
         <button class="text-gray-700">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <span class="text-2xl text-black">24 April 2024</span>
+        <span class="text-2xl text-black">30 October 2024</span>
         <button class="text-gray-700">
           <i class="fas fa-chevron-right"></i>
         </button>
@@ -35,12 +35,30 @@
         <!-- Breakfast Card -->
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
           <div class="flex justify-between items-center mb-2">
-            <div>
-              <H1 class="font-bold text-black">Breakfast</H1>
-              <h3 class="text-black mt-2">Scrambled Eggs and Hash Browns</h3>
+            <div class="flex items-start">
+              <div>
+                <h1 class="font-bold text-black text-xl leading-normal">Breakfast</h1>
+                <h3 class="text-gray-800 mt-1">Scrambled Eggs and Hash Brown</h3>
+              </div>
+              <img
+                src="../assets/img/InformationIcon.png"
+                alt="info"
+                class="ml-3 w-6 h-6 cursor-pointer icon-align-breakfast"
+                @mouseover="showTooltip('Breakfast')"
+                @mouseleave="hideTooltip"
+              />
+              <!-- Tooltip (shown on hover) -->
+              <div v-if="tooltipVisible" class="absolute bg-gray-700 text-white p-2 rounded-md shadow-lg tooltip">
+                <p>All Breakfast Meals:</p>
+                <ul>
+                  <li>Scrambled Eggs</li>
+                  <li>Hash Brown</li>
+                  <li>Smoothie</li>
+                </ul>
+              </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">500kcal</span>
+              Calories <span class="font-bold">1000kcal</span>
             </div>
           </div>
 
@@ -48,23 +66,23 @@
           <div class="grid grid-cols-5 gap-0 text-md">
             <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Protein</p>
-              <p class="font-bold text-black">10g</p>
+              <p class="font-bold text-black">20g</p>
             </div>
             <div class="nutrition-item bg-highlight-yellow p-1 text-center">
               <p class="text-gray-800">Carbs</p>
-              <p class="font-bold text-black">40g</p>
+              <p class="font-bold text-black">30g</p>
             </div>
             <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Cholesterol</p>
-              <p class="font-bold text-black">15g</p>
+              <p class="font-bold text-black">10g</p>
             </div>
             <div class="nutrition-item bg-highlight-yellow p-1 text-center">
               <p class="text-gray-800">Fats</p>
-              <p class="font-bold text-black">0g</p>
+              <p class="font-bold text-black">5g</p>
             </div>
             <div class="nutrition-item bg-protein-bg p-1 text-center">
               <p class="text-gray-800">Sodium</p>
-              <p class="font-bold text-black">0.3g</p>
+              <p class="font-bold text-black">0.1g</p>
             </div>
           </div>
         </div>
@@ -72,9 +90,27 @@
         <!-- Lunch Card -->
         <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
           <div class="flex justify-between items-center mb-2">
-            <div>
-              <H1 class="font-bold text-black">Lunch</H1>
-              <h3 class="text-gray-800 mt-2">Pad Thai</h3>
+            <div class="flex items-start">
+              <div>
+                <h1 class="font-bold text-black text-xl leading-normal">Lunch</h1>
+                <h3 class="text-gray-800 mt-1">Pad Thai</h3>
+              </div>
+              <img
+                src="../assets/img/InformationIcon.png"
+                alt="info"
+                class="ml-3 w-6 h-6 cursor-pointer icon-align-lunch"
+                @mouseover="showTooltip('Lunch')"
+                @mouseleave="hideTooltip"
+              />
+              <!-- Tooltip (shown on hover) -->
+              <div v-if="tooltipVisible" class="absolute bg-gray-700 text-white p-2 rounded-md shadow-lg tooltip">
+                <p>All Lunch Meals:</p>
+                <ul>
+                  <li>Pad Thai</li>
+                  <li>Grilled Chicken</li>
+                  <li>Salad</li>
+                </ul>
+              </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
               Calories <span class="font-bold">1000kcal</span>
@@ -139,6 +175,19 @@
 definePageMeta({
   layout: 'emptylayout'
 });
+
+import { ref } from 'vue';
+
+const tooltipVisible = ref(false);
+
+function showTooltip(mealCategory) {
+  // Logic to get meals from backend based on mealCategory
+  tooltipVisible.value = true;
+}
+
+function hideTooltip() {
+  tooltipVisible.value = false;
+}
 </script>
 
 <style>
@@ -202,5 +251,46 @@ definePageMeta({
   height: auto;
 }
 
+/* Ensure text size remains constant */
+.text-xl {
+  font-size: 1.25rem; /* Explicit font size */
+  line-height: 1.75rem; /* Ensure proper line height */
+}
+
+.icon-align-breakfast {
+  margin-left: 1rem;
+  margin-top: 0.25rem; /* Adjust to ensure it's aligned with the Lunch header */
+  vertical-align: middle;
+}
+
+.icon-align-lunch {
+  margin-left: 1rem;
+  margin-top: 0.25rem; /* Adjust to ensure it's aligned with the Lunch header */
+  vertical-align: middle;
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.tooltip p,
+.tooltip ul {
+  margin: 0;
+  padding: 0;
+}
+
+.tooltip ul li {
+  list-style-type: disc;
+  margin-left: 10px;
+}
 
 </style>
