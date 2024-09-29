@@ -230,7 +230,7 @@ export class AnalyticsService {
             const end_date_end_of_date = `${endDate} 23:59:59`;
 
             const meal_logging_summary_list = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
-                .where('meal_log_summary.date AT TIMEZONE :timeZone BETWEEN :start_of_date AND :end_of_date', { timeZone: timeZone, start_of_date: start_date_start_of_date, end_of_date: end_date_end_of_date })
+                .where('meal_log_summary.date AT TIME ZONE :timeZone BETWEEN :start_of_date AND :end_of_date', { timeZone: timeZone, start_of_date: start_date_start_of_date, end_of_date: end_date_end_of_date })
                 .andWhere('meal_log_summary.user_id = :user_id', { user_id: decodedHeaders['sub'] })
                 .orderBy('meal_log_summary.date', 'ASC')
                 .getMany();
