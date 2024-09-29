@@ -4,15 +4,18 @@
     <Header />
 
     <!-- Page Title, Time Frame Switcher, and Date Selector -->
+<!-- Page Title, Time Frame Switcher, and Date Selector -->
     <div class="container mx-auto px-4 py-6">
       <!-- Title and Time Frame Switcher -->
-      <div class="flex justify-between items-center">
-        <h1 class="text-4xl font-semibold">Diet Analytics</h1>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <h1 class="text-4xl font-semibold mb-4 md:mb-0">Diet Analytics</h1>
         <!-- Time Frame Switcher -->
-        <div class="flex space-x-4">
-          <button class="px-4 py-2 bg-green-200 text-green-900 font-medium rounded-full">Day</button>
-          <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Week</button>
-          <button class="px-4 py-2 bg-gray-200 text-gray-600 font-medium rounded-full">Month</button>
+        <div class="content-wrapper md:ml-8">
+          <div class="view-selector">
+            <button :class="{ active: view === 'day' }" @click="setView('day')">Day</button>
+            <button :class="{ active: view === 'week' }" @click="setView('week')">Week</button>
+            <button :class="{ active: view === 'month' }" @click="setView('month')">Month</button>
+          </div>
         </div>
       </div>
 
@@ -188,6 +191,12 @@ function showTooltip(mealCategory) {
 function hideTooltip() {
   tooltipVisible.value = false;
 }
+
+const view = ref('day')
+const setView = (newView) => {
+  view.value = newView
+  navigateTo(`/analytics-${newView}`)
+}
 </script>
 
 <style>
@@ -234,63 +243,59 @@ function hideTooltip() {
 }
 
 .nutrient-widget-container {
-  margin: 0 !important;
-  padding: 0 !important;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   height: auto;
+  margin-left: 12rem;
 }
 
-.nutrient-widget {
-  margin: 0 !important;
-  padding: 0 !important;
-  position: relative;
-  align-self: flex-start;
-  height: auto;
+.widget-content {
+  position: sticky;
+  top: 1rem;
+  width: 100%;
 }
 
-/* Ensure text size remains constant */
-.text-xl {
-  font-size: 1.25rem; /* Explicit font size */
-  line-height: 1.75rem; /* Ensure proper line height */
+.content-wrapper {
+  border-radius: 10px;
+  padding: 1rem;
+
 }
 
-.icon-align-breakfast {
-  margin-left: 1rem;
-  margin-top: 0.25rem; /* Adjust to ensure it's aligned with the Lunch header */
-  vertical-align: middle;
+.view-selector {
+  background-color: #ffffff;
+  border-radius: 20px;
+  display: flex;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+
 }
 
-.icon-align-lunch {
-  margin-left: 1rem;
-  margin-top: 0.25rem; /* Adjust to ensure it's aligned with the Lunch header */
-  vertical-align: middle;
+.view-selector button {
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #718096;
 }
 
-/* Tooltip styles */
-.tooltip {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.75);
+.view-selector button.active {
+  background-color: #87A98D;
   color: white;
-  padding: 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  z-index: 1000;
 }
 
-.tooltip p,
-.tooltip ul {
-  margin: 0;
-  padding: 0;
+.view-selector button:hover {
+  background-color: #02B5B1;
+  color: white;
 }
 
-.tooltip ul li {
-  list-style-type: disc;
-  margin-left: 10px;
+
+
+@media (min-width: 768px) {
+  .nutrient-widget-container {
+    margin-top: -7rem; /* Adjust this value to move the widget higher or lower */
+  }
 }
 
 </style>
