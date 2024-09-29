@@ -89,7 +89,7 @@ onMounted(async () => {
   let recipes = await useFillData().fillRecipes();
   let currentDate = new Date()
     currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
+    currentDate = currentDate.toISOString().split('T')[0]
   let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
   console.log(result)
   maxNutrientData.value = NutrientData.fromApi2(result.value[0])

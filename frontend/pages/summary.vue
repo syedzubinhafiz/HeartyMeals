@@ -80,7 +80,7 @@ onMounted(async () => {
 
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   recipePortion.value = summaryData.value.map(item => ({
     recipeId: item.id,
@@ -105,14 +105,15 @@ const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, c
 const calculateNutrition = async () => {
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   console.log(mealType.value);
 
   let body = {
     "mealDate": `${currentDate}`,
     "recipeIdPortions": recipePortion.value,
-    "mealType": `${mealType.value}`
+    "mealType": `${mealType.value}`,
+    "timeZone": "Asia/Kuala_Lumpur"
   };
 
   let result = await useApi("/meal-log-summary/calculate", "POST", body);
@@ -154,12 +155,12 @@ const calculateNutrition = async () => {
 const handleDoneClick = async () => {
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   for (let i = 0; i < summaryData.value.length; i++) {
     let currentDate = new Date()
     currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
+    currentDate = currentDate.toISOString().split('T')[0]
     let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
     if(result.isError) {
       useToast().error("Meal logging failed!")
