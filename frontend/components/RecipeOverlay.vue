@@ -14,7 +14,7 @@
           <button :class="{ active: activeTab === 'recipe' }" @click="activeTab = 'recipe'">Recipe</button>
           <button :class="{ active: activeTab === 'ingredients' }" @click="activeTab = 'ingredients'">Ingredients</button>
         </div>
-        <div class="tab-content">
+        <div class="tab-content scrollable-content">
           <div v-if="activeTab === 'nutrition'" class="nutrition-content">
             <!-- Nutrition Information Content -->
             <div class="nutrition-item">
@@ -285,8 +285,14 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 16px; /* Adjust the gap between cards as needed */
-  max-height: 400px; /* Set a fixed height for the container */
-  overflow: auto; /* Enable scrolling if content overflows */
+  max-height: 100vh; /* Set a fixed height for the container */
+}
+
+.scrollable-content {
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  word-wrap: break-word; /* Wrap long words */
+  max-height: 95%; /* Set a fixed height for the content */
 }
 
 .card {
