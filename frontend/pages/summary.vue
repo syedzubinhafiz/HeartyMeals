@@ -7,17 +7,24 @@
         <button @click="navigateTo('/add-meals')" class="back-button">← Back</button>
         <h2 class="page-title">Summary</h2>
         <div class="main-content">
-            <div class="summary-container">
-                <SummaryCard 
-                v-for="(item, index) in summaryData" 
-                :key="index" 
-                :item="item"
-                :itemNumber="index + 1"
-                @update-servings="updatePortions"
-                />
-            </div>
-            <div class="nutrition-summary">
-                <NutrientWidgetDelta :nutrientData="myNutrientData" :netNutrientData="myMealNutrientData" :maxNutrientData="myMaxNutritientData"/>
+
+          <div class="grid-container">
+                
+                <div class="left-container" style="height: 100%;">
+                  <div class="summary-container">
+                    <SummaryCard 
+                        v-for="(item, index) in summaryData" 
+                        :key="index" 
+                        :item="item"
+                        :itemNumber="index + 1"
+                        @update-servings="updatePortions"
+                        />
+                    </div>
+                  </div>
+
+                <div class="right-container">
+                    <NutritionWidget />
+                </div>
             </div>
         </div>
   <div class="button-container"> 
@@ -36,6 +43,8 @@
 import { warn } from 'vue';
 import MealData from '../../classes/mealData.js'
 import { useRoute } from 'vue-router';
+import NutritionWidget from '~/components/Nutrient/NutritionWidget.vue';
+
 
 const route = useRoute();
 
@@ -210,11 +219,32 @@ console.log(useMealLogging().unsavedMealList)
 }
 
 .main-content {
-    display: flex;
+  display: flex;
   flex-grow: 1;
   gap: 20px;
   margin-bottom: 20px;
 }
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "left right";
+    flex: 1;
+}
+
+.left-container{    
+    grid-area: left;
+    padding: 5%;
+    overflow-y: scroll;
+}
+
+.right-container{
+    grid-area: right;
+    padding: 5%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -5%;
+}
+
 .summary-container {
     width: 50%;
     overflow-y: auto;
