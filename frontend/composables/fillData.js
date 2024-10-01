@@ -507,5 +507,47 @@ export const useFillData = () => {
 
         return data
     }
-    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createComponent, createMeal}
+    
+    const fillEducationalContent = async() => {
+        // get
+        let data = await useApi("/education/get","GET")
+        console.log(data)
+        // if no data, fill
+        if(data.value.length==0) {
+            data = {
+                isError: false,
+                value: [
+                    {
+                        "id": "f306ad11-d624-481b-be15-222a5525bfe1",
+                        "title": "Understanding Heart Failure: Causes, Symptoms, and Treatment",
+                        "summary": "Heart failure is a chronic condition where the heart struggles to pump blood effectively, leading to various health complications. This article explores its causes, symptoms, types, and treatment options, highlighting the importance of early diagnosis and lifestyle changes in managing the disease.",
+                        "storage_links": {
+                            "content": {
+                                "0": "d60f7f6b-0a4b-4702-b1d8-3c7a88b90cda",
+                                "1": "d9280b06-a172-4d91-bbad-bd7725cbe0f1"
+                            },
+                            "thumbnail": "https://storage.googleapis.com/hf-nutrition.appspot.com/educational_content/f306ad11-d624-481b-be15-222a5525bfe1/boulder%20image%201.jpg?GoogleAccessId=firebase-adminsdk-n9w73%40hf-nutrition.iam.gserviceaccount.com&Expires=16725196800&Signature=iIBiEjxJCppY0pBRjAn2wU1VsEZE0a14Y099sEwPDRU6qkI3n%2F5aeeJUyy1N12b8JRhJgmBgedUm203hZ14pp6Yvf996CdlV6GaA4CEKqkN6dN7iQQNbmUigHfPm%2B2OW3Io9aIGMa6R8EX5EkJhwKSH%2BJZER3zbUAp3jvkgHqq%2Bw4xIMO47b1p6oasK65v8Lqt2ywfRSNmMhtzJ%2BuoOPCjWpjIqRrLbIasIaJ3qEcchF63rivb4P63Lgrnv5mhq1NATKqMOBnRXBAeCwkKlGmnhgWWwO1WECEYOt06Bz4XdIZdBkDCq021yr4fYIFxWRMtExdSkFs7OY61y2Wqftaw%3D%3D"
+                        },
+                        "visibility": "Public"
+                    },
+                    {
+                        "id": "22310938-e1c6-47ec-a972-9841dd933ffc",
+                        "title": "The Importance of Balanced Nutrition for a Healthy Lifestyle",
+                        "summary": "Proper nutrition is essential for maintaining overall health and well-being. This article explores the key components of a balanced diet, the benefits of good nutrition, and practical tips for improving dietary habits. By making informed food choices, individuals can boost energy and enhance QoL.",
+                        "storage_links": {
+                            "content": {
+                                "0": "fd6d34f7-dba8-4659-ab81-d65d2014d95c",
+                                "1": "ba4a927f-4460-4430-ada8-4e8fabb5d145"
+                            },
+                            "thumbnail": "https://storage.googleapis.com/hf-nutrition.appspot.com/educational_content/22310938-e1c6-47ec-a972-9841dd933ffc/default.png?GoogleAccessId=firebase-adminsdk-n9w73%40hf-nutrition.iam.gserviceaccount.com&Expires=16725196800&Signature=JJo30iyExKh4%2FDGWTP8MMEpyaX9HGdqTGU4fEuCLRas%2BXsDoRZnT%2FIUwLFfOHhNcW%2Bo0Dr6Jxp0dLlsa%2FrQWTvkqwRrVNdPg0lwqjZIHEIGHT1dtR8mZe0tUvnmr9HPzS%2BHSa20Q1ActIBoKuc3HXLaiwlVnZnHtbrhCGpOpjcxrTSSnngqOVkZnUUArK2ipEUTGwFYIajMDTp3PnM%2Bv%2BNkKfUQ%2FUCcx%2BfOo9oskO8zs%2F1cyr3VoLcTeUiFcibjyG51amLHvx4RcghRhpEbsnTfThBRKA79nCAReT465uSPXbKkXmqSTKIBwSClV8XXCDBO1KkFhdwweBPsgV8fW5A%3D%3D"
+                        },
+                        "visibility": "Public"
+                    }
+                ]                
+            }
+        }
+        console.log(data)
+        return data
+    }
+    return {fillIngredients, fillSeasoning, fillCuisines, fillRecipes, fillMealLogging, createComponent, createMeal, fillEducationalContent}
 }
