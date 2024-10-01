@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
-import { ArrayNotEmpty, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { ArrayNotEmpty, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Visibility } from "src/recipe/enum/visibility.enum";
 
 export class EducationalContentDTO{
 
@@ -10,6 +11,10 @@ export class EducationalContentDTO{
     @IsNotEmpty()
     @IsString()
     readonly summary: string;
+
+    @IsEnum(Visibility)
+    @IsNotEmpty()
+    readonly visibility: Visibility;
 
     @ArrayNotEmpty()
     @ValidateNested({ each: true })
