@@ -17,6 +17,7 @@ export default defineNuxtConfig({
       greensheartAccountScope: "openid profile email",
       baseURL: "http://localhost:3001",
       webURL:"",
+      isDebug: true,
     },
   },
   plugins: [

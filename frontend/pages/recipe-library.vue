@@ -342,8 +342,7 @@ const handleClickOutside = (event) => {
   padding: 15px;
 }
 
-.search-result-text-display,
-.selected-item-text-display {
+.search-result-text-display {
   height: 5%;
   width: 60%;
   display: flex;

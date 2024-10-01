@@ -191,7 +191,7 @@ export class RecipeService {
             
             // Search for recipe
             if (search != null){
-                query.andWhere("recipe.name ILIKE :search OR recipe.description ILIKE :search", { search: `%${search}%` })
+                query.andWhere("recipe.name ILIKE :search ", { search: `%${search}%` })
             }
 
             // Pagination
