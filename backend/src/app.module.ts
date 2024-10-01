@@ -30,6 +30,7 @@ import { dataSourceOptions } from './db/data-source';
 import { MealLoggingModule } from './meal-logging/meal-logging.module';
 import { FluidLoggingModule } from './fluid-logging/fluid-logging.module';
 import { MealLogSummaryModule } from './meal-log-summary/meal-log-summary.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { MealLogSummaryModule } from './meal-log-summary/meal-log-summary.module
     MealLoggingModule,
     FluidLoggingModule,
     MealLogSummaryModule,
+    AnalyticsModule
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
@@ -64,7 +66,7 @@ export class AppModule {
     seedEthnicity(this.dataSource);
     seedFoodCategory(this.dataSource);
     seedDietary(this.dataSource);
-    if (process.env.DEBUG === "true"){
+    if (process.env.SAVE_FIREBASE === "true"){
       initialiseFirebase();
     }
   }

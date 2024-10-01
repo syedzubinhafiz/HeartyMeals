@@ -11,6 +11,8 @@ import { UserAllergy } from 'src/allergy/user_allergy.entity';
 import { RecipeComponent } from 'src/recipe-component/recipe-component.entity';
 import { NutritionInfoDTO } from './dto/nutrition-info-dto';
 import { UserRole } from 'src/user/enum/user-role.enum';
+import { RecipeOfTheDay } from './recipe-of-the-day.entity';
+import { storage } from 'firebase-admin';
 
 @Injectable()
 export class RecipeService {
@@ -28,6 +30,8 @@ export class RecipeService {
         private recipeComponentRepository: Repository<RecipeComponent>,
         @InjectRepository(Recipe)
         private recipeRepository: Repository<Recipe>,
+        @InjectRepository(RecipeOfTheDay)
+        private recipeOfTheDayRepository: Repository<RecipeOfTheDay>
 
     ){}
 
@@ -147,6 +151,7 @@ export class RecipeService {
                 'recipe.id', 
                 'recipe.name', 
                 'recipe.description', 
+                'recipe.instruction',
                 'recipe.recommended_meal_time', 
                 'recipe.is_approved', 
                 'recipe.visibility', 
@@ -165,8 +170,8 @@ export class RecipeService {
                     WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
                 )
             `, { user_allergy_food_category_ids });
-        
             
+        
             // Get user selected cuisine
             if (cuisineIds.length > 0){
                 query.andWhere("recipe.cuisine_id IN (:...ids)", {ids:cuisineIds })
@@ -395,6 +400,97 @@ export class RecipeService {
             return recipe.id;
         } catch(e){
             throw new Error("Error deleting recipe")
+        }
+    } 
+
+    getPath(userId: string = null, recipeId: string, dietaryId: string): string {
+        if (userId != null){
+            return `user/${userId}/custom_recipe/${recipeId}`;
+        }
+        else {
+            return `official_recipe/dietary/${dietaryId}/${recipeId}`;
+        }
+        
+    }
+
+    
+    /**
+     * This function is used to get the recipe of the day for the user. Each user will have a unique recipe of the day
+     * @param decodedHeaders Access token containing user information
+     * @returns Recipe of the day for the user
+     */
+    async getRecipeOfTheDay(decodedHeaders: any){
+
+        const user =  await this.userRepository.findOneBy({
+            user_id: decodedHeaders['sub']
+        })
+
+        if (user == null){
+            throw new HttpException("User not found", 400)
+        }
+
+        // Get recipe of the day 
+        let recipe_of_the_day = await this.recipeOfTheDayRepository.createQueryBuilder("recipe_of_the_day")
+        .leftJoinAndSelect("recipe_of_the_day.user", "user")
+        .leftJoinAndSelect("recipe_of_the_day.recipe", "recipe")
+        .select()
+        .where("recipe_of_the_day.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+        .getOne();
+    
+        if( recipe_of_the_day == null){
+            //create new recipe of the day for the current user 
+            recipe_of_the_day =  new RecipeOfTheDay();
+            recipe_of_the_day.user = user;
+            recipe_of_the_day.date = new Date();   
+        }
+
+        // Check if the date in entry is not the current date
+        if (
+            recipe_of_the_day.date.toISOString().split('T')[0] !== new Date().toISOString().split('T')[0] || 
+            recipe_of_the_day.recipe === undefined
+        ){
+          
+            // get user allergies 
+            const user_allergy_food_category = await this.userAllergyRepository.createQueryBuilder("user_allergy")
+            .select('user_allergy.food_cat_id')
+            .where("user_allergy.user_id = :user_id", { user_id: decodedHeaders['sub'] })
+            .getMany();
+
+            // Get all food category ids that the user is allergic to
+            const user_allergy_food_category_ids =  user_allergy_food_category.map( (allergy) => allergy.food_cat_id)
+
+            //Get all official recipes that is public and recipe that belongs to the user
+            const query = this.recipeRepository.createQueryBuilder("recipe")
+            .leftJoinAndSelect("recipe.user", "user")
+            .leftJoinAndSelect("recipe.dietary", "dietary")
+            .select()
+            .where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC})
+            .andWhere(`
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
+                    WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
+                )
+            `, { user_allergy_food_category_ids });
+
+            // If user has dietary restriction, filter out recipes that does not match the dietary restriction 
+            if (user.dietary !== null){
+                query.andWhere("recipe.dietary_id = :dietary_id", { dietary_id: user.dietary.id })
+            };
+
+            query.orderBy("RANDOM()")
+
+            recipe_of_the_day.recipe = await query.getOne();
+            recipe_of_the_day.date = new Date();
+            this.recipeOfTheDayRepository.save(recipe_of_the_day);
+        }
+        
+        return {
+            id: recipe_of_the_day.recipe.id,
+            name: recipe_of_the_day.recipe.name,
+            description: recipe_of_the_day.recipe.description,
+            nutrition_info: recipe_of_the_day.recipe.nutrition_info,
+            storage_links: recipe_of_the_day.recipe.storage_links
         }
     } 
 }

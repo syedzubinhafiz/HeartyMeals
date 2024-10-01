@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Delete, Headers, HttpException, Param, Post, Query } from '@nestjs/common';
 import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/user.entity';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm'; 
 import { RecipeService } from './recipe.service';
 import { RecipeComponentService } from 'src/recipe-component/recipe-component.service';
 import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
 import { CommonService } from 'src/common/common.service';
 import { Recipe } from './recipe.entity';
+import { StorageService } from 'src/storage/storage.service';
 
 @Controller('recipe')
 export class RecipeController {
@@ -18,6 +18,7 @@ export class RecipeController {
         private readonly entityManager: EntityManager,
         private recipeComponentArchiveService: RecipeComponentArchiveService,
         private readonly commonService: CommonService,
+        private storageService: StorageService,
     ) {}
 
     @Post('add')
@@ -29,8 +30,19 @@ export class RecipeController {
                 const recipe_component_list = await this.recipeComponentService.addRecipeComponent(new_recipe, payload.components, transactionalEntityManager)
 
                 // If the user add recipe that is not official, calculate the nutrition info based on the recipe components
+                var upload_path = "";
                 if (is_custom){
                     await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
+                    // get path for custom recipe
+                    upload_path = this.recipeService.getPath(decoded['sub'] as string, new_recipe.id, new_recipe.dietary.id);
+                }
+                else {
+                    // get path for official recipe
+                    upload_path = this.recipeService.getPath(null, new_recipe.id, new_recipe.dietary.id);
+                }
+
+                if (payload.files != undefined){
+                    await this.storageService.handleUpload(upload_path, payload.files, new_recipe, Recipe, transactionalEntityManager);
                 }
             });
             return new HttpException("Recipe added successfully", 200);
@@ -96,12 +108,18 @@ export class RecipeController {
                 pagination,
                 recipeId
             )
-
             // Return the recipe list or recipe details based on the pagination
             if (page_number != 0 && page_size != 0){
 
+                var recipe_list = recipes as Recipe[];
+
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    delete recipe.instruction;
+                }
+
                 return {
-                    data: recipes,
+                    data: recipe_list,
                     page_number,
                     page_size,
                     total_recipe,
@@ -109,13 +127,42 @@ export class RecipeController {
                 }
             // If pagination is not required return the recipe list
             } else if( page_number == 0 && page_size == 0 && recipeId == null){ 
-                return recipes;
+                var recipe_list = recipes as Recipe[];
+
+                // post processing to get thumbnail link and remove instruction
+                for (const recipe of recipe_list){
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    delete recipe.instruction;
+                }
+
+                return recipe_list;
 
             // If recipeId is provided return the recipe details with components info 
             }else {
                 const recipe = recipes as Recipe;
 
+                // get link for thumbnail
+                recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+
+                // Loop through the storage links content and replace the instruction src index with the corresponding storage link
+                for (const [index, storage_id] of Object.entries(recipe.storage_links['content'])) {
+                    const link = await this.storageService.getLink(storage_id as string);
+                    recipe.instruction = recipe.instruction.map(instruction =>
+                        instruction.includes(`src="${index}"`) ? instruction.replace(`src="${index}"`, `src="${link}"`) : instruction
+                    );
+                }
+
                 const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipe.id);
+
+                // get link for components
+                for (const component of recipe_component_list.ingredient){
+                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                }
+                for (const component of recipe_component_list.seasonings){
+                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                }
+
+
                 return {
                     recipe: recipe,
                     components: recipe_component_list
@@ -124,7 +171,7 @@ export class RecipeController {
         } catch (e) {
             return new HttpException(e.message, 400)
         }
-        
+
     }
 
 
@@ -151,9 +198,16 @@ export class RecipeController {
         // Call the getRecentlyAddedList business logic to get the recently added recipe list
         const[recipe_list, total_recipe] = await this.recipeService.getRecentlyAddedList(decoded_headers, page_number, page_size);
 
+        var recipe_list_with_thumbnail = recipe_list as Recipe[];
+
+        for (const recipe of recipe_list_with_thumbnail){
+            recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+            delete recipe.instruction;
+        }
+
         // Return the recently added recipe list with pagination info
         return {
-            data: recipe_list,
+            data: recipe_list_with_thumbnail,
             total_recipe,
             page_number,
             page_size,
@@ -169,7 +223,17 @@ export class RecipeController {
      */
     @Get('get-components')
     async getRecipeComponents(@Query("recipeId") recipeId: string){
-        return await this.recipeComponentService.getRecipeComponents(recipeId)
+        const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipeId);
+
+        // get link for components
+        for (const component of recipe_component_list.ingredient){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+        for (const component of recipe_component_list.seasonings){
+            component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+        }
+        
+        return recipe_component_list;
     }
     
 
@@ -209,5 +273,18 @@ export class RecipeController {
 
         }
     }
+
+    /**
+     * Endpoint to get the recipe of the day
+     * @param headers header containing the authorization token
+     * @returns Recipe of the day
+     */
+    @Get('recipe-of-the-day')
+    async getRecipeOfTheDay(@Headers() headers: any) {
+        const decoded = this.commonService.decodeHeaders(headers.authorization);
+        const recipe = await this.recipeService.getRecipeOfTheDay(decoded);
+        recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+        return recipe;
+    }  
     
 }

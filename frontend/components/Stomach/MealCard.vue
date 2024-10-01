@@ -5,9 +5,9 @@
          <div class="flex flex-col grow">
             <H3>{{ modelValue.name }}</H3>
             <P>Serving Size: {{ modelValue.servingSize }}</P>
-            <p class="text-xs">Calories: {{ modelValue.nutrientData.calories }}mg Protein: {{ modelValue.nutrientData.protein }}mg</p>
-            <p class="text-xs">Fat: {{ modelValue.nutrientData.fats }}mg Carbs: {{ modelValue.nutrientData.carbohydrtates }}mg Sodium: {{ modelValue.nutrientData.sodium }}mg</p>
-            <p class="text-xs">Cholesterol: {{ modelValue.nutrientData.cholesterol }}mg</p>
+            <p class="text-xs">Calories: {{ +modelValue.nutrientData.calories.toFixed(2) }}kcal Protein: {{ +modelValue.nutrientData.protein.toFixed(2) }}g</p>
+            <p class="text-xs">Fat: {{ +modelValue.nutrientData.fats.toFixed(2) }}g Carbs: {{ +modelValue.nutrientData.carbohydrtates.toFixed(2) }}g Sodium: {{ +modelValue.nutrientData.sodium.toFixed(2) }}g</p>
+            <p class="text-xs">Cholesterol: {{ +modelValue.nutrientData.cholesterol.toFixed(2) }}g</p>
          </div>
          <div class="flex flex-row ml-5 space-x-2">
             <P>servings:</P>
