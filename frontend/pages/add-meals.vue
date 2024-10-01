@@ -74,6 +74,7 @@
       v-model:isSidebarOpen="isSidebarOpen" 
       :mealType="mealType" 
       :selectedDate="selectedDate"
+      :ismealplanning="ismealplanning"
     />
       <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
@@ -110,6 +111,7 @@ const searchDataList = ref([]);
 const route = useRoute()
 const mealType = ref(route.query.mealType || "");
 const selectedDate = ref(route.query.selectedDate || "");
+const ismealplanning = ref(route.query.ismealplanning === 'true');
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;

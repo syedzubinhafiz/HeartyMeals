@@ -16,10 +16,11 @@
           </div>
         </div>
         <nuxt-link 
-          :to="{ path: '/summary', query: { mealType: mealType, selectedDate: selectedDate } }"
-        >
-          <ButtonGreen>Summary</ButtonGreen>
-        </nuxt-link>
+  :to="{ path: '/summary', query: { mealType: mealType, selectedDate: selectedDate, ismealplanning: ismealplanning } }"
+>
+  <ButtonGreen>Summary</ButtonGreen>
+</nuxt-link>
+
 
       </div>
       
@@ -53,6 +54,10 @@ const props = defineProps({
   selectedDate: {
     type: String,
   required: true},
+  ismealplanning: { 
+    type: Boolean,
+    required: true
+  }
 })
 // onMounted(async () => {
 //   // await useApi("/dietary","GET")

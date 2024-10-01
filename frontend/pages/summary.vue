@@ -60,6 +60,9 @@ const recipePortion = []
 // const mealType = "Breakfast"
 const mealType = ref(route.query.mealType || "");
 const selectedDate = ref(route.query.selectedDate || "");
+const ismealplanning = ref(route.query.ismealplanning === 'true'); 
+
+console.log("Is Meal Planning: ", ismealplanning.value); 
 const formatDateToISO = (dateStr) => {
   const date = new Date(dateStr); 
   return date.toISOString().slice(0, 23); 
