@@ -69,7 +69,12 @@
     <div class="text-black">
 
       <!-- Sidebar Component -->
-      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen" :mealType="mealType" />
+      <StomachSidebar 
+      v-model="mealDataList2" 
+      v-model:isSidebarOpen="isSidebarOpen" 
+      :mealType="mealType" 
+      :selectedDate="selectedDate"
+    />
       <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
@@ -104,6 +109,7 @@ const searchDataList = ref([]);
 
 const route = useRoute()
 const mealType = ref(route.query.mealType || "");
+const selectedDate = ref(route.query.selectedDate || "");
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;

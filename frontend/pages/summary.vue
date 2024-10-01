@@ -59,11 +59,20 @@ const summaryData = ref([])
 const recipePortion = []
 // const mealType = "Breakfast"
 const mealType = ref(route.query.mealType || "");
+const selectedDate = ref(route.query.selectedDate || "");
+const formatDateToISO = (dateStr) => {
+  const date = new Date(dateStr); 
+  return date.toISOString().slice(0, 23); 
+};
 
 onMounted(async () => {
   await useApi("/dietary","GET")
   summaryData.value = useMealLogging().unsavedMealList.value
   console.log(summaryData.value)
+  if (selectedDate.value) {
+    const formattedDate = formatDateToISO(selectedDate.value);
+    console.log("Formatted Date: ", formattedDate);
+  }
   // console.log(mealLoggingData.value)
   // mealLoggingData = mealLoggingData.value["Breakfast"]
   //   .concat(mealLoggingData.value["Lunch"])
@@ -74,9 +83,6 @@ onMounted(async () => {
   // tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
   // console.log(tempMealData.value)
   // console.log(summaryData.value)
-
-
-
 
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
