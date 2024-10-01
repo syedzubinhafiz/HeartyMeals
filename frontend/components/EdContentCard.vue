@@ -8,7 +8,7 @@
   
       <!-- Text section -->
       <div class="text-container bg-white p-4">
-        <h3 class="text-lg font-bold">Diagnosing Heart Failure</h3>
+        <h3 class="text-lg font-bold" style="color: black;">Diagnosing Heart Failure</h3>
         <p class="mt-2 text-gray-600">
           It's always important to have regular checkups even if you're not noticing any particular symptoms. If you do notice any of the potential signs of heart failure, take action and talk to a health care professional.
         </p>

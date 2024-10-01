@@ -26,14 +26,15 @@
       </div>
   
       <!-- Adjusted Card Container -->
-      <div class="flex justify-center items-center flex-wrap mt-12 px-6 z-20 backdrop:relative">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 row-gap-12 w-full justify-items-center mb-20">
-            <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
-            <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
-            <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
-            <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
-        </div>
-      </div>
+      <<div class="flex justify-center items-center flex-wrap mt-12 px-4 z-20 backdrop:relative">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8 w-full max-w-screen-lg justify-items-center mb-20">
+    <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
+    <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
+    <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
+    <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" />
+  </div>
+</div>
+
     </div>
     <Footer/>
     <EdContentOverlay 
@@ -74,7 +75,15 @@ function openOverlay(header, imageSrc) {
     padding-top: 20px;
     position: relative;
   }
-  
+  .scrollable-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: calc(100% - 40px); /* Deducts padding from available height */
+  overflow-y: auto; /* Enables vertical scrolling */
+  padding: 20px;
+  box-sizing: border-box;
+}
   .bg-custom-color {
     background-color: #DAC2A8;
     min-height: 100vh;
