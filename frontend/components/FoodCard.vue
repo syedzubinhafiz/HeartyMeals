@@ -1,5 +1,10 @@
 <template>
   <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
+    <!-- Banner for Not Consumed -->
+    <div v-if="!is_consumed" class="not-consumed-banner absolute top-0 left-0 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-br-lg">
+      Not Consumed
+    </div>
+
     <!-- Food Image -->
     <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
@@ -70,7 +75,6 @@ const toggleConsumed = () => {
 };
 </script>
 
-
 <style scoped>
 .food-card {
   background-color: #F3EADA; /* Use your preferred background color */
@@ -85,5 +89,18 @@ const toggleConsumed = () => {
 
 .food-card:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add a hover effect */
+}
+
+.not-consumed-banner {
+  /* Banner styles for "Not Consumed" */
+  background-color: #e3342f; /* Red color */
+  color: white;
+  font-size: 0.75rem; /* Small text */
+  font-weight: bold;
+  padding: 4px 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-bottom-right-radius: 5px; /* Rounded corner for bottom-right */
 }
 </style>
