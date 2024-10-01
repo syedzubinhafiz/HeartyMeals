@@ -44,12 +44,11 @@
     font-family: 'Overpass', sans-serif;
 }
   .nutrition-bar {
-    margin-top: 2vh;
-    margin-bottom: 2vh;
+    margin-top: clamp(0.5%, 3.5%, 35%);
     justify-content: center;
     display: flex;
     flex-direction: column;
-    width: 37.5vh;
+    width: 100%;
   }
 
   .label-grid {
@@ -68,22 +67,22 @@
   .label-grid-left {
     grid-area: label-grid-left;
     text-align: left;
-    font-size: 1.75vh;
+    font-size: 90%;
   }
 
   .label-grid-right {
     grid-area: label-grid-right;
     text-align: right;
-    font-size: 1.4vh;
+    font-size: 90%;
   }
 
   .progress-bar-container {
     position: relative;
-    margin-top: 1vh;
-    margin-bottom: 1vh;
-    height: 1vh;
-    width: 37.5vh;
-    border-radius: 50vh;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    height: clamp(.8vh, 1vh, 1.5vh);
+    width: 100%;
+    border-radius: 50px;
     background-color: #e0e0e0;
   }
 

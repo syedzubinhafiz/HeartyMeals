@@ -23,7 +23,10 @@
                   </div>
 
                 <div class="right-container">
-                    <NutritionWidget />
+                  <div class="summary-nutrition-widget">
+                    <span class="summary-nutrition-title">Total Nutrition</span>
+                    <NutritionWidget :nutrients="nutrients"/>
+                  </div>
                 </div>
             </div>
         </div>
@@ -68,6 +71,34 @@ const summaryData = ref([])
 const recipePortion = []
 // const mealType = "Breakfast"
 const mealType = ref(route.query.mealType || "");
+
+// user daily budget, user remaining budget, and user after meal  budget
+const nutrients = ref([
+    {
+      calories: 2000,
+      carbs: 2000,
+      protein: 2000,
+      fats: 2000,
+      sodium: 2000,
+      cholesterol: 2000
+    },
+    {
+      calories: 1800,
+      carbs: 1800,
+      protein: 1800,
+      fats: 1800,
+      sodium: 1800,
+      cholesterol: 1800
+    },
+    {
+      calories: 1400,
+      carbs: 1400,
+      protein: 1400,
+      fats: 1400,
+      sodium: 1400,
+      cholesterol: 1400
+    }
+  ]);
 
 onMounted(async () => {
   await useApi("/dietary","GET")
@@ -226,7 +257,7 @@ console.log(useMealLogging().unsavedMealList)
 }
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 50% 50%;
     grid-template-areas: "left right";
     flex: 1;
 }
@@ -240,9 +271,23 @@ console.log(useMealLogging().unsavedMealList)
 .right-container{
     grid-area: right;
     padding: 5%;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: -5%;
+}
+
+.summary-nutrition-widget{
+  width: clamp(30%,50%,70%);
+  height: clamp(30%,80%,80%);
+  background-color: #F3EADA;
+  padding: 4%;
+  border-radius: 15%;
+  box-shadow: 0px 4px 16.2px -1px rgba(0,0,0,0.1);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.summary-nutrition-title{
+  font-size: 150%;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .summary-container {
