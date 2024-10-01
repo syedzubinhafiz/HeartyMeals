@@ -17,6 +17,6 @@ export class EducationalContentDTO{
     readonly visibility: Visibility;
 
     @ArrayNotEmpty()
-    @ValidateNested({ each: true })
+    @IsString({ each: true })
     readonly content: string[];
 }
