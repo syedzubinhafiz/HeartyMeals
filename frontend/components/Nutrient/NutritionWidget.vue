@@ -119,7 +119,7 @@
         },
     });
 
-    const nutrientsType = ['calories', 'carbs', 'protein', 'fats', 'sodium', 'cholesterol'];
+    const nutrientsType = ['calories', 'carbs', 'protein', 'fat', 'sodium', 'cholesterol'];
 
     for (let i = 0; i < nutrientsList.length; i++) {
         const daily_budget = props.nutrients[0][nutrientsType[i]];

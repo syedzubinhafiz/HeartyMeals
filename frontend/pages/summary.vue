@@ -78,7 +78,7 @@ const nutrients = ref([
       calories: 2000,
       carbs: 2000,
       protein: 2000,
-      fats: 2000,
+      fat: 2000,
       sodium: 2000,
       cholesterol: 2000
     },
@@ -86,7 +86,7 @@ const nutrients = ref([
       calories: 1800,
       carbs: 1800,
       protein: 1800,
-      fats: 1800,
+      fat: 1800,
       sodium: 1800,
       cholesterol: 1800
     },
@@ -94,7 +94,7 @@ const nutrients = ref([
       calories: 1400,
       carbs: 1400,
       protein: 1400,
-      fats: 1400,
+      fat: 1400,
       sodium: 1400,
       cholesterol: 1400
     }
