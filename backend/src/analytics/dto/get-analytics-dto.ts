@@ -23,7 +23,6 @@ export class GetMonthlyAnalyticsDTO {
 
     @IsNotEmpty()
     @IsDateString()
-    @IsDaysDifference(29, { message: 'The difference between startDate and endDate must be exactly 30 days' })
     readonly endDate: string;
 
     @IsNotEmpty()

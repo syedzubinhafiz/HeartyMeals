@@ -7,7 +7,7 @@ import { RecipeDTO } from 'src/recipe/dto/recipe-dto';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { addDays, format } from 'date-fns';
-import { getDailyAnalyticsDTO } from './dto/get-analythics-dto';
+import { getDailyAnalyticsDTO } from './dto/get-analytics-dto';
 
 
 
