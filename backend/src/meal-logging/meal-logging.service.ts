@@ -1,18 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { formatInTimeZone, fromZonedTime, toDate } from 'date-fns-tz';
-import { addDays, endOfDay, format, formatISO, isAfter, isBefore, isSameDay, parseISO, startOfDay }from 'date-fns';
 import { MealLogging } from "./meal-logging.entity";
 import { EntityManager, In, Repository } from "typeorm";
 import { MealType } from "../meal-type.enum";
 import { User } from "src/user/user.entity";
 import { Recipe } from "src/recipe/recipe.entity";
+import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
-import { AddMealLoggingSummaryDTO } from "src/meal-log-summary/dto/add-meal-logging-summary-dto";
-import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
-import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
-import { CommonService } from "src/common/common.service";
 
 @Injectable()
 export class MealLoggingService {
@@ -23,75 +19,63 @@ export class MealLoggingService {
         private userRepository: Repository<User>,
         @InjectRepository(Recipe)
         private recipeRepository: Repository<Recipe>,
-        private commonService: CommonService,
     ){}
 
     /**
      * Log meals based on the meal type
      * @param decodedHeaders - decoded headers from the request
-     * @param addMealLoggingSummaryDTO - payload that contains the meal logging details
+     * @param mealLoggingDTO - DTO containing the meal type and recipe ids
      * @param transactionalEntityManager - transactional entity manager
      * @returns the saved entries in the database
-     * 
-     * @example addMealLogging(decodedHeaders, '2021-10-10T12:00:00', '2021-10-10T12:00:00', 'Asia/Singapore', [{recipeId: 1, portion: 1}, {recipeId: 2, portion: 2}], MealType.BREAKFAST, transactionalEntityManager)
      */
-    async addMealLogging(decodedHeaders: any, addMealLoggingSummaryDTO: AddMealLoggingSummaryDTO, transactionalEntityManager: EntityManager){
+    async addMealLogging(decodedHeaders: any, mealLoggingDTO: AddMealLoggingDTO, transactionalEntityManager: EntityManager){
         var all_entries = []
         try {
-            // Get user object
-            var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
 
-            // Validate date - between today and next 6 days
-            if (!this.commonService.isWithinDateRange(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.userLocalDateTime, addMealLoggingSummaryDTO.timeZone, 6)){
-                throw new HttpException("Cannot add meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
-            };
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new HttpException("User not found.", 404);
+            }
 
-            // Get all the recipe objects from the recipe ids
-            const all_recipe_ids = addMealLoggingSummaryDTO.recipeIdPortions.map(recipeJSON => recipeJSON['recipeId']);
+            // Validate date 
+            const meal_date = new Date(mealLoggingDTO.mealDate);
+            const result = this.checkDate(meal_date);
+            if (result.editable == false){ 
+                // Cannot edit past or future meals
+                throw new HttpException("Cannot add meal loggings for past or future meals.", 404); 
+            } 
+
+            const all_recipe_ids = mealLoggingDTO.recipeIds.map(recipeJSON => recipeJSON.recipeId);
+
             const recipes_object = await this.recipeRepository.findBy({
                  id: In(all_recipe_ids),
             });
 
-            // Create a map of recipe objects for easy access
-            const recipe_map = new Map(recipes_object.map(recipe => [recipe.id, recipe]));
-
-            // get the date in UTC
-            const meal_date = fromZonedTime(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.timeZone);
+            const recipeMap = new Map(recipes_object.map(recipe => [recipe.id, recipe]));
 
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
-            await Promise.all(addMealLoggingSummaryDTO.recipeIdPortions.map(async recipeJSON => {
+            const results = await Promise.all(mealLoggingDTO.recipeIds.map(async recipeJSON => {
                 // Validate recipeId
-                const recipe_object = recipe_map.get(recipeJSON['recipeId']);
+                const recipe_object = recipeMap.get(recipeJSON.recipeId);
                 if (!recipe_object) {
-                    throw new HttpException(`Recipe with id ${recipeJSON['recipeId']} not found`, HttpStatus.NOT_FOUND);
+                    throw new HttpException(`Recipe with id ${recipeJSON.recipeId} not found`, 404);
                 }
 
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
                 new_meal_logging.consumed_date_time = meal_date;
-                new_meal_logging.type = addMealLoggingSummaryDTO.mealType;
-                new_meal_logging.portion = recipeJSON['portion'];
+                new_meal_logging.is_consumed = false;
+                new_meal_logging.type = mealLoggingDTO.mealType;
+                new_meal_logging.portion = recipeJSON.portion;
                 new_meal_logging.user = user_object;
                 new_meal_logging.recipe = recipe_object;
-
-                // Check if the meal is consumed or planned
-                if (!addMealLoggingSummaryDTO.isMealPlanning){
-                    // meal logging
-                    new_meal_logging.is_consumed = true;
-                }
-                else {
-                    // meal planning
-                    new_meal_logging.is_consumed = false;
-                }
-
                 
                 all_entries.push(new_meal_logging)
             }));
 
             // Save all recipes in one go
             const saved_entries = await transactionalEntityManager.save(all_entries);
-
-            // Return the meal logging ids of the saved entries
             return saved_entries.map(entry => entry.id);
         } catch (e) {
             throw e; // Return error to controller
@@ -100,109 +84,128 @@ export class MealLoggingService {
 
 
     /**
-     * Get all the meals of a user based on the start and end date
+     * Get all the meals of a user in a specific day
      * @param decodedHeaders - decoded headers from the request
-     * @param getMealLoggingDTO - DTO containing the start and end date
-     * @returns a list of lists of meals sorted in meal types
+     * @param date - date string in the format YYYY-MM-DDTHH:MM:SS.SSS 
+     * @returns a list of lists of meals 
      */
-    async getMeals(decodedHeaders: any, getMealLoggingDTO: GetMealLoggingDTO){
+    async getMealsPerDay(decodedHeaders: any, dateValidationDto: DateValidationDTO){
         try {
-            // Get user object
-            var user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
-
-            // get the start and end of the day 
-            const start_of_day = `${getMealLoggingDTO.startDate} 00:00:00`;
-            var end_of_day = `${getMealLoggingDTO.endDate} 23:59:59`;
-            if (getMealLoggingDTO.endDate == null || getMealLoggingDTO.endDate == undefined){
-                end_of_day = `${getMealLoggingDTO.startDate} 23:59:59`;
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new HttpException("User not found.", 404);
             }
+
+            const new_date = new Date(dateValidationDto.date);
             
-            // get all the meals recoreded in a day using time zone
+            // get all the meals recoreded in a day
             var entries = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .leftJoinAndSelect("meal_logging.recipe", "recipe")
-                .where('meal_logging.consumed_date_time AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay', { timeZone: getMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
+                .where('DATE(meal_logging.consumed_date_time) = DATE(:date)', { date: new_date })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
                 .andWhere("meal_logging.deleted_at IS NULL")
-                .orderBy("meal_logging.consumed_date_time", "ASC")
-                .getMany();
-
-            // get the date range from startDateTime to endDateTime
-            const list_of_dates = this.commonService.listDatesWithTimezone(start_of_day, end_of_day, getMealLoggingDTO.timeZone);
-            
-            // Group entries by date
-            const entries_group_by_date = entries.reduce((acc, entry) => {
-                // format to user local timezone
-                const date = formatInTimeZone(entry.consumed_date_time, getMealLoggingDTO.timeZone, "yyyy-MM-dd"); 
-                if (!acc[date]) {
-                    acc[date] = [];
-                }
-                acc[date].push(entry);
-                return acc;
-            }, {});
-
-            var output = {};
-
-            // for each date
-            for (const date of list_of_dates){
-                // sort them by their meal type
-                var sorted = {
-                    "Breakfast": [],
-                    "Lunch": [],
-                    "Dinner": [],
-                    "Other": []
-                }
-
-                // if there is any entry of meal logging for the date
-                if ((date in entries_group_by_date)){
-                    // get the entries for each date
-                    // sort by meal type
-                    entries_group_by_date[date].forEach(entry => {
-                        if (entry.type == MealType.BREAKFAST){
-                            sorted["Breakfast"].push(entry);
-                        }
-                        else if (entry.type == MealType.LUNCH){
-                            sorted["Lunch"].push(entry);
-                        }
-                        else if (entry.type == MealType.DINNER){
-                            sorted["Dinner"].push(entry);
-                        }
-                        else {
-                            sorted["Other"].push(entry);
-                        }
-                    });
-                }
-                
-                output[date] = {
-                    'meals': sorted
-                };
+                .getMany()
             }
-
-            return output;
-        }
         catch (e){
-            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw e;
         }
+
+        // sort them by their meal type
+        var sorted = {
+            "Breakfast": [],
+            "Lunch": [],
+            "Dinner": [],
+            "Other": []
+        }
+        entries.forEach(entry => {
+            if (entry.type == MealType.BREAKFAST){
+                sorted["Breakfast"].push(entry);
+            }
+            else if (entry.type == MealType.LUNCH){
+                sorted["Lunch"].push(entry);
+            }
+            else if (entry.type == MealType.DINNER){
+                sorted["Dinner"].push(entry);
+            }
+            else {
+                sorted["Other"].push(entry);
+            }
+        });
+        return sorted;
     }
 
     /**
      * Delete a list of entries of meal logging
      * @param decodedHeaders - decoded headers from the request
-     * @param deleteMealLoggingDTO - DTO containing the list of meal logging ids
-     * @param transactionalEntityManager - transactional entity manager
+     * @param mealLoggingIdList - a list of corresponding ids for meal logging
      * @returns delete result of all entries
      */
     async deleteMealLogging(decodedHeaders: any, deleteMealLoggingDTO: DeleteMealLoggingDTO, transactionalEntityManager: EntityManager){
+        var delete_entries = []
+        const delete_date = new Date();
         try {
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .where("meal_logging.id = :id", { id: deleteMealLoggingDTO.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
                 .andWhere("meal_logging.deleted_at IS NULL")    
-                .getOneOrFail()
+                .getOne()
 
-            // Soft delete the entry
-            entry.deleted_at = fromZonedTime(deleteMealLoggingDTO.mealDate, deleteMealLoggingDTO.timeZone);
+            if (!entry || entry == null){ throw new HttpException("Meal logging entry is not found or already consumed.", 404); }
+
+            // Check if meal can be deleted
+            const result = this.checkDate(entry.consumed_date_time);
+            if (result.editable == false){ throw result.message; }
+
+            entry.deleted_at = delete_date;
+            delete_entries.push(entry);
             
-            await transactionalEntityManager.save(entry);
+            await transactionalEntityManager.save(delete_entries);
+            return true;
+        }
+        catch (e){
+            throw e;
+        }
+    }
+    
+
+    /**
+     * Mark the meal consumed 
+     * @param decodedHeaders - decoded headers from the request
+     * @param mealLoggingId - meal logging id
+     * @returns true after the entry is saved to the database
+     */
+    async markIsConsumed(decodedHeaders: any, mealLoggingId: string){
+        try {
+            // Validate userId
+            var user_object = await this.userRepository.findOneBy({ user_id: decodedHeaders['sub'] });
+            if (!user_object) {
+                throw new HttpException("User not found.", 404);
+            }
+
+            var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
+                .where("meal_logging.id = :id", { id: mealLoggingId })
+                .andWhere("meal_logging.user_id = :user_id", { user_id: user_object.user_id })
+                .getOne()
+
+            if (!entry || entry == undefined){ 
+                throw new HttpException(`Meal logging with id ${mealLoggingId} not found`, 404);
+            }
+            
+            if (entry.is_consumed){ 
+                throw new HttpException(`Meal is consumed already.`, 400);
+            }
+
+            // Check if meal can be marked as consumed
+            // use consumed date time to check
+            const result = this.checkDate(entry.consumed_date_time);
+            if (result.editable == true && result.planning == false){ 
+                entry.is_consumed = true;
+                entry.updated_at = new Date();
+                await this.mealLoggingRepository.save(entry);
+                return true; 
+            }
+            else { throw new HttpException("Cannot mark consume on past meal or over 7 days meal", 400); }
         }
         catch (e){
             throw e;
@@ -210,74 +213,94 @@ export class MealLoggingService {
     }
 
     /**
-     * Update the meal logging. Can change the date (meal planning), or just simply change the portion and meal type
-     * @param decodedHeaders - decoded headers from the request
+     * Update the meal logging to a different day
      * @param payload - payload that contains the meal logging id and the new date
-     *  @param transactionalEntityManager - transactional entity manager
      * @returns the updated meal logging object
      */
-    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager): Promise<[MealType, boolean]> {
+    async updateMealLogging(decodedHeaders: any, payload: UpdateMealLoggingDTO, transactionalEntityManager: EntityManager){
         try {
-            // validate if meal is within the 7 days range
-            if (!this.commonService.isWithinDateRange(payload.mealDate, payload.userLocalDate, payload.timeZone, 6)){
-                throw new HttpException("Cannot update meal loggings for past or future meals.", HttpStatus.BAD_REQUEST);
-            }
+            const mealDate = new Date(payload.mealDate.split('T')[0]);
+            // validate date 
+            const result = this.checkDate(mealDate);
 
-            // validate if the new meal date user wishes to move the meal to is within the 7 days range
-            if (payload.newMealDate && !this.commonService.isWithinDateRange(payload.newMealDate, payload.userLocalDate, payload.timeZone, 6)){
-                throw new HttpException("Cannot meal loggings to a date that is in the past or 7 days in the future.", HttpStatus.BAD_REQUEST);
-            }
+            // update to past: error
+            if (result.editable == false){ throw new Error (result.message); }
+            // update to future: error
+            if (result.planning == true){ throw new Error ("Cannot update meal to future."); }
 
             // validate meal logging id 
             // returns a list of meal logging objects found
             var entry = await this.mealLoggingRepository.createQueryBuilder("meal_logging")
                 .where("meal_logging.id = :id", { id: payload.mealLoggingId })
                 .andWhere("meal_logging.user_id = :user_id", { user_id: decodedHeaders['sub'] })
-                .getOneOrFail()
+                .andWhere("meal_logging.is_consumed = false")
+                .getOne()
 
-            // quick check, if there is any update to the meal logging (portion, meal type and date)
-            if (entry.portion == payload.portion && entry.type == payload.mealType && (this.commonService.isSameDay(payload.mealDate, payload.newMealDate, payload.timeZone))){
-                return [entry.type, false];
+            if (!entry || entry == undefined){ 
+                throw new HttpException(`Meal logging with id ${payload.mealLoggingId} not found`, 404);
             }
 
-            // save the previous meal type
             const old_meal_type = entry.type;
 
             // update the meal logging object
-            entry.updated_at = fromZonedTime(payload.userLocalDate, payload.timeZone);
+            entry.updated_at = new Date();
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
-            // meal planning - change the consumsed date time to other date
-            if (payload.newMealDate !== null && payload.newMealDate !== payload.mealDate){
-                entry.consumed_date_time = fromZonedTime(payload.newMealDate, payload.timeZone);
-                entry.is_consumed = false;
-            }
-
             await transactionalEntityManager.save(entry);
-            return [old_meal_type, true];
+            return old_meal_type;
         } catch (e) {
             throw e;
         }
     }
 
     /**
-     * Mark a meal is consumed
-     * @param markMealConsumedDTO - DTO containing the meal logging id and the date time
+     * Check if the incoming date is still in planning phase
+     * @param newDate - incoming date to be validated
+     * @returns true if the incoming date is one day ahead of today else false
      */
-    async markMealConsumed(markMealConsumedDTO: MarkMealConsumedDTO){
-        try {
-            // validate and get meal logging entry
-            const entry = await this.mealLoggingRepository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
+    checkDate(newDate: Date) {
+        const today_date_in_number = new Date().setHours(0, 0, 0, 0);
+        const one_day_in_millis = 8.64e+7; // Number of milliseconds in one day
+        const seven_days_in_millis = 6.048e+8; // Number of milliseconds in seven days
 
-            entry.consumed_date_time = fromZonedTime(markMealConsumedDTO.dateTime, markMealConsumedDTO.timeZone);
-            entry.is_consumed = true;
-
-            await this.mealLoggingRepository.save(entry);
-        }
-        catch {
-            throw new HttpException("Error marking food consumed", HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+        const isSameDay = (date1: Date, date2: Date) => {
+            return date1.getDate() === date2.getDate();
+        };
         
+        // Check if the incoming date is more than 7 days ahead of today_date
+        if (newDate.getTime() - today_date_in_number > seven_days_in_millis) {
+            return {
+                editable: false,
+                planning: false,
+                message: "Cannot edit meals more than 7 days ahead."
+            };
+        }
+
+        // Check if the incoming date is at least one day ahead of today_date
+        if ((newDate.getTime() - today_date_in_number >= one_day_in_millis) && (newDate.getTime() - today_date_in_number <= seven_days_in_millis)) {
+            return {
+                editable: true,
+                planning: true,
+                message: "Planning meals."
+            };
+        }
+
+        if (isSameDay(newDate, new Date(today_date_in_number))) {
+            return {
+                editable: true,
+                planning: false,
+                message: "Today meals."
+            };
+        }
+
+        // Check if the incoming date is in the past
+        if (newDate.getTime() - today_date_in_number <= 0) {
+            return {
+                editable: false,
+                planning: false,
+                message: "Cannot edit past meals."
+            };
+        }
     }
 }

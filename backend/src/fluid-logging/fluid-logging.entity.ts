@@ -11,7 +11,7 @@ export class FluidLogging{
     @JoinColumn({name: 'user_id'})
     user: User;
     
-    @Column({type: 'timestamp with time zone'})
+    @Column({type: 'date'})
     logging_date: Date;
 
     @Column({type: 'float'})

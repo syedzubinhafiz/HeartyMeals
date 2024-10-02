@@ -6,9 +6,8 @@ import { HttpException } from "@nestjs/common";
 import { UpdateFluidLoggingDTO } from "./dto/update-fluid-logging-dto";
 import { CommonService } from "src/common/common.service";
 import { UserService } from "src/user/user.service";
-import { formatInTimeZone } from "date-fns-tz";
-import { MeasuringUnit } from "src/component/enum/measuring-unit.enum";
-import { conversionFactors, FluidUnit } from "./enum/fluid-unit-enum";
+import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+
 export class FluidLoggingService {
     constructor(
         @InjectRepository(FluidLogging)
@@ -25,20 +24,18 @@ export class FluidLoggingService {
      * @param loggingDate - date of the fluid logging
      * @returns fluid logging entry for the user on the given date, if it does not exist, create a new entry and save as today date
      */
-    async getFluidLogging(decodedHeaders: any, date: string, timeZone: string){
+    async getFluidLogging(decodedHeaders: any, loggingDate: DateValidationDTO){
         // validate user id
         if (!this.userService.verifyUser(decodedHeaders)) { return new HttpException(`User with id ${decodedHeaders['sub']} not found.`, 400); }
         const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
 
-        // get the start and end of the day 
-        const startOfDay = `${date.split('T')[0]} 00:00:00`;
-        const endOfDay = `${date.split('T')[0]} 23:59:59`;
+        // date validation
+        const logging_date = new Date(loggingDate.date.split('T')[0]);
 
         // get the fluid logging entry for the user on the given date and userid
-        // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
-            .where('user_id = :user_id', { user_id: user_object.user_id })
-            .andWhere('logging_date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: timeZone, startOfDay: startOfDay, endOfDay: endOfDay })
+            .where('user_id = :user_id', {user_id: user_object.user_id})
+            .andWhere('logging_date = :logging_date', {logging_date: logging_date})
             .getOne();
 
         // if the entry does not exist, means today water intake is not logged yet, create a new entry
@@ -47,17 +44,15 @@ export class FluidLoggingService {
 
             entry.user = user_object;
 
-            const logging_date_utc = new Date(formatInTimeZone(date, timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"));
-
             var new_record = {} as JSON;
-            new_record["date"] = logging_date_utc;
+            new_record["date"] = loggingDate.date;
             new_record["remaining_fluid"] = user_object.daily_budget["water_intake"];
 
             entry.remaining_fluid = user_object.daily_budget["water_intake"];
 
             entry.logging_history = [new_record];
 
-            entry.logging_date = logging_date_utc;
+            entry.logging_date = new Date(logging_date);
 
             try {
                 const new_entry = await this.fluidLoggingRepository.save(entry);  
@@ -83,25 +78,23 @@ export class FluidLoggingService {
         if (!this.userService.verifyUser(decodedHeaders)) { return new HttpException(`User with id ${decodedHeaders['sub']} not found.`, 400); }
         const user_object = await this.userRepository.findOneBy({user_id: decodedHeaders.user_id});
 
-        // get the start and end of the day 
-        const start_of_day = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 00:00:00`;
-        const end_of_day = `${updateFluidLoggingDTO.loggingDateTime.split('T')[0]} 23:59:59`;
+        // date validation
+        const logging_date = new Date(updateFluidLoggingDTO.loggingDate);
+        const today = new Date();
+        if (!this.commonService.isSameDay(logging_date, today)) { throw new HttpException("You can only log fluid intake for today.", 400); }
 
-        // unit conversion - convert given unit to ml
-        var converted_water_intake = this.convertFluidUnit(updateFluidLoggingDTO.waterIntake, updateFluidLoggingDTO.fluidUnit, FluidUnit.MILLILITER);
-        
         // get the fluid logging entry for the user on the given date and userid
         var entry = await this.fluidLoggingRepository.createQueryBuilder('fluid_logging')
-            .where('user_id = :user_id', { user_id: user_object.user_id })
-            .andWhere('logging_date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: updateFluidLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
+            .where('user_id = :user_id', {user_id: user_object.user_id})
+            .andWhere('logging_date = :logging_date', {logging_date: logging_date.toISOString().split('T')[0]})
             .getOne();
 
         // deduct from the latest record
         const previous_remaining_fluid_record = entry.logging_history[entry.logging_history.length - 1];
-        const remaining_fluid = previous_remaining_fluid_record["remaining_fluid"] - converted_water_intake
+        const remaining_fluid = previous_remaining_fluid_record["remaining_fluid"] - updateFluidLoggingDTO.waterIntake
 
         const latest_remaining_fluid = {} as JSON;
-        latest_remaining_fluid["date"] = updateFluidLoggingDTO.loggingDateTime;
+        latest_remaining_fluid["date"] = updateFluidLoggingDTO.loggingDate;
         latest_remaining_fluid["remaining_fluid"] = remaining_fluid;
 
         entry.remaining_fluid = remaining_fluid;
@@ -119,20 +112,5 @@ export class FluidLoggingService {
         }
 
         return [true, warning];
-    }
-
-    convertFluidUnit(originalAmount: number, originalUnit: FluidUnit, newUnit: FluidUnit): number{
-
-        if (originalUnit === newUnit) {
-            return originalAmount;
-        }
-    
-        // Convert grams to the target unit
-        if (conversionFactors[originalUnit] && conversionFactors[newUnit]) {
-            const amountInGramsOrMl = originalAmount * conversionFactors[originalUnit];
-            return amountInGramsOrMl / conversionFactors[newUnit];
-        }
-    
-        throw new Error(`Conversion from ${originalUnit} to ${newUnit} is not supported.`);
     }
 }
