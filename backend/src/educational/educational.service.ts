@@ -103,17 +103,6 @@ export class EducationalService {
         // call the upload method 
         // by passing the data to the method 
         var json_links = {} as JSON;
-        await this.storageService.uploadFile(path, files).then(async function(result) {
-            if (typeof(result) === "string"){
-                return result;
-            }
-            else {
-                for (var key in result){
-                    json_links[key] = result[key];
-                }
-            } 
-        });
-
 
         entry.title = title;
         entry.content = saved_content;
