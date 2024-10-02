@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { Visibility } from '../recipe/enum/visibility.enum';
+import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
 
 @Injectable()
 export class EducationalService {
@@ -21,43 +22,28 @@ export class EducationalService {
      * @param files - files of article
      * @returns newly created educational content object
      */
-    async uploadContent(title, content, files: Array<Express.Multer.File>){
-        // data validation 
-        if (title == null || content == null || files.length <= 0){
-            return "Either title, content, or files is empty";
-        }
+    async uploadContent(addEducationalContentDTO: AddEducationalContentDTO, transactionalEntityManager: EntityManager){
 
-        // content that passed in should be like this 
-        // [ <block of text>, <block of image/video>, <block of text>]
-        // create a saved_content array []
-        var saved_content = []
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-        content.forEach(item => {
-            if (item.type === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item.info
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        });
 
         // create and save an entry of educational content object to the database first to obtain the uuid of the object.
         var new_entry = new EducationalContent();
-        new_entry.content = saved_content;
-        new_entry.storage_links = null;
-        new_entry.title = title;
+        new_entry.title = addEducationalContentDTO.educationalContent.title;
+        new_entry.summary = addEducationalContentDTO.educationalContent.summary;
+        new_entry.visibility = addEducationalContentDTO.educationalContent.visibility;
+        new_entry.content = addEducationalContentDTO.educationalContent.content;
+        
         // create an entry with no links first (to get the edu_id for path)
+        try {
+            return await transactionalEntityManager.save(new_entry);
+        }
+        catch (e){
+            throw new HttpException('Failed to upload educational content', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get Educational Content
+     * @param eduId - educational id
         const edu_object = await this.educatinoalContentRepository.save(new_entry);
 
         // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
@@ -152,69 +138,6 @@ export class EducationalService {
         }
     }
 
-
-
-
-    
-    /**
-     * Take current educational content id and edit the content 
-     * @param eduId - educational content id 
-     * @param title - new title
-     * @param content - new content
-     * @param files - new files
-     * @returns newly updated educational content object
-     */
-    async editContent(eduId, title, content, files){
-        // data validation 
-        if (title == null || content == null || files.length <= 0){
-            return "Either title, content, or files is empty";
-        }
-
-        // get edu_content object
-        var entry = await this.getContent(eduId);
-
-        var saved_content = []
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-        content.forEach(item => {
-            if (item.type === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item.info
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        });
-
-        // upload file
-        // get json link
-        // prepare the path first 
-        var path = `${entry.id}`;
-
-        // call the upload method 
-        // by passing the data to the method 
-        var json_links = {} as JSON;
-
-        entry.title = title;
-        entry.content = saved_content;
-        entry.storage_links = json_links;
-
-        // update entry
-        // update updatedAt() column
-        entry.updatedAt = new Date();
-        // return new entry
-        return await this.educatinoalContentRepository.save(entry);
-    }
-
     replaceSrcInArray(strings, replacements) {
         return strings.map(str => {
           Object.keys(replacements).forEach(key => {
@@ -224,4 +147,8 @@ export class EducationalService {
           return str;
         });
     }      
+
+    getPath(eduId){
+        return `educational_content/${eduId}`;
+    }
 }
