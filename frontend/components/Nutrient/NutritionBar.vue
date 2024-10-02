@@ -5,10 +5,10 @@
             <img :src="icon" class="icon"/>
             <label class="label-grid-left">{{ label }}</label>
           </div>
-            <span :style="{ color: fontColor }" class="label-grid-right">{{ currentValue }}/{{ totalValue }}{{ unit }}</span>
+            <span :style="{ color: fontColor }" class="label-grid-right">{{ afterMealValue}}/{{ totalValue }}{{ unit }}</span>
         </div>
 
-        <div class="progress-bar-container">
+        <div class="progress-bar-container" :style="progressBarContainerStyle">
             <div class="progress-bar max-nutrients" :style="{ width: maxPercentage + '%' , backgroundColor: maxColor}"></div>
             <div class="progress-bar current-nutrients" :style="{ width: currentPercentage + '%' , backgroundColor: currentColor}"></div>
             <div class="progress-bar after-meal-nutrients" :style="{ width: afterMealPercentage + '%' , backgroundColor: afterMealColor}"></div>
@@ -30,12 +30,18 @@
     currentColor: String,
     afterMealColor: String,
     fontColor: String,
+    progressBarContainerStyle: {
+      type: String,
+      default: 'margin-top: 1%; margin-bottom: 1%;'
+    }
   });
   
   const maxPercentage = computed(() => (props.totalValue / props.totalValue) * 100);
   const currentPercentage = computed(() => (props.currentValue / props.totalValue) * 100);
-  const afterMealPercentage = computed(() => (props.afterMealValue / props.totalValue) * 100);
-
+  const afterMealPercentage = computed(() => {
+    const value = (props.afterMealValue / props.totalValue) * 100;
+    return value < 0 ? 0 : value;
+  });
 </script>
   
 <style scoped>
@@ -78,8 +84,6 @@
 
   .progress-bar-container {
     position: relative;
-    margin-top: 1%;
-    margin-bottom: 1%;
     height: clamp(.8vh, 1vh, 1.5vh);
     width: 100%;
     border-radius: 50px;
@@ -91,6 +95,11 @@
     height: 100%;
     border-radius: 50vh;
     box-shadow: 0px 4px 16.2px -1px rgba(0,0,0,0.1);
+  }
+  
+  .icon{
+    width: 15px;
+    margin-right: 5%;
   }
 
 </style>
