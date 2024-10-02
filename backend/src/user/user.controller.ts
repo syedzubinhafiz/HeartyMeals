@@ -42,7 +42,7 @@ export class UserController {
         return await this.userService.verifyUser(decodedHeaders);
   }
 
-  @Get('budget')
+    @Get('budget')
     async getRemainingBudget(@Headers() headers, @Query("date") date: string){
         const authHeader = headers.authorization;
         const decodedHeaders = this.commonService.decodeHeaders(authHeader);
