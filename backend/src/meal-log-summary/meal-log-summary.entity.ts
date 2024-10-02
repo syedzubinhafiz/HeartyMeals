@@ -8,7 +8,7 @@ export class MealLogSummary{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({type: 'date'})
+    @Column({type: 'timestamp with time zone'})
     date: Date;
 
     @Column({type: "json"})
