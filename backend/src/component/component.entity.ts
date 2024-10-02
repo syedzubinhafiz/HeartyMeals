@@ -29,7 +29,13 @@ export class Component{
     @Column({type: 'float'})
     amount: number;
 
-    @Column({type:'jsonb'})
+    @Column({
+        type: 'jsonb', 
+        default: {
+            'thumbnail': '',
+            'content': {}
+        }
+    })
     storage_links: Record<string, any>; 
 
     @ManyToOne(()=> FoodCategory, foodCategory=>foodCategory.id, {eager: true})

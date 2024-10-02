@@ -99,7 +99,7 @@ export class User{
         type: 'jsonb', 
         nullable: false, 
         default: {
-            "calories": 0, //in kcal
+            "calories": 0, //in cal
             "carbs": 0, //in g
             "protein": 0, //in g
             "fat": 0, //in g
