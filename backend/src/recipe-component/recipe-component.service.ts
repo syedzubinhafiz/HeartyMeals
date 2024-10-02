@@ -158,7 +158,7 @@ export class RecipeComponentService{
             });
     
             return {
-                ingredient: ingredient,
+                ingredients: ingredient,
                 seasonings: seasonings
             }
         } catch(e) {

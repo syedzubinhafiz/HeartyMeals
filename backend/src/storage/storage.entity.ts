@@ -19,4 +19,8 @@ export class Storage{
 
     @Column({type: 'integer'})
     size: number
+
+    // link
+    @Column({type: 'varchar'})
+    link: string;
 }
