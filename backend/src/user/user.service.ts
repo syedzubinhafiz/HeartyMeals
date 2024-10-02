@@ -12,6 +12,7 @@ import { CreateAdminDTO } from './dto/create-admin-dto';
 import { NutritionSettingDTO } from './dto/nutrition-setting-dto';
 import { CholesterolLevel } from './enum/cholesterol.enum';
 import { CommonService } from 'src/common/common.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UserService {
@@ -86,18 +87,24 @@ export class UserService {
     }
 
     async createNewAdmin(payload:CreateAdminDTO, decodedHeaders: any){
+        const admin_user = await this.userRepository.findOneBy({user_id:decodedHeaders['sub']});
 
-        if (await this.userRepository.findOneBy({user_id:decodedHeaders['sub']})){
-            return new HttpException("User already exists", 400);
+        if (admin_user === null){
+            return new HttpException("Admin not found !", 400);
+        } else if (admin_user.user_role !== UserRole.ADMIN) {
+            return new HttpException("User does not have permission to add new admin !", 400)
+        } else if(await this.userRepository.findOneBy({email:payload.email})){
+            return new HttpException("Admin already exists", 400);
         }
+
 
         const new_user = new User();
 
         new_user.user_role =  UserRole.ADMIN;
-        new_user.user_id = decodedHeaders['sub'];
-        new_user.email = decodedHeaders['email'];
-        new_user.first_name =  decodedHeaders['given_name'];
-        new_user.last_name = decodedHeaders['family_name'];
+        new_user.user_id = uuidv4();
+        new_user.email = payload.email;
+        new_user.first_name = payload.first_name;
+        new_user.last_name = payload.last_name; 
         new_user.ethnicity = null;
         new_user.gender = payload.gender
         new_user.country = null;
@@ -108,7 +115,8 @@ export class UserService {
         new_user.weight = 0;
         new_user.medical_info = JSON.parse("{}");
         
-        return await this.userRepository.save(new_user);
+        await this.userRepository.save(new_user);
+        return new HttpException("Admin created successfully", 200);
     }
 
     async verifyUser( decoded: any) {
@@ -118,10 +126,15 @@ export class UserService {
         if (user !== null){
             return true;
         } else {
+
+            const new_admin_user =  await this.userRepository.findOneBy({email: decoded['email']});
+            if (new_admin_user !== null){
+                new_admin_user.user_id = decoded['sub'];
+                // update the user_id to the new user_id
+                await this.userRepository.save(new_admin_user);
+                return true;
+            }
             return false; 
         }
     }
-
-   
-
 }
