@@ -17,9 +17,10 @@ import { StorageService } from 'src/storage/storage.service';
 import { Country } from 'src/country/country.entity';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
 import { Storage } from 'src/storage/storage.entity';
+import { RecipeOfTheDay } from './recipe-of-the-day.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, User, Component, RecipeComponent, Recipe, UserAllergy, Storage, User, Country, Dietary, Ethnicity]), ComponentModule],
+    imports: [TypeOrmModule.forFeature([Cuisine, Dietary, User, Component, RecipeComponent, Recipe, UserAllergy, Storage, User, Country, Dietary, Ethnicity, RecipeOfTheDay]), ComponentModule],
     controllers: [RecipeController],
     providers: [RecipeService, RecipeComponentService, CommonService, RecipeComponentArchiveService, StorageService],
 })
