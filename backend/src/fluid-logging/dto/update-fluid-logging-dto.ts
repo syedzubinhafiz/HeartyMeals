@@ -1,16 +1,23 @@
-import { Type } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsString, IsEnum, IsJSON, Min, Matches, IsDateString} from "class-validator";
-import { DateValidationDTO } from "src/common/dto/date-validation-dto";
+import { FluidUnit } from "../enum/fluid-unit-enum";
 
 
 export class UpdateFluidLoggingDTO{
     
     @IsNotEmpty()
     @IsDateString()
-    readonly loggingDate: string;
+    readonly loggingDateTime: string;
+
+    @IsNotEmpty()
+    @IsString()
+    readonly timeZone: string;
 
     @IsNumber()
     @IsNotEmpty()
     @Min(0)
     readonly waterIntake: number;    
+
+    @IsEnum(FluidUnit)
+    @IsNotEmpty()
+    readonly fluidUnit: FluidUnit;   
 }

@@ -151,6 +151,7 @@ export class RecipeService {
                 'recipe.id', 
                 'recipe.name', 
                 'recipe.description', 
+                'recipe.instruction',
                 'recipe.recommended_meal_time', 
                 'recipe.is_approved', 
                 'recipe.visibility', 
@@ -401,6 +402,16 @@ export class RecipeService {
             throw new Error("Error deleting recipe")
         }
     } 
+
+    getPath(userId: string = null, recipeId: string, dietaryId: string): string {
+        if (userId != null){
+            return `user/${userId}/custom_recipe/${recipeId}`;
+        }
+        else {
+            return `official_recipe/dietary/${dietaryId}/${recipeId}`;
+        }
+        
+    }
 
     
     /**
