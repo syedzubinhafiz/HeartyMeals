@@ -64,23 +64,8 @@ export class EducationalService {
         // update the educational object with storage links and saved_content array
 
         // files CAN be empty if edu content only upload the text first
-        // prepare the path first 
-        var path = `${edu_object.id}`;
 
-        // call the upload method 
-        // by passing the data to the method 
-        var json_links = {} as JSON;
-        await this.storageService.uploadFile(path, files).then(async function(result) {
-            if (typeof(result) === "string"){
-                return result;
-            }
-            else {
-                for (var key in result){
-                    json_links[key] = result[key];
-                }
-            } 
-        });
-        edu_object.storage_links = json_links;
+        edu_object.storage_links = {} as JSON;
         return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
     }
 
@@ -166,17 +151,6 @@ export class EducationalService {
         // call the upload method 
         // by passing the data to the method 
         var json_links = {} as JSON;
-        await this.storageService.uploadFile(path, files).then(async function(result) {
-            if (typeof(result) === "string"){
-                return result;
-            }
-            else {
-                for (var key in result){
-                    json_links[key] = result[key];
-                }
-            } 
-        });
-
 
         entry.title = title;
         entry.content = saved_content;

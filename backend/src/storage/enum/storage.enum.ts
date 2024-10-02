@@ -1,13 +1,13 @@
 export enum StorageType{
 
-    JPEG = 'jpeg',
-    JPG = 'jpg',
-    PNG = 'png',
-    SVG = 'svg',
-    MP4 = 'mp4',
-    MOV = 'mov',
-    AVI = 'avi',
-    MKV = 'mkv',
-    WMV = 'wmv'
+    JPEG = 'image/jpeg',
+    JPG = 'image/jpg',
+    PNG = 'image/png',
+    SVG = 'image/svg+xml',
+    MP4 = 'video/mp4',
+    MOV = 'video/quicktime',
+    AVI = 'video/x-msvideo',
+    MKV = 'video/x-matroska',
+    WMV = 'video/x-ms-wmv',
 
 }
