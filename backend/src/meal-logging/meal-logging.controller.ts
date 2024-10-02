@@ -8,12 +8,15 @@ import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
 import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
 import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
+import { StorageService } from "src/storage/storage.service";
+import { Storage } from "src/storage/storage.entity";
 
 @Controller('meal-logging')
 export class MealLoggingController {
     constructor(
         private mealLoggingService: MealLoggingService,
         private commonService: CommonService,
+        private storageService: StorageService,
         @InjectEntityManager()
         private readonly entityManager: EntityManager,
         private mealLoggingSummaryService: MealLogSummaryService,
@@ -42,6 +45,48 @@ export class MealLoggingController {
                     meals[date].budget = budget[date];
                 }
             }
+
+            // get the thumnails
+            const storage_ids = [];
+            // for each date
+            for (const date in meals) {
+                const meals_in_a_day = meals[date].meals;
+                // for each meal type
+                for (const meal_type in meals_in_a_day) {
+                    // for each meal in meal type
+                    meals_in_a_day[meal_type].forEach(meal => {
+                        // push storage_id
+                        storage_ids.push(meal.recipe.storage_links.thumbnail);
+                    });
+                }
+            }
+
+            // get storage entries
+            const storage_entries = await this.storageService.getLink(storage_ids) as Storage[];
+
+            // map the storage id with its link
+            const storage_map = {};
+            storage_entries.forEach(storage => {
+                storage_map[storage.storage_id] = storage.link; 
+            });
+
+            // replace the storage id with the link
+            // for each date
+            for (const date in meals) {
+                const meals_in_a_day = meals[date].meals;
+                // for each meal type
+                for (const meal_type in meals_in_a_day) {
+                    // for each meal in meal type
+                    meals_in_a_day[meal_type].forEach(meal => {
+                        if (meal.recipe && meal.recipe.storage_links && meal.recipe.storage_links.thumbnail) {
+                            // replace storage_id with link
+                            const thumbnail_id = meal.recipe.storage_links.thumbnail;
+                            meal.recipe.storage_links.thumbnail = storage_map[thumbnail_id]; 
+                        }
+                    });
+                }
+            }
+
 
             return meals;
         }
