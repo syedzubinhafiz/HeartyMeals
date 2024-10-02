@@ -61,31 +61,35 @@ export class MealLoggingController {
                 }
             }
 
-            // get storage entries
-            const storage_entries = await this.storageService.getLink(storage_ids) as Storage[];
+            // if new day no meal is inside
+            if (storage_ids.length > 0){
+                // get storage entries
+                const storage_entries = await this.storageService.getLink(storage_ids) as Storage[];
 
-            // map the storage id with its link
-            const storage_map = {};
-            storage_entries.forEach(storage => {
-                storage_map[storage.storage_id] = storage.link; 
-            });
+                // map the storage id with its link
+                const storage_map = {};
+                storage_entries.forEach(storage => {
+                    storage_map[storage.storage_id] = storage.link; 
+                });
 
-            // replace the storage id with the link
-            // for each date
-            for (const date in meals) {
-                const meals_in_a_day = meals[date].meals;
-                // for each meal type
-                for (const meal_type in meals_in_a_day) {
-                    // for each meal in meal type
-                    meals_in_a_day[meal_type].forEach(meal => {
-                        if (meal.recipe && meal.recipe.storage_links && meal.recipe.storage_links.thumbnail) {
-                            // replace storage_id with link
-                            const thumbnail_id = meal.recipe.storage_links.thumbnail;
-                            meal.recipe.storage_links.thumbnail = storage_map[thumbnail_id]; 
-                        }
-                    });
+                // replace the storage id with the link
+                // for each date
+                for (const date in meals) {
+                    const meals_in_a_day = meals[date].meals;
+                    // for each meal type
+                    for (const meal_type in meals_in_a_day) {
+                        // for each meal in meal type
+                        meals_in_a_day[meal_type].forEach(meal => {
+                            if (meal.recipe && meal.recipe.storage_links && meal.recipe.storage_links.thumbnail) {
+                                // replace storage_id with link
+                                const thumbnail_id = meal.recipe.storage_links.thumbnail;
+                                meal.recipe.storage_links.thumbnail = storage_map[thumbnail_id]; 
+                            }
+                        });
+                    }
                 }
             }
+            
 
 
             return meals;
