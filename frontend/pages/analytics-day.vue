@@ -36,180 +36,15 @@
     <div class="container mx-auto grid grid-cols-3 gap-6 px-4 pb-6 items-start">
       <!-- Left Column: Meal Cards -->
       <div class="col-span-2 grid grid-cols-2 gap-6">
-        <!-- Breakfast Card -->
-        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
-          <div class="flex justify-between items-start mb-2">
-            <!-- Adjusted flex container -->
-            <div class="relative">
-              <div class="flex items-center">
-                <h1 class="font-bold text-black text-xl leading-normal">Breakfast</h1>
-                <img
-                  src="../assets/img/InformationIcon.png"
-                  alt="info"
-                  class="ml-3 w-6 h-6 cursor-pointer"
-                  @mouseover="showTooltip('Breakfast')"
-                  @mouseleave="hideTooltip('Breakfast')"
-                />
-              </div>
-              <h3 class="text-gray-800 mt-1">
-                {{ mealsData.Breakfast[0].name  }}
-              </h3>
-              <!-- Tooltip (shown on hover) -->
-              <div
-                v-if="tooltipVisible.Breakfast"
-                class="tooltip"
-              >
-                <!-- Mini Meal Cards in Tooltip -->
-                <div
-                  v-for="meal in mealsData.Breakfast"
-                  :key="meal.name"
-                  class="bg-card-beige rounded-lg p-2 shadow-card mb-2"
-                >
-                  <div class="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
-                    </div>
-                    <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
-                      Calories <span class="font-bold">{{ meal.calories }}kcal</span>
-                    </div>
-                  </div>
-                  <!-- Nutrition Info Grid -->
-                  <div class="grid grid-cols-5 gap-0 text-xs">
-                    <div
-                      v-for="(value, key) in meal.nutrients"
-                      :key="key"
-                      :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
-                    >
-                      <p class="text-gray-800">{{ key }}</p>
-                      <p class="font-bold text-black">
-                        {{ formatNutrientValue(value, key) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">{{ totalMealData.Breakfast.totalCalories }}kcal</span>
-            </div>
-          </div>
-          <!-- Nutrition Info Grid -->
-          <div class="grid grid-cols-5 gap-0 text-md">
-            <div
-              v-for="nutrient in nutrientOrder"
-              :key="nutrient"
-              :class="['nutrition-item', nutrientBgClass(nutrient), 'p-1', 'text-center']"
-            >
-              <p class="text-gray-800">{{ nutrient }}</p>
-              <p class="font-bold text-black">
-                {{ formatNutrientValue(totalMealData.Breakfast.totalNutrients[nutrient] || 0, nutrient) }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lunch Card -->
-        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-start">
-          <div class="flex justify-between items-start mb-2">
-            <!-- Adjusted flex container -->
-            <div class="relative">
-              <div class="flex items-center">
-                <h1 class="font-bold text-black text-xl leading-normal">Lunch</h1>
-                <img
-                  src="../assets/img/InformationIcon.png"
-                  alt="info"
-                  class="ml-3 w-6 h-6 cursor-pointer"
-                  @mouseover="showTooltip('Lunch')"
-                  @mouseleave="hideTooltip('Lunch')"
-                />
-              </div>
-              <h3 class="text-gray-800 mt-1">
-                {{ mealsData.Lunch[0].name }}
-              </h3>
-              <!-- Tooltip (shown on hover) -->
-              <div
-                v-if="tooltipVisible.Lunch"
-                class="tooltip"
-              >
-                <!-- Mini Meal Cards in Tooltip -->
-                <div
-                  v-for="meal in mealsData.Lunch"
-                  :key="meal.name"
-                  class="bg-card-beige rounded-lg p-2 shadow-card mb-2"
-                >
-                  <div class="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
-                    </div>
-                    <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
-                      Calories <span class="font-bold">{{ meal.calories }}kcal</span>
-                    </div>
-                  </div>
-                  <!-- Nutrition Info Grid -->
-                  <div class="grid grid-cols-5 gap-0 text-xs">
-                    <div
-                      v-for="(value, key) in meal.nutrients"
-                      :key="key"
-                      :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
-                    >
-                      <p class="text-gray-800">{{ key }}</p>
-                      <p class="font-bold text-black">
-                        {{ formatNutrientValue(value, key) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-              Calories <span class="font-bold">{{ totalMealData.Lunch.totalCalories }}kcal</span>
-            </div>
-          </div>
-          <!-- Nutrition Info Grid -->
-          <div class="grid grid-cols-5 gap-0 text-md">
-            <div
-              v-for="nutrient in nutrientOrder"
-              :key="nutrient"
-              :class="['nutrition-item', nutrientBgClass(nutrient), 'p-1', 'text-center']"
-            >
-              <p class="text-gray-800">{{ nutrient }}</p>
-              <p class="font-bold text-black">
-                {{ formatNutrientValue(totalMealData.Lunch.totalNutrients[nutrient] || 0, nutrient) }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dinner Card -->
-        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
-          <h1 class="font-bold text-black text-xl leading-normal">Dinner</h1>
-          <div class="bg-red-warning mt-4 text-black text-center py-2 rounded-lg flex items-center justify-between px-4">
-            <span>Meal not logged</span>
-            <img
-              src="../assets/img/Cancel.png"
-              alt="Cancel Icon"
-              class="w-auto h-auto"
-            />
-          </div>
-        </div>
-
-        <!-- Other Card -->
-        <div class="bg-card-beige rounded-lg p-4 shadow-card w-full min-h-[10rem] h-auto flex flex-col justify-between">
-          <h1 class="font-bold text-black text-xl leading-normal">Other</h1>
-          <div class="bg-yellow-warning mt-4 text-black py-2 rounded-lg flex items-center justify-between px-4">
-            <span>Meal yet to be logged</span>
-            <img
-              src="../assets/img/Box Important.png"
-              alt="Important Icon"
-              class="w-auto h-auto"
-            />
-          </div>
-        </div>
+        <AnalyticsDayCard :mode="breakfastList.length>0 ? 0 : 2" mealType="Breakfast" :totalNutrition="breakfastTotal" :mealList="breakfastList"/>
+        <AnalyticsDayCard :mode="lunchList.length>0 ? 0 : 2" mealType="Lunch" :totalNutrition="lunchTotal" :mealList="lunchList"/>
+        <AnalyticsDayCard :mode="dinnerList.length>0 ? 0 : 2" mealType="Dinner" :totalNutrition="dinnerTotal" :mealList="dinnerList"/>
+        <AnalyticsDayCard :mode="otherList.length>0 ? 0 : 2" mealType="Other" :totalNutrition="otherTotal" :mealList="otherList"/>
       </div>
       <!-- Right Column: Nutrient Widget -->
       <div class="nutrient-widget-container self-start">
         <div class="widget-content flex flex-col justify-start items-start">
-          <NutrientWidget />
+          <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
         </div>
       </div>
     </div>
@@ -221,6 +56,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import NutrientData from '../../classes/nutrientData.js'
 
 definePageMeta({
   layout: 'emptylayout',
@@ -395,6 +231,46 @@ const setView = (newView) => {
   view.value = newView;
   navigateTo(`/analytics-${newView}`);
 };
+
+const analyticsData = ref(null)
+const breakfastTotal = ref({})
+const breakfastList = ref([])
+const lunchTotal = ref({})
+const lunchList = ref([])
+const dinnerTotal = ref({})
+const dinnerList = ref([])
+const otherTotal = ref({})
+const otherList = ref([])
+
+
+const maxNutrientData = ref(null)
+const nutrientData = ref(null)
+onMounted(async() => {
+  await useApi("/dietary","GET")
+
+  let currentDate = new Date();
+  currentDate.setUTCHours(-8, 0, 0, 0);
+  currentDate = currentDate.toISOString().split('T')[0]
+  analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
+  console.log(analyticsData.value)
+  breakfastTotal.value = analyticsData.value.value.Breakfast_total
+  breakfastList.value = analyticsData.value.value.Breakfast
+  lunchTotal.value = analyticsData.value.value.Lunch_total
+  lunchList.value = analyticsData.value.value.Lunch
+  dinnerTotal.value = analyticsData.value.value.Dinner_total
+  dinnerList.value = analyticsData.value.value.Dinner
+  otherTotal.value = analyticsData.value.value.Other_total
+  otherList.value = analyticsData.value.value.Other
+
+
+  let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+  console.log(result);
+
+  maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0]);
+  nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1]);
+})
+
+
 </script>
 
 
