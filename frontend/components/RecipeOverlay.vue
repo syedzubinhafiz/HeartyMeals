@@ -6,7 +6,7 @@
     <div class="overlay-content">
       <div class="left-section">
         <h2>{{ meal.value.recipe.name }}</h2>
-        <img :src="'../assets/img/croissant.svg'" alt="Meal Image" />
+        <img :src="meal.value.recipe.storage_links.thumbnail" alt="Meal Image" />
       </div>
       <div class="right-section">
         <div class="tabs">
@@ -58,7 +58,7 @@
           <div v-if="activeTab === 'ingredients'">
             <!-- Ingredients Content -->
             <div class="card-grid">
-              <div v-for="ingredient in props.meal.value.components.ingredient" :key="ingredient.name" class="card horizontal-card">
+              <div v-for="ingredient in props.meal.value.components.ingredients" :key="ingredient.name" class="card horizontal-card">
                 <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" />
                 <div class="card-content">
                   <p class="card-title">{{ ingredient.name }}</p>
@@ -163,7 +163,8 @@ export default {
 }
 
 .left-section img {
-  width: 80%; /* Reduced the image size to 80% of the container's width */
+  height: 300px;
+  object-fit: cover;
   border-radius: 10px;
 }
 

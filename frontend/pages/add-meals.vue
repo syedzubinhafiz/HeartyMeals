@@ -25,7 +25,9 @@
         <ButtonOrange @click="back">Back</ButtonOrange>
       </div>
       
+
       <div class="stomach-button-container">
+        <div class="counter">{{selectedMeals.length}}</div>
         <button @click="openStomachOverlay" class="shadow-md stomach-button">
           <img :src="stomachIcon" alt="" style="padding-right: 10%;">
           <p style="position:relative; top: 15%">Stomach</p>
@@ -67,7 +69,7 @@
           :labels="recipe.recommended_meal_time ?? {}"
           :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
           :is-admin-approved="recipe.is_approved"
-          :image-src="'../assets/img/croissant.svg'"
+          :image-src="recipe.storage_links.thumbnail"
           @click.native="openAddMealOverlay(recipe.id)"     
           style="cursor: pointer;"
           />
@@ -79,6 +81,9 @@
     <StomachSidebar
       :visible="isStomachOverlayVisible"
       @closeSidebar="closeStomachOverlay"
+      @updatePortion="updatePortion"
+      @removeSelectedMeal="removeSelectedMeal"
+      @logMeal="logMeal"
       :selectedMeals="selectedMeals"
       :mealDate="mealInfo.logDate"
       :mealType="mealInfo.logType"
@@ -118,7 +123,14 @@ import rightBase from "@/assets/img/meal_logging/right_base.svg";
 
 definePageMeta({
   layout: "emptylayout",
+  components: {
+    RecipeCard,
+    RecipeFilterOverlay,
+    StomachSidebar,
+    AddMealsOverlay,
+  },
 });
+
 
 const {$axios} = useNuxtApp();
 const config = useRuntimeConfig();
@@ -238,13 +250,21 @@ function onScroll(event) {
     fetchRecipes(savedFilters.value);
   }
 }
+function handleBeforeUnload(e) {
+  const confirmationMessage = 'Your selected meal won\'t be logged or saved if you leave this page.';
+  e.returnValue = confirmationMessage; // Gecko, Trident, Chrome 34+
+  return confirmationMessage; // Gecko, WebKit, Chrome <34
+}
 
 onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
   if (typeof localStorage === "undefined" && !config.public.isDebug ) navigateTo("/meal-logging");
 
-  if (config.public.isDebug) {
+  if (typeof localStorage === "undefined" && config.public.isDebug) {
     localStorage.setItem("mealInfo", JSON.stringify({
       logType: "logging",
+      mealType: "Breakfast",
       logDate: new Date().toISOString(),
       expiryTime: new Date().getTime() + 1000000,
     }));
@@ -275,12 +295,14 @@ onMounted(() => {
     navigateTo("/meal-logging");
   }
 
+  console.log(mealInfo.value);
 
   fetchRecipes(savedFilters.value);
   document.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
     document.removeEventListener("click", handleClickOutside);
 });
 
@@ -344,8 +366,64 @@ function openStomachOverlay() {
   console.log(selectedMeals.value);
 }
 
+function updatePortion(id, portion) {
+  const meal = selectedMeals.value.find((meal) => meal.id === id);
+  meal.portion = portion;
+}
+
+function removeSelectedMeal(id) {
+  console.log("trigger remove meal in page");
+  selectedMeals.value = selectedMeals.value.filter((meal) => meal.id !== id);
+}
+
 function closeStomachOverlay() {
   isStomachOverlayVisible.value = false;
+}
+
+async function logMeal(){
+
+  // Increase the expire time by 5min in local storage
+  mealInfo.value.expiryTime = new Date().getTime() + (5*60*1000);
+  localStorage.setItem("mealInfo", JSON.stringify(mealInfo.value));
+
+  // store data to db 
+  const token = localStorage.getItem("accessToken");  
+  const meal_info = [];
+
+  selectedMeals.value.forEach((meal) => {
+    meal_info.push({
+      recipeId: meal.id,
+      portion: meal.portion,
+    });
+  });
+;                   
+
+  try{
+    const response = await $axios.post('/meal-log-summary/add', {
+        mealDate: mealInfo.value.logDate,
+        userLocalDateTime: new Date().toISOString(),
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        recipeIdPortions: meal_info,
+        mealType: mealInfo.value.mealType,
+        isMealPlanning: mealInfo.value.logType === "planning"
+      },{
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+    })
+
+    console.log(response.data); 
+    if (response.data.status == 200){
+      useToast().success("All meals has been logged!")
+      navigateTo('/meal-logging')
+    } else if(response.data.status == 400){
+      useToast().error(response.data.message)
+    }
+  } catch(e){
+    console.error("Error logging meal", e);
+  }
+
 }
 
 async function openAddMealOverlay(id) {
@@ -363,23 +441,29 @@ async function openAddMealOverlay(id) {
     });
 
     recipeInfo.value = recipe_info_response.data;
+    if(userDailyNutrients.value === null){
 
-    const user_budget_response = await $axios.get('/user/budget', {
+      const user_budget_response = await $axios.get('/user/budget', {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         params:{
-          date: mealInfo.value.logDate
+          startDate: mealInfo.value.logDate,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         }
-    });
-
-    userDailyNutrients.value = user_budget_response.data[0];
-    userRemainingNutrients.value = user_budget_response.data[1];
+      });
+      
+      userDailyNutrients.value = user_budget_response.data[mealInfo.value.logDate][0];
+      
+      if (userRemainingNutrients.value === null){
+        userRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
+      }
+    }
   } catch (error) {
-    console.error("Error fetching recipe info", error);
+    console.error(error)
+    console.error("Error fetching recipe info");
   }
-
   isAddMealOverlayVisible.value = true;
 }
 
@@ -452,7 +536,7 @@ function addMeal(id, portion, afterAddingMeal) {
 
 .left-base{
   position: absolute;
-  top: 40%;
+  top: 42%;
   left: 0;
 }
 
@@ -479,6 +563,24 @@ function addMeal(id, portion, afterAddingMeal) {
   position: absolute;
   right : 5%;
   top:30%
+}
+
+.counter {
+  position: absolute;
+  left: 125%;
+  top:5%;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 50%; 
+  width: 25px; 
+  height: 25px; 
+  text-align: center; 
+  line-height: 28px; 
+  transform: translate(-50%, -50%);
+  z-index: 1; 
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
 }
 
 .stomach-button {

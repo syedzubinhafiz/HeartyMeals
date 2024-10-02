@@ -1,396 +1,585 @@
 <template>
-    <div class="relative w-screen z-40 bg-custom-bg">
-        <Header />
-  
-        <div class="flex items-center justify-center py-8">
-            <!-- Left arrow to decrease the date -->
-            <button @click="previousDate" class="text-custom-bg-green px-2">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-  
-            <!-- Display the formatted date -->
-            <span class="text-xl font-semibold px-6">
-                {{ formattedDate }}
-            </span> 
-  
-            <!-- Right arrow to increase the date -->
-            <button @click="nextDate" class="text-custom-bg-green px-2">
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        </div>
-  
-        <div class="flex justify-between h-screen relative">
-            
-            <div class="w-2/5 ml-20 mt-8 scroll-container" style="height: 100%;">
-                <Mealcardlist title="Breakfast" :itemsCount="breakfastList.length" route="/breakfast">
-                    <div>
-                        <FoodCard 
-                            v-for="(card, index) in breakfastList" 
-                            :key="index" 
-                            :cardInfo="card" 
-                            :isToday="isToday"  
-                            class="mb-4" 
-                            @removeMeal="removeMeal('breakfastList', index)"
-                            @editMeal="openEditMealPopup(card)"
-                            @selectMeal="setSelectedMeal"/>
-                    </div>
-                </Mealcardlist>
+  <div class="page-container">
+    <header class="header">
+      <Header></Header>
+    </header>
     
-                <Mealcardlist title="Lunch" :itemsCount="lunchList.length" route="/lunch">
-                    <div>
-                        <FoodCard 
-                            v-for="(card, index) in lunchList" 
-                            :key="index" 
-                            :cardInfo="card" 
-                            :isToday="isToday"  
-                            class="mb-4" 
-                            @removeMeal="removeMeal('lunchList', index)"
-                            @editMeal="openEditMealPopup(card)"
-                            @selectMeal="setSelectedMeal"/>                    
-                        </div>
-                </Mealcardlist>
-    
-                <Mealcardlist title="Dinner" :itemsCount="dinnerList.length" route="/dinner">
-                    <div>
-                        <FoodCard 
-                            v-for="(card, index) in dinnerList" 
-                            :key="index" 
-                            :cardInfo="card" 
-                            :isToday="isToday"  
-                            class="mb-4" 
-                            @removeMeal="removeMeal('dinnerList', index)"
-                            @editMeal="openEditMealPopup(card)"
-                            @selectMeal="setSelectedMeal"/>                    
-                        </div>
-                </Mealcardlist>
-    
-                <Mealcardlist title="Other" :itemsCount="otherList.length" route="/other">
-                    <div>
-                        <FoodCard 
-                            v-for="(card, index) in otherList" 
-                            :key="index" 
-                            :cardInfo="card" 
-                            :isToday="isToday"  
-                            class="mb-4" 
-                            @removeMeal="removeMeal('otherList', index)"
-                            @editMeal="openEditMealPopup(card)"
-                            @selectMeal="setSelectedMeal"/>
-                    </div>
-                </Mealcardlist>
-            </div>
-
-                <div class="nutrient-widget-container section justify-end h-screen ">
-                    <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
-                </div>
-            <img :src="backgroundImage" class="background-image" />
-        </div>
-  
-        <div class="section flex flex-col justify-end fixed-footer " style="z-index: 0;">
-            <Footer />
-        </div>
-
-        <EditMealPopUp 
-            v-if="showEditPopup" 
-            :key="selectedMealData?.id" 
-            :visible="showEditPopup" 
-            :mealData="selectedMealData.value" 
-            @close="toggleEditPopup" 
-            @save="saveMealChanges"
-        /> 
+    <div class="left-base">
+        <img :src="leftBase">
     </div>
+    
+    <div class="right-base">
+        <img :src="rightBase">
+    </div>
+
+    <div class="body">
+      <div class="date-nav-container">
+        <label class="date-nav-label" @click="goToPreviousDay">
+          <
+        </label>
+        <label class="current-date-label">
+          {{
+            currentDate.toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            })
+          }}
+        </label>
+        <label class="date-nav-label" @click="goToNextDay">
+          >
+        </label>
+      </div>
+
+      <div class="meal-type-list-container">
+        <div class="meal-type-container">
+          <div class="meal-type-header" @click="toggleDropdown('breakfast')">
+            <label>Breakfast</label>
+            <span> {{loggedBreakfast.length }} items</span>
+            <img :class="{ rotated: breakfastDropdown }" src="@/assets/icon/black-arrow-icon.svg">
+          </div>
+          <div v-if="breakfastDropdown" class="meal-logged-items">
+            <div class="meal-card-container">
+              <div v-for="dish in loggedBreakfast" :key="dish.id" class="meal-card">
+                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
+                <span>{{ dish.recipe.name }}</span>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
+                <MealLoggingMoreOverlay
+                  style="position:absolute; right:0; top:65%"
+                  :dishInfo="dish"
+                  :mealLogTime="currentDate"                 
+                  @consume="consumeMeal"
+                  :visible="overlayVisibility[dish.id] || false"
+                />
+              </div>
+            </div>
+            <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Breakfast')">
+                <img src="@/assets/icon/add-icon.svg" alt="">
+                Add Dish
+            </Button>
+          </div>
+        </div>
+
+        <div class="meal-type-container">
+          <div class="meal-type-header" @click="toggleDropdown('lunch')">
+            <label>Lunch</label>
+            <span> {{loggedLunch.length }} items</span>
+            <img :class="{ rotated: lunchDropdown }" src="@/assets/icon/black-arrow-icon.svg">
+          </div>
+          <div v-if="lunchDropdown" class="meal-logged-items">
+            <div class="meal-card-container">
+              <div v-for="dish in loggedLunch" :key="dish.id" class="meal-card">
+                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
+                <span>{{ dish.recipe.name }}</span>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
+                <MealLoggingMoreOverlay
+                  style="position:absolute; right:0; top:65%"
+                  :dishInfo="dish"
+                  :mealLogTime="currentDate"                  
+                  @consume="consumeMeal"
+                  :visible="overlayVisibility[dish.id] || false"
+                />
+              </div>
+            </div>
+            <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Lunch')">
+                <img src="@/assets/icon/add-icon.svg" alt="">
+                Add Dish
+            </Button>
+          </div>
+        </div>
+
+        <div class="meal-type-container">
+          <div class="meal-type-header" @click="toggleDropdown('dinner')">
+            <label>Dinner</label>
+            <span> {{loggedDinner.length }} items</span>
+            <img :class="{ rotated: dinnerDropdown }" src="@/assets/icon/black-arrow-icon.svg">
+          </div>
+          <div v-if="dinnerDropdown" class="meal-logged-items">
+            <div class="meal-card-container">
+              <div v-for="dish in loggedDinner" :key="dish.id" class="meal-card">
+                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
+                <span>{{ dish.recipe.name }}</span>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
+                <MealLoggingMoreOverlay
+                  style="position:absolute; right:0; top:65%"
+                  :dishInfo="dish"
+                  :mealLogTime="currentDate"
+                  @consume="consumeMeal"
+                  :visible="overlayVisibility[dish.id] || false"
+                />
+              </div>
+            </div>
+            <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Dinner')">
+                <img src="@/assets/icon/add-icon.svg" alt="">
+                Add Dish
+            </Button> 
+          </div>
+        </div>
+
+        <div class="meal-type-container">
+          <div class="meal-type-header" @click="toggleDropdown('other')">
+            <label>Other</label>
+            <span> {{loggedOther  .length }} items</span>
+            <img :class="{ rotated: otherDropdown }" src="@/assets/icon/black-arrow-icon.svg">
+          </div>
+          <div v-if="otherDropdown" class="meal-logged-items">
+            <div class="meal-card-container">
+              <div v-for="dish in loggedOther" :key="dish.id" class="meal-card">
+                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
+                <span>{{ dish.recipe.name }}</span>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
+                <MealLoggingMoreOverlay
+                  style="position:absolute; right:0; top:65%"
+                  :dishInfo="dish"
+                  :mealLogTime="currentDate"
+                  @consume="consumeMeal"
+                  :visible="overlayVisibility[dish.id] || false"
+                />
+              </div>
+            </div>
+            <Button :class="['add-button', {'disabled': !isToday()}]"  @click="addDish('Other')">
+                <img src="@/assets/icon/add-icon.svg" alt="">
+                Add Dish
+            </Button>      
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    <footer class="footer">
+      <Footer></Footer>
+    </footer>
+  </div>
 </template>
 
-  
+
 <script setup>
-    import { ref, computed, onMounted, watch, toRaw } from 'vue';
-    import backgroundImage from '/assets/img/meal-logging-bg.png';
-    import NutrientData from '../../classes/nutrientData.js'
-  
-    const currentDate = ref(new Date());
-    
-    const formattedDate = computed(() => {
-        return currentDate.value.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        });
-    });
+import { ref, onMounted } from 'vue';
+import { useNuxtApp, useRuntimeConfig } from '#app';
+import leftBase from '@/assets/img/meal_logging/summary_left_base.svg';
+import rightBase from '@/assets/img/meal_logging/summary_right_base.svg';
+import { isSameDay } from 'date-fns';
 
-    const previousDate = () => {
-        const newDate = new Date(currentDate.value);
-        const today = new Date();
-        
-        // Calculate the date 7 days ago from today
-        const oneWeekAgo = new Date(today);
-        oneWeekAgo.setDate(today.getDate() - 7);
-        
-        // If the new date is before the "oneWeekAgo" date, don't allow it to change
-        if (newDate > oneWeekAgo) {
-            newDate.setDate(newDate.getDate() - 1);
-            currentDate.value = newDate;
-        } else {
-            alert("You can only view up to 7 days of history.");
-        }
-    };
+definePageMeta({
+  layout: 'emptylayout',
+  components: {},
+});
 
-    const fetchDataForCurrentDate = async () => {
-        console.log(currentDate.value)
+const { $axios } = useNuxtApp();
+const currentDate = ref(new Date());
 
-        let formattedCurrentDate = new Date(currentDate.value);
-        formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
-        console.log(formattedCurrentDate)
-        
-        let formattedISODate = formattedCurrentDate.toISOString();
-        console.log(formattedISODate)
+const loggedBreakfast = ref([]);
+const breakfastDropdown = ref(false);
 
-        
-        //formattedCurrentDate.setUTCHours(formattedCurrentDate.getUTCHours() + 8);
-        let formattedISODate8 = formattedCurrentDate.toISOString();
-        console.log(formattedISODate8);
+const loggedLunch = ref([]);
+const lunchDropdown = ref(false);
 
+const loggedDinner = ref([]);
+const dinnerDropdown = ref(false);
 
-        let result = await useApi(`/user/budget?date=${formattedISODate8}`, "GET");
-        console.log(result);
+const loggedOther = ref([]);
+const otherDropdown = ref(false);
 
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0]);
-        nutrientData.value = NutrientData.fromApi2(result.value[1]);
+const overlayVisibility = ref({});
 
-        let mealLoggingRecipes = await useFillData().fillMealLogging();
-        console.log(mealLoggingRecipes)
-        
-        let meals = await useApi(`/meal-logging/get?date=${formattedISODate8}`, "GET");
-        console.log(meals)
-        breakfastList.value = meals.value["Breakfast"];
-        lunchList.value = meals.value["Lunch"];
-        dinnerList.value = meals.value["Dinner"];
-        otherList.value = meals.value["Other"]; 
-    };
+function toggleOverlayVisibility(dishId) {
+ 
+  Object.keys(overlayVisibility.value).forEach((key) => {
+    overlayVisibility.value[key] = false;
+  });
 
-    watch(currentDate, async () => {
-        await fetchDataForCurrentDate();
-    });
+  if (overlayVisibility.value[dishId] !== undefined) {
+    overlayVisibility.value[dishId] = !overlayVisibility.value[dishId];
+  } else {
+    overlayVisibility.value = { ...overlayVisibility.value, [dishId]: true };
+  }
+}
 
-    const today = new Date();
-    const nextDate = () => {
-    const newDate = new Date(currentDate.value);
-        if (newDate.toDateString() === today.toDateString()) {
-            alert("You can't log your meal for tomorrow, consider going to the meal planning page.");
-        } else {
-            newDate.setDate(newDate.getDate() + 1);
-            currentDate.value = newDate;
-        }
-        };
-    
-    const isToday = computed(() => {
-        return (
-        currentDate.value.getFullYear() === today.getFullYear() &&
-        currentDate.value.getMonth() === today.getMonth() &&
-        currentDate.value.getDate() === today.getDate()
-        );
-    });
+function updateVisibility(visible, dishId) {
+  if (overlayVisibility.value[dishId] !== visible) {
+    overlayVisibility.value[dishId] = visible;
+  }
+}
 
+function toggleDropdown(mealType) {
+  Object.keys(overlayVisibility.value).forEach((key) => {
+    overlayVisibility.value[key] = false;
+  });
+  if (mealType === 'breakfast') {
+    breakfastDropdown.value = !breakfastDropdown.value;
+  } else if (mealType === 'lunch') {
+    lunchDropdown.value = !lunchDropdown.value;
+  } else if (mealType === 'dinner') {
+    dinnerDropdown.value = !dinnerDropdown.value;
+  } else if (mealType === 'other') {
+    otherDropdown.value = !otherDropdown.value;
+  }
+}
 
-    const showEditPopup = ref(false);
-    const selectedMealData = ref(null);
+async function goToPreviousDay() {
+  const newDate = new Date(currentDate.value);
+  newDate.setDate(newDate.getDate() - 1);
+  const today = new Date();
+  const oneWeekAgo = new Date(today);
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const setSelectedMeal = (mealData) => {
-    selectedMealData.value = { ...mealData }; // Ensure a copy is created
-    console.log("Selected Meal Data:", selectedMealData.value);
+  if (
+    currentDate.value.getDate() === oneWeekAgo.getDate() &&
+    currentDate.value.getMonth() === oneWeekAgo.getMonth() &&
+    currentDate.value.getFullYear() === oneWeekAgo.getFullYear()
+  ) {
+    useToast().error('Cannot log meal for dates older than 7 days');
+  } else {
+    currentDate.value = newDate;
+    await getMeals();
+  }
+}
+
+async function goToNextDay() {
+  const newDate = new Date(currentDate.value);
+  newDate.setDate(newDate.getDate() + 1);
+  const today = new Date();
+
+  if (
+    currentDate.value.getDate() === today.getDate() &&
+    currentDate.value.getMonth() === today.getMonth() &&
+    currentDate.value.getFullYear() === today.getFullYear()
+  ) {
+    useToast().error('Cannot log meal for future dates');
+  } else {
+    currentDate.value = newDate;
+    await getMeals();
+  }
+}
+
+function isToday() {
+  const today = new Date();
+  return isSameDay(currentDate.value, today);
+}
+
+function addDish(mealType) {
+  localStorage.setItem("mealInfo", JSON.stringify({
+    logType: "logging",
+    logDate: formatDate(currentDate.value),
+    mealType: mealType,
+    expiryTime: new Date().getTime().toLocaleString() + (5*60*1000),
+  }));
+  navigateTo('/add-meals');
 };
 
-    const toggleEditPopup = () => {
-        showEditPopup.value = !showEditPopup.value;
-    };
+async function getMeals() {
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await $axios.get('/meal-logging/get', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        startDate: formatDate(currentDate.value),
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
+    });
 
-    const openEditMealPopup = (mealInfo) => {
-        console.log("Before assignment:", mealInfo);
-        selectedMealData.value = mealInfo ? { ...mealInfo } : {}; // Ensure it's an object
-        console.log("After assignment:", selectedMealData.value);
-        showEditPopup.value = true;
-        console.log("Popup visibility:", showEditPopup.value);
+    //TODO: set budget here
+    
+    const meals = response.data[formatDate(currentDate.value)].meals;
+    loggedBreakfast.value =  meals.Breakfast;
+    loggedLunch.value =  meals.Lunch;
+    loggedDinner.value =  meals.Dinner;
+    loggedOther.value =  meals.Other;
 
-    };
+    // set all the overlay visibility to false
+    const overlayVisibilityObj = {};
+    meals.Breakfast.forEach((meal) => {
+      overlayVisibilityObj[String(meal.id)] = false;
+    });
+    meals.Lunch.forEach((meal) => {
+      overlayVisibilityObj[String(meal.id)] = false;
+    });
+    meals.Dinner.forEach((meal) => {
+      overlayVisibilityObj[String(meal.id)] = false;
+    });
+    meals.Other.forEach((meal) => {
+      overlayVisibilityObj[String(meal.id)] = false;
+    });
+    overlayVisibility.value = overlayVisibilityObj;
+    console.log(overlayVisibility.value);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-    const saveMealChanges = async (updatedMealInfo) => {
-        console.log("mealdate: ", selectedMealData.value.created_at);
-        console.log("id", selectedMealData.value.id);    
-        console.log("portion", updatedMealInfo.portionSize);
-        console.log("mealtype", updatedMealInfo.mealType);
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
 
-        let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
-        currentDate = currentDate.toISOString()
+async function consumeMeal(id){
+  try {
+    const token = localStorage.getItem('accessToken');
+    const response = await $axios.post('/meal-logging/mark_consume', {
+      mealLoggingId: id,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      dateTime: currentDate.value,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    await getMeals();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-        const portionSize = Number(updatedMealInfo.portionSize);
-        const mealType = String(updatedMealInfo.mealType);
-        
-        // Make API call to update the meal in the backend
-        const result = await useApi("/meal-logging/update", "POST", {
-            "mealDate": currentDate,
-            "mealLoggingId": selectedMealData.value.id,
-            "portion": portionSize,
-            "mealType": mealType
-        });
 
-        console.log("Update Meal API response:", result);
-
-        if (result && !result.isError) {
-            // Update was successful, close the popup
-            showEditPopup.value = false;
-
-            // Optionally, you could refresh the meal data here
-            await fetchDataForCurrentDate();
-        } else {
-            // Handle the error, maybe show a toast notification
-            console.error("Failed to update the meal:", result?.message || "Unknown error");
-        }
-    };
-
-    const breakfastList = ref([]);
-    const lunchList = ref([]);
-    const dinnerList = ref([]);
-    const otherList = ref([]);
-
-    const maxNutrientData = ref(null)
-    const nutrientData = ref(null)
-
-    onMounted(async () => {  
-        await useApi("/dietary","GET")
-        let recipes = await useFillData().fillRecipes()
-        let mealLoggingRecipes = await useFillData().fillMealLogging()
-        await fetchDataForCurrentDate();   
-
-        // let mealLoggingRecipes = {
-        //     "Breakfast": [],
-        //     "Lunch": [
-        //         {
-        //             "is_consumed": false,
-        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
-        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
-        //             "type": "Lunch",
-        //             "portion": 2,
-        //             "created_at": "2024-09-04T07:18:27.016Z",
-        //             "updated_at": null,
-        //             "deleted_at": null
-        //         }
-        //     ],
-        //     "Dinner": [],
-        //     "Other": [
-        //         {
-        //             "is_consumed": false,
-        //             "id": "924e30a1-ff59-4f1b-9f58-2eedf4fbc776",
-        //             "consumed_date_time": "2024-09-05T06:00:00.000Z",
-        //             "type": "Other",
-        //             "portion": 1,
-        //             "created_at": "2024-09-04T07:18:19.855Z",
-        //             "updated_at": null,
-        //             "deleted_at": null
-        //         },
-        //     ]
-        // }
-        // console.log(mealLoggingRecipes)
-        // breakfastList.value = mealLoggingRecipes.value["Breakfast"]
-        // lunchList.value = mealLoggingRecipes.value["Lunch"]
-        // dinnerList.value = mealLoggingRecipes.value["Dinner"]
-        // otherList.value = mealLoggingRecipes.value["Other"]
-        // let currentDate = new Date()
-        // currentDate.setUTCHours(-8, 0, 0, 0)
-        // currentDate = currentDate.toISOString()
-        // let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
-        // maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-        // nutrientData.value = NutrientData.fromApi2(result.value[1])
-        
-    })
+onMounted(async () => {
+  await getMeals();
+});
 </script>
-  
+
+
+
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
-* {
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700&display=swap');
+
+*{
     font-family: 'Overpass', sans-serif;
 }
-
-.scroll-container {
-    overflow-y: scroll;
-    padding-bottom: 10rem;
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.bg-custom-bg {
-    background-color: #DAC2A8;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    position: relative;
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 40;
 }
 
-.text-custom-bg-green {
-    color: #015B59; 
+
+.body {
+  overflow:hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
-.mb-4 {
-    margin-bottom: 1rem; 
+.left-base{
+  position: absolute;
+  top: 20%;
+  left: 0;
 }
 
-.nutrient-widget-container {
-    transform: scale(0.75); 
-    transform-origin: top right; 
-    position: relative; 
-    right: 4vw; 
-    height: 95%;
-    bottom: 8vw;
+.right-base{
+  position: absolute;
+  top: 9%;
+  right: 0;
 }
 
-@media (min-width: 680px) {
-    .nutrient-widget-container {
-        transform: scale(0.9); 
-        right: 5vw; 
-        height: 110%;
-        bottom: 11vw;
-    }
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 40;
 }
 
-@media (min-width: 868px) {
-    .nutrient-widget-container {
-        transform: scale(1); 
-        right: 6vw; 
-        height: 111%;
-        bottom: 12vw;
-    }
+.date-nav-container{
+  position: absolute;
+  top: 12%;
+  left: 44%;
+  width: 20%;
+
 }
 
-@media (min-width: 1024px) {
-    .nutrient-widget-container {
-        transform: scale(1.1); 
-        right: 10vw; 
-        bottom: 12vw;
-    }
+.current-date-label{
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000;
+  text-align: center;
+  margin: 0;
+  padding: 0 2.5%;
+  width: 100%;
 }
 
-@media (min-width: 1280px) {
-    .nutrient-widget-container {
-        transform: scale(1.15); 
-        right: 10vw; 
-        bottom: 12vw;
-    }
+.date-nav-label{
+  font-size: 1.5rem;
+  font-weight: bolder;
+  color: #015B59;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
 }
 
-.fixed-footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    z-index: 1000; 
-    background-color: inherit; 
+.meal-type-list-container{
+  position: absolute;
+  top: 20%;
+  left: 5%;
+  width: 45%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  row-gap: 5%;
 }
 
-.background-image {
-    position: absolute;
-    right: 0;
-    z-index: -1; /* Ensures the image is behind other content */
-    height: 100%; /* Keeps the aspect ratio */
-    opacity: 1; /* Adjusts visibility */
-    object-fit: cover; /* Ensures it covers the area */
-    bottom: -15vh;
-    margin-bottom: 300px;
+.meal-type-container {
+  min-height: 10%;
+  max-height: 60%;
+  background-color: #F3EADA;
+  border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
+.meal-type-header {
+  padding-top: 2%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.meal-type-header label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  padding-left: 2.5%;
+  width: 30%;
+}
+
+.meal-type-header span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #000;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  padding-left: 2.5%;
+}
+
+.meal-type-header img {
+  height: 50%;
+  margin-right: 2.5%;
+  transition: transform 0.3s ease; /* Smooth transition for rotation */
+}
+
+.rotated {
+  transform: rotate(90deg); /* Rotate 90 degrees */
+}
+
+.meal-logged-items {
+  padding-bottom: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 85%;
+}
+
+
+.add-button{
+
+  display: flex;
+  grid-template-columns: repeat(2, max-content);
+  column-gap: 2.5%;
+  width: 80%;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.add-button.disabled{
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+  pointer-events: none;
+
+} 
+
+
+.meal-card {
+  position: relative;
+  background-color: rgba(218, 194, 168, 0.5);
+  border-radius: 10px;
+  margin-left: 5%;
+  margin-right: 5%;
+  margin-bottom: 5%;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+}
+
+.recipe-image{
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin:2.5%;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.more-image{
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  margin:2.5%;
+  cursor: pointer;
+}
+
+.meal-card span {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  padding-left: 2.5%;
+}
+
+.meal-card-container{
+  margin-bottom: 2%;
+  margin-top: 2%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 90%;
+  height: 30%;
+  overflow-y: auto;
+  
+  }
+
+
+.not-consumed-container{
+  position: absolute;
+  top: 0;
+  background-color: red;
+  padding: 2%;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+}
 </style>

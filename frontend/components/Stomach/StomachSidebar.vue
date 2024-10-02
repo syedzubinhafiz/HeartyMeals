@@ -7,7 +7,7 @@
             <div class="logo">
                 <img src="@/assets/img/meal_logging/big_stomach.svg">
                 <p>Stomach</p>
-                <span>{{this.selectedMeals.length || 0}}</span>
+                <p class="counter">{{this.selectedMeals.length || 0}}</p>
             </div>
 
             <hr>
@@ -16,29 +16,63 @@
     
         <div class="body">
             <div class="meal" v-for="meal in selectedMeals" :key="meal.id">
-                <img src="@/assets/img/LandingPage/image1.jpeg" style="align-self: center; border-radius: 10px; padding-left: 10%;">
-                <div style="display: grid; grid-template-rows: 20% 75%; row-gap: 5%; ">
-                    <span style="font-weight: bold; font-size:1.2rem; align-self: center;">{{ meal.recipe.name }}</span>
-                    <div style="display:grid; grid-template-columns: repeat(2, 1fr);">
-                        <span>Calories: {{meal.recipe.nutrition_info.calories}} cal</span>
-                        <span>Protein: {{meal.recipe.nutrition_info.protein}} g</span>
-                        <span>Fat: {{meal.recipe.nutrition_info.fat}} g</span>
-                        <span>Carbs: {{meal.recipe.nutrition_info.totalCarbohydrate}} g</span>
-                        <span>Sodium: {{meal.recipe.nutrition_info.sodium}} mg</span>
-                        <span>Cholesterol: {{ meal.recipe.nutrition_info.cholesterol }} mg</span>
-                    </div>
-                </div>
-                <div style="width: 100%; align-self: center; padding-right: 10%;">
-
-                  <input type="number" min="1" value="{{meal.portion}}" step="0.5" placeholder="Serving" style="width: 100%; border: 1px solid #ccc; border-radius: 10px; text-align: center;">
-                </div>
+              <button class="remove-item" @click="removeSelectedMeal(meal.id)">x</button>
+              <div class="meal-image-container">
+                <img :src="meal.recipe.storage_links.thumbnail" >
+              </div>
+              <div style="display: grid; grid-template-rows: 42.5% 55%; row-gap: 2.5%;">
+                  <span style="font-weight: bold; font-size:100%; align-self: center;">{{ meal.recipe.name }}</span>
+                  <div class="nutrition-list-container">
+                      <div class="nutrient-label">
+                        <label>Calories: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> cal</label>
+                      </div>
+                      <div class="nutrient-label">
+                        <label>Carbs: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> cal</label>
+                      </div>
+                      <div class="nutrient-label">
+                        <label>Protein: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> g</label>
+                      </div>
+                      <div class="nutrient-label">
+                        <label>Fats: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> g</label>
+                      </div>
+                      <div class="nutrient-label">
+                        <label>Sodium: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> mg</label>
+                      </div>
+                      <div class="nutrient-label">
+                        <label>Cholesterol: </label>
+                        <span>{{parseFloat((meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <label> mg</label>
+                      </div>
+                  </div>
+              </div>
+              <div style="width: 100%; align-self: center; padding-right: 10%;">
+                <input 
+                  class="serving-input"
+                  type="number" 
+                  v-model="meal.portion" 
+                  @input="updatePortion(meal.id, meal.portion)" 
+                  min="0.5" 
+                  step="0.5"
+                  placeholder="Serving"
+                  >
+              </div>
 
             </div>
         </div>
         
 
         <div class="sidebar-footer">
-            <Button class="summary-button">
+            <Button class="summary-button" @click="logMeal">
                 <img src="@/assets/icon/summary-icon.svg" alt="">
                 Summary
             </Button>
@@ -74,6 +108,17 @@
     methods: {
       closeSidebar() {
         this.$emit('closeSidebar');
+      },
+      updatePortion(id, portion) {
+        this.$emit('updatePortion', id, portion);
+      },
+      removeSelectedMeal(id) {
+        console.log('trigger remove meal in sidebar');
+        this.$emit('removeSelectedMeal', id);
+      },
+      logMeal(){
+        console.log('trigger log meal in sidebar');
+        this.$emit('logMeal');
       }
     },
   };
@@ -143,23 +188,27 @@
     font-weight: bold;
   }
 
-  .logo span{
+ .counter {
     position: absolute;
-    top: 35%;
-    left: 50%;
+    top: 60%;
+    left: 65%;
     background-color: red;
     color: white;
-    padding-top: 4%;
-    padding-left: 15%;
-    padding-right: 15%;
-    padding-bottom: 3%;
     font-weight: bold;
-    border-radius: 100%;
+    font-size: 0.8rem;
+    border-radius: 50%; 
+    width: 20px; 
+    height: 20px; 
+    text-align: center; 
+    line-height: 17px; 
+    transform: translate(-50%, -50%); 
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   }
+
 
   .sidebar-header hr{
     position: absolute;
-    top: 110%;
+    top: 130%;
     width: 90%;
     left: 5%;;
     border: 0.124rem solid #000000;
@@ -167,10 +216,10 @@
 
   .body{
     position: absolute;
-    top: 12%;
-    left: 10%;
-    width: 85%;
-    height: 70%;
+    top: 16%;
+    left: 5%;
+    width: 90%;
+    height: 67%;
     overflow-y: scroll;
   }
 
@@ -184,8 +233,50 @@
     margin-top: 5%;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     display: grid;
-    column-gap: 2.5%;
-    grid-template-columns: 25% 50% 20%;
+    grid-template-columns: 25% 55% 20%;
+  }
+
+  .meal-image-container {
+    justify-self: center;
+    align-self: center;
+  }
+
+  .meal-image-container img{
+    width:120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 20px;
+    padding: 5%;
+  }
+
+  .nutrition-list-container {
+    width: 100%;
+    height: 100%;
+    column-count: 2;    
+  }
+  .nutrient-label{
+    height: 20%;
+  }
+  .nutrient-label span {
+    font-size: x-small;
+  }
+  
+  .nutrient-label label {
+    font-size: x-small;
+    font-weight: bold;
+  }
+  .serving-input{
+     width: 100%; 
+     border: 1px solid #ccc; 
+     border-radius: 10px; 
+     text-align: center;
+  }
+
+  .remove-item{
+    position: absolute;
+    right: 5%;
+    top: 5%;
+    font-size:1.2rem;
   }
 </style>
   

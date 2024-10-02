@@ -117,8 +117,8 @@ const props = defineProps({
 }
 
 .img {
-  width: 70%;
-  height: auto;
+  height: 100px;
+  object-fit: cover;
   border-radius: 8px;
 }
 

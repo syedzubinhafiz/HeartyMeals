@@ -48,7 +48,7 @@
           :labels="recipe.recommended_meal_time ?? {}"
           :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
           :is-admin-approved="recipe.is_approved"
-          :image-src="'../assets/img/croissant.svg'"
+          :image-src="recipe.storage_links.thumbnail"
           @click.native="openOverlay(recipe)"     
           />
           <div v-if="isLoading" class="loading-indicator">Loading...</div>

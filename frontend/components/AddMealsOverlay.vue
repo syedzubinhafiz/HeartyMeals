@@ -10,27 +10,43 @@
       <div class="image-title-container">
         <span style="font-weight: bold; font-size: 120%;">{{ meal.recipe.name }}</span>
         <!-- <img :src="meal.recipe.storage_links.thumbnail" alt="meal image"> -->
-        <img src="@/assets/img/LandingPage/image1.jpeg" alt="">
+        <img :src="meal.recipe.storage_links.thumbnail" alt="" style="object-fit: cover; height: 250px; width: 250px;">
       </div>
 
       <div class="portion-nutrient-container">
         <div class="portion-container">
           <span style="font-weight: bold; font-size: 90%; align-self: center;">Portion</span>
-          <input type="number" id="selectedPortion" step="0.5" min="1" placeholder="1" v-model="portion" @input="applyChanges">
+          <input type="number" id="selectedPortion" step="0.5" min="0.5" placeholder="Portion" v-model="portion" @input="applyChanges">
         </div>
-        <NutritionWidget />
+        <div style="z-index: 102;">
+            <NutritionBar
+            v-for="(nutrient, index) in nutrients"
+            :key="index"
+            :icon="nutrient.icon"
+            :label="nutrient.label"
+            :totalValue="userDailyBudget[nutrient.key]"
+            :currentValue="userRemainingNutrients[nutrient.key]"
+            :afterMealValue="afterAddingMeal[nutrient.key]"
+            :unit="nutrient.unit"
+            :maxColor="nutrient.maxColor"
+            :currentColor="nutrient.currentColor"
+            :afterMealColor="nutrient.afterMealColor"
+            :fontColor="nutrient.fontColor"
+            :progressBarContainerStyle="'margin-top: 0.5%; margin-bottom: 0.5%;'"
+        />
+        </div>
       </div>
 
       <div class="component-container">
         <span style="font-weight: bold; font-size: 100%; align-self: center;">Ingredients</span>
         <div class="component-item-container">
           <div v-for="ingredient in meal.components.ingredients" :key="ingredient.name" class="individual-component-container">
-            <img src="@/assets/img/LandingPage/image1.jpeg" style="border-radius: 10%;">
+            <img :src="ingredient.storage_links.thumbnail" style="border-radius: 15px; object-fit: cover; width: 100px;">
             <div class="component-name-amount-container">
               <span>{{ ingredient.name }}</span>
               <div class="component-amount-container">
                 <label>Amount: </label>
-                <span>{{ (portion > 1) ? parseFloat((ingredient.amount * portion/meal.recipe.serving_size).toFixed(2)) : parseFloat((ingredient.amount/meal.recipe.serving_size).toFixed(2)) }} {{ ingredient.unit }}</span>
+                <span>{{ (portion > 0) ? parseFloat((ingredient.amount * portion/meal.recipe.serving_size).toFixed(2)) : parseFloat((ingredient.amount/meal.recipe.serving_size).toFixed(2)) }} {{ ingredient.unit }}</span>
               </div>
             </div>
           </div>
@@ -41,12 +57,12 @@
         <span style="font-weight: bold; font-size: 100%; align-self: center;">Seasonings</span>
         <div class="component-item-container">
           <div v-for="seasoning in meal.components.seasonings" :key="seasoning.name" class="individual-component-container">
-            <img src="@/assets/img/LandingPage/image1.jpeg" style="border-radius: 10%;">
+            <img :src="seasoning.storage_links.thumbnail" style="border-radius: 15px; object-fit: cover; width: 100px;">
             <div class="component-name-amount-container">
                 <span>{{ seasoning.name }}</span>
                 <div class="component-amount-container">
                     <label>Amount: </label>
-                    <span>{{ (portion > 1) ? parseFloat((seasoning.amount * portion/meal.recipe.serving_size).toFixed(2)) : parseFloat((seasoning.amount/meal.recipe.serving_size).toFixed(2)) }} {{ seasoning.unit }}</span>
+                    <span>{{ (portion > 0) ? parseFloat((seasoning.amount * portion/meal.recipe.serving_size).toFixed(2)) : parseFloat((seasoning.amount/meal.recipe.serving_size).toFixed(2)) }} {{ seasoning.unit }}</span>
                 </div>
             </div>
           </div>
@@ -66,8 +82,13 @@
 </template>
 
 <script>
-import NutritionWidget from './Nutrient/NutritionWidget.vue';
+import NutritionBar from './Nutrient/NutritionBar.vue';
+
+
 export default {
+  components: {
+    NutritionBar
+  },
   name: "AddMealsOverlay",
   props: {
     visible: {
@@ -102,7 +123,77 @@ export default {
     return {
       portion: 1,
       afterAddingMeal: this.userRemainingNutrients,
+      nutrients:[
+        {
+          key: 'calories',
+          icon: "/assets/img/caloriesIcon.png",
+          label: 'Calories',
+          unit: 'cal',
+          maxColor: '#e9e5cd',
+          currentColor: '#d7d1b4',
+          afterMealColor: '#b8b396',
+          fontColor: '#b8b396',
+        },
+        {
+          key: 'carbs',
+          icon: "/assets/img/carbIcon.png",
+          label: 'Carbohydrates',
+          unit: 'g',
+          maxColor: '#e2f3f4',
+          currentColor: '#a2d3d6',
+          afterMealColor: '#83bbbe',
+          fontColor: '#83bbbe',
+        },
+        {
+          key: 'protein',
+          icon: "/assets/img/proteinIcon.png",
+          label: 'Protein',
+          unit: 'g',
+          maxColor: '#e8f0e9',
+          currentColor: '#99d0a3',
+          afterMealColor: '#87a98d',
+          fontColor: '#87a98d',
+        },
+        {
+          key: 'fat',
+          icon: "/assets/img/fatsIcon.png",
+          label: 'Fats',
+          unit: 'g',
+          maxColor: '#fbf1cd',
+          currentColor: '#fcdea3',
+          afterMealColor: '#ecc474',
+          fontColor: '#ecc474',
+        },
+        {
+          key: 'sodium',
+          icon: "/assets/img/sodiumIcon.png",
+          label: 'Sodium',
+          unit: 'mg',
+          maxColor: '#f9e1da',
+          currentColor: '#f6aa97',
+          afterMealColor: '#ec7455',
+          fontColor: '#ec7455',
+        },
+        {
+          key: 'cholesterol',
+          icon: "/assets/img/cholesterolsIcon.png",
+          label: 'Cholesterol',
+          unit: 'mg',
+          maxColor: '#ffe5d4',
+          currentColor: '#f1c9af',
+          afterMealColor: '#be9a83',
+          fontColor: '#be9a83',
+        }
+      ]
     };
+  },
+  watch: {
+    visible: function (newVal, oldVal) {
+      if (newVal === true) {
+        this.portion = 1;
+        this.applyChanges();
+      }
+    },
   },
   methods: {
     closeOverlay() {
@@ -112,34 +203,25 @@ export default {
       this.$emit('addMeal', this.mealId, this.portion, this.afterAddingMeal);
     },
     applyChanges() {
-      const previous_portion = this.portion;
-      this.portion = parseFloat(document.getElementById("selectedPortion").value);
-    
-      const original_after_meal_nutrients = {
-        calories: this.afterAddingMeal.calories + parseFloat((meal.recipe.nutrition_info.calories * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-        protein: this.afterAddingMeal.protein + parseFloat((meal.recipe.nutrition_info.protein * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-        carbs: this.afterAddingMeal.carbs + parseFloat((meal.recipe.nutrition_info.carbs * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-        fat: this.afterAddingMeal.fat + parseFloat((meal.recipe.nutrition_info.fat * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-        sodium: this.afterAddingMeal.sodium + parseFloat((meal.recipe.nutrition_info.sodium * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-        cholesterol: this.afterAddingMeal.cholesterol + parseFloat((meal.recipe.nutrition_info.cholesterol * (previous_portion/meal.recipe.serving_size)).toFixed(2)),
-      };
-
-      if (this.portion < 1) {
-        this.portion = 1;
-        document.getElementById("selectedPortion").value = 1;
+      if (this.portion === "") return;
+      if (this.afterAddingMeal === null) {
+        this.afterAddingMeal = this.userRemainingNutrients;
       }
-
+      
       this.afterAddingMeal = {
-        calories: original_after_meal_nutrients.calories - parseFloat((meal.recipe.nutrition_info.calories * (this.portion/meal.recipe.serving_size)).toFixed(2)),
-        protein: original_after_meal_nutrients.protein - parseFloat((meal.recipe.nutrition_info.protein * (this.portion/meal.recipe.serving_size)).toFixed(2)),
-        carbs: original_after_meal_nutrients.carbs - parseFloat((meal.recipe.nutrition_info.carbs * (this.portion/meal.recipe.serving_size)).toFixed(2)),
-        fat: original_after_meal_nutrients.fat - parseFloat((meal.recipe.nutrition_info.fat * (this.portion/meal.recipe.serving_size)).toFixed(2)),
-        sodium: original_after_meal_nutrients.sodium - parseFloat((meal.recipe.nutrition_info.sodium * (this.portion/meal.recipe.serving_size)).toFixed(2)),
-        cholesterol: original_after_meal_nutrients.cholesterol - parseFloat((meal.recipe.nutrition_info.cholesterol * (this.portion/meal.recipe.serving_size)).toFixed(2)),
+        calories: parseFloat((this.userRemainingNutrients.calories - this.meal.recipe.nutrition_info.calories * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        protein: parseFloat((this.userRemainingNutrients.protein - this.meal.recipe.nutrition_info.protein * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        carbs: parseFloat((this.userRemainingNutrients.carbs - this.meal.recipe.nutrition_info.totalCarbohydrate * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        fat: parseFloat((this.userRemainingNutrients.fat - this.meal.recipe.nutrition_info.fat * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        sodium: parseFloat((this.userRemainingNutrients.sodium - this.meal.recipe.nutrition_info.sodium * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        cholesterol: parseFloat((this.userRemainingNutrients.cholesterol - this.meal.recipe.nutrition_info.cholesterol * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
       };
+      
+      console.log(this.meal.recipe);
     }
   }
 };
+
 </script>
 
 
@@ -211,31 +293,31 @@ export default {
     .overlay-body{
         position:relative;
         display: grid;
-        grid-template-columns: 42.5% 42.5%;
+        grid-template-columns: 40% 40%;
         grid-template-rows: 30%, 65%;
-        column-gap: 10%;
-        row-gap: 5%;
+        column-gap: 5%;
         top : 17%;
-        left: 12.5%;
-        height: 75%;
-        width: 80%;
+        padding-left: 12.5%;
+        height:75%;
+        width: 100%;
     }
 
     .image-title-container{
         display: grid;
         grid-template-rows: 10% 88%;
+
         row-gap: 2%;
     }
 
     .image-title-container img{
         border-radius: 5%;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+
+      }
     
     .portion-nutrient-container{
         display: grid;
         grid-template-rows: 10% 85%;
-        row-gap: 5%;
     }
 
     .portion-container{
@@ -245,9 +327,9 @@ export default {
     }
 
     .portion-container input{
-        width: 80%;
+        width: 100%;
         height: 80%;
-        border-radius: 5%;
+        border-radius: 10px;
         border: 1px solid #ccc;
         align-self: center;
         font-size: 1rem;
@@ -256,34 +338,34 @@ export default {
 
     .component-container{
         display: grid;
-        grid-template-rows: 10% 85%;
-        row-gap: 5%;
+        grid-template-rows: 10% 89%;
     }
 
     .component-item-container{
-        padding-top: 5%;
         padding-left: 2.5%;
         padding-right: 2.5%;
-        display: flex;
-        flex-direction: column;
+        width: 100%;
+        height: 200px;
         gap: 5%;
         overflow-y: scroll;
         z-index: 103;
     }
 
     .individual-component-container{
+        width: 100%;
+        max-height:fit-content;
+        margin-top: 5%;
         display: grid;
-        grid-template-columns: 30% 65%;
-        column-gap: 5%;
+        grid-template-columns: 25% 65%;
         border-radius: 0.5rem;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         background-color: #FFFEF1;
     }
     
     .component-name-amount-container{
-        display: grid;
-        grid-template-rows: 60% 35%;
-        padding-top: 5%;
+        display: flex;
+        flex-direction: column;
+        padding-top: 2.5%;
     }
 
     .component-name-amount-container span{
@@ -296,11 +378,15 @@ export default {
     }    
     .component-amount-container label{
         font-size: 0.7rem;
+        padding-top: 2.5%;
         font-weight: bold;
     }
     .individual-component-container img{
-        border-radius: 5%;
-        padding:5%;
+        border-radius: 20px;
+        padding:10%;
+        height: 80px;
+        width: 80px;
+        object-fit: cover;
     }
 
 </style>
