@@ -198,7 +198,7 @@
             </div>
             
             <!-- Add Button  -->
-            <div style="grid-column: span 2; ">
+            <div style="grid-column: span 2; display: flex; align-items: center; justify-content: center;">
                 <button type="submit" class="submit-button" @click="gatherRecipeData">Add Recipe</button>
             </div>
         </form>
