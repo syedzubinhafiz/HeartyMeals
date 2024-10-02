@@ -10,8 +10,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@tinymce/tinymce-vue": "^6.0.1",
+    "@tinymce/tinymce-vue": "^5.1.1",
+    "axios": "^1.7.7",
     "chart.js": "^4.4.2",
+    "lodash.debounce": "^4.0.8",
     "nuxt": "^3.10.1",
     "oauth4webapi": "^2.11.1",
     "openid-client": "^5.6.5",
@@ -24,6 +26,9 @@
     "@nuxt/image": "^1.7.0",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1"
+    "sass": "^1.78.0",
+    "sass-loader": "^16.0.1",
+    "tailwindcss": "^3.4.1",
+    "vue-svg-loader": "^0.16.0"
   }
 }

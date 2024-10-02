@@ -5,8 +5,6 @@
 </template>
 <script setup>
 defineOptions({
-	name: "ButtonOrange",
+    name: "ButtonOrange",
 });
-
-// buttons use @click.prevent for onclick stuff
 </script>
