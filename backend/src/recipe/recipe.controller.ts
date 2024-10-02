@@ -157,7 +157,7 @@ export class RecipeController {
 
 
                 // get link for components
-                for (const component of recipe_component_list.ingredient){
+                for (const component of recipe_component_list.ingredients){
                     component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
                 }
                 for (const component of recipe_component_list.seasonings){
@@ -170,6 +170,7 @@ export class RecipeController {
                 }
             }
         } catch (e) {
+            console.log(e);
             return new HttpException(e.message, 400)
         }
 
@@ -227,7 +228,7 @@ export class RecipeController {
         const recipe_component_list = await this.recipeComponentService.getRecipeComponents(recipeId);
 
         // get link for components
-        for (const component of recipe_component_list.ingredient){
+        for (const component of recipe_component_list.ingredients){
             component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
         }
         for (const component of recipe_component_list.seasonings){
@@ -274,5 +275,18 @@ export class RecipeController {
 
         }
     }
+
+    /**
+     * Endpoint to get the recipe of the day
+     * @param headers header containing the authorization token
+     * @returns Recipe of the day
+     */
+    @Get('recipe-of-the-day')
+    async getRecipeOfTheDay(@Headers() headers: any) {
+        const decoded = this.commonService.decodeHeaders(headers.authorization);
+        const recipe = await this.recipeService.getRecipeOfTheDay(decoded);
+        recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+        return recipe;
+    }  
     
 }
