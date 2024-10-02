@@ -8,7 +8,7 @@ export class FileUploadDTO{
     @Type(() => FileFormatDTO)
     readonly thumbnail: FileFormatDTO;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => FileFormatDTO)
