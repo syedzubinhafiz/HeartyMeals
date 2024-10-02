@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EducationalContent } from './educational.entity';
 import { StorageService } from 'src/storage/storage.service';
 import { Visibility } from '../recipe/enum/visibility.enum';
+import { AddEducationalContentDTO } from './dto/add-edu-content-dto';
 
 @Injectable()
 export class EducationalService {
@@ -21,71 +22,22 @@ export class EducationalService {
      * @param files - files of article
      * @returns newly created educational content object
      */
-    async uploadContent(title, content, files: Array<Express.Multer.File>){
-        // data validation 
-        if (title == null || content == null || files.length <= 0){
-            return "Either title, content, or files is empty";
-        }
+    async uploadContent(addEducationalContentDTO: AddEducationalContentDTO, transactionalEntityManager: EntityManager){
 
-        // content that passed in should be like this 
-        // [ <block of text>, <block of image/video>, <block of text>]
-        // create a saved_content array []
-        var saved_content = []
-        // for each element in the array passed in, create a json object with "type" and " content"
-        // check if it is text or files
-        // if text, save the type as "text", content as the actual text, and put into the saved_content array 
-        // if files, save the type as "files", content as the index of the files in the files array
-        var file_counter = 0;
-        content.forEach(item => {
-            if (item.type === "text"){
-                saved_content.push({
-                    "type": "text",
-                    "content": item.info
-                });
-            }
-            else { 
-                saved_content.push({
-                    "type": "files",
-                    "content": file_counter
-                });
-                file_counter += 1;
-            }
-        });
 
         // create and save an entry of educational content object to the database first to obtain the uuid of the object.
         var new_entry = new EducationalContent();
-        new_entry.content = saved_content;
-        new_entry.storage_links = null;
-        new_entry.title = title;
+        new_entry.title = addEducationalContentDTO.educationalContent.title;
+        new_entry.summary = addEducationalContentDTO.educationalContent.summary;
+        new_entry.visibility = addEducationalContentDTO.educationalContent.visibility;
+        new_entry.content = addEducationalContentDTO.educationalContent.content;
+        
         // create an entry with no links first (to get the edu_id for path)
-        const edu_object = await this.educatinoalContentRepository.save(new_entry);
-
-        // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
-        // update the educational object with storage links and saved_content array
-
-        // files CAN be empty if edu content only upload the text first
-
-        edu_object.storage_links = {} as JSON;
-        return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
-    }
-
-    /**
-     * Mark the educational content object as deleted
-     * @param eduId - educational content id
-     * @returns updated educational content
-     */
-    async deleteContent(eduId){
-        // get the entry
         try {
-            var entry = await this.educatinoalContentRepository.findOneBy({id: eduId});
-
-            // soft delete
-            entry.deleted_at = new Date();
-            entry.visibility = Visibility.PRIVATE;
-            return await this.educatinoalContentRepository.save(entry);
-            }
+            return await transactionalEntityManager.save(new_entry);
+        }
         catch (e){
-            return e;
+            throw new HttpException('Failed to upload educational content', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -161,5 +113,9 @@ export class EducationalService {
         entry.updatedAt = new Date();
         // return new entry
         return await this.educatinoalContentRepository.save(entry);
+    }
+
+    getPath(eduId){
+        return `educational_content/${eduId}`;
     }
 }

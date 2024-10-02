@@ -16,6 +16,7 @@ export default defineNuxtConfig({
       greensheartAccountClientId: "greensheart",
       greensheartAccountScope: "openid profile email",
       webURL:"",
+      tinyMCEKey: "5xd0rqlwc0evl0pm1xyxcy0ztd40yr061ss8azv8um8694bu",
     },
   },
   plugins: [
