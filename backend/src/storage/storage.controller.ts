@@ -1,31 +1,51 @@
-import { Body, Controller, Get, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpException, Post, Query} from '@nestjs/common';
 import { StorageService } from './storage.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { EntityManager } from 'typeorm';
+import { FileUploadDTO } from './dto/file-upload-dto';
 
 @Controller('storage')
 export class StorageController {
 
-    constructor(private storageService: StorageService){}
+    constructor(
+        private storageService: StorageService,
+        private readonly entityManager: EntityManager,
+    ){}
 
     @Post('upload')
-    @UseInterceptors(FilesInterceptor('files[]'))
-    upload(@Body('data') payload, @UploadedFiles() files: Array<Express.Multer.File>){
-        return this.storageService.uploadFile(JSON.parse(payload).path, files);
+    async upload(@Body() fileUploadDTO: FileUploadDTO){
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+
+                const storage_links = await this.storageService.uploadFile("path", fileUploadDTO, transactionalEntityManager);
+            });
+            return new HttpException("Files uploaded successfully.", 200);
+        } catch (e) {
+            return new HttpException(e.message, e.status);
+        }
     }
 
     @Post('delete')
-    delete(@Body() payload){
-        return this.storageService.deleteFile(payload.storageId);
+    async delete(@Body("storage_ids") payload){
+        try {
+            await this.entityManager.transaction(async transactionalEntityManager => {
+
+                this.storageService.deleteFile(payload, transactionalEntityManager);
+
+            });
+            return new HttpException("Files deleted successfully.", 200);
+        } catch (e) {
+            return new HttpException(e.message, e.status);
+        }
     }
 
-    @Get('get_from_path')
-    get_from_path(@Body() payload){
-        return this.storageService.getFileFromPath(payload.path);
-    }
-
-    @Get('get_from_id')
-    get_from_id(@Body() payload){
-        return this.storageService.getFileFromId(payload.id);
+    @Get('get')
+    async get(@Query("id") payload){
+        try {
+            return this.storageService.getLink(payload);
+        }
+        catch (e){
+            return new HttpException(e.message, e.status);
+        }
     }
 }
 

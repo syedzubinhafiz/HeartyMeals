@@ -51,7 +51,10 @@ export class Recipe{
 
     @Column({
         type: 'json', 
-        default: {}
+        default: {
+            'thumbnail': '',
+            'content': {}
+        }
     })
     storage_links: JSON
 
