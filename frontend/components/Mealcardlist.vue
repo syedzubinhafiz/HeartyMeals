@@ -23,9 +23,8 @@
                   <slot></slot>
                   <!-- Green Button -->
                   <button class="add-dishes-button mt-4" @click="onAddDishes">
-                    <i class="fas fa-plus mr-2"></i>Add Dishes
+                      <i class="fas fa-plus mr-2"></i>Add Dishes
                   </button>
-
               </div>
           </transition>
       </div>
@@ -47,6 +46,10 @@ const props = defineProps({
   route: {
       type: String,
       required: true
+  },
+  isoDate: {
+      type: String,
+      default: (new Date()).toISOString()
   }
 });
 
@@ -58,8 +61,8 @@ const toggleExpand = () => {
 
 const onAddDishes = () => {
   useMealLogging().unsavedMealList.value = []
-  useMealLogging().mealType.value = props.title
-  navigateTo(`/add-meals`)
+  useMealLogging().mealDate.value = props.isoDate
+  navigateTo(`/add-meals?mealType=${props.title}&selectedDate=${props.isoDate}&ismealplanning=false`);
 }
 </script>
 
