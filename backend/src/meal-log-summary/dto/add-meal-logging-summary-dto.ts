@@ -44,9 +44,4 @@ export class AddMealLoggingSummaryDTO{
     @IsNotEmpty()
     @IsEnum(MealType)
     readonly mealType: MealType;
-
-    @IsOptional()
-    @Transform(({ value }) => (value === undefined ? {} : value))
-    readonly nutritionAfter: JSON;
-
 }
