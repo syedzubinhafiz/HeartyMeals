@@ -34,7 +34,7 @@
                         <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
                     </div>
                     <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
-                        Calories <span class="font-bold">{{ meal.calories }}kcal</span>
+                        Calories <span class="font-bold">{{ +meal.calories.toFixed(2) }}kcal</span>
                     </div>
                     </div>
                     <!-- Nutrition Info Grid -->
@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div class="bg-calories-yellow text-black px-3 py-1 rounded-lg text-md shadow-sm">
-                Calories <span class="font-bold">{{ totalNutrition.calories }}kcal</span>
+                Calories <span class="font-bold">{{ +totalNutrition.calories.toFixed(2) }}kcal</span>
             </div>
             </div>
             <!-- Nutrition Info Grid -->
@@ -155,7 +155,7 @@ function formatNutrientValue(value, nutrient) {
   // if (nutrient === 'Cholesterol') {
   //   unit = 'mg';
   // }
-  return `${value}${unit}`;
+  return `${+value.toFixed(2)}${unit}`;
 }
 const nutrientOrder = ['carbohydrates', 'cholesterol', 'fat', 'protein', 'sodium'];
 

@@ -22,11 +22,11 @@
 
       <!-- Date Selector (Below Title) -->
       <div class="flex items-start justify-start space-x-4 mt-4">
-        <button @click="previousDate" class="text-gray-700 text-2xl">
+        <button @click="prevDay" class="text-gray-700 text-2xl">
           &lt;
         </button>
-        <span class="text-2xl text-black">{{ formattedDate }}</span>
-        <button @click="nextDate" class="text-gray-700 text-2xl">
+        <span class="text-2xl text-black">{{ formatDate(currentDay) }}</span>
+        <button @click="nextDay" class="text-gray-700 text-2xl">
           &gt;
         </button>
       </div>
@@ -70,126 +70,18 @@ const tooltipVisible = ref({
   Other: false,
 });
 
-// Show and hide tooltip functions
-function showTooltip(mealCategory) {
-  tooltipVisible.value[mealCategory] = true;
+// day switching
+const currentDay = ref(new Date())
+
+const prevDay = async () => {
+  currentDay.value.setDate(currentDay.value.getDate()-1)
+  getData()
+}
+const nextDay = async () => {
+  currentDay.value.setDate(currentDay.value.getDate()+1)
+  getData()
 }
 
-function hideTooltip(mealCategory) {
-  tooltipVisible.value[mealCategory] = false;
-}
-
-// Function to determine background class for nutrients
-function nutrientBgClass(nutrient) {
-  if (['Protein', 'Cholesterol', 'Sodium'].includes(nutrient)) {
-    return 'bg-protein-bg';
-  } else {
-    return 'bg-highlight-yellow';
-  }
-}
-
-// Function to format nutrient values with units
-function formatNutrientValue(value, nutrient) {
-  let unit = 'g'; // default unit
-  if (nutrient === 'Cholesterol') {
-    unit = 'mg';
-  }
-  return `${value}${unit}`;
-}
-
-// Define the order of nutrients
-const nutrientOrder = ['Protein', 'Carbs', 'Cholesterol', 'Fats', 'Sodium'];
-
-// Meals data with detailed information (calories and nutrients as numbers)
-const mealsData = {
-  Breakfast: [
-    {
-      name: 'Scrambled Eggs and Hash Brown',
-      calories: 350, // Number in kcal
-      nutrients: {
-        Protein: 12, // in grams
-        Carbs: 28,
-        Cholesterol: 200, // in mg
-        Fats: 15,
-        Sodium: 0.5,
-      },
-    },
-    {
-      name: 'Mushroom Soup',
-      calories: 150,
-      nutrients: {
-        Protein: 5,
-        Carbs: 20,
-        Cholesterol: 30,
-        Fats: 7,
-        Sodium: 0.3,
-      },
-    },
-    // Add more breakfast meals as needed
-  ],
-  Lunch: [
-    {
-      name: 'Pad Thai',
-      calories: 600,
-      nutrients: {
-        Protein: 25,
-        Carbs: 70,
-        Cholesterol: 150,
-        Fats: 20,
-        Sodium: 1.2,
-      },
-    },
-    {
-      name: 'Grilled Chicken',
-      calories: 400,
-      nutrients: {
-        Protein: 35,
-        Carbs: 5,
-        Cholesterol: 85,
-        Fats: 10,
-        Sodium: 0.8,
-      },
-    },
-    // Add more lunch meals as needed
-  ],
-  // You can add more meal categories and their meals here
-};
-
-// Computed property to calculate total calories and nutrients for each meal category
-const totalMealData = computed(() => {
-  const result = {};
-  for (const [mealCategory, meals] of Object.entries(mealsData)) {
-    let totalCalories = 0;
-    const totalNutrients = {};
-
-    for (const meal of meals) {
-      // Sum calories
-      totalCalories += meal.calories;
-
-      // Sum nutrients
-      for (const [nutrient, value] of Object.entries(meal.nutrients)) {
-        if (!totalNutrients[nutrient]) {
-          totalNutrients[nutrient] = 0;
-        }
-        totalNutrients[nutrient] += value;
-      }
-    }
-
-    result[mealCategory] = {
-      totalCalories,
-      totalNutrients,
-    };
-  }
-  return result;
-});
-
-// Date state and functions for date switcher
-const currentDate = ref(new Date());
-
-const formattedDate = computed(() => {
-  const date = currentDate.value;
-  return formatDate(date);
-});
 
 function formatDate(date) {
   const day = date.getDate();
@@ -213,17 +105,17 @@ function getOrdinalSuffix(day) {
   }
 }
 
-function previousDate() {
-  const date = new Date(currentDate.value);
-  date.setDate(date.getDate() - 1);
-  currentDate.value = date;
-}
+// function previousDate() {
+//   const date = new Date(currentDate.value);
+//   date.setDate(date.getDate() - 1);
+//   currentDate.value = date;
+// }
 
-function nextDate() {
-  const date = new Date(currentDate.value);
-  date.setDate(date.getDate() + 1);
-  currentDate.value = date;
-}
+// function nextDate() {
+//   const date = new Date(currentDate.value);
+//   date.setDate(date.getDate() + 1);
+//   currentDate.value = date;
+// }
 
 // View state and function
 const view = ref('day');
@@ -247,10 +139,14 @@ const maxNutrientData = ref(null)
 const nutrientData = ref(null)
 onMounted(async() => {
   await useApi("/dietary","GET")
+  await getData()
+})
 
-  let currentDate = new Date();
-  currentDate.setUTCHours(-8, 0, 0, 0);
+const getData = async () => {
+
+  let currentDate = currentDay.value
   currentDate = currentDate.toISOString().split('T')[0]
+  console.log(currentDate)
   analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
   console.log(analyticsData.value)
   breakfastTotal.value = analyticsData.value.value.Breakfast_total
@@ -268,8 +164,7 @@ onMounted(async() => {
 
   maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0]);
   nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1]);
-})
-
+}
 
 </script>
 
