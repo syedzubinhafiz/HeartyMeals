@@ -182,7 +182,7 @@
                 }
             });
             if (response.status === 201) {
-                remainingVolume.value -= intakeValueInMl;
+                remainingVolume.value -= parseFloat((intakeValueInMl).toFixed(2));
                 useToast().success("Fluid intake is logged!")
                 console.log('Intake logged');
                 closeModal();
