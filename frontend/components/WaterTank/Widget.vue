@@ -69,6 +69,8 @@ const intakeUnit = ref("ml");
 
 function logIntake() {
   console.log(`Logged ${intakeAmount.value} ${intakeUnit.value}`);
+
+
   showOverlay.value = false;
 }
 </script>
