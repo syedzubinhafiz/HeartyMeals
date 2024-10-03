@@ -478,7 +478,6 @@ export const useFillData = () => {
     }
     const fillMealLogging = async() => {
         let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
         let currentDate2 = currentDate.toISOString()
         currentDate = currentDate.toISOString().split('T')[0]
         console.log(currentDate)

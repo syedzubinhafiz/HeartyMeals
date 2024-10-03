@@ -97,7 +97,6 @@ onMounted(async () => {
 async function fetchFluidLogging() {
   try {
     let currentDate = new Date();
-    currentDate.setUTCHours(-8, 0, 0, 0);
     currentDate = currentDate.toISOString().split('T')[0];
     const response = await useApi(`/fluid-logging/get?dateTime=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
     console.log(response)
@@ -113,7 +112,6 @@ async function logIntake() {
 
   
   let currentDate = new Date();
-  currentDate.setUTCHours(-8, 0, 0, 0);
   currentDate = currentDate.toISOString().split('T')[0];
   showOverlay.value = false;
 

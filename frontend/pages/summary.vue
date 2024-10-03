@@ -160,7 +160,6 @@ const handleDoneClick = async () => {
   for (let i = 0; i < summaryData.value.length; i++) {
     let currentDate = new Date()
 
-    currentDate.setUTCHours(-8, 0, 0, 0)
     currentDate = currentDate.toISOString().split('T')[0]
     let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
     if(result.isError) {

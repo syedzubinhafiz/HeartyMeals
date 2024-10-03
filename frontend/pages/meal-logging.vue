@@ -237,7 +237,6 @@
         console.log("mealtype", updatedMealInfo.mealType);
 
         let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
         currentDate = currentDate.toISOString().split('T')[0]
 
   
