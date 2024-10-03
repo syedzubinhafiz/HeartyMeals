@@ -1,10 +1,5 @@
 <template>
   <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
-    <!-- Banner for Not Consumed -->
-    <div v-if="!is_consumed" class="not-consumed-banner absolute top-0 left-0 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-br-lg">
-      Not Consumed
-    </div>
-
     <!-- Food Image -->
     <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
@@ -18,22 +13,22 @@
       <i class="fas fa-ellipsis-v text-gray-600"></i>
     </div>
 
-    <FoodCardNutrients 
+    <!-- Popup -->
+    <div ref="popupRef">
+      <FoodCardNutrients 
         v-if="showMiniCard" 
         :nutritionInfo="cardInfo.recipe.nutrition_info"
         :visible="showMiniCard" 
         :showButtons="isToday"  
-        :isConsumed="is_consumed"
         @close="toggleMiniCard" 
         @remove="removeMeal" 
-        @editMeal="$emit('editMeal', $event)"
-        @consumeMeal="toggleConsumed" 
-    />
+        @editMeal="$emit('editMeal', $event)"/>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   cardInfo: {
@@ -43,20 +38,24 @@ const props = defineProps({
   isToday: {
     type: Boolean,
     required: true
+  },
+  mealList: {
+    default: []
   }
 });
-const is_consumed = ref(false);
 
 const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
 const showMiniCard = ref(false);
+const popupRef = ref(null);
 
 const toggleMiniCard = () => {
   showMiniCard.value = !showMiniCard.value;
 };
 
 const selectMeal = () => {
-  toggleMiniCard();
+  window.addEventListener('click', handleClickOutside);
+  setTimeout(()=>{toggleMiniCard();},300)
   console.log('Meal selected:', props.cardInfo);
   emit('selectMeal', props.cardInfo); // Emit the selected meal data
 };
@@ -68,17 +67,35 @@ const removeMeal = async () => {
     "mealType": props.cardInfo.type
   });
   console.log(result);
+  if(result.isError || result.value?.status != 200) {
+    useToast().error("Deletion failed!")
+  }
+  else {
+    useToast().success("Meal deleted!")
+    props.mealList.splice(props.mealList.indexOf(props.cardInfo), 1); 
+  }
 };
 
-const toggleConsumed = () => {
-  is_consumed.value = !is_consumed.value;
+// Function to handle clicks outside of the popup
+const handleClickOutside = (event) => {
+  if (popupRef.value && !popupRef.value.contains(event.target) && showMiniCard.value) {
+    setTimeout(()=>{
+      showMiniCard.value = false;
+      window.removeEventListener('click', handleClickOutside);
+    },
+    300)
+  }
 };
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
 .food-card {
   background-color: #F3EADA; /* Use your preferred background color */
-  position: relative; /* Ensure the position is relative so that the child absolute element is positioned relative to this parent */
+  position: relative;
 }
 
 .food-image {
@@ -88,19 +105,6 @@ const toggleConsumed = () => {
 }
 
 .food-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add a hover effect */
-}
-
-.not-consumed-banner {
-  /* Banner styles for "Not Consumed" */
-  background-color: #e3342f; /* Red color */
-  color: white;
-  font-size: 0.75rem; /* Small text */
-  font-weight: bold;
-  padding: 4px 8px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-bottom-right-radius: 5px; /* Rounded corner for bottom-right */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 </style>

@@ -15,13 +15,9 @@
             <StomachMealCard  v-model="useMealLogging().unsavedMealList.value[i]"/>
           </div>
         </div>
-        <nuxt-link 
-  :to="{ path: '/summary', query: { mealType: mealType, selectedDate: selectedDate, ismealplanning: ismealplanning } }"
->
-  <ButtonGreen>Summary</ButtonGreen>
-</nuxt-link>
-
-
+        <ButtonGreen @click="onToSummary">
+          Summary
+        </ButtonGreen>
       </div>
       
 
@@ -51,13 +47,6 @@ const props = defineProps({
     type: String,
     required: true
   },
-  selectedDate: {
-    type: String,
-  required: true},
-  ismealplanning: { 
-    type: Boolean,
-    required: true
-  }
 })
 // onMounted(async () => {
 //   // await useApi("/dietary","GET")
@@ -83,4 +72,9 @@ const computedSidebarOpen = computed({
 const toggleSidebar = () => {
   computedSidebarOpen.value = false;
 };
+
+const onToSummary = () => {
+  useMealLogging().mealType.value = props.mealType
+  navigateTo(`/summary`)
+}
 </script>

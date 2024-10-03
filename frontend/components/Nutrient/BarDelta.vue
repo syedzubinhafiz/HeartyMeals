@@ -5,7 +5,7 @@
                 <img :src="icon" alt="icon" class="w-5 h-5 mr-2"/>
                 <P>{{label}}</P>
             </div>
-            <P :style="{color: colorAfter}">{{roundedValBefore}}/{{roundedMaxVal}}mg</P>
+            <P :style="{color: colorAfter}">{{+valueBefore.toFixed(2)}}/{{+maxValue.toFixed(2)}}{{unit}}</P>
         </div>
         <div class="rounded-md h-2 w-full shadow-md" :style="`background-color: ${bgColor}`">
             <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${colorBefore};width: ${Math.max(0, Math.min(100, props.valueBefore / props.maxValue * 100))}%`">
@@ -53,13 +53,9 @@ const props = defineProps({
 		type: String,
 		default: "#AAAAAA",
 	},
+	unit: {
+		type: String,
+		default: "g",
+	},
 })
-
-const roundedValBefore = computed(() => {
-    return Math.round(props.valueBefore);
-});
-const roundedMaxVal = computed(() => {
-    return Math.round(props.maxValue);
-});
-
 </script>

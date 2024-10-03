@@ -6,7 +6,7 @@
   <div class="relative min-h-screen text-white">
     <!-- Background image section -->
     <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
-      <h2 class="text-white text-4xl font-bold text-center">Add Meals</h2>
+      <h2 class="text-white text-4xl font-bold text-center">Add Meals ({{ mealType }})</h2>
     </div>
 
     <!-- Search Bar and Recipe Cards Container -->
@@ -30,7 +30,9 @@
                 <button class="button-orange" @click="toggleSidebar">
                   <img src="/assets/img/SVGRepo_iconCarrier.svg" alt="Stomach Icon" class="stomach-icon"/>
                   <span>Stomach</span>
-                  <div class="notification-bubble"></div>
+                  <div class="notification-bubble">
+                    {{ mealLoggingList.length }}
+                  </div>
                 </button>
               </div>
             </div>
@@ -69,13 +71,7 @@
     <div class="text-black">
 
       <!-- Sidebar Component -->
-      <StomachSidebar 
-      v-model="mealDataList2" 
-      v-model:isSidebarOpen="isSidebarOpen" 
-      :mealType="mealType" 
-      :selectedDate="selectedDate"
-      :ismealplanning="ismealplanning"
-    />
+      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen" :mealType="mealType" />
       <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
@@ -109,9 +105,7 @@ const isPopupOpen = ref(false);
 const searchDataList = ref([]);
 
 const route = useRoute()
-const mealType = ref(route.query.mealType || "");
-const selectedDate = ref(route.query.selectedDate || "");
-const ismealplanning = ref(route.query.ismealplanning === 'true');
+const mealType = ref(useMealLogging().mealType.value || "");
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -156,6 +150,9 @@ onMounted(async () => {
   totalItems.value = recipeList.value.value.length
 
 })
+
+const mealLoggingList = useMealLogging().unsavedMealList
+
 const totalItems = ref(0)
 const currentPage = ref(1)
 const itemsPerPage = ref(6)
@@ -294,6 +291,7 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
+  place-items: center;
 }
 
 /* Cards Grid */

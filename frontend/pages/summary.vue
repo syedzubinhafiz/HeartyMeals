@@ -58,24 +58,12 @@ const myMaxNutritientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
 const summaryData = ref([])
 const recipePortion = []
 // const mealType = "Breakfast"
-const mealType = ref(route.query.mealType || "");
-const selectedDate = ref(route.query.selectedDate || "");
-const ismealplanning = ref(route.query.ismealplanning === 'true'); 
-
-console.log("Is Meal Planning: ", ismealplanning.value); 
-const formatDateToISO = (dateStr) => {
-  const date = new Date(dateStr); 
-  return date.toISOString().slice(0, 23); 
-};
+const mealType = ref(useMealLogging().mealType.value || "");
 
 onMounted(async () => {
   await useApi("/dietary","GET")
   summaryData.value = useMealLogging().unsavedMealList.value
   console.log(summaryData.value)
-  if (selectedDate.value) {
-    const formattedDate = formatDateToISO(selectedDate.value);
-    console.log("Formatted Date: ", formattedDate);
-  }
   // console.log(mealLoggingData.value)
   // mealLoggingData = mealLoggingData.value["Breakfast"]
   //   .concat(mealLoggingData.value["Lunch"])
@@ -87,9 +75,12 @@ onMounted(async () => {
   // console.log(tempMealData.value)
   // console.log(summaryData.value)
 
+
+
+
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   recipePortion.value = summaryData.value.map(item => ({
     recipeId: item.id,
@@ -114,14 +105,15 @@ const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, c
 const calculateNutrition = async () => {
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   console.log(mealType.value);
 
   let body = {
     "mealDate": `${currentDate}`,
     "recipeIdPortions": recipePortion.value,
-    "mealType": `${mealType.value}`
+    "mealType": `${mealType.value}`,
+    "timeZone": "Asia/Kuala_Lumpur"
   };
 
   let result = await useApi("/meal-log-summary/calculate", "POST", body);
@@ -163,12 +155,13 @@ const calculateNutrition = async () => {
 const handleDoneClick = async () => {
   let currentDate = new Date();
   currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   for (let i = 0; i < summaryData.value.length; i++) {
-    let mealDate = useMealLogging().mealDate.value
-    console.log(mealDate)
-    let result = await useFillData().createMeal(mealDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
+    let currentDate = new Date()
+    currentDate.setUTCHours(-8, 0, 0, 0)
+    currentDate = currentDate.toISOString().split('T')[0]
+    let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
     if(result.isError) {
       useToast().error("Meal logging failed!")
       console.log(result)

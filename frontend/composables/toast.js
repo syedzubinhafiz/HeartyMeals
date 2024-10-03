@@ -11,16 +11,6 @@ export const useToast = () => {
             });
         }
     }
-    const info = (message) => {
-        if(process.client) {
-            $toast.open({
-                message: message,
-                type: "info",
-                position: "top",
-                duration: 6000,
-            });
-        }
-    }
     const success = (message) => {
         if(process.client) {
             $toast.open({
@@ -31,5 +21,5 @@ export const useToast = () => {
             });
         }
     }
-    return {error, info, success}
+    return {error, success}
 }
