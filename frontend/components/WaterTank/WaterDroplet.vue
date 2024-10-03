@@ -136,13 +136,25 @@
         selectedItem.value = itemId;
     }
 
+    const validation = () => {
+        if (inputValue.value <= 0) {
+            useToast().error("Please enter a valid intake number");
+            return false;
+        }
+        
+        if (selectedItem.value === null) {
+            useToast().error("Please select a unit");
+            return false;
+        }
+
+        return true;
+    }
+
     const logIntake = async () => {
         // use api to get data
         try {
-            if (selectedItem.value === null) {
-                useToast().error("Please select a unit");
-                return;
-            }
+            if (!validation()) return;
+
             const unit = units[selectedItem.value - 1]['display'];
             // Calculate the intake value in ml based on the selected unit
             let intakeValueInMl = inputValue.value;
