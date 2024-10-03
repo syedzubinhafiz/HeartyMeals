@@ -36,13 +36,28 @@
         </div>
 
         <!-- section 2 -->
-        <div class="section flex items-center justify-center h-screen">
-            <div class="flex-1 h-25">
+        <div class="section flex items-center justify-center">
+            <div class="section-2-container-grid">
+                <div class="section-2-container-left-grid">
+                    <WaterDroplet :maxVolume="maxVolume" :remainingVolume="remainingVolume"/>
+                </div>
+                <div class="section-2-container-right-grid">
+                    <NutritionWidget :nutrients="nutrients"/>
+                </div>
+            </div>
+            <!-- <div class="flex-1 h-25">
+                <WaterDroplet :maxVolume="maxVolume" :remainingVolume="remainingVolume" :subtractVolume="subtractVolume" style="transform: scale(0.90);"/>
+            </div>
+            <div class="flex-1 h-31">
+                <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
+            </div> -->
+
+            <!-- <div class="flex-1 h-25">
                 <WaterTankWidget/>
             </div>
             <div class="flex-1 h-31">
                 <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
-            </div>
+            </div> -->
         </div>
 
         <!-- section 3 -->
@@ -86,6 +101,8 @@ const onClickButton = async () => {
     navigateTo("/vueExample");
 }
 
+const { $axios } = useNuxtApp();
+
 import image1 from 'assets/img/LandingPage/image1.jpeg';
 import image2 from 'assets/img/LandingPage/image2.jpeg';
 import image3 from 'assets/img/LandingPage/image3.jpeg';
@@ -128,8 +145,81 @@ const scrollContainer = ref(null);
 
 import { ref, computed, onMounted, watch } from 'vue';
 import NutrientData from '../../classes/nutrientData.js'
+import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
+import NutritionWidget from '~/components/Nutrient/NutritionWidget.vue';
+
 const maxNutrientData = ref(null)
 const nutrientData = ref(null)
+
+const maxVolume = ref(0);
+const remainingVolume = ref(0);
+
+// use api to get data
+const getFluidData = async () => {
+    try {
+        const today_date = () => {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            return formattedDate;
+        };
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get(`/fluid-logging/get?dateTime=${today_date()}&timeZone=${timeZone}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.status === 200) {
+            maxVolume.value = response.data.logging_history[0].remaining_fluid;
+            remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
+        }
+        else {
+            console.log(response);
+        }
+    }
+    catch (e) {
+        useToast().error("Failed to load fluid intake data")
+    }
+}
+
+onMounted(getFluidData);
+
+// user daily budget, user remaining budget, and user after meal  budget
+const nutrients = ref([
+    {
+      calories: 2000,
+      carbs: 2000,
+      protein: 2000,
+      fat: 2000,
+      sodium: 2000,
+      cholesterol: 2000
+    },
+    {
+      calories: 1800,
+      carbs: 1800,
+      protein: 1800,
+      fat: 1800,
+      sodium: 1800,
+      cholesterol: 1800
+    },
+    {
+      calories: 1400,
+      carbs: 1400,
+      protein: 1400,
+      fat: 1400,
+      sodium: 1400,
+      cholesterol: 1400
+    }
+  ]);
+
 onMounted(async() => {
     const sections = document.querySelectorAll('.section');
     let currentSection = 0;
@@ -154,14 +244,14 @@ onMounted(async() => {
     await useApi("/dietary","GET")
 
     let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
-        currentDate = currentDate.toISOString()
+    currentDate.setUTCHours(-8, 0, 0, 0)
+    currentDate = currentDate.toISOString()
 
-        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
-        console.log(result)
+    let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+    console.log(result)
 
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-        nutrientData.value = NutrientData.fromApi2(result.value[1])
+    maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+    nutrientData.value = NutrientData.fromApi2(result.value[1])
 });
 
 
@@ -197,7 +287,7 @@ html {
 
 .section {
     scroll-snap-align: start;
-    height: 100vh;
+    height: 100%;
     width: 100%;
 }
 
@@ -416,6 +506,28 @@ html {
     }
 }
 
+.section-2-container-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "left right";
+    width: 100%;
+    height: 70%;
+}
+
+.section-2-container-left-grid {
+    grid-area: left;
+
+}
+
+/deep/ .svg-container{
+    transform: scale(0.85);
+}
+
+.section-2-container-right-grid {
+    grid-area: right;
+    margin-left: auto;
+    margin-right: auto;
+}
 </style>
 
 
