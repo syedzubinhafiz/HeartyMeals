@@ -50,7 +50,6 @@ export class AnalyticsService {
     async getDailyAnalytics(decodedHeaders: any, payload: getDailyAnalyticsDTO) {
 
         try{
-
             const user =  await this.userRepository.findOneByOrFail({user_id: decodedHeaders['sub']});
             
             const start_of_date =  `${payload.date} 00:00:00`;
@@ -61,20 +60,72 @@ export class AnalyticsService {
                 .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
                 .getOne();
 
+
+            if (meal_logging_summary == null) {
+                                return {
+                    "daily_budget": {
+                        "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
+                        "protein": parseFloat(user.daily_budget[DATA_LIST[1][1]].toFixed(2)),
+                        "carbohydrates": parseFloat(user.daily_budget[DATA_LIST[2][1]].toFixed(2)),
+                        "fat": parseFloat(user.daily_budget[DATA_LIST[3][1]].toFixed(2)),
+                        "cholesterol": parseFloat(user.daily_budget[DATA_LIST[4][1]].toFixed(2)),
+                        "sodium": parseFloat(user.daily_budget[DATA_LIST[5][1]].toFixed(2)),
+                    },
+                    "remaining_nutrients": {
+                        "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
+                        "protein": parseFloat(user.daily_budget[DATA_LIST[1][1]].toFixed(2)),
+                        "carbohydrates": parseFloat(user.daily_budget[DATA_LIST[2][1]].toFixed(2)),
+                        "fat": parseFloat(user.daily_budget[DATA_LIST[3][1]].toFixed(2)),
+                        "cholesterol": parseFloat(user.daily_budget[DATA_LIST[4][1]].toFixed(2)),
+                        "sodium": parseFloat(user.daily_budget[DATA_LIST[5][1]].toFixed(2)),
+                    },
+                    "breakfast": [],
+                    "breakfast_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "lunch": [],
+                    "lunch_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "dinner": [],
+                    "dinner_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "other": [],
+                    "other_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    }
+                };
+
+            }
+
             
             const meal_logging_ids = MEAL_TYPE.flatMap(meal => meal_logging_summary.food_consumed[meal]);
+            
 
-            const meal_logging_map = await this.mealLoggingRepository.createQueryBuilder('meal_logging')
-            .leftJoinAndSelect("meal_logging.recipe", "recipe")
-            .where('meal_logging.id IN (:...ids)', { ids: meal_logging_ids })
-            .getMany()
-            .then(meal_logging_list => meal_logging_list.reduce((map, obj) => {
-                map[obj.id] = obj;
-                return map;
-            }, {}));
 
             // No record 
-            if (meal_logging_summary == null){
+            if (meal_logging_summary == null || meal_logging_ids.length == 0) {
                 return {
                     "daily_budget": {
                         "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
@@ -131,7 +182,16 @@ export class AnalyticsService {
                 };
 
             } else { // Record exists
-
+                
+                const meal_logging_map = await this.mealLoggingRepository.createQueryBuilder('meal_logging')
+                    .leftJoinAndSelect("meal_logging.recipe", "recipe")
+                    .where('meal_logging.id IN (:...ids)', { ids: meal_logging_ids })
+                    .getMany()
+                    .then(meal_logging_list => meal_logging_list.reduce((map, obj) => {
+                        map[obj.id] = obj;
+                        return map;
+                    }, {}));
+                    
                 // Initialize the result object
                 const result =  {
                     "daily_budget": {
