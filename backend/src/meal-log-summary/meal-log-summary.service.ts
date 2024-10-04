@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MealLogSummary } from "./meal-log-summary.entity";
 import { EntityManager, In, Repository } from "typeorm";
-import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { User } from "src/user/user.entity";
 import { MealLogging } from "src/meal-logging/meal-logging.entity";
 import { Recipe } from "src/recipe/recipe.entity";
@@ -63,7 +62,13 @@ export class MealLogSummaryService {
         ];
         
         // set remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients = addMealLoggingSummaryDTO.nutritionAfter;
+        meal_logging_summary_entry.remaining_nutrients = await this.calculateNutritionSummary(
+            user_object, 
+            addMealLoggingSummaryDTO.mealDate, 
+            addMealLoggingSummaryDTO.timeZone,
+            addMealLoggingSummaryDTO.recipeIdPortions,
+            addMealLoggingSummaryDTO.mealType
+        );
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
@@ -76,17 +81,17 @@ export class MealLogSummaryService {
 
     /**
      * Calculate the nutrition info before logging the meal and after logging the meal
-     * @param decodedHeaders - headers from request
-     * @param calculateMealLoggingSummaryDTO - DTO containing the meals that user selected and portion
+     * @param user_object - user object
+     * @param mealDate - meal date
+     * @param timeZone - timezone
+     * @param recipeIdPortions - recipe id and portion
+     * @param mealType - meal type
      * @returns [daily_budget, nutrition_before, nutrition_after, flag]
      */
-    async calculateNutritionSummary(decodedHeaders: any, calculateMealLoggingSummaryDTO: CalculateMealLoggingSummaryDTO){
-        try {
-            // Validate userId
-            const user_object = await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] });
-         
+    async calculateNutritionSummary(user_object: User, mealDate: string, timeZone: string, recipeIdPortions: {recipeId: string, portion: number}[], mealType: MealType){
+        try {        
             // get recipe ids
-            const recipe_ids = calculateMealLoggingSummaryDTO.recipeIdPortions.map(recipe_id_portion => recipe_id_portion.recipeId);
+            const recipe_ids = recipeIdPortions.map(recipe_id_portion => recipe_id_portion.recipeId);
 
             // get recipe objects
             const recipes = await this.recipeRepository.find({
@@ -98,7 +103,7 @@ export class MealLogSummaryService {
             const recipe_nutrition_portion = [];
 
             // combine the recipe id, nutrition info and portion into one list
-            calculateMealLoggingSummaryDTO.recipeIdPortions.forEach(recipe_id_portion => {
+            recipeIdPortions.forEach(recipe_id_portion => {
                 const recipe = recipes.find(r => r.id === recipe_id_portion.recipeId);
                 if (recipe) {
                     recipe_nutrition_portion.push({
@@ -116,12 +121,12 @@ export class MealLogSummaryService {
             // get meal logging summary entry
             var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
                 .where('user_id = :user_id', {user_id: user_object.user_id})
-                .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: calculateMealLoggingSummaryDTO.timeZone, startOfDay: `${calculateMealLoggingSummaryDTO.mealDate} 00:00:00`, endOfDay: `${calculateMealLoggingSummaryDTO.mealDate} 23:59:59` })
+                .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: timeZone, startOfDay: `${mealDate} 00:00:00`, endOfDay: `${mealDate} 23:59:59` })
                 .getOne();
 
             // if the entry does not exists, create a new entry
             if (meal_logging_summary_entry == null || meal_logging_summary_entry == undefined) {
-                meal_logging_summary_entry = await this.createMealLoggingSummary(user_object, fromZonedTime(calculateMealLoggingSummaryDTO.mealDate, calculateMealLoggingSummaryDTO.timeZone), null);
+                meal_logging_summary_entry = await this.createMealLoggingSummary(user_object, fromZonedTime(mealDate, timeZone), null);
             }
 
             // save a copy of user current budget
@@ -139,7 +144,7 @@ export class MealLogSummaryService {
                 }
             }
     
-            return [user_object.daily_budget, current_budget, nutrition_after, negative_nutrients];
+            return nutrition_after;
         } catch (e) {
             throw e;
         }
