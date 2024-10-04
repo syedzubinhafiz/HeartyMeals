@@ -1,368 +1,649 @@
 <template>
-    <div class="summary-page">
-    <div class="absolute w-screen z-40">
-        <Header/>
+  <div class="page-container">
+    <header class="header">
+      <Header></Header>
+    </header>
+    
+    <div class="left-base">
+        <img :src="leftBase" style="width: 85%;">
     </div>
-    <div class="content">
-        <button @click="navigateTo('/add-meals')" class="back-button">← Back</button>
-        <h2 class="page-title">Summary</h2>
-        <div class="main-content">
+    
+    <div class="right-base">
+        <img :src="rightBase">
+    </div>
 
-          <div class="grid-container">
-                
-                <div class="left-container" style="height: 100%;">
-                  <div class="summary-container">
-                    <SummaryCard 
-                        v-for="(item, index) in summaryData" 
-                        :key="index" 
-                        :item="item"
-                        :itemNumber="index + 1"
-                        @update-servings="updatePortions"
-                        />
-                    </div>
-                  </div>
+      <div class="back-button" @click="back">
+        <img src="@/assets/icon/white-back-icon.svg" alt="">
+        <span>Back</span>
+      </div>
 
-                <div class="right-container">
-                  <div class="summary-nutrition-widget">
-                    <span class="summary-nutrition-title">Total Nutrition</span>
-                    <NutritionWidget :nutrients="nutrients"/>
+      <div class="title">
+        <h1>Summary</h1>
+      </div>
+
+    <div class="body">
+
+        <div class="done-button" @click="logMeal()">
+          <img src="@/assets/icon/done-icon.svg" alt="">
+          Done
+        </div>
+
+        <div class="selected-meal-container">
+          <div v-for="meal in selectedMeals" class="meal">
+            <button class="remove-selected-meal" @click="removeSelectedMeal(meal.id)">+</button>
+            <div class="image-container">
+              <img :src="meal.recipe.storage_links.thumbnail">
+            </div>
+            
+            <div class="meal-info">
+              <span>{{ meal.recipe.name }}</span>
+
+              <div class="nutrition-list-container">
+                <div class="nutrient-label">
+                  <label>Calories: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> cal</label>
                   </div>
                 </div>
+                <div class="nutrient-label">
+                  <label>Carbs: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> cal</label>
+                  </div>
+                </div>
+                <div class="nutrient-label">
+                  <label>Protein: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> g</label>
+                  </div>
+                </div>
+                <div class="nutrient-label">
+                  <label>Fats: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> g</label>
+                  </div>
+                </div>
+                <div class="nutrient-label">
+                  <label>Sodium: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> mg</label>
+                  </div>
+                </div>
+                <div class="nutrient-label">
+                  <label>Cholesterol: </label>
+                  <div>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <label> mg</label>
+                  </div>
+                </div>
+              </div>
+
             </div>
+            
+            <div class="portion-setting">
+              <input 
+                  class="serving-input"
+                  type="number" 
+                  v-model="meal.portion" 
+                  @input="updateChanges(meal.id, meal.portion)" 
+                  min="0.5" 
+                  step="0.5"
+                  placeholder="Serving"
+              >
+            </div>
+          </div>
+
         </div>
-  <div class="button-container"> 
-    <button class="done-button" @click="handleDoneClick">
-        <img src="/assets/img/done-icon.svg" alt="done" class="done-icon"/>
-        Done
-    </button>
-    </div> 
-</div>
-<div class="section flex flex-col justify-end">
-            <Footer/>
+
+        <div class="nutrition-widget">
+          <NutritionBar
+            v-for="(nutrient, index) in nutrients"
+            :key="index"
+            :icon="nutrient.icon"
+            :label="nutrient.label"
+            :totalValue="userDailyBudget[nutrient.key]"
+            :currentValue="userRemainingNutrients[nutrient.key]"
+            :afterMealValue="userAfterMealNutrients[nutrient.key]"
+            :unit="nutrient.unit"
+            :maxColor="nutrient.maxColor"
+            :currentColor="nutrient.currentColor"
+            :afterMealColor="nutrient.afterMealColor"
+            :fontColor="nutrient.fontColor"
+          />  
         </div>
-</div>
+
+    </div>
+    
+    <footer class="footer">
+      <Footer></Footer>
+    </footer>
+  </div>
+
+  <div v-if="isLoading" class="loading-greyed-bg">
+    <div class="loader"></div>
+  </div>
 </template>
+
+
+
 <script setup>
-import { warn } from 'vue';
-import MealData from '../../classes/mealData.js'
-import { useRoute } from 'vue-router';
-import NutritionWidget from '~/components/Nutrient/NutritionWidget.vue';
+import { ref } from "vue";
+import { useNuxtApp } from "#app";
+import leftBase from "@/assets/img/meal_logging/summary_left_base.svg";
+import rightBase from "@/assets/img/meal_logging/summary_right_base.svg";
+import NutritionBar from "~/components/Nutrient/NutritionBar.vue";
 
+const {$axios} = useNuxtApp();
 
-const route = useRoute();
-
-
-
-
-defineOptions({
-	name: "HomePage",
+const isLoading = ref(false);
+const selectedMeals = ref([]);
+const mealInfo = ref({});
+const userDailyBudget = ref({
+  calories: 0,
+  carbs: 0,
+  protein: 0,
+  fat: 0,
+  sodium: 0,
+  cholesterol: 0
 });
+const userRemainingNutrients = ref({
+  calories: 0,
+  carbs: 0,
+  protein: 0,
+  fat: 0,
+  sodium: 0,
+  cholesterol: 0
+});
+const userAfterMealNutrients = ref({
+  calories: 0,
+  carbs: 0,
+  protein: 0,
+  fat: 0,
+  sodium: 0,
+  cholesterol: 0
+});
+const nutrients =  [
+        {
+          key: 'calories',
+          icon: "/assets/img/caloriesIcon.png",
+          label: 'Calories',
+          unit: 'cal',
+          maxColor: '#e9e5cd',
+          currentColor: '#d7d1b4',
+          afterMealColor: '#b8b396',
+          fontColor: '#b8b396',
+        },
+        {
+          key: 'carbs',
+          icon: "/assets/img/carbIcon.png",
+          label: 'Carbohydrates',
+          unit: 'g',
+          maxColor: '#e2f3f4',
+          currentColor: '#a2d3d6',
+          afterMealColor: '#83bbbe',
+          fontColor: '#83bbbe',
+        },
+        {
+          key: 'protein',
+          icon: "/assets/img/proteinIcon.png",
+          label: 'Protein',
+          unit: 'g',
+          maxColor: '#e8f0e9',
+          currentColor: '#99d0a3',
+          afterMealColor: '#87a98d',
+          fontColor: '#87a98d',
+        },
+        {
+          key: 'fat',
+          icon: "/assets/img/fatsIcon.png",
+          label: 'Fats',
+          unit: 'g',
+          maxColor: '#fbf1cd',
+          currentColor: '#fcdea3',
+          afterMealColor: '#ecc474',
+          fontColor: '#ecc474',
+        },
+        {
+          key: 'sodium',
+          icon: "/assets/img/sodiumIcon.png",
+          label: 'Sodium',
+          unit: 'mg',
+          maxColor: '#f9e1da',
+          currentColor: '#f6aa97',
+          afterMealColor: '#ec7455',
+          fontColor: '#ec7455',
+        },
+        {
+          key: 'cholesterol',
+          icon: "/assets/img/cholesterolsIcon.png",
+          label: 'Cholesterol',
+          unit: 'mg',
+          maxColor: '#ffe5d4',
+          currentColor: '#f1c9af',
+          afterMealColor: '#be9a83',
+          fontColor: '#be9a83',
+        }
+      ];
 
 
 definePageMeta({
-	layout: "emptylayout"
-});
-
-const tempMealData = ref([])
-const myNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
-const myMealNutrientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
-const myMaxNutritientData = ref(new NutrientData(0, 0, 0, 0, 0, 0))
-const summaryData = ref([])
-const recipePortion = []
-// const mealType = "Breakfast"
-const mealType = ref(route.query.mealType || "");
-
-// user daily budget, user remaining budget, and user after meal  budget
-const nutrients = ref([
-    {
-      calories: 2000,
-      carbs: 2000,
-      protein: 2000,
-      fat: 2000,
-      sodium: 2000,
-      cholesterol: 2000
-    },
-    {
-      calories: 1800,
-      carbs: 1800,
-      protein: 1800,
-      fat: 1800,
-      sodium: 1800,
-      cholesterol: 1800
-    },
-    {
-      calories: 1400,
-      carbs: 1400,
-      protein: 1400,
-      fat: 1400,
-      sodium: 1400,
-      cholesterol: 1400
-    }
-  ]);
-
-onMounted(async () => {
-  await useApi("/dietary","GET")
-  summaryData.value = useMealLogging().unsavedMealList.value
-  console.log(summaryData.value)
-  // console.log(mealLoggingData.value)
-  // mealLoggingData = mealLoggingData.value["Breakfast"]
-  //   .concat(mealLoggingData.value["Lunch"])
-  //   .concat(mealLoggingData.value["Dinner"])
-  //   .concat(mealLoggingData.value["Other"])
-  // summaryData.value = mealLoggingData
-  // console.log(summaryData.value[0].recipe.id)
-  // tempMealData.value = mealLoggingData.map((value) => {return MealData.fromApi(value.recipe)})
-  // console.log(tempMealData.value)
-  // console.log(summaryData.value)
-
-
-
-
-  let currentDate = new Date();
-  currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
-
-  recipePortion.value = summaryData.value.map(item => ({
-    recipeId: item.id,
-    portion: item.servings
-  }));
-
-  await calculateNutrition();
-});
-
-const updatePortions = () => {
-  recipePortion.value = summaryData.value.map(item => ({
-    recipeId: item.id,
-    portion: item.servings
-  }));
-  calculateNutrition();
-};
-
-const userBudget = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
-const alreadyLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
-const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
-
-const calculateNutrition = async () => {
-  let currentDate = new Date();
-  currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
-
-  console.log(mealType.value);
-
-  let body = {
-    "mealDate": `${currentDate}`,
-    "recipeIdPortions": recipePortion.value,
-    "mealType": `${mealType.value}`
-  };
-
-  let result = await useApi("/meal-log-summary/calculate", "POST", body);
-  console.log(recipePortion.value)
-  console.log(result);
-
-  userBudget.calories = (result.value[0].calories);
-  userBudget.carbs = result.value[0].carbs;
-  userBudget.protein = result.value[0].protein;
-  userBudget.fats = result.value[0].fats;
-  userBudget.sodium = result.value[0].sodium;
-  userBudget.cholesterol = result.value[0].cholesterol;
-
-  alreadyLog.calories = result.value[0].calories - result.value[1].calories;
-  alreadyLog.carbs = result.value[0].carbs - result.value[1].carbs;
-  alreadyLog.protein = result.value[0].protein - result.value[1].protein;
-  alreadyLog.fats = result.value[0].fats - result.value[1].fats;
-  alreadyLog.sodium = result.value[0].sodium - result.value[1].sodium;
-  alreadyLog.cholesterol = result.value[0].cholesterol - result.value[1].cholesterol;
-
-  console.log(alreadyLog);
-
-  aboutToLog.calories = result.value[0].calories - result.value[2].calories;
-  aboutToLog.carbs = result.value[0].carbs - result.value[2].carbs;
-  aboutToLog.protein = result.value[0].protein - result.value[2].protein;
-  aboutToLog.fats = result.value[0].fats - result.value[2].fats;
-  aboutToLog.sodium = result.value[0].sodium - result.value[2].sodium;
-  aboutToLog.cholesterol = result.value[0].cholesterol - result.value[2].cholesterol;
-
-  console.log(aboutToLog);
-
-  myMaxNutritientData.value = new NutrientData(userBudget.calories, userBudget.carbs, userBudget.protein, userBudget.fats, userBudget.sodium, userBudget.cholesterol);
-  myNutrientData.value = new NutrientData(aboutToLog.calories, aboutToLog.carbs, aboutToLog.protein, aboutToLog.fats, aboutToLog.sodium, aboutToLog.cholesterol);
-  myMealNutrientData.value = new NutrientData(alreadyLog.calories, alreadyLog.carbs, alreadyLog.protein, alreadyLog.fats, alreadyLog.sodium, alreadyLog.cholesterol);
-  return result.value; 
-};
-
-// Handle button click
-const handleDoneClick = async () => {
-  let currentDate = new Date();
-  currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
-
-  for (let i = 0; i < summaryData.value.length; i++) {
-    let currentDate = new Date()
-    currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
-    let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
-    if(result.isError) {
-      useToast().error("Meal logging failed!")
-      console.log(result)
-      return 
-    }
-   
+	layout: "emptylayout",
+  components: {
+    NutritionBar
   }
-  useMealLogging().unsavedMealList.value = []
-  navigateTo('/meal-logging');
-};
+});
 
-console.log("-------------")
-console.log(useMealLogging().unsavedMealList)
+
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  if (localStorage.getItem('selectedMeals')){
+    selectedMeals.value = JSON.parse(localStorage.getItem('selectedMeals'))
+    const nutrientList =  JSON.parse(localStorage.getItem('userNutrientsInfo'))
+    mealInfo.value = JSON.parse(localStorage.getItem('mealInfo'))
+    userDailyBudget.value = nutrientList[0];
+    userRemainingNutrients.value = nutrientList[1];
+    userAfterMealNutrients.value = nutrientList[2];
+
+    localStorage.removeItem('userNutrientsInfo')
+    localStorage.removeItem('selectedMeals')
+  } else {
+    useToast().error('No meals selected, redirecting to meal logging page')
+    setTimeout(() => {
+      navigateTo('/meal-logging')
+    }, 2000)
+  }
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    
+    userDailyBudget.value = {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    };
+
+    userRemainingNutrients.value = {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    };
+
+    userAfterMealNutrients.value = {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    };
+
+
+});
+
+function handleBeforeUnload(e) {
+  const confirmationMessage = 'Your selected meal won\'t be logged or saved if you leave this page.';
+  e.returnValue = confirmationMessage; // Gecko, Trident, Chrome 34+
+  return confirmationMessage; // Gecko, WebKit, Chrome <34
+}
+
+const back = () => {
+  localStorage.setItem('selectedMeals', JSON.stringify(selectedMeals.value))
+  navigateTo('/add-meals')
+}
+
+
+function updateChanges(id=null, portion=null) {
+
+  if (portion === "") {
+    return ;
+  }else if (portion != null){ 
+    const meal = selectedMeals.value.find((meal) => meal.id === id);
+    meal.portion = portion;
+  }
+    
+  userAfterMealNutrients.value = JSON.parse(JSON.stringify(userRemainingNutrients.value));
+
+  selectedMeals.value.forEach(existing_meal => {  
+    userAfterMealNutrients.value.calories -= existing_meal.recipe.nutrition_info.calories * (existing_meal.portion/existing_meal.recipe.serving_size);
+    userAfterMealNutrients.value.carbs -= existing_meal.recipe.nutrition_info.totalCarbohydrate * (existing_meal.portion/existing_meal.recipe.serving_size);
+    userAfterMealNutrients.value.protein -= existing_meal.recipe.nutrition_info.protein * (existing_meal.portion/existing_meal.recipe.serving_size);
+    userAfterMealNutrients.value.fat -= existing_meal.recipe.nutrition_info.fat * (existing_meal.portion/existing_meal.recipe.serving_size);
+    userAfterMealNutrients.value.sodium -= existing_meal.recipe.nutrition_info.sodium * (existing_meal.portion/existing_meal.recipe.serving_size);
+    userAfterMealNutrients.value.cholesterol -= existing_meal.recipe.nutrition_info.cholesterol * (existing_meal.portion/existing_meal.recipe.serving_size);
+  });
+
+  // fix all value to 2 decimal places
+  for (const key in userAfterMealNutrients.value) {
+    userAfterMealNutrients.value[key] = parseFloat(userAfterMealNutrients.value[key].toFixed(2));
+  }
+  
+}
+
+
+
+function removeSelectedMeal(id) {
+  console.log("trigger remove meal in page");
+  selectedMeals.value = selectedMeals.value.filter((meal) => meal.id !== id);
+  updateChanges();
+}
+
+
+async function logMeal(){
+  isLoading.value = true;
+    // store data to db 
+  const token = localStorage.getItem("accessToken");  
+  const meal_info = [];
+
+  selectedMeals.value.forEach((meal) => {
+    meal_info.push({
+      recipeId: meal.id,
+      portion: meal.portion,
+    });
+  });
+  ;                   
+
+  try{
+    const response = await $axios.post('/meal-log-summary/add', {
+        mealDate: mealInfo.value.logDate,
+        userLocalDateTime: new Date().toISOString(),
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        recipeIdPortions: meal_info,
+        mealType: mealInfo.value.mealType,
+        isMealPlanning: mealInfo.value.logType === "planning"
+      },{
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+    })
+
+    console.log(response.data); 
+    if (response.data.status == 200){
+      isLoading.value = false;
+      useToast().success("All meals has been logged!")
+      navigateTo('/meal-logging')
+    } else if(response.data.status == 400){
+      useToast().error(response.data.message)
+    }
+  } catch(e){
+    console.error("Error logging meal", e);
+  }
+}
+
 
 
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700&display=swap');
+
 *{
     font-family: 'Overpass', sans-serif;
 }
-.summary-page {
-    position: relative;
-  min-height: 100vh;
-  background-image: url('/assets/img/Design.svg');
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  background-attachment: fixed;
-  background-position: center;
-  overflow-x: hidden;
-}
-
-.content {
-    position: relative;
-  z-index: 1;
-  margin-top: 100px;
-  padding: 20px;
+.page-container {
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 100px);
-}
-@media (max-width: 600px) {
-  .summary-page {
-    background-size: cover;
-  }
+  height: 100vh;
+  overflow: hidden;
 }
 
-.main-content {
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 40;
+}
+
+
+.body {
+  overflow:hidden;
   display: flex;
-  flex-grow: 1;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-.grid-container {
-    display: grid;
-    grid-template-columns: 50% 50%;
-    grid-template-areas: "left right";
-    flex: 1;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
-.left-container{    
-    grid-area: left;
-    padding: 5%;
-    overflow-y: scroll;
+.left-base{
+  position: absolute;
+  top: 20%;
+  left: 0;
 }
 
-.right-container{
-    grid-area: right;
-    padding: 5%;
+.right-base{
+  position: absolute;
+  top: 9%;
+  right: 0;
 }
 
-.summary-nutrition-widget{
-  width: clamp(30%,50%,70%);
-  height: clamp(30%,80%,80%);
-  background-color: #F3EADA;
-  padding: 4%;
-  border-radius: 15%;
-  box-shadow: 0px 4px 16.2px -1px rgba(0,0,0,0.1);
-  margin-left: auto;
-  margin-right: auto;
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 40;
 }
 
-.summary-nutrition-title{
-  font-size: 150%;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.summary-container {
-    width: 50%;
-    overflow-y: auto;
-    height: calc(3 * 120px); /* Assumes each SummaryCard is about 120px high */
-    padding-right: 20px;
+.title {
+  position: absolute;
+  top: 12%;
+  left: 46%;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .back-button {
-    background-color: #87A98D;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 10px;
-    margin-bottom: 5px;
-    height: 40px;
-    width: 120px;
-    font-size: 20px;
-    align-self: flex-start;
+  position: absolute;
+  width: fit-content;
+  top: 12%;
+  left: 5%;
+  padding-right: 1%;
+  background-color: #87A98D;
+  color: #FFFEF1;
+  display: flex;
+  flex-direction: row;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-items: center;
+  justify-self: baseline;
+  border-radius: 15px;
+  flex-grow: 1;
+}
+
+.back-button button{
+  background-color: #87A98D;
+  width: 100%;
+  color: #FFFEF1;
+  padding: 5% 10%;
+  display: flex;
+  flex-direction: row;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-items: center;
+  justify-self: baseline;
+  border-radius: 15px
+}
+
+.back-button button span{
+  width: 100%;
+  height:100%;
+  padding-top: 5%;
+}
+
+.done-button{
+  display: flex;
+  column-gap: 10%;
+  justify-content: center;
+  line-height: 1.5;
+  position: absolute;
+  bottom: 13%;
+  background-color: #87A98D;
+  color: #FFFEF1;
+  padding: .5% 2%;
+  border-radius: 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-button:hover,
+.done-button:hover{
+  background-color: #749279;
+}
+
+.selected-meal-container{
+  position: absolute;
+  top: 20%;
+  left: 5%;
+  width: 45%;
+  height: 60%;
+  overflow-y: auto;  
 
 }
 
-.page-title {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 30px;
+.remove-selected-meal{
+  position: absolute;
+  top: 4%;
+  right: 2.5%;
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: red;
+  rotate: 45deg;
+
 }
 
-.done-button {
-    background-color: #87A98D;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    height: 45px;
-    width: 140px;
-    font-size: 20px;
-    display: flex;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.meal{
+  position: relative;
+  width: 95%;
+  height: 23%;
+  background-color:#FFFEF1;
+  margin-top: 0.5%;
+  margin-bottom: 5%;
+  margin-left: 2.5%;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 }
 
-.nutrition-summary {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
+.image-container img{
+  width: 115px;
+  height: 115px;
+  object-fit: cover;
+  border-radius: 15px;
+  padding: 5%;
 }
 
-.button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: auto;
-    margin-bottom: 20px;
-    width: 100%;
+
+.meal-info{
+  width: 70%;
+  height: 80%;
+  display : flex;
+  flex-direction: column;
+
 }
 
-.done-icon {
-  width: 24px;
-  height: 24px;
-  margin-left: 8px;
+.meal-info span {
+  font-size: 1.2rem;
+  padding-left: 1.5%;
+  font-weight: bolder;
+  width: 100%;
 }
+
+.nutrient-label{
+  display: grid;
+  grid-template-columns: 40% 60%;
+}
+
+.nutrient-label label{
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.nutrient-label span{
+  padding-left: 5%;
+  padding-right: 1%;
+  font-size: 0.8rem;
+}
+
+.nutrition-list-container{
+  display: grid;
+  grid-template-columns: 50% 50%;
+  padding-left: 1.5%;
+  padding-top: 0.5%;
+}
+
+.portion-setting{
+  width: 20%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.serving-input{
+  width: 70%;
+  border: 1.5px solid #ccc;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 5%;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
+}
+
+.nutrition-widget{
+  position:absolute;
+  top: 25%;
+  right: 11%;
+  width: 25%;
+  height: 39%;
+  background-color: #FFFEF1;
+  padding: 0% 2.5%;
+  padding-bottom: 1%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 15px;
+}
+
+.loading-greyed-bg{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  width: 100px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 15px solid #FFFEF1;
+  border-right-color: #87A98D;
+  animation: l2 1s infinite linear;
+}
+@keyframes l2 {to{transform: rotate(1turn)}}
+
 </style>
-
-<script>
-import NutrientData from '~/classes/nutrientData';
-import { useMealLogging } from '~/composables/mealLogging.js';
-
-
-
-export default {
-  data() {
-    return {
-      myNutrientData: new NutrientData(0, 0, 0, 0, 0, 0),
-      myMealNutrientData: new NutrientData(0, 0, 0, 0, 0, 0),
-    };
-  }}
-
-</script>

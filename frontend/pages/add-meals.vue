@@ -83,7 +83,7 @@
       @closeSidebar="closeStomachOverlay"
       @updatePortion="updatePortion"
       @removeSelectedMeal="removeSelectedMeal"
-      @logMeal="logMeal"
+      @logMeal="proceedToSummary"
       :selectedMeals="selectedMeals"
       :mealDate="mealInfo.logDate"
       :mealType="mealInfo.logType"
@@ -173,6 +173,7 @@ const isAddMealOverlayVisible = ref(false);
 const mealId = ref("");
 const recipeInfo = ref({});
 const userDailyNutrients = ref(null);
+const userOriginalRemainingNutrients = ref(null);
 const userRemainingNutrients = ref(null);
 
 watch(query, (newQuery) => {
@@ -295,7 +296,10 @@ onMounted(() => {
     navigateTo("/meal-logging");
   }
 
-  console.log(mealInfo.value);
+  if(localStorage.getItem("selectedMeals")){
+    selectedMeals.value = JSON.parse(localStorage.getItem("selectedMeals"));
+    localStorage.removeItem("selectedMeals");
+  }
 
   fetchRecipes(savedFilters.value);
   document.addEventListener("click", handleClickOutside);
@@ -380,49 +384,24 @@ function closeStomachOverlay() {
   isStomachOverlayVisible.value = false;
 }
 
-async function logMeal(){
+async function proceedToSummary(){
+
+
+  if(selectedMeals.value.length === 0){
+    useToast().error("Please add meals to log");
+    return;
+  }
 
   // Increase the expire time by 5min in local storage
   mealInfo.value.expiryTime = new Date().getTime() + (5*60*1000);
   localStorage.setItem("mealInfo", JSON.stringify(mealInfo.value));
 
-  // store data to db 
-  const token = localStorage.getItem("accessToken");  
-  const meal_info = [];
 
-  selectedMeals.value.forEach((meal) => {
-    meal_info.push({
-      recipeId: meal.id,
-      portion: meal.portion,
-    });
-  });
-;                   
+  //store the selected meal to local storage
+  localStorage.setItem("selectedMeals", JSON.stringify(selectedMeals.value));
 
-  try{
-    const response = await $axios.post('/meal-log-summary/add', {
-        mealDate: mealInfo.value.logDate,
-        userLocalDateTime: new Date().toISOString(),
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        recipeIdPortions: meal_info,
-        mealType: mealInfo.value.mealType,
-        isMealPlanning: mealInfo.value.logType === "planning"
-      },{
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-    })
-
-    console.log(response.data); 
-    if (response.data.status == 200){
-      useToast().success("All meals has been logged!")
-      navigateTo('/meal-logging')
-    } else if(response.data.status == 400){
-      useToast().error(response.data.message)
-    }
-  } catch(e){
-    console.error("Error logging meal", e);
-  }
+  localStorage.setItem("userNutrientsInfo", JSON.stringify([userDailyNutrients.value, userOriginalRemainingNutrients.value, userRemainingNutrients.value]));
+  navigateTo("/summary");
 
 }
 
@@ -457,7 +436,21 @@ async function openAddMealOverlay(id) {
       userDailyNutrients.value = user_budget_response.data[mealInfo.value.logDate][0];
       
       if (userRemainingNutrients.value === null){
+        userOriginalRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
         userRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
+      }
+
+      if (selectedMeals.value.length > 0){
+        selectedMeals.value.forEach((meal) => {
+          userRemainingNutrients.value = {
+            calories: parseFloat((userRemainingNutrients.value.calories - meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            carbs: parseFloat((userRemainingNutrients.value.carbs - meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            protein: parseFloat((userRemainingNutrients.value.protein - meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            fat: parseFloat((userRemainingNutrients.value.fat - meal.recipe.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            sodium: parseFloat((userRemainingNutrients.value.sodium - meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+          }
+        });
       }
     }
   } catch (error) {
@@ -480,7 +473,9 @@ function addMeal(id, portion, afterAddingMeal) {
   userRemainingNutrients.value = afterAddingMeal;
   mealId.value = "";
   recipeInfo.value = {};
+  useToast().success("Meal added to the stomach");
   closeAddMealOverlay();
+
 }
 
 </script>
