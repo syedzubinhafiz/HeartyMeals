@@ -31,11 +31,33 @@
                     {{ metric.title }}
                   </h3>
                   <div class="metric-content">
-                    <div v-for="(value, key, index) in metric.data" :key="key" :class="['metric-row', { 'with-border': index < Object.keys(metric.data).length - 1 }]">                    <span class="metric-label">{{ key }}</span>
-                      <span :class="['metric-value', { 'positive': value.startsWith('-'), 'negative': value.startsWith('+') }]">
-                        {{ value }}
+                    <div class="metric-row-with-border">
+                    <span class="metric-label">Guideline per Day</span>
+                    <span class="metric-value">
+                        {{ metric.data['Guideline per Day'] }}
                       </span>
-                    </div>
+                  </div>
+
+                  <div class="metric-row-with-border">
+                    <span class="metric-label">Average Daily Consumption</span>
+                    <span class="metric-value">
+                        {{ metric.data['Average Daily Consumption'] }}
+                      </span>
+                  </div>
+                  
+                  <div class="metric-row-with-border">
+                    <span class="metric-label">Difference</span>
+                    <span :class="['metric-value', { 'positive': metric.data['Difference'].startsWith('-'), 'negative': metric.data['Difference'].startsWith('') }]">
+                        {{ metric.data['Difference'] }}
+                      </span>
+                  </div> 
+
+                  <div class="metric-row">
+                    <span class="metric-label">% Days Under Guideline</span>
+                    <span class="metric-value">
+                        {{ metric.data['% Days Under Guideline'] }}
+                      </span>
+                  </div> 
                   </div>
                 </div>
               </div>
@@ -222,46 +244,57 @@
   });
   
   
-const currentDate = ref(new Date());
-const currentStartDate = ref(new Date(currentDate.value));
+// const currentDate = ref(new Date());
+
+
+const currentDate = ref(new Date())
 
 const formattedStartDate = computed(() => {
   return currentDate.value.toLocaleDateString('en-GB', {
     month: 'long',
     year: 'numeric',
-  });
-});
+  })
+})
 
 const prevMonth = () => {
-  currentDate.value = new Date(currentDate.value.setMonth(currentDate.value.getMonth() - 1));
-};
+  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
+}
 
 const nextMonth = () => {
-  const newDate = new Date(currentDate.value.setMonth(currentDate.value.getMonth() + 1));
-  if (newDate <= new Date()) { 
-    currentDate.value = newDate;
+  const newDate = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
+  if (newDate <= new Date()) {
+    currentDate.value = newDate
   } else {
-    alert("You cannot view future data");
+    alert("You cannot view future data")
   }
-  };
+}
 
-const endDate = new Date(currentDate.value)
+const startOfMonth = computed(() => {
+  const year = currentDate.value.getFullYear()
+  const month = currentDate.value.getMonth() + 1 // JavaScript months are 0-indexed
+  return `${year}-${month.toString().padStart(2, '0')}-01`
+})
 
-const startOfMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1).toISOString().split('T')[0];
-const endOfMonth = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).toISOString().split('T')[0];
+const endOfMonth = computed(() => {
+  const year = currentDate.value.getFullYear()
+  const month = currentDate.value.getMonth() + 1
+  const lastDay = new Date(year, month, 0).getDate() // Get the last day of the month
+  return `${year}-${month.toString().padStart(2, '0')}-${lastDay.toString().padStart(2, '0')}`
+})
 
 let monthlyData = ref(null)
   
   // Function to fetch data from API
   async function fetchWeeklyData() {
-  const startDate = new Date(currentStartDate.value).toISOString().split('T')[0]
-  const endDate = new Date(currentDate.value)
+  // const startDate = new Date(currentStartDate.value).toISOString().split('T')[0]
+  // const endDate = new Date(currentDate.value)
 
-  const startOfMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1).toISOString().split('T')[0];
-  const endOfMonth = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).toISOString().split('T')[0];
+  // const startOfMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1).toISOString().split('T')[0];
+  // const endOfMonth = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).toISOString().split('T')[0];
 
-  console.log(`${startOfMonth} `); //2024-09-01 
-  console.log(endOfMonth); //2024-09-30
+  console.log(`${startOfMonth.value} `); //2024-09-01 
+  console.log(endOfMonth.value); //2024-09-30
+  console.log(currentDate.value);
 
   try {
     const result = await $axios.get('/analytics/monthly', {
@@ -270,8 +303,8 @@ let monthlyData = ref(null)
         'Content-Type': 'application/json',
       },
       params: {
-        startDate: startOfMonth,
-        endDate: endOfMonth,
+        startDate: startOfMonth.value,
+        endDate: endOfMonth.value,
         timeZone: 'Asia/Kuala_Lumpur'
       }
     })
@@ -508,15 +541,22 @@ let monthlyData = ref(null)
     height: 30px;
   }
   
-  .metric-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.25rem;
-  }
-  
-  .metric-row.with-border {
-    border-bottom: 1px solid #000000;
-  }
+  .metric-row-with-border{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.metric-row{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+
+.metric-row-with-border {
+  border-bottom: 1px solid #000000;
+}
   .metric-content {
     margin: 1rem;
   }
