@@ -31,11 +31,33 @@
                   {{ metric.title }}
                 </h3>
                 <div class="metric-content">
-                  <div v-for="(value, key, index) in metric.data" :key="key" :class="['metric-row', { 'with-border': index < Object.keys(metric.data).length - 1 }]">                    <span class="metric-label">{{ key }}</span>
-                    <span :class="['metric-value', { 'positive': value.startsWith('-'), 'negative': value.startsWith('+') }]">
-                      {{ value }}
-                    </span>
+                  <div class="metric-row-with-border">
+                    <span class="metric-label">Guideline per Day</span>
+                    <span class="metric-value">
+                        {{ metric.data['Guideline per Day'] }}
+                      </span>
                   </div>
+
+                  <div class="metric-row-with-border">
+                    <span class="metric-label">Average Daily Consumption</span>
+                    <span class="metric-value">
+                        {{ metric.data['Average Daily Consumption'] }}
+                      </span>
+                  </div>
+                  
+                  <div class="metric-row-with-border">
+                    <span class="metric-label">Difference</span>
+                    <span :class="['metric-value', { 'negative': metric.data['Difference'].startsWith('-'), 'positive': !metric.data['Difference'].startsWith('-') }]">
+                        {{ metric.data['Difference'] }}
+                      </span>
+                  </div> 
+
+                  <div class="metric-row">
+                    <span class="metric-label">% Days Under Guideline</span>
+                    <span class="metric-value">
+                        {{ metric.data['% Days Under Guideline'] }}
+                      </span>
+                  </div> 
                 </div>
               </div>
             </div>
@@ -59,8 +81,10 @@
 
       </div>
     </main>
-    <Footer/>
-  </div>
+      </div>
+      <div class="section flex flex-col justify-end">
+            <Footer/>
+        </div>
 </template>
 
 <script setup>
@@ -522,24 +546,39 @@ const chartOptions = {
   height: 30px;
 }
 
-.metric-row {
+.metric-row-with-border{
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.25rem;
 }
 
-.metric-row.with-border {
+.metric-label{
+  color: #555555;
+}
+
+.metric-row{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value{
+  color: #919191
+}
+
+
+.metric-row-with-border {
   border-bottom: 1px solid #000000;
 }
 .metric-content {
   margin: 1rem;
 }
 
-.positive {
+.negative {
   color: green;
 }
 
-.negative {
+.positive {
   color: red;
 }
 
