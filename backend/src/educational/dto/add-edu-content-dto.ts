@@ -8,9 +8,9 @@ export class AddEducationalContentDTO{
     @IsNotEmpty()
     @ValidateNested()
     @Type(()=> EducationalContentDTO)
-    educationalContent: EducationalContentDTO;
+    readonly educationalContent: EducationalContentDTO;
 
-    @IsNotEmpty()
+    @IsOptional()
     @ValidateNested()
     @Type(()=> FileUploadDTO)
     readonly files: FileUploadDTO;

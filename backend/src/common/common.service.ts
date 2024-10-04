@@ -6,7 +6,6 @@ import { NutritionSettingDTO } from "src/user/dto/nutrition-setting-dto";
 import { CholesterolLevel } from "src/user/enum/cholesterol.enum";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { addDays, eachDayOfInterval, isAfter, isBefore, isSameDay } from "date-fns";
-import { NutritionInfoDTO } from "src/recipe/dto/nutrition-info-dto";
 
 
 export class CommonService{

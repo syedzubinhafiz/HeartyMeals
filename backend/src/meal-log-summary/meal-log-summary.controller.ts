@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Headers, HttpException, HttpStatus, Post, Query } from "@nestjs/common";
-import { CalculateMealLoggingSummaryDTO } from "./dto/calculate-meal-logging-summary-dto";
 import { MealLogSummaryService } from "./meal-log-summary.service";
 import { CommonService } from "src/common/common.service";
 import { AddMealLoggingSummaryDTO } from "./dto/add-meal-logging-summary-dto";
@@ -35,19 +34,6 @@ export class MealLogSummaryController {
         }
 
     }
-
-    @Post('calculate')
-    async calculate(@Headers() headers: any, @Body() createMealLoggingSummaryDTO: CalculateMealLoggingSummaryDTO){
-        try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-
-            return await this.mealLogSummaryService.calculateNutritionSummary(decoded_headers, createMealLoggingSummaryDTO);
-        } catch (e) {
-            return new HttpException(e.message, 400);
-        }
-
-    }    
 
     @Get('budget')
     async getRemainingBudget(@Headers() headers, @Query("startDate") date: string, @Query("timeZone") timeZone: string){

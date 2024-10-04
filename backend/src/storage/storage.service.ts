@@ -196,21 +196,38 @@ export class StorageService {
 
     /**
      * Get a public file link from firebase storage by retriving entry from databases
-     * @param storageIds - storage ids to get the file in an array
+     * @param storageId - storage id to get the file in an array
      * @returns a list of download urls of the files
      */
-    async getLink(storageId: string){
+    async getLink(storageId: string | string[]){
         // data validation. if storage id is valid it will run, else it will throw error.
         try {
-            var entry = await this.storageRepository.findOneBy({
+            // if storage id a string
+            if (!Array.isArray(storageId)) {
+                var entry = await this.storageRepository.findOneBy({
                     storage_id: storageId
-            });
+                });
 
-            if (entry == null || entry == undefined) {
-                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+                if (entry == null || entry == undefined) {
+                    throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+                }
+
+                return entry.link;
             }
+            else {
+                // storage id is an array of st ring
+                var entries = await this.storageRepository.find({
+                    where: {
+                        storage_id: In(storageId)
+                    }
+                });
 
-            return entry.link;
+                if (entries.length === 0) {
+                    throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+                }
+
+                return entries;
+            }
         }
         catch (e){
             throw e;

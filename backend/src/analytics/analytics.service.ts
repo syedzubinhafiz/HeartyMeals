@@ -7,7 +7,7 @@ import { RecipeDTO } from 'src/recipe/dto/recipe-dto';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
 import { addDays, format } from 'date-fns';
-import { getDailyAnalyticsDTO } from './dto/get-analythics-dto';
+import { getDailyAnalyticsDTO } from './dto/get-analytics-dto';
 
 
 
@@ -182,7 +182,7 @@ export class AnalyticsService {
                 };
 
             } else { // Record exists
-                
+
                 const meal_logging_map = await this.mealLoggingRepository.createQueryBuilder('meal_logging')
                     .leftJoinAndSelect("meal_logging.recipe", "recipe")
                     .where('meal_logging.id IN (:...ids)', { ids: meal_logging_ids })
@@ -191,7 +191,7 @@ export class AnalyticsService {
                         map[obj.id] = obj;
                         return map;
                     }, {}));
-                    
+
                 // Initialize the result object
                 const result =  {
                     "daily_budget": {

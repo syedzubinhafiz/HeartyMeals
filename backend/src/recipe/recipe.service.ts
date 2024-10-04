@@ -156,6 +156,7 @@ export class RecipeService {
                 'recipe.is_approved', 
                 'recipe.visibility', 
                 'recipe.storage_links',
+                'recipe.created_at',
                 'user.user_id'
             ])
             .where(
@@ -196,14 +197,16 @@ export class RecipeService {
             
             // Search for recipe
             if (search != null){
-                query.andWhere("recipe.name ILIKE :search OR recipe.description ILIKE :search", { search: `%${search}%` })
+                query.andWhere("recipe.name ILIKE :search ", { search: `%${search}%` })
             }
 
             // Pagination
             if (pagination){
                 query.skip(skip)
                 .take(take)
-            };
+            } 
+
+            query.orderBy("recipe.created_at", "DESC")            
             
             const [result, length] = await query.getManyAndCount();
 
