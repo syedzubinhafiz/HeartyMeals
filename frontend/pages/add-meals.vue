@@ -63,7 +63,7 @@
 
           <div class="custom-recipe-card" id="follower" @click="openCustomRecipeOverlay" >
               <img src="@/assets/icon/round-add-icon.svg" alt="">
-              Customize Your Owm Recipe 
+              Customize Your Own Recipe 
           </div>          
           <RecipeCard 
           id="reference"
