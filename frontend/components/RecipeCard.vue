@@ -1,11 +1,22 @@
 <template>
   <div class="card" @click="$emit('openOverlay','meal')">
+    <div v-if="isCustomRecipe" class="custom-tag">
+          CUSTOM
+    </div>
     <!-- Only show this section if the recipe is admin approved -->
     <div v-if="isCustomRecipe" class="top-right">
       <img 
-        :src="isAdminApproved ? '/assets/img/checkMark.svg' : '/assets/img/warning.png'" 
+        v-if="isAdminApproved"
+        :src="approveIcon" 
         alt="Info Icon" 
-        class="info-icon" 
+        @mouseover.stop="showTooltip = true" 
+        @mouseleave.stop="showTooltip = false"
+        @click.stop
+      />
+      <img 
+        v-if="!isAdminApproved"
+        :src="warningIcon" 
+        alt="Info Icon" 
         @mouseover.stop="showTooltip = true" 
         @mouseleave.stop="showTooltip = false"
         @click.stop
@@ -20,10 +31,6 @@
     <div class="top-section">
       <div class="image-container">
         <img :src="imageSrc" alt="Meal Image" class="img" />
-        <!-- Move the custom tag inside the image-container -->
-        <div v-if="isCustomRecipe" class="custom-tag">
-          CUSTOM
-        </div>
       </div>  
       <div class="content">
         <h3 class="meal-name">{{ mealName }}</h3>
@@ -48,6 +55,9 @@
 
 <script setup>
 import { ref } from 'vue'
+import warningIcon from '@/assets/icon/warning-information-icon.svg'
+import approveIcon from '@/assets/icon/approve-information-icon.svg'
+
 const showTooltip = ref(false)
 const props = defineProps({
     mealId: {
@@ -92,7 +102,7 @@ const props = defineProps({
 
 .card {
   font-family: 'Source Code Pro', monospace;
-  background-color: #f8f8f8;
+  background-color: #FFFEF1;
   border-radius: 15px;
   width: 100%;
   max-width: 571px;
@@ -181,25 +191,25 @@ const props = defineProps({
 }
 
 .info-icon {
-  color: #ffffff;
   border-radius: 10%;
   cursor: pointer;
-  width: 20px; /* Adjust these to make it smaller */
-  height: 20px;
+  width: 30px; 
+  height: 30px;
 }
 
 .tooltip {
   position: absolute;
-  top: 30px;
+  top: 110%;
   right: 0;
   color:#004d40;;
   padding: 5px 10px;
   border-radius: 5px;
-  font-size: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
   white-space: nowrap;
   z-index: 100;
-  border: 1px solid #004d40; /* Adds the border with the desired color */
-  background-color: transparent; /* Ensures no background fill */
+  border: 2px solid #004d40; /* Adds the border with the desired color */
+  background-color: white; /* Ensures no background fill */
 }
 
 .tooltip-approved {
@@ -208,23 +218,21 @@ const props = defineProps({
 }
 
 .tooltip-pending {
-  border-color: #ffc048; /* Yellow border for pending approval */
-  color: #ffc048; /* Yellow text for pending approval */
+  border-color: #FFA17A; 
+  color: #FFA17A; 
 }
 
 .custom-tag {
   position: absolute;
-  bottom: 62px;
-  right: 35px;
-  transform: rotate(-40deg); /* Tilt effect */
+  top: 0;
+  left: 0;
   background-color: #004d40;
   color: #fff;
-  padding: 5px 10px;
-  font-size: 0.75rem;
+  padding: 1% 3%;
+  font-size: 1rem;
   font-weight: bold;
+  border-radius: 12px 5px 5px 0px;
   text-transform: uppercase;
-  border-radius: 3px;
   z-index: 10;
-  border: 2px solid #fff;
 }
 </style>

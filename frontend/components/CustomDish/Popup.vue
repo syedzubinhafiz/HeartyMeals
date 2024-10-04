@@ -106,10 +106,10 @@
                         <div class="form-group" style="display: grid; grid-template-columns: 1fr; ">
                             <label class="form-label-format" style="padding-bottom: 15px;">Recommended Meal Time</label>
                             <div class="checkbox-group-grid">
-                                <label><input type="checkbox" value="Breakfast" class="large-checkbox"/> Breakfast</label>
-                                <label><input type="checkbox" value="Lunch" class="large-checkbox"/> Lunch</label>
-                                <label><input type="checkbox" value="Dinner" class="large-checkbox"/> Dinner</label>
-                                <label><input type="checkbox" value="Other" class="large-checkbox"/> Other</label>
+                                <label><input type="checkbox" id="Custom-Recipe-Breakfast" value="Breakfast" class="large-checkbox"/> Breakfast</label>
+                                <label><input type="checkbox" id="Custom-Recipe-Lunch" value="Lunch" class="large-checkbox"/> Lunch</label>
+                                <label><input type="checkbox" id="Custom-Recipe-Dinner" value="Dinner" class="large-checkbox"/> Dinner</label>
+                                <label><input type="checkbox" id="Custom-Recipe-Other" value="Other" class="large-checkbox"/> Other</label>
                             </div>
                         </div>
 
@@ -451,8 +451,9 @@ const validateForm = () => {
   }
 
   // Check if at least one meal time is selected
-  const mealTimes = ['Breakfast', 'Lunch', 'Dinner', 'Other'];
-  const isMealTimeSelected = mealTimes.some(mealTime => document.querySelector(`input[value="${mealTime}"]`).checked);
+  const mealTimes = ['Custom-Recipe-Breakfast', 'Custom-Recipe-Lunch', 'Custom-Recipe-Dinner', 'Custom-Recipe-Other'];
+  const isMealTimeSelected = mealTimes.some(mealTime => document.querySelector(`input[id="${mealTime}"]`).checked);
+  
   if (!isMealTimeSelected) {
     useToast().error("At least one meal time recommendation is required");
     isValid = false;
@@ -544,14 +545,14 @@ const gatherRecipeData = async () => {
   if (!validateForm()) {
     return;
   }
-  console.log("here1")
+
   isLoading.value = true; // Show loading indicator
 
   const mealTimeRecommendation = {
-    Breakfast: document.querySelector('input[value="Breakfast"]').checked,
-    Lunch: document.querySelector('input[value="Lunch"]').checked,
-    Dinner: document.querySelector('input[value="Dinner"]').checked,
-    Other: document.querySelector('input[value="Other"]').checked,
+    Breakfast: document.querySelector('input[id="Custom-Recipe-Breakfast"]').checked,
+    Lunch: document.querySelector('input[id="Custom-Recipe-Lunch"]').checked,
+    Dinner: document.querySelector('input[id="Custom-Recipe-Dinner"]').checked,
+    Other: document.querySelector('input[id="Custom-Recipe-Other"]').checked,
   };
 
   const components = [
@@ -566,9 +567,9 @@ const gatherRecipeData = async () => {
       unit: seasoning.selectedUnit || ''
     }))
   ];
-  console.log("here2")
+
   const { paragraphsArray, file_upload_dto_array } = getInstruction();
-  console.log("here3")
+
   const recipeData = {
     recipe: {
       name: document.getElementById('name').value,
@@ -589,7 +590,7 @@ const gatherRecipeData = async () => {
   };
 
   try {
-    console.log("here4")
+
     const token = localStorage.getItem('accessToken');
     const response = await $axios.post('/recipe/add', recipeData, {
       headers: {

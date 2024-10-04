@@ -60,7 +60,13 @@
 
       <div class="search-result-container" @scroll="onScroll">
         <div class="search-result-item-display">
+
+          <div class="custom-recipe-card" id="follower" @click="openCustomRecipeOverlay" >
+              <img src="@/assets/icon/round-add-icon.svg" alt="">
+              Customize Your Owm Recipe 
+          </div>          
           <RecipeCard 
+          id="reference"
           v-for="(recipe, index) in searchResults" 
           :key="index"
           :meal-id="recipe.id" 
@@ -78,6 +84,8 @@
       </div>
     </div>
     
+    <CustomDishPopup v-model:isPopupOpen="isCustomRecipeOverlayVisible"  @close="closeCustomRecipeOverlay" class="text-black"/>
+
     <StomachSidebar
       :visible="isStomachOverlayVisible"
       @closeSidebar="closeStomachOverlay"
@@ -119,6 +127,7 @@ import activeFilterIcon from "@/assets/icon/active-filter-icon.svg";
 import stomachIcon from "@/assets/icon/stomach-icon.svg";
 import leftBase from "@/assets/img/meal_logging/left_base.svg";
 import rightBase from "@/assets/img/meal_logging/right_base.svg";
+import CustomDishPopup from '~/components/CustomDish/Popup.vue';
 
 
 definePageMeta({
@@ -128,6 +137,7 @@ definePageMeta({
     RecipeFilterOverlay,
     StomachSidebar,
     AddMealsOverlay,
+    CustomDishPopup,
   },
 });
 
@@ -175,6 +185,10 @@ const recipeInfo = ref({});
 const userDailyNutrients = ref(null);
 const userOriginalRemainingNutrients = ref(null);
 const userRemainingNutrients = ref(null);
+
+
+// for custom recipe overlay
+const isCustomRecipeOverlayVisible = ref(false);
 
 watch(query, (newQuery) => {
     if (newQuery === "") {
@@ -259,6 +273,8 @@ function handleBeforeUnload(e) {
 
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('load', adjustSize);
+  window.addEventListener('resize', adjustSize);
 
   if (typeof localStorage === "undefined" && !config.public.isDebug ) navigateTo("/meal-logging");
 
@@ -303,11 +319,16 @@ onMounted(() => {
 
   fetchRecipes(savedFilters.value);
   document.addEventListener("click", handleClickOutside);
+  setTimeout(() => {
+    adjustSize();
+  }, 100);
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
     document.removeEventListener("click", handleClickOutside);
+    window.removeEventListener('load', adjustSize);
+  window.removeEventListener('resize', adjustSize);
 });
 
 const toggleFilterOverlay = () => {
@@ -384,8 +405,15 @@ function closeStomachOverlay() {
   isStomachOverlayVisible.value = false;
 }
 
-async function proceedToSummary(){
+function closeCustomRecipeOverlay() {
+  isCustomRecipeOverlayVisible.value = false;
+}
 
+function openCustomRecipeOverlay() {
+  isCustomRecipeOverlayVisible.value = true;
+}
+
+async function proceedToSummary(){
 
   if(selectedMeals.value.length === 0){
     useToast().error("Please add meals to log");
@@ -478,11 +506,19 @@ function addMeal(id, portion, afterAddingMeal) {
 
 }
 
+
+function adjustSize() {
+  const follower = document.getElementById('follower');
+  const reference = document.getElementById('reference');
+  
+  follower.style.width = `${reference.offsetWidth}px`;
+}
 </script>
 
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
 *{
     font-family: 'Overpass', sans-serif;
@@ -653,5 +689,21 @@ function addMeal(id, portion, afterAddingMeal) {
 .filter-button {
   cursor: pointer;
   height: 70%;
+}
+
+.custom-recipe-card{
+  background-color: #FFFEF1;
+  border-radius: 15px;
+  width: 1fr;
+  height: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family:  "Source Code Pro", monospace;
+  font-weight: 700;
+  font-size: 1.2rem;
+  column-gap: 3%;
+  cursor: pointer;
 }
 </style>
