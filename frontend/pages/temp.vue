@@ -6,7 +6,7 @@
         <!-- section 1 -->
         <div class="section1-container">
             <div class="section1-content">
-                <h1 class="section1-heading">Welcome back, Bruno Mars</h1>
+                <h1 class="section1-heading">Welcome back, {{userName}}</h1>
                 <p class="section1-subheading">What do you want to do today?</p>
 
                 <div class="section1-buttons">
@@ -146,6 +146,35 @@ import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue
 import MealCard from '~/components/MealCard.vue';
 import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
 
+/**
+ * Section 1 code
+ * 
+ */
+
+ const userName = ref("");
+
+ const getUserInfo = async () => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get('/user/info', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.status === 200) {
+            userName.value = response.data.first_name;
+        }
+        else {
+            console.log(response);
+        }
+    }
+    catch (e) {
+        useToast().error("Failed to get user information");
+    }
+ }
+
+ onMounted(getUserInfo);
 /**
  * Section 2 code
  */
