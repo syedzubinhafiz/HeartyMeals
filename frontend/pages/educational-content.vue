@@ -1,194 +1,261 @@
 <template>
-  <div class="absolute w-screen z-40">
-    <Header />
-  </div>
+  <div class="page-container" @click="handleClickOutside">
+    <header class="header">
+      <Header />
+    </header>
 
-  <div class="relative min-h-screen text-white bg-custom-color overflow-hidden"> 
-    <!-- Background image section -->
-    <div class="bg-header-image flex flex-col items-center justify-center relative-parent z-10">
-      <h2 class="text-white text-4xl font-bold text-center">Educational Content</h2>
-      <p class="mt-[15px] text-xl text-center italic">
-        Caring for your body with wholesome foods is a lifelong investment in your health and well-being.
-      </p>
-    </div>
-    
-    <!-- Curved images as part of the background -->
-    <div class="curvy-images-container absolute inset-x-0 top-0 transform z-0">
-      <div class="flex justify-between items-end w-full">
-        <img src="/assets/img/bigleftBlob.png" alt="Curvy Left" class="curvy-left" />
-        <img src="/assets/img/bigrightBlob.svg" alt="Curvy Right" class="curvy-right" />
+    <div class="image-container">
+      <img src="/assets/img/backGround.svg" class="background-image"/>
+      <div class="text-overlay">
+        <h2 class="text-white text-3xl font-bold text-center">Educational Content</h2>
+        <p class="mt-[15px] text-white text-xl text-center italic">Caring for your body with wholesome foods is a lifelong investment in your health and well-being.</p>
       </div>
     </div>
 
-    <!-- Cards layout section -->
-    <div class="flex justify-center mb-16 text-black z-20 relative">
-      <MealSearchBar v-model="searchValue" :dataList="searchDataList"/>
-    </div>
-
-    <!-- Adjusted Card Container (scrollable) -->
-    <div class="scrollable-card-container flex justify-center items-center flex-wrap mt-12 px-4 z-20 backdrop:relative">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-screen-lg justify-items-center">
-        <EdContentCard @click="openOverlay('Diagnosing Heart Failure')" v-for="(card, index) in displayedCards" :key="index" />
+    <div class="body">
+      <div class="search-bar" ref="searchBar">
+        <img src="/assets/img/Search_Icon.svg">
+        <input
+          type="text"
+          v-model="searchValue"
+          placeholder="Enter Keywords"
+          class="search-input"
+          aria-label="Search Content"
+        />
+        <!-- <img :src="filter_on ? activeFilterIcon : filterIcon" alt="Filter" class="filter-button" @click="toggleFilterOverlay">
+        <RecipeFilterOverlay 
+          v-show="isFilterOverlayVisible" 
+          @hideOverlay="isFilterOverlayVisible = false" 
+          @applyFilters="applyFilters"
+          @clearFilters ="clearFilters"
+        /> -->
       </div>
-      <infinite-loading @infinite="loadMoreCards"></infinite-loading>
+
+      <div class="search-result-text-display">
+        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="searchValue">Search Results for "{{ searchValue }}"</p>
+      </div>
+
+      <div class="search-result-container" @scroll="onScroll">
+        <div class="search-result-item-display">
+          <EdContentCard 
+            v-for="(content, index) in searchResults" 
+            :key="index"
+            @click="openOverlay(content)"     
+          />
+          <div v-if="isLoading" class="loading-indicator">Loading...</div>
+        </div>
+      </div>
     </div>
 
+    <EdContentOverlay
+      :visible="isOverlayVisible"
+      :header="overlayHeader"
+      :imageSrc="overlayImageSrc"
+      @close="isOverlayVisible = false"
+    />
+
+    <footer class="footer">
+      <Footer />
+    </footer>
   </div>
-  <Footer/>
-  <EdContentOverlay 
-    :show="isOverlayVisible" 
-    :header="overlayHeader" 
-    :imageSrc="overlayImageSrc" 
-    @close="isOverlayVisible = false" 
-  />
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import EdContentCard from '@/components/EdContentCard.vue';  // Adjust path if necessary
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import debounce from 'lodash/debounce';
 import EdContentOverlay from '@/components/EdContentOverlay.vue';
+import EdContentCard from '@/components/EdContentCard.vue';
+// import RecipeFilterOverlay from '@/components/RecipeFilterOverlay.vue';  // Assuming you are still using this for filtering
 
+// import filterIcon from '@/assets/icon/filter-icon.svg';
+// import activeFilterIcon from '@/assets/icon/active-filter-icon.svg';
+
+// For search functionality and data fetching
+const isLoading = ref(false);
+const searchValue = ref("");
+const searchResults = ref([]);
+const pageNumber = ref(1);
+const pageSize = ref(10);
+const totalPages = ref(1);
+
+// For overlay functionality
 const isOverlayVisible = ref(false);
 const overlayHeader = ref('');
 const overlayImageSrc = ref('');
 
-function openOverlay(header, imageSrc) {
-  overlayHeader.value = header;
-  overlayImageSrc.value = imageSrc;
-  isOverlayVisible.value = true;
-}
+// For filter functionality
+// const isFilterOverlayVisible = ref(false);
+// const searchBar = ref(null);
+// const filter_on = ref(false);
 
-// Define the cards array with data
-const cards = ref([
-  { id: 1, title: 'Card 1' },
-  { id: 2, title: 'Card 2' },
-  { id: 3, title: 'Card 3' },
-  { id: 4, title: 'Card 4' },
-  { id: 5, title: 'Card 5' },
-  { id: 6, title: 'Card 6' },
-  { id: 7, title: 'Card 7' },
-  { id: 8, title: 'Card 8' },
-  // Add more card data as needed
-]);
+// Simulated data fetch for EdContent (replace with your API call if needed)
+const fetchContentData = async (filters = {}) => {
+  isLoading.value = true;
+  try {
+    // Simulate fetching content data (this should be replaced with actual API call)
+    const simulatedResults = Array(10).fill().map((_, i) => ({
+      id: i + 1,
+      title: `Content ${i + 1}`,
+      description: "Lorem ipsum dolor sit amet.",
+      thumbnail: "@/assets/img/content-thumbnail.png"
+    }));
 
-// Initialize displayedCards with the first few cards
-const displayedCards = ref(cards.value.slice(0, 6)); // Initial display count of 6 cards
+    if (pageNumber.value === 1) {
+      searchResults.value = simulatedResults;
+    } else {
+      searchResults.value = [...searchResults.value, ...simulatedResults];
+    }
 
-// Function to load more cards as the user scrolls down
-function loadMoreCards($state) {
-  const currentLength = displayedCards.value.length;
-  const moreCards = cards.value.slice(currentLength, currentLength + 6); // Load the next 6 cards
-  if (moreCards.length > 0) {
-    displayedCards.value = [...displayedCards.value, ...moreCards];
-    $state.loaded(); // Mark as loaded
-  } else {
-    $state.complete(); // No more cards to load
+    totalPages.value = 5;  // Example, set the total pages
+    pageNumber.value += 1;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
+
+const onScroll = (event) => {
+  const bottom = event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight + 1;
+  if (bottom && !isLoading.value && pageNumber.value <= totalPages.value) {
+    fetchContentData();
+  }
+};
+
+onMounted(() => {
+  fetchContentData();  // Load initial content data
+  document.addEventListener("click", handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+
+const openOverlay = (content) => {
+  overlayHeader.value = content.title;
+  overlayImageSrc.value = content.thumbnail;
+  isOverlayVisible.value = true;
+};
+
+const toggleFilterOverlay = () => {
+  isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
+};
+
+const handleClickOutside = (event) => {
+  if (searchBar.value && !searchBar.value.contains(event.target)) {
+    isFilterOverlayVisible.value = false;
+  }
+};
 </script>
 
 <style scoped>
-.bg-header-image {
-  background-image: url('@/assets/img/smallerBlob.svg');
-  background-size: 100% auto;
-  background-repeat: no-repeat;
-  background-position: center;
-  height: 35vh;
+.page-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding-top: 5%;
-  position: relative;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.scrollable-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: calc(100% - 4%);
-  overflow-y: auto;
-  padding: 2%;
-  box-sizing: border-box;
-}
-
-.bg-custom-color {
-  background-color: #DAC2A8;
-  min-height: 100vh;
-  position: relative;
-}
-
-.curvy-images-container {
-  position: absolute;
-  z-index: 1;
+.header {
+  position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
-  height: auto;
+  z-index: 40;
 }
 
-.curvy-left {
-  height: 50vh;  /* Adjust the height for better scaling */
-  margin-left: -1%; /* Adjust positioning to fit nicely */
-}
-
-.curvy-right {
-  height: 60vh;  /* Adjust the height for better scaling */
-  margin-right: -1%; /* Adjust positioning to fit nicely */
-  margin-top:20%
-}
-
-/* Layout for Cards */
-.grid {
-  width: 100%;
-  gap: 2rem; /* Add spacing between cards */
-  grid-template-columns: repeat(1, 1fr); /* 1 column on mobile */
-  margin-bottom:10%
-}
-
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns for medium and larger screens */
-  }
-}
-
-.grid.justify-items-center {
-  justify-items: center; /* Center the grid items */
-}
-
-.flex.justify-center {
-  margin-top: 2rem;
+.image-container {
   position: relative;
-  z-index: 20;
+  width: 100%;
 }
 
-.scrollable-card-container {
-  height: 50vh;
-  width: 80%;
-  max-width: 900px;
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #DAC2A8;
+}
+
+.text-overlay {
+  position: absolute;
+  width: 100%;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #DAC2A8;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 40;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  width: 50%;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding: 2px 15px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 5px;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-result-item-display {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+  padding: 15px;
+}
+
+.search-result-text-display {
+  width: 60%;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 15px;
+  padding-bottom: 2.5%;
+}
+
+.search-result-container {
+  width: 60%;
+  height: 65%;
+  margin-top: 10px;
   overflow-y: auto;
-  margin: 0 auto;
-
-  /* Firefox */
-  scrollbar-width: thin;  /* Makes the scrollbar thin */
-  scrollbar-color: #015B59 #DAC2A8; /* Thumb color is #015B59 and track is #DAC2A8 for Firefox */
 }
 
-/* WebKit-based browsers (Chrome, Safari, Edge) */
-.scrollable-card-container::-webkit-scrollbar {
-  width: 12px; /* Scrollbar width */
+.aligned-paragraph {
+  text-align: left;
+  margin: 0;
+  font-weight: bold;
+  color: #333;
 }
 
-.scrollable-card-container::-webkit-scrollbar-thumb {
-  background-color: #015B59; /* Scrollbar thumb color */
-  border-radius: 10px; /* Rounded corners for the thumb */
-  border: 3px solid #DAC2A8; /* Optional padding around the thumb */
+.loading-indicator {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
 }
 
-.scrollable-card-container::-webkit-scrollbar-track {
-  background-color: #DAC2A8; /* Scrollbar track color */
-  border-radius: 10px; /* Rounded corners for the track */
+.filter-button {
+  cursor: pointer;
+  height: 70%;
 }
-
 </style>
