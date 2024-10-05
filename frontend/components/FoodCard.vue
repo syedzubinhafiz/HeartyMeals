@@ -43,6 +43,10 @@ const props = defineProps({
   isToday: {
     type: Boolean,
     required: true
+  },
+  dateStr: {
+    type: String,
+    default: (new Date())?.toISOString()
   }
 });
 const is_consumed = ref(false);
@@ -70,8 +74,20 @@ const removeMeal = async () => {
   console.log(result);
 };
 
-const toggleConsumed = () => {
-  is_consumed.value = !is_consumed.value;
+const toggleConsumed = async () => {
+  const results = await useApi("/meal-logging/mark_consume","POST",  {
+	"dateTime": props.dateStr,
+	"timeZone": "Asia/Kuala_lumpur",
+	"mealLoggingId": props.cardInfo.id
+  })
+  console.log(results)
+  if(!results.isError && results.response != null) {
+    is_consumed.value = true;
+  } 
+  else {
+    useToast().error("Meal consumption failed!")
+  }
+  
 };
 </script>
 

@@ -72,6 +72,7 @@
                             :cardInfo="card" 
                             :isToday="isToday"  
                             class="mb-4" 
+                            :dateStr="currentDate?.toISOString()"
                             @removeMeal="removeMeal('otherList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
