@@ -446,21 +446,8 @@ export const useFillData = () => {
         }
         return data
     }
-    const createMeal = async (date,recipeId,mealType,portion=1) => {
-        let result = await useApi("/meal-log-summary/calculate","POST",{
-            "mealDate": date,
-            "timeZone": "Asia/Kuala_Lumpur",
-            "recipeIdPortions": [
-                {
-                    "recipeId": recipeId,
-                    "portion": portion
-                }
-            ],
-            "mealType": mealType
-        })
-        console.log(result)
-        let nutritionAfter = result.value[2]
-        result = await useApi("/meal-log-summary/add","POST",{
+    const createMeal = async (date,recipeId,mealType,portion=1,isMealPlanning=false) => {
+        let result = await useApi("/meal-log-summary/add","POST",{
             "userLocalDateTime": date,
             "mealDate": date,
             "timeZone": "Asia/Kuala_Lumpur",
@@ -470,7 +457,7 @@ export const useFillData = () => {
                     "portion": portion
                 }
             ],
-            "nutritionAfter": nutritionAfter,
+            "isMealPlanning": isMealPlanning,
             "mealType": mealType
           }
         )
@@ -478,7 +465,6 @@ export const useFillData = () => {
     }
     const fillMealLogging = async() => {
         let currentDate = new Date()
-        let currentDate2 = currentDate.toISOString()
         currentDate = currentDate.toISOString().split('T')[0]
         console.log(currentDate)
         // get
@@ -490,16 +476,16 @@ export const useFillData = () => {
             let recipe = null
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
-            console.log(await createMeal(currentDate2,recipe,"Breakfast",2))
+            console.log(await createMeal(currentDate,recipe,"Breakfast",2))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="FISHY PORK")[0].id
-            console.log(await createMeal(currentDate2,recipe,"Lunch",2))
+            console.log(await createMeal(currentDate,recipe,"Lunch",2))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="POTATO WITH MORE POTATO")[0].id
-            console.log(await createMeal(currentDate2,recipe,"Other",1))
+            console.log(await createMeal(currentDate,recipe,"Other",1))
 
             recipe = await recipes.value.filter((value) => value.name.toUpperCase()=="BAKED POTATO WITH FISH")[0].id
-            console.log(await createMeal(currentDate2,recipe,"Other",1))
+            console.log(await createMeal(currentDate,recipe,"Other",1))
 
             data = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
         }
