@@ -12,32 +12,44 @@
           </div>
           <div class="profile-info">
             <h2>{{ user.name }}</h2>
-            <p>{{ user.email }}</p>
-            <p>{{ user.age }} years old</p>
-            <p>Country: {{ user.country }}</p>
-            <p>Condition: {{ user.condition }}</p>
-            <p>NYHA Classification: {{ user.nyha }}</p>
           </div>
           <button class="edit-btn">Edit Profile</button>
         </div>
   
+        <!-- Main Information Section -->
+        <div class="info-section">
+          <div class="info-row" v-for="(value, key) in userDetails" :key="key">
+            <span class="info-label">{{ key }}</span>
+            <span class="info-value">{{ value }}</span>
+          </div>
+        </div>
+  
+        <!-- Profile Details Section (Dietary Preferences, Food Allergies, Medical Restrictions) -->
         <div class="profile-details">
-          <div class="card">
-            <h3>Dietary Preferences</h3>
+          <div class="detail-card">
+            <h3 class="card-title">Dietary Preferences</h3>
             <ul>
-              <li v-for="item in user.dietaryPreferences" :key="item">{{ item }}</li>
+              <li v-for="item in user.dietaryPreferences" :key="item" class="detail-row">
+                <span class="detail-value">{{ item }}</span>
+              </li>
             </ul>
           </div>
-          <div class="card">
-            <h3>Food Allergies</h3>
+  
+          <div class="detail-card">
+            <h3 class="card-title">Food Allergies</h3>
             <ul>
-              <li v-for="item in user.foodAllergies" :key="item">{{ item }}</li>
+              <li v-for="item in user.foodAllergies" :key="item" class="detail-row">
+                <span class="detail-value">{{ item }}</span>
+              </li>
             </ul>
           </div>
-          <div class="card">
-            <h3>Medical Restrictions</h3>
+  
+          <div class="detail-card">
+            <h3 class="card-title">Medical Restrictions</h3>
             <ul>
-              <li v-for="item in user.medicalRestrictions" :key="item">{{ item }}</li>
+              <li v-for="item in user.medicalRestrictions" :key="item" class="detail-row">
+                <span class="detail-value">{{ item }}</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -72,6 +84,17 @@
         },
       };
     },
+    computed: {
+      userDetails() {
+        return {
+          Email: this.user.email,
+          Age: this.user.age,
+          Country: this.user.country,
+          Condition: this.user.condition,
+          "NYHA Classification": this.user.nyha,
+        };
+      },
+    },
   };
   </script>
   
@@ -79,23 +102,25 @@
   .page-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Ensure the wrapper takes up full viewport height */
+    height: 100vh;
+    background-color: #DAC2A8;
   }
   
   .profile-page {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 20px;
     box-sizing: border-box;
+    background-color: #DAC2A8;
   }
   
   .profile-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    background-color: #f9f9f9;
+    background-color: #F3EADA;
     padding: 15px;
     border-radius: 10px;
   }
@@ -105,7 +130,6 @@
   }
   
   .profile-avatar img {
-    border-radius: 50%;
     width: 100px;
     height: 100px;
   }
@@ -124,35 +148,78 @@
     border-radius: 5px;
   }
   
-  .profile-details {
+  .info-section {
+    margin-top: 20px;
+    background-color: #F3EADA;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .info-row {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .card {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    width: 30%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .card h3 {
+    align-items: center;
+    padding: 10px;
+    background-color: #FFFEF1;
+    border-radius: 25px;
     margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
   
-  .card ul {
-    list-style: none;
-    padding: 0;
+  .info-label {
+    font-weight: bold;
+    color: black;
+    padding-left: 20px;
+    flex: 1;
   }
   
-  .card ul li {
-    background-color: #eee;
-    padding: 5px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-    text-align: center;
+  .info-value {
+    color: black;
+    padding-right: 20px;
+    flex: 2;
+    text-align: right;
   }
+  
+  /* Style for the detail cards */
+.profile-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.detail-card {
+  background-color: #F3EADA;
+  border-radius: 15px;
+  padding: 20px;
+  width: 30%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center; /* Center align the title */
+}
+
+.detail-row {
+  background-color: #FFFEF1;
+  border-radius: 25px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center horizontally */
+  text-align: center; /* Center text within the row */
+}
+
+.detail-value {
+  color: black;
+  font-weight: bold;
+  text-align: start; /* Ensure text is centered */
+  width: 100%; /* Make sure text takes full width of the container */
+}
   </style>
   
