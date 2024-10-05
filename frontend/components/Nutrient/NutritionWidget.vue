@@ -1,6 +1,27 @@
 <template>
-    <div class="widget-container">
-        <NutritionBar
+    <div class="svg-wrapper">
+        <svg width="590" height="578" viewBox="0 0 590 578" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_d_5088_2532)">
+            <rect x="16" y="12" width="558" height="546" rx="61" fill="#F3EADA"/>
+            </g>
+            <defs>
+            <filter id="filter0_d_5088_2532" x="0.799999" y="0.799999" width="588.4" height="576.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feMorphology radius="1" operator="erode" in="SourceAlpha" result="effect1_dropShadow_5088_2532"/>
+            <feOffset dy="4"/>
+            <feGaussianBlur stdDeviation="8.1"/>
+            <feComposite in2="hardAlpha" operator="out"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_5088_2532"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_5088_2532" result="shape"/>
+            </filter>
+            </defs>
+        </svg>
+        <div class="nutrition-summary-overlay">
+        <span class="summary-nutrition-title">Total Nutrition</span>
+        <div>
+            <NutritionBar
             v-for="(nutrient, index) in nutrientsList"
             :key="index"
             :icon="nutrient.icon"
@@ -13,12 +34,15 @@
             :currentColor="nutrient.currentColor"
             :afterMealColor="nutrient.afterMealColor"
             :fontColor="nutrient.fontColor"
+            :progressBarContainerStyle="'margin-top: 2%; margin-bottom: 2%;'"
         />
+        </div>
     </div>
+    </div>
+        
 </template>
   
   <script setup>
-    import { ref } from 'vue';
     import NutritionBar from './NutritionBar.vue';
 
     // fixed nutrients format
@@ -138,12 +162,43 @@
     * {
         font-family: 'Overpass', sans-serif;
     }
+    .svg-wrapper {
+        position: relative;
+        width: 590px; /* Fixed size for the wrapper */
+        height: 578px; /* Match the viewBox size of the SVG */
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-  .widget-container{
-    position: relative;
-    border-radius: 50px;
-    max-width: 100%;
-    max-height: 100%;
-  }
+    .svg-wrapper svg {
+        width: 100%;
+        height: 100%;
+    }
+
+    .nutrition-summary-overlay{
+        width: 80%;
+        height: 100%;
+        top: 10%;
+        left: 10%;
+        position: absolute;
+        pointer-events: all; /* Enable interaction with labels */
+
+        font-weight: 600;
+    }
+
+    /deep/ .nutrition-bar {
+        width: 90%;
+        transform: translate(5%, 0);
+    }
+
+    /deep/ .nutrition-bar {
+        width: 90%;
+        transform: translate(5%, 0);
+    }
+
+    .summary-nutrition-title{
+        font-size: 150%;
+        font-weight: 600;
+    }
   </style>
   

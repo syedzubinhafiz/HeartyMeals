@@ -73,7 +73,7 @@
   .label-grid-left {
     grid-area: label-grid-left;
     text-align: left;
-    font-size: 90%;
+    font-size: 110%;
   }
 
   .label-grid-right {

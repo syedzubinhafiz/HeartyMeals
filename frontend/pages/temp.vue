@@ -37,12 +37,16 @@
 
         <!-- section 2 -->
         <div class="section flex items-center justify-center">
+            <div>
+                <img src="~/assets/img/main-landing-page-2-top-background.svg" style="transform: scale(0.8);"></img>
+                <div class="section-text">Today's Budget</div>
+            </div>
             <div class="section-2-container-grid">
                 <div class="section-2-container-left-grid">
                     <WaterDroplet :maxVolume="maxVolume" :remainingVolume="remainingVolume"/>
                 </div>
                 <div class="section-2-container-right-grid">
-                    <NutritionWidget :nutrients="nutrients"/>
+                    <NutritionWidgetCurve :nutrients="nutrients"/>
                 </div>
             </div>
             <!-- <div class="flex-1 h-25">
@@ -146,11 +150,13 @@ const scrollContainer = ref(null);
 import { ref, computed, onMounted, watch } from 'vue';
 import NutrientData from '../../classes/nutrientData.js'
 import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
-import NutritionWidget from '~/components/Nutrient/NutritionWidget.vue';
+import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 
-const maxNutrientData = ref(null)
-const nutrientData = ref(null)
+/**
+ * Section 2 code
+ */
 
+ // water budget
 const maxVolume = ref(0);
 const remainingVolume = ref(0);
 
@@ -203,20 +209,20 @@ const nutrients = ref([
       cholesterol: 2000
     },
     {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    },
+    {
       calories: 1800,
       carbs: 1800,
       protein: 1800,
       fat: 1800,
       sodium: 1800,
       cholesterol: 1800
-    },
-    {
-      calories: 1400,
-      carbs: 1400,
-      protein: 1400,
-      fat: 1400,
-      sodium: 1400,
-      cholesterol: 1400
     }
   ]);
 
@@ -289,6 +295,8 @@ html {
     scroll-snap-align: start;
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Section 1 Styles */
@@ -506,6 +514,15 @@ html {
     }
 }
 
+.section-text {
+    position: absolute;
+    top: 112%; /* Adjust the distance from the top */
+    left: 50%;
+    transform: translateX(-50%); /* Center the text horizontally */
+    font-size: 200%; /* Adjust the text size */
+    font-weight: bold; /* Make the text bold */
+}
+
 .section-2-container-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -516,7 +533,6 @@ html {
 
 .section-2-container-left-grid {
     grid-area: left;
-
 }
 
 /deep/ .svg-container{
@@ -525,8 +541,10 @@ html {
 
 .section-2-container-right-grid {
     grid-area: right;
-    margin-left: auto;
-    margin-right: auto;
+}
+
+/deep/ .budget-container{
+    transform: scale(0.85);
 }
 </style>
 

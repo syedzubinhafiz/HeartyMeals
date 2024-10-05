@@ -86,8 +86,6 @@
     watch([() => props.remainingVolume, () => props.maxVolume], ([newRemainingVolume, newMaxVolume]) => {
         remainingVolume.value = newRemainingVolume;
         maxVolume.value = newMaxVolume;
-        // Any logic to update the fill or reactivity based on new values
-        console.log(`remainingVolume: ${newRemainingVolume}, maxVolume: ${newMaxVolume}`);
     });
 
     // Compute the fill percentage based on the updated values

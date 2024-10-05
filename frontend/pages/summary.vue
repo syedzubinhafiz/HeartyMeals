@@ -23,8 +23,7 @@
                   </div>
 
                 <div class="right-container">
-                  <div class="summary-nutrition-widget">
-                    <span class="summary-nutrition-title">Total Nutrition</span>
+                  <div>
                     <NutritionWidget :nutrients="nutrients"/>
                   </div>
                 </div>
@@ -32,7 +31,7 @@
         </div>
   <div class="button-container"> 
     <button class="done-button" @click="handleDoneClick">
-        <img src="/assets/img/done-icon.svg" alt="done" class="done-icon"/>
+        <img src="/assets/icon/Done-Icon.svg" alt="done" class="done-icon"/>
         Done
     </button>
     </div> 
@@ -271,30 +270,6 @@ console.log(useMealLogging().unsavedMealList)
 .right-container{
     grid-area: right;
     padding: 5%;
-}
-
-.summary-nutrition-widget{
-  width: clamp(30%,50%,70%);
-  height: clamp(30%,80%,80%);
-  background-color: #F3EADA;
-  padding: 4%;
-  border-radius: 15%;
-  box-shadow: 0px 4px 16.2px -1px rgba(0,0,0,0.1);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.summary-nutrition-title{
-  font-size: 150%;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.summary-container {
-    width: 50%;
-    overflow-y: auto;
-    height: calc(3 * 120px); /* Assumes each SummaryCard is about 120px high */
-    padding-right: 20px;
 }
 
 .back-button {
