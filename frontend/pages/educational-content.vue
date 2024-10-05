@@ -239,6 +239,7 @@ const handleClickOutside = (event) => {
   height: 65%;
   margin-top: 10px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .aligned-paragraph {
@@ -257,5 +258,25 @@ const handleClickOutside = (event) => {
 .filter-button {
   cursor: pointer;
   height: 70%;
+}
+/* WebKit browsers (Chrome, Safari) */
+.search-result-container::-webkit-scrollbar {
+  width: 12px; /* Adjust scrollbar width */
+}
+
+.search-result-container::-webkit-scrollbar-track {
+  background: #dac2a8; /* Scrollbar track color */
+}
+
+.search-result-container::-webkit-scrollbar-thumb {
+  background-color: #015B59; /* Scrollbar thumb color */
+  border-radius: 10px; /* Make the scrollbar rounded */
+  border: 3px solid #dac2a8; /* Add border around the thumb to match the track */
+}
+
+/* Firefox */
+.search-result-container {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #015B59 #dac2a8; /* Thumb and track colors */
 }
 </style>
