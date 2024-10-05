@@ -107,37 +107,6 @@ const onClickButton = async () => {
 
 const { $axios } = useNuxtApp();
 
-import image1 from 'assets/img/LandingPage/image1.jpeg';
-import image2 from 'assets/img/LandingPage/image2.jpeg';
-import image3 from 'assets/img/LandingPage/image3.jpeg';
-import image4 from 'assets/img/LandingPage/image4.jpeg';
-
-// Import the local background image
-import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
-
-const cardData = [
-{
-    title: "Best Healthy Restaurants in Manila",
-    description: "Explore Manila healthily with this travel guide updated to 2024.",
-    image: image1
-},
-{
-    title: "Best Healthy Restaurants in Manila",
-    description: "Explore Manila healthily with this travel guide updated to 2024.",
-    image: image2
-},
-{
-    title: "Best Healthy Restaurants in Manila",
-    description: "Explore Manila healthily with this travel guide updated to 2024, with over 10 restaurants marked all around Manila!",
-    image: image3
-},
-{
-    title: "Best Healthy Restaurants in Manila",
-    description: "Explore Manila healthily with this travel guide updated to 2024.",
-    image: image4
-}
-];
-
 // Create a reactive style object
 const backgroundStyle = ref({
 background: `url(${backgroundImage}) no-repeat center center`,
@@ -147,10 +116,35 @@ height: '980px' // Adjust the height as needed
 
 const scrollContainer = ref(null);
 
+// scrolling behaviour
+onMounted(async() => {
+    const sections = document.querySelectorAll('.section');
+    let currentSection = 0;
+
+    const scrollToSection = (index) => {
+        if (index >= 0 && index < sections.length) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+        currentSection = index;
+        }
+    };
+
+    const handleWheel = (event) => {
+        if (event.deltaY > 0) {
+        scrollToSection(currentSection + 1);
+        } else {
+        scrollToSection(currentSection - 1);
+        }
+    };
+
+    scrollContainer.value.addEventListener('wheel', handleWheel);
+});
+
 import { ref, computed, onMounted, watch } from 'vue';
-import NutrientData from '../../classes/nutrientData.js'
+import { useToast } from 'vue-toast-notification';
 import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
+import MealCard from '~/components/MealCard.vue';
+import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
 
 /**
  * Section 2 code
@@ -226,41 +220,40 @@ const nutrients = ref([
     }
   ]);
 
-onMounted(async() => {
-    const sections = document.querySelectorAll('.section');
-    let currentSection = 0;
+/**
+ * Section 3 code
+ */
 
-    const scrollToSection = (index) => {
-        if (index >= 0 && index < sections.length) {
-        sections[index].scrollIntoView({ behavior: 'smooth' });
-        currentSection = index;
-        }
-    };
+const cardData = ref([]);
 
-    const handleWheel = (event) => {
-        if (event.deltaY > 0) {
-        scrollToSection(currentSection + 1);
+const getEducationalContent = async () => {
+    // get educational content
+    try {
+        const response = await $axios.get(`/education/get`);
+        if (response.status === 200){
+            console.log(response.data)
+            const educationalContent = response.data;
+            const randomNumbers = new Set();
+
+            while (randomNumbers.size < 4) {
+                randomNumbers.add(Math.floor(Math.random() * educationalContent.length));
+            }
+
+            for (let i of randomNumbers) {
+                cardData.value.push({
+                    title: educationalContent[i].title,
+                    description: educationalContent[i].summary,
+                    image: educationalContent[i].storage_links.thumbnail
+                });
+            }
         } else {
-        scrollToSection(currentSection - 1);
+            console.log(response);
         }
-    };
-
-    scrollContainer.value.addEventListener('wheel', handleWheel);
-
-    await useApi("/dietary","GET")
-
-    let currentDate = new Date()
-    currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
-
-    let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
-    console.log(result)
-
-    maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-    nutrientData.value = NutrientData.fromApi2(result.value[1])
-});
-
-
+    } catch (e) {
+        useToast().error("Failed to get educational content")
+    }
+}
+onMounted(getEducationalContent);
 </script>
 
 <style scoped>
