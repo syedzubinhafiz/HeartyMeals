@@ -55,9 +55,6 @@ export class MealLoggingService {
             // Create a map of recipe objects for easy access
             const recipe_map = new Map(recipes_object.map(recipe => [recipe.id, recipe]));
 
-            // get the date in UTC
-            const meal_date = fromZonedTime(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.timeZone);
-
             // Use Promise.all to ensure all promises are resolved before proceeding with saving the entries
             await Promise.all(addMealLoggingSummaryDTO.recipeIdPortions.map(async recipeJSON => {
                 // Validate recipeId
@@ -68,7 +65,6 @@ export class MealLoggingService {
 
                 // Create entries to store in saved_entries
                 var new_meal_logging = new MealLogging();
-                new_meal_logging.consumed_date_time = meal_date;
                 new_meal_logging.type = addMealLoggingSummaryDTO.mealType;
                 new_meal_logging.portion = recipeJSON['portion'];
                 new_meal_logging.user = user_object;
@@ -77,10 +73,12 @@ export class MealLoggingService {
                 // Check if the meal is consumed or planned
                 if (!addMealLoggingSummaryDTO.isMealPlanning){
                     // meal logging
+                    new_meal_logging.consumed_date_time = fromZonedTime(addMealLoggingSummaryDTO.userLocalDateTime, addMealLoggingSummaryDTO.timeZone);
                     new_meal_logging.is_consumed = true;
                 }
                 else {
                     // meal planning
+                    new_meal_logging.consumed_date_time = fromZonedTime(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.timeZone);
                     new_meal_logging.is_consumed = false;
                 }
 
@@ -157,6 +155,7 @@ export class MealLoggingService {
                     // get the entries for each date
                     // sort by meal type
                     entries_group_by_date[date].forEach(entry => {
+                        entry.consumed_date_time = formatInTimeZone(entry.consumed_date_time, getMealLoggingDTO.timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX");
                         if (entry.type == MealType.BREAKFAST){
                             sorted["Breakfast"].push(entry);
                         }
@@ -244,7 +243,6 @@ export class MealLoggingService {
             const old_meal_type = entry.type;
 
             // update the meal logging object
-            entry.updated_at = fromZonedTime(payload.userLocalDate, payload.timeZone);
             entry.portion = payload.portion;
             entry.type = payload.mealType;
 
