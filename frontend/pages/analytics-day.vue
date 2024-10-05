@@ -149,16 +149,16 @@ const getData = async () => {
   console.log(currentDate)
   analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
   console.log(analyticsData.value)
-  breakfastTotal.value = analyticsData.value.value.Breakfast_total
-  breakfastList.value = analyticsData.value.value.Breakfast
-  lunchTotal.value = analyticsData.value.value.Lunch_total
-  lunchList.value = analyticsData.value.value.Lunch
-  dinnerTotal.value = analyticsData.value.value.Dinner_total
-  dinnerList.value = analyticsData.value.value.Dinner
-  otherTotal.value = analyticsData.value.value.Other_total
-  otherList.value = analyticsData.value.value.Other
+  breakfastTotal.value = analyticsData.value.value.breakfast_total
+  breakfastList.value = analyticsData.value.value.breakfast
+  lunchTotal.value = analyticsData.value.value.lunch_total
+  lunchList.value = analyticsData.value.value.lunch
+  dinnerTotal.value = analyticsData.value.value.dinner_total
+  dinnerList.value = analyticsData.value.value.dinner
+  otherTotal.value = analyticsData.value.value.other_total
+  otherList.value = analyticsData.value.value.other
 
-
+  console.log(analyticsData.value.value)
   let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
   console.log(result);
 
