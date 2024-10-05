@@ -1,16 +1,11 @@
 <template>
   <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
-    <!-- Banner for Not Consumed -->
-    <div v-if="!is_consumed" class="not-consumed-banner absolute top-0 left-0 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-br-lg">
-      Not Consumed
-    </div>
-
     <!-- Food Image -->
     <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
     <!-- Food Name -->
-    <div class="ml-4 flex-1">
-      <h3 class="text-lg font-semibold">{{ cardInfo.recipe.name }}</h3>
+    <div class="ml-2 flex-1">
+      <h3 class="text-xs">{{ cardInfo.recipe.name }}</h3>
     </div>
 
     <!-- More Options Icon -->
@@ -23,12 +18,9 @@
         :nutritionInfo="cardInfo.recipe.nutrition_info"
         :visible="showMiniCard" 
         :showButtons="isToday"  
-        :isConsumed="is_consumed"
         @close="toggleMiniCard" 
         @remove="removeMeal" 
-        @editMeal="$emit('editMeal', $event)"
-        @consumeMeal="toggleConsumed" 
-    />
+        @editMeal="$emit('editMeal', $event)"/>
   </div>
 </template>
 
@@ -45,7 +37,6 @@ const props = defineProps({
     required: true
   }
 });
-const is_consumed = ref(false);
 
 const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
@@ -69,38 +60,24 @@ const removeMeal = async () => {
   });
   console.log(result);
 };
-
-const toggleConsumed = () => {
-  is_consumed.value = !is_consumed.value;
-};
 </script>
+
 
 <style scoped>
 .food-card {
-  background-color: #F3EADA; /* Use your preferred background color */
+  background-color: rgba(218, 194, 168, 0.5);
+  margin: 5px;
+
   position: relative; /* Ensure the position is relative so that the child absolute element is positioned relative to this parent */
 }
 
 .food-image {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
 }
 
 .food-card:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add a hover effect */
-}
-
-.not-consumed-banner {
-  /* Banner styles for "Not Consumed" */
-  background-color: #e3342f; /* Red color */
-  color: white;
-  font-size: 0.75rem; /* Small text */
-  font-weight: bold;
-  padding: 4px 8px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  border-bottom-right-radius: 5px; /* Rounded corner for bottom-right */
 }
 </style>

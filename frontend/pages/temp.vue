@@ -21,10 +21,12 @@
                             <img src="/assets/img/logging-icon.png" alt="Meal Logging" /> Meal Logging
                         </button>
                     </NuxtLink>
+                    <NuxtLink to="/meal-planning">
+                        <button class="custom-button">
+                            <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
+                        </button>
+                    </NuxtLink>
 
-                    <button class="custom-button">
-                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
-                    </button>
                 </div>
                 
             </div>
@@ -156,11 +158,11 @@ onMounted(async() => {
     let currentDate = new Date()
         currentDate = currentDate.toISOString().split('T')[0];
 
-        let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
+        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
         console.log(result)
 
-        maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0])
-        nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1])
+        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
+        nutrientData.value = NutrientData.fromApi2(result.value[1])
 });
 
 
