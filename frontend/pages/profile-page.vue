@@ -5,22 +5,118 @@
   
       <!-- Profile Page Content -->
       <div class="profile-page">
-        <div class="profile-header">
+        <!-- Full-width Profile Header -->
+        <div class="profile-header full-width">
           <div class="profile-avatar">
             <!-- Placeholder for avatar -->
             <img src="../assets/img/ProfilePIc.png" alt="Avatar" />
           </div>
           <div class="profile-info">
-            <h2>{{ user.name }}</h2>
+            <h2 class="profile-name">{{ user.name }}</h2>
           </div>
-          <button class="edit-btn">Edit Profile</button>
+          <div class="header-buttons">
+            <button class="edit-btn" @click="toggleEditMode">
+              <img src="../assets/img/Edit_fill.png" alt="Edit Icon" class="edit-icon" />
+              {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+            </button>
+            <button v-if="isEditing" class="apply-btn" @click="applyChanges">Apply Changes</button>
+          </div>
         </div>
   
-        <!-- Main Information Section -->
-        <div class="info-section">
-          <div class="info-row" v-for="(value, key) in userDetails" :key="key">
-            <span class="info-label">{{ key }}</span>
-            <span class="info-value">{{ value }}</span>
+        <!-- Profile Sections (Main Section and Nutrition Information) -->
+        <div class="profile-sections">
+          <!-- Main Section -->
+          <div class="main-section">
+            <!-- Main Information Section -->
+            <div class="info-section">
+              <!-- View Mode (Non-editable) -->
+              <div v-if="!isEditing">
+                <div class="info-row" v-for="(value, key) in userDetails" :key="key">
+                  <span class="info-label">{{ key }}</span>
+                  <span class="info-value">{{ value }}</span>
+                </div>
+              </div>
+  
+              <!-- Edit Mode (Editable) -->
+              <div v-else>
+                <form @submit.prevent="saveProfile">
+                  <div class="info-row">
+                    <label class="info-label">Email</label>
+                    <input type="text" :value="user.email" disabled class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Name</label>
+                    <input type="text" :value="user.name" disabled class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Age</label>
+                    <input type="number" v-model="user.age" class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Weight</label>
+                    <input type="number" v-model="user.weight" class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Height</label>
+                    <input type="number" v-model="user.height" class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Gender</label>
+                    <input type="text" v-model="user.gender" class="info-value" />
+                  </div>
+                  <div class="info-row">
+                    <label class="info-label">Country</label>
+                    <input type="text" v-model="user.country" class="info-value" />
+                  </div>
+                  <button type="submit" class="save-btn green-btn">Save Profile</button>
+                </form>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Nutrition Information Section -->
+          <div class="nutrition-section">
+            <!-- Show Max Intake Budget in view mode -->
+            <div v-if="!isEditing" class="nutrition-card">
+              <h3 class="card-title">Max Intake Budget</h3>
+              <ul>
+                <li class="nutrition-row">
+                  <span class="nutrition-label">Carbs</span>
+                  <span class="nutrition-value">{{ carbs }} g</span>
+                </li>
+                <li class="nutrition-row">
+                  <span class="nutrition-label">Protein</span>
+                  <span class="nutrition-value">{{ protein }} g</span>
+                </li>
+                <li class="nutrition-row">
+                  <span class="nutrition-label">Fat</span>
+                  <span class="nutrition-value">{{ fat }} g</span>
+                </li>
+              </ul>
+            </div>
+  
+            <!-- Edit Nutrition Settings in edit mode -->
+            <div v-if="isEditing" class="nutrition-card">
+              <h3 class="card-title">Nutrition Settings</h3>
+              <div>
+                <label>Carbs: {{ carbsPercentage }}%</label>
+                <input type="range" min="0" max="100" v-model="carbsPercentage" />
+              </div>
+              <div>
+                <label>Protein: {{ proteinPercentage }}%</label>
+                <input type="range" min="0" max="100" v-model="proteinPercentage" />
+              </div>
+              <div>
+                <label>Fat: {{ fatPercentage }}%</label>
+                <input type="range" min="0" max="100" v-model="fatPercentage" />
+              </div>
+  
+              <!-- Red warning shown only if Save Settings is clicked and total percentage is not 100% -->
+              <div v-if="showWarning" class="warning">
+                The total must add up to 100%. Current: {{ totalPercentage }}%
+              </div>
+              <button @click="saveNutritionSettings" class="green-btn">Save Settings</button>
+            </div>
           </div>
         </div>
   
@@ -54,45 +150,80 @@
           </div>
         </div>
       </div>
-  
-      <!-- Footer component -->
       <Footer />
     </div>
   </template>
   
   <script>
-  import Header from "@/components/Header.vue"; // Adjust the import path accordingly
-  import Footer from "@/components/Footer.vue"; // Adjust the import path accordingly
-  
   export default {
-    components: {
-      Header,
-      Footer,
-    },
     data() {
       return {
+        isEditing: false,
+        showWarning: false,
         user: {
           name: "Alice Lebowski",
           email: "alicesmith@fakemail.com",
           age: 24,
+          weight: "65",
+          height: "165",
+          gender: "Female",
           country: "Sri Lanka",
-          condition: "Coronary artery disease",
           nyha: "II",
+          activityLevel: "3",
           dietaryPreferences: ["No Beef"],
           foodAllergies: ["Peanuts", "Shrimp", "Human Flesh"],
           medicalRestrictions: ["Low Sugar", "Low Sodium"],
         },
+        maxCalories: 2500, // Example max intake
+        carbsPercentage: 40,
+        proteinPercentage: 40,
+        fatPercentage: 20,
       };
     },
     computed: {
       userDetails() {
         return {
           Email: this.user.email,
+          Name: this.user.name,
           Age: this.user.age,
+          Weight: this.user.weight + " kg",
+          Height: this.user.height + " cm",
+          Gender: this.user.gender,
           Country: this.user.country,
-          Condition: this.user.condition,
           "NYHA Classification": this.user.nyha,
+          "Activity Level": this.user.activityLevel,
         };
+      },
+      carbs() {
+        return (this.maxCalories * this.carbsPercentage) / 4;
+      },
+      protein() {
+        return (this.maxCalories * this.proteinPercentage) / 4;
+      },
+      fat() {
+        return (this.maxCalories * this.fatPercentage) / 9;
+      },
+      totalPercentage() {
+        return this.carbsPercentage + this.proteinPercentage + this.fatPercentage;
+      },
+    },
+    methods: {
+      toggleEditMode() {
+        this.isEditing = !this.isEditing;
+      },
+      saveProfile() {
+        // Save profile data here
+      },
+      saveNutritionSettings() {
+        if (this.totalPercentage !== 100) {
+          this.showWarning = true;
+        } else {
+          this.showWarning = false;
+          // Save nutrition settings logic
+        }
+      },
+      applyChanges() {
+        this.isEditing = false;
       },
     },
   };
@@ -103,7 +234,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #DAC2A8;
+    background-color: #dac2a8;
   }
   
   .profile-page {
@@ -113,20 +244,23 @@
     justify-content: flex-start;
     padding: 20px;
     box-sizing: border-box;
-    background-color: #DAC2A8;
+    background-color: #dac2a8;
   }
   
-  .profile-header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    background-color: #F3EADA;
+  /* Full-width Profile Header */
+  .profile-header.full-width {
+    width: 100%;
+    background-color: #f3eada;
     padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-radius: 10px;
+    margin-bottom: 20px;
   }
   
   .profile-avatar {
-    flex: 1;
+    flex: 0 0 100px; /* Control avatar width */
   }
   
   .profile-avatar img {
@@ -135,22 +269,52 @@
   }
   
   .profile-info {
-    flex: 3;
-    margin-left: 20px;
+    flex-grow: 1;
+    margin-left: 10px; /* Bring name closer to the avatar */
+  }
+  
+  .profile-name {
+    font-size: 2rem;
+    margin: 0;
+    font-weight: bold;
   }
   
   .edit-btn {
-    flex: 1;
-    background-color: #ff9800;
+    display: flex;
+    align-items: center;
+    background-color: #ff9770;
     color: white;
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .edit-btn:hover {
+    background-color: #ff8a57;
+  }
+  
+  .edit-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+  }
+  
+  /* Profile Sections - Main and Nutrition Information */
+  .profile-sections {
+    display: flex;
+    justify-content: flex-start; /* Start both sections from the left */
+    width: 100%; /* Ensure the sections take up the full width */
+  }
+  
+  .main-section {
+    flex: 1; /* Take up as much space as needed */
   }
   
   .info-section {
-    margin-top: 20px;
-    background-color: #F3EADA;
+    background-color: #f3eada;
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -161,7 +325,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px;
-    background-color: #FFFEF1;
+    background-color: #fffef1;
     border-radius: 25px;
     margin-bottom: 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
@@ -181,45 +345,120 @@
     text-align: right;
   }
   
-  /* Style for the detail cards */
-.profile-details {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
+  /* Nutrition Section */
+  .nutrition-section {
+    flex: 0 0 350px; /* Fixed width for the nutrition section */
+    margin-left: 20px; /* Add some space between the two sections */
+  }
+  
+  .nutrition-card {
+    background-color: #f3eada;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nutrition-row {
+    background-color: #fffef1;
+    border-radius: 25px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nutrition-label {
+    font-weight: bold;
+    color: black;
+  }
+  
+  .nutrition-value {
+    font-weight: normal;
+    color: black;
+  }
+  
+  /* Profile Details Section */
+  .profile-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .detail-card {
+    background-color: #f3eada;
+    border-radius: 15px;
+    padding: 20px;
+    width: 30%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  
+  .detail-row {
+    background-color: #fffef1;
+    border-radius: 25px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .detail-value {
+    color: black;
+    font-weight: normal;
+    width: 100%;
+  }
 
-.detail-card {
-  background-color: #F3EADA;
-  border-radius: 15px;
-  padding: 20px;
-  width: 30%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 15px;
-  text-align: center; /* Center align the title */
-}
-
-.detail-row {
-  background-color: #FFFEF1;
-  border-radius: 25px;
-  padding: 10px 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  .edit-btn {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center horizontally */
-  text-align: center; /* Center text within the row */
+  background-color: #ff9770;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.detail-value {
-  color: black;
+.apply-btn {
+  display: flex;
+  align-items: center;
+  background-color: #4CAF50; /* Apply button green */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
   font-weight: bold;
-  text-align: start; /* Ensure text is centered */
-  width: 100%; /* Make sure text takes full width of the container */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.green-btn {
+  background-color: #4CAF50; /* Save buttons green */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.warning {
+  color: red;
+  margin-top: 10px;
 }
   </style>
   
