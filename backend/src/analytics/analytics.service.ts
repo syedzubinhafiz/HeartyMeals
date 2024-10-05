@@ -61,20 +61,72 @@ export class AnalyticsService {
                 .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
                 .getOne();
 
+
+            if (meal_logging_summary == null) {
+                                return {
+                    "daily_budget": {
+                        "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
+                        "protein": parseFloat(user.daily_budget[DATA_LIST[1][1]].toFixed(2)),
+                        "carbohydrates": parseFloat(user.daily_budget[DATA_LIST[2][1]].toFixed(2)),
+                        "fat": parseFloat(user.daily_budget[DATA_LIST[3][1]].toFixed(2)),
+                        "cholesterol": parseFloat(user.daily_budget[DATA_LIST[4][1]].toFixed(2)),
+                        "sodium": parseFloat(user.daily_budget[DATA_LIST[5][1]].toFixed(2)),
+                    },
+                    "remaining_nutrients": {
+                        "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
+                        "protein": parseFloat(user.daily_budget[DATA_LIST[1][1]].toFixed(2)),
+                        "carbohydrates": parseFloat(user.daily_budget[DATA_LIST[2][1]].toFixed(2)),
+                        "fat": parseFloat(user.daily_budget[DATA_LIST[3][1]].toFixed(2)),
+                        "cholesterol": parseFloat(user.daily_budget[DATA_LIST[4][1]].toFixed(2)),
+                        "sodium": parseFloat(user.daily_budget[DATA_LIST[5][1]].toFixed(2)),
+                    },
+                    "breakfast": [],
+                    "breakfast_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "lunch": [],
+                    "lunch_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "dinner": [],
+                    "dinner_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    },
+                    "other": [],
+                    "other_total": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbohydrates": 0,
+                        "fat": 0,
+                        "cholesterol": 0,
+                        "sodium": 0
+                    }
+                };
+
+            }
+
             
             const meal_logging_ids = MEAL_TYPE.flatMap(meal => meal_logging_summary.food_consumed[meal]);
+            
 
-            const meal_logging_map = await this.mealLoggingRepository.createQueryBuilder('meal_logging')
-            .leftJoinAndSelect("meal_logging.recipe", "recipe")
-            .where('meal_logging.id IN (:...ids)', { ids: meal_logging_ids })
-            .getMany()
-            .then(meal_logging_list => meal_logging_list.reduce((map, obj) => {
-                map[obj.id] = obj;
-                return map;
-            }, {}));
 
             // No record 
-            if (meal_logging_summary == null){
+            if (meal_logging_summary == null || meal_logging_ids.length == 0) {
                 return {
                     "daily_budget": {
                         "calories": parseFloat(user.daily_budget[DATA_LIST[0][1]].toFixed(2)),
@@ -131,6 +183,15 @@ export class AnalyticsService {
                 };
 
             } else { // Record exists
+
+                const meal_logging_map = await this.mealLoggingRepository.createQueryBuilder('meal_logging')
+                    .leftJoinAndSelect("meal_logging.recipe", "recipe")
+                    .where('meal_logging.id IN (:...ids)', { ids: meal_logging_ids })
+                    .getMany()
+                    .then(meal_logging_list => meal_logging_list.reduce((map, obj) => {
+                        map[obj.id] = obj;
+                        return map;
+                    }, {}));
 
                 // Initialize the result object
                 const result =  {
@@ -304,7 +365,7 @@ export class AnalyticsService {
             // Calculate the average daily consumption and the difference between the daily budget and the average daily consumption
             DATA_LIST.forEach((nutrient) => {
                 result[nutrient[0]]["average_daily"] = parseFloat((total_consumption[nutrient[0]] / numberOfDays).toFixed(2));
-                result[nutrient[0]]["difference"] = parseFloat((user.daily_budget[nutrient[1]] - result[nutrient[0]]["average_daily"]).toFixed(2));
+                result[nutrient[0]]["difference"] = parseFloat((result[nutrient[0]]["average_daily"] - user.daily_budget[nutrient[1]]).toFixed(2));
                 result[nutrient[0]]["percentage_of_daily_budget"] = parseFloat((day_under_budget[nutrient[0]] / numberOfDays * 100).toFixed(2));
             });
 
