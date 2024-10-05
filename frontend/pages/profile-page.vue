@@ -15,11 +15,14 @@
             <h2 class="profile-name">{{ user.name }}</h2>
           </div>
           <div class="header-buttons">
+            <!-- Apply Changes Button -->
+            <button v-if="isEditing" class="apply-btn" @click="applyChanges">Apply Changes</button>
+  
+            <!-- Edit / Cancel Button -->
             <button class="edit-btn" @click="toggleEditMode">
               <img src="../assets/img/Edit_fill.png" alt="Edit Icon" class="edit-icon" />
               {{ isEditing ? 'Cancel' : 'Edit Profile' }}
             </button>
-            <button v-if="isEditing" class="apply-btn" @click="applyChanges">Apply Changes</button>
           </div>
         </div>
   
@@ -39,37 +42,44 @@
   
               <!-- Edit Mode (Editable) -->
               <div v-else>
-                <form @submit.prevent="saveProfile">
-                  <div class="info-row">
-                    <label class="info-label">Email</label>
-                    <input type="text" :value="user.email" disabled class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Name</label>
-                    <input type="text" :value="user.name" disabled class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Age</label>
-                    <input type="number" v-model="user.age" class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Weight</label>
-                    <input type="number" v-model="user.weight" class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Height</label>
-                    <input type="number" v-model="user.height" class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Gender</label>
-                    <input type="text" v-model="user.gender" class="info-value" />
-                  </div>
-                  <div class="info-row">
-                    <label class="info-label">Country</label>
-                    <input type="text" v-model="user.country" class="info-value" />
-                  </div>
-                  <button type="submit" class="save-btn green-btn">Save Profile</button>
-                </form>
+                <div class="info-row">
+                  <label class="info-label">Email</label>
+                  <input type="text" :value="user.email" disabled class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Name</label>
+                  <input type="text" :value="user.name" disabled class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Age</label>
+                  <input type="number" v-model="user.age" class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Weight</label>
+                  <input type="number" v-model="user.weight" class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Height</label>
+                  <input type="number" v-model="user.height" class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Gender</label>
+                  <input type="text" v-model="user.gender" class="info-value" />
+                </div>
+                <div class="info-row">
+                  <label class="info-label">Country</label>
+                  <input type="text" v-model="user.country" class="info-value" />
+                </div>
+                <!-- Editable NYHA Classification -->
+                <div class="info-row">
+                  <label class="info-label">NYHA Classification</label>
+                  <input type="text" v-model="user.nyha" class="info-value" />
+                </div>
+                <!-- Editable Activity Level -->
+                <div class="info-row">
+                  <label class="info-label">Activity Level</label>
+                  <input type="text" v-model="user.activityLevel" class="info-value" />
+                </div>
               </div>
             </div>
           </div>
@@ -100,22 +110,21 @@
               <h3 class="card-title">Nutrition Settings</h3>
               <div>
                 <label>Carbs: {{ carbsPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="carbsPercentage" />
+                <input type="range" min="0" max="100" v-model="carbsPercentage" @input="resetWarning" />
               </div>
               <div>
                 <label>Protein: {{ proteinPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="proteinPercentage" />
+                <input type="range" min="0" max="100" v-model="proteinPercentage" @input="resetWarning" />
               </div>
               <div>
                 <label>Fat: {{ fatPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="fatPercentage" />
+                <input type="range" min="0" max="100" v-model="fatPercentage" @input="resetWarning" />
               </div>
   
-              <!-- Red warning shown only if Save Settings is clicked and total percentage is not 100% -->
+              <!-- Red warning shown only if total percentage is not 100% -->
               <div v-if="showWarning" class="warning">
                 The total must add up to 100%. Current: {{ totalPercentage }}%
               </div>
-              <button @click="saveNutritionSettings" class="green-btn">Save Settings</button>
             </div>
           </div>
         </div>
@@ -211,19 +220,17 @@
       toggleEditMode() {
         this.isEditing = !this.isEditing;
       },
-      saveProfile() {
-        // Save profile data here
+      resetWarning() {
+        this.showWarning = false; // Reset the warning on input change
       },
-      saveNutritionSettings() {
+      applyChanges() {
         if (this.totalPercentage !== 100) {
           this.showWarning = true;
         } else {
           this.showWarning = false;
-          // Save nutrition settings logic
+          this.isEditing = false;
+          // Save all the changes here
         }
-      },
-      applyChanges() {
-        this.isEditing = false;
       },
     },
   };
@@ -419,7 +426,17 @@
     width: 100%;
   }
 
-  .edit-btn {
+  .header-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.edit-btn {
   display: flex;
   align-items: center;
   background-color: #ff9770;
@@ -430,6 +447,7 @@
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-left: 10px;
 }
 
 .apply-btn {
