@@ -53,7 +53,7 @@
             </div>
             <div class="flex">
                 <div class="grow p-2">
-                    <CustomDishIngredientList :columns="1" :ingredientList="meal.components.ingredient.map((val)=>{return IngredientData.fromApi(val)})" class="w-full"/>
+                    <CustomDishIngredientList :columns="1" :ingredientList="meal.components.ingredients.map((val)=>{return IngredientData.fromApi(val)})" class="w-full"/>
                 </div>
                 <div class="flex items-end min-h-full">
                     <ButtonGreen @click="onAddMeal">Add to Stomach</ButtonGreen>

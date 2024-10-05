@@ -113,43 +113,36 @@ const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, c
 
 const calculateNutrition = async () => {
   let currentDate = new Date();
-  currentDate.setHours(0,0,0,0);
-  currentDate = currentDate.toISOString();
+  currentDate = currentDate.toISOString().split('T')[0];
 
   console.log(mealType.value);
 
-  let body = {
-    "mealDate": `${currentDate}`,
-    "recipeIdPortions": recipePortion.value,
-    "mealType": `${mealType.value}`
-  };
-
-  let result = await useApi("/meal-log-summary/calculate", "POST", body);
+  let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
   console.log(recipePortion.value)
   console.log(result);
 
-  userBudget.calories = (result.value[0].calories);
-  userBudget.carbs = result.value[0].carbs;
-  userBudget.protein = result.value[0].protein;
-  userBudget.fats = result.value[0].fats;
-  userBudget.sodium = result.value[0].sodium;
-  userBudget.cholesterol = result.value[0].cholesterol;
+  userBudget.calories = (result.value[currentDate][0].calories);
+  userBudget.carbs = result.value[currentDate][0].carbs;
+  userBudget.protein = result.value[currentDate][0].protein;
+  userBudget.fats = result.value[currentDate][0].fats;
+  userBudget.sodium = result.value[currentDate][0].sodium;
+  userBudget.cholesterol = result.value[currentDate][0].cholesterol;
 
-  alreadyLog.calories = result.value[0].calories - result.value[1].calories;
-  alreadyLog.carbs = result.value[0].carbs - result.value[1].carbs;
-  alreadyLog.protein = result.value[0].protein - result.value[1].protein;
-  alreadyLog.fats = result.value[0].fats - result.value[1].fats;
-  alreadyLog.sodium = result.value[0].sodium - result.value[1].sodium;
-  alreadyLog.cholesterol = result.value[0].cholesterol - result.value[1].cholesterol;
+  alreadyLog.calories = result.value[currentDate][0].calories - result.value[currentDate][1].calories;
+  alreadyLog.carbs = result.value[currentDate][0].carbs - result.value[currentDate][1].carbs;
+  alreadyLog.protein = result.value[currentDate][0].protein - result.value[currentDate][1].protein;
+  alreadyLog.fats = result.value[currentDate][0].fats - result.value[currentDate][1].fats;
+  alreadyLog.sodium = result.value[currentDate][0].sodium - result.value[currentDate][1].sodium;
+  alreadyLog.cholesterol = result.value[currentDate][0].cholesterol - result.value[currentDate][1].cholesterol;
 
   console.log(alreadyLog);
 
-  aboutToLog.calories = result.value[0].calories - result.value[2].calories;
-  aboutToLog.carbs = result.value[0].carbs - result.value[2].carbs;
-  aboutToLog.protein = result.value[0].protein - result.value[2].protein;
-  aboutToLog.fats = result.value[0].fats - result.value[2].fats;
-  aboutToLog.sodium = result.value[0].sodium - result.value[2].sodium;
-  aboutToLog.cholesterol = result.value[0].cholesterol - result.value[2].cholesterol;
+  aboutToLog.calories = result.value[currentDate][0].calories - result.value[currentDate][2].calories;
+  aboutToLog.carbs = result.value[currentDate][0].carbs - result.value[currentDate][2].carbs;
+  aboutToLog.protein = result.value[currentDate][0].protein - result.value[currentDate][2].protein;
+  aboutToLog.fats = result.value[currentDate][0].fats - result.value[currentDate][2].fats;
+  aboutToLog.sodium = result.value[currentDate][0].sodium - result.value[currentDate][2].sodium;
+  aboutToLog.cholesterol = result.value[currentDate][0].cholesterol - result.value[currentDate][2].cholesterol;
 
   console.log(aboutToLog);
 

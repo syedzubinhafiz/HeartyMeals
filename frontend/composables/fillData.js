@@ -477,6 +477,7 @@ export const useFillData = () => {
         let result = await useApi("/meal-log-summary/add","POST",{
             "userLocalDateTime": date,
             "mealDate": date,
+            "timeZone": "Asia/Kuala_Lumpur",
             "recipeIdPortions": [
                 {
                     "recipeId": recipeId,
@@ -494,9 +495,10 @@ export const useFillData = () => {
         currentDate = currentDate.toISOString().split('T')[0]
         console.log(currentDate)
         // get
-        let data = await useApi(`/meal-logging/get?date=${currentDate}`,"GET")
+        let data = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
+        console.log(data)
         // if no data, fill
-        if(data.value.Breakfast.length==0 && data.value.Lunch.length==0 && data.value.Dinner.length==0 && data.value.Other.length==0) {
+        if(data.value[currentDate].meals.Breakfast.length==0 && data.value[currentDate].meals.Lunch.length==0 && data.value[currentDate].meals.Dinner.length==0 && data.value[currentDate].meals.Other.length==0) {
             const recipes = await fillRecipes()
             let recipe = null
 

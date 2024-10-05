@@ -140,30 +140,30 @@
         // formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
         console.log(formattedCurrentDate)
         
-        let formattedISODate = formattedCurrentDate.toISOString();
+        let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
         console.log(formattedISODate)
 
         
         //formattedCurrentDate.setUTCHours(formattedCurrentDate.getUTCHours() + 8);
-        let formattedISODate8 = formattedCurrentDate.toISOString();
+        let formattedISODate8 = formattedCurrentDate.toISOString().split('T')[0];
         console.log(formattedISODate8);
 
 
-        let result = await useApi(`/user/budget?date=${formattedISODate8}`, "GET");
+        let result = await useApi(`/user/budget?startDate=${formattedISODate8}&timeZone=Asia/Kuala_Lumpur`, "GET");
         console.log(result);
 
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0]);
-        nutrientData.value = NutrientData.fromApi2(result.value[1]);
+        maxNutrientData.value = NutrientData.fromApi2(result.value[formattedISODate8][0]);
+        nutrientData.value = NutrientData.fromApi2(result.value[formattedISODate8][1]);
 
         let mealLoggingRecipes = await useFillData().fillMealLogging();
         console.log(mealLoggingRecipes)
         
-        let meals = await useApi(`/meal-logging/get?date=${formattedISODate8}`, "GET");
+        let meals = await useApi(`/meal-logging/get?startDate=${formattedISODate8}&timeZone=Asia/Kuala_Lumpur`, "GET");
         console.log(meals)
-        breakfastList.value = meals.value["Breakfast"];
-        lunchList.value = meals.value["Lunch"];
-        dinnerList.value = meals.value["Dinner"];
-        otherList.value = meals.value["Other"]; 
+        breakfastList.value = meals.value[formattedISODate8].meals["Breakfast"];
+        lunchList.value = meals.value[formattedISODate8].meals["Lunch"];
+        dinnerList.value = meals.value[formattedISODate8].meals["Dinner"];
+        otherList.value = meals.value[formattedISODate8].meals["Other"]; 
     };
 
     watch(currentDate, async () => {

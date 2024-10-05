@@ -156,13 +156,12 @@ onMounted(async() => {
     await useApi("/dietary","GET")
 
     let currentDate = new Date()
-        currentDate = currentDate.toISOString().split('T')[0];
+    currentDate = currentDate.toISOString().split('T')[0];
+    let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
+    console.log(result)
 
-        let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
-        console.log(result)
-
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-        nutrientData.value = NutrientData.fromApi2(result.value[1])
+    maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0])
+    nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1])
 });
 
 

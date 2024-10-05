@@ -175,11 +175,11 @@ const openEditMealPopup = (meal) => {
 const fetchDataForCurrentDate = async () => {
   const formattedDateStr = `${props.formattedDate} ${new Date().getFullYear()}`;
   let formattedCurrentDate = new Date(formattedDateStr);
-  let formattedISODate = formattedCurrentDate.toISOString();
+  let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
 
-  let result = await useApi(`/user/budget?date=${formattedISODate}`, "GET");
+  let result = await useApi(`/user/budget?startDate=${formattedISODate}&timeZone=Asia/Kuala_Lumpur`, "GET");
 
-  nutrientData.value = NutrientData.fromApi2(result.value[1]);
+  nutrientData.value = NutrientData.fromApi2(result.value[formattedISODate][1]);
 
   nutritionInfo.value = {
     totalCarbohydrate: nutrientData.value.carbohydrtates,

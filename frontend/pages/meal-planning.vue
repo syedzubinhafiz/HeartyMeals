@@ -90,19 +90,20 @@ async function generateWeekMeals(date) {
   for (let i = 0; i < 7; i++) {
     const day = new Date(date);
     day.setDate(date.getDate() - date.getDay() + i + 1);
-
+    const currentDate = day.toISOString().split('T')[0]
     // Fetch meal data (add error handling for API calls)
     try {
-      let meals = await useApi(`/meal-logging/get?date=${day.toISOString()}`, "GET");
-      let mealBudget = await useApi(`/user/budget?date=${day.toISOString()}`, "GET");
-      let remainingNutrients = mealBudget?.value[1] || {};
+      let meals = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+      let mealBudget = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+      let remainingNutrients = mealBudget?.value[currentDate][1] || {};
+      console.log(meals)
 
       let mealOverbudget = false;
       if (
         remainingNutrients.calories < 0 || 
         remainingNutrients.carbs < 0 || 
         remainingNutrients.cholesterol < 0 || 
-        remainingNutrients.fats < 0 || 
+        remainingNutrients.fat < 0 || 
         remainingNutrients.protein < 0 || 
         remainingNutrients.sodium < 0
       ) {
@@ -113,10 +114,10 @@ async function generateWeekMeals(date) {
         dayName: dayNames[day.getDay()],
         isoDate: day.toISOString(),
         formattedDate: formatDate(day),
-        breakfastList: meals?.value?.["Breakfast"] || [],
-        lunchList: meals?.value?.["Lunch"] || [],
-        dinnerList: meals?.value?.["Dinner"] || [],
-        otherList: meals?.value?.["Other"] || [],
+        breakfastList: meals?.value?.[currentDate].meals["Breakfast"] || [],
+        lunchList: meals?.value?.[currentDate].meals["Lunch"] || [],
+        dinnerList: meals?.value?.[currentDate].meals["Dinner"] || [],
+        otherList: meals?.value?.[currentDate].meals["Other"] || [],
         isToday: isToday(day),
         isPast: day < today && !isToday(day),
         isFuture: day > today && !isToday(day),

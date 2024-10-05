@@ -174,7 +174,7 @@ const selectedMeal = ref(null)
 
 const openOverlay = async (meal) => {
   const detailedMealInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
-  console.log(detailedMealInfo)
+  console.log(detailedMealInfo.value)
   selectedMeal.value = detailedMealInfo.value
   isOverlayVisible.value = true
 }
