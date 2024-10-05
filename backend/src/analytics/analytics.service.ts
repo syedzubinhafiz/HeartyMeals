@@ -364,7 +364,7 @@ export class AnalyticsService {
             // Calculate the average daily consumption and the difference between the daily budget and the average daily consumption
             DATA_LIST.forEach((nutrient) => {
                 result[nutrient[0]]["average_daily"] = parseFloat((total_consumption[nutrient[0]] / numberOfDays).toFixed(2));
-                result[nutrient[0]]["difference"] = parseFloat((user.daily_budget[nutrient[1]] - result[nutrient[0]]["average_daily"]).toFixed(2));
+                result[nutrient[0]]["difference"] = parseFloat((result[nutrient[0]]["average_daily"] - user.daily_budget[nutrient[1]]).toFixed(2));
                 result[nutrient[0]]["percentage_of_daily_budget"] = parseFloat((day_under_budget[nutrient[0]] / numberOfDays * 100).toFixed(2));
             });
 
