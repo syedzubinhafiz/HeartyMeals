@@ -40,7 +40,7 @@
           <EdContentCard 
             v-for="(content, index) in searchResults" 
             :key="index"
-            @click="openOverlay(content)"     
+            @click="openOverlay(content)"
           />
           <div v-if="isLoading" class="loading-indicator">Loading...</div>
         </div>
@@ -48,10 +48,12 @@
     </div>
 
     <EdContentOverlay
-      :visible="isOverlayVisible"
+      v-if="isOverlayVisible"
+      :show="isOverlayVisible"
       :header="overlayHeader"
       :imageSrc="overlayImageSrc"
       @close="isOverlayVisible = false"
+      @click.self="isOverlayVisible = false"
     />
 
     <footer class="footer">
@@ -203,7 +205,8 @@ const handleClickOutside = (event) => {
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: #F8F2E2;
+  margin-top:6%;
   width: 50%;
   border: 1px solid #ccc;
   border-radius: 50px;
@@ -213,6 +216,7 @@ const handleClickOutside = (event) => {
 .search-input {
   width: 100%;
   padding: 5px;
+  background-color:#F8F2E2
 }
 
 .search-input:focus {

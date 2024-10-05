@@ -3,7 +3,7 @@
       <div class="overlay-content">
         <!-- Background image -->
         <img src="/assets/img/centerBlob.svg" class="center-blob">
-        <button @click="closeOverlay" class="close-btn">X</button>
+        <!-- <button @click="closeOverlay" class="close-btn">X</button> -->
          <!-- Scrollable Content -->
       <div class="scrollable-content"></div>
         <!-- Header and Image on top of the background -->
