@@ -221,8 +221,8 @@ const handleClickOutside = (event) => {
 
 .search-result-item-display {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 15px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 50px;
   padding: 15px;
 }
 
@@ -235,7 +235,7 @@ const handleClickOutside = (event) => {
 }
 
 .search-result-container {
-  width: 60%;
+  width: 70%;
   height: 65%;
   margin-top: 10px;
   overflow-y: auto;
