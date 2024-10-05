@@ -28,10 +28,10 @@
         </div>
 
         <div class="edit-button-container">
-            <div :class="['remove-button', { 'disabled': !isToday(dishInfo.consumed_date_time) }]">
+            <div :class="['remove-button', { 'disabled': !isToday(dishInfo.consumed_date_time) }]" @click="removeMeal(dishInfo)">
                 Remove
             </div>
-            <div :class="['edit-button', {'disabled': !withinAWeek(dishInfo.consumed_date_time)}]">
+            <div :class="['edit-button', {'disabled': !withinAWeek(dishInfo.consumed_date_time)}]" @click="EditMealPopUp(dishInfo)">
                 Edit
             </div>
         </div>
@@ -77,26 +77,18 @@ export default {
         },
         hidePopup() {
             this.$emit('update:visible', !this.visible);
+        },
+        removeMeal(dishInfo) {
+            console.log(dishInfo);
+            this.$emit('remove', dishInfo);
+        },
+        EditMealPopUp(dishInfo) {
+            this.$emit('edit', dishInfo);
+            console.log(dishInfo);
         }
     },
 
-    methods: {
 
-        consumeMeal() {
-            if (!this.dishInfo.is_consumed) {
-                this.$emit('consume', this.dishInfo.id);
-            }
-        },
-        isToday(date) {
-            const today = new Date();
-            return isSameDay(new Date(date), today);
-        },
-        withinAWeek(date) {
-            const today = new Date();
-            const weekAgo = subDays(today, 7);
-            return isWithinInterval(new Date(date), { start: weekAgo, end: today });
-        }
-    }
 }
 </script>
 

@@ -50,6 +50,8 @@
                   :dishInfo="dish"
                   :mealLogTime="currentDate"                 
                   @consume="consumeMeal"
+                  @remove="openRemoveMealOverlay"
+                  @edit="editMeal"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -79,6 +81,7 @@
                   :dishInfo="dish"
                   :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
+                  @edit="openEditMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -150,7 +153,21 @@
       </div>
 
     </div>
-    
+   
+    <RemoveMealOverlay
+      :visible="removeMealOverlayVisible"
+      :mealInfo="removeMealInfo"
+      @close="removeMealOverlayVisible = false"
+      @removeLogMeal="removeLogMeal"
+    />
+
+    <EditMealOverlay
+      :visible="editMealOverlayVisible"
+      :mealInfo="editMealInfo"
+      @update:visible="editMealOverlayVisible = $event"
+      @editLogMeal="editLogMeal"
+    />
+
     <footer class="footer">
       <Footer></Footer>
     </footer>
@@ -164,10 +181,14 @@ import { useNuxtApp, useRuntimeConfig } from '#app';
 import leftBase from '@/assets/img/meal_logging/summary_left_base.svg';
 import rightBase from '@/assets/img/meal_logging/summary_right_base.svg';
 import { isSameDay } from 'date-fns';
+import RemoveMealOverlay from '~/components/Overlay/RemoveMealOverlay.vue';
+import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 
 definePageMeta({
   layout: 'emptylayout',
-  components: {},
+  components: {
+    RemoveMealOverlay
+  },
 });
 
 const { $axios } = useNuxtApp();
@@ -186,6 +207,13 @@ const loggedOther = ref([]);
 const otherDropdown = ref(false);
 
 const overlayVisibility = ref({});
+
+const removeMealOverlayVisible = ref(false);
+const removeMealInfo= ref(null);
+
+
+const editMealOverlayVisible = ref(false);
+const editMealInfo = ref(null);
 
 function toggleOverlayVisibility(dishId) {
  
@@ -341,6 +369,95 @@ async function consumeMeal(id){
   }
 }
 
+
+function openRemoveMealOverlay(mealInfo){
+  console.log("hi");
+  removeMealInfo.value = mealInfo;
+  removeMealOverlayVisible.value = true;
+}
+
+async function removeLogMeal(mealInfo){
+  const token =  localStorage.getItem('accessToken');
+  try{
+    await $axios.delete('/meal-logging/delete', {
+      mealDate: formatDate(mealInfo,consumed_date_time),
+      userLocalDate: formatDate(currentDate.value),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      mealLoggingId: mealInfo.id,
+      mealType: mealInfo.type
+    }
+    ,{
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+
+    });
+    await getMeals();
+
+  } catch(e) {
+    console.log(e);
+    useToast().error('Failed to remove meal');
+
+  }
+
+  removeMealOverlayVisible.value = false;
+}
+
+function openEditMealOverlay(mealInfo){
+  editMealInfo.value = mealInfo;
+  console.log(mealInfo);
+  editMealOverlayVisible.value = true;
+}
+
+
+async function editLogMeal(newValue){
+
+  let change_flag =  false;
+
+  if(newValue.mealType !== newValue.mealInfo.type){
+    change_flag = true;
+  }
+
+  if(newValue.portion !== newValue.mealInfo.portion){
+    change_flag = true;
+  }
+
+
+  if (change_flag){
+
+    const accessToken = localStorage.getItem('accessToken');
+    try {
+      const response =  await $axios.post('meal-logging/update', {
+        mealLoggingId: newValue.mealInfo.id,
+        mealType: newValue.mealType,
+        portion: newValue.portion,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        userLocalDate : formatDate(currentDate.value),
+        mealDate: newValue.mealInfo.consumed_date_time.split('T')[0],
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if(response.status === 200){
+        useToast().success('Meal updated successfully');
+        await getMeals();
+
+      } else {
+        useToast().error(response.data.message);
+      }
+      editMealOverlayVisible.value = false;
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    useToast().success('No changes made');
+    editMealOverlayVisible.value = false;
+  }
+}
 
 onMounted(async () => {
   await getMeals();
