@@ -49,7 +49,12 @@ const props = defineProps({
     default: (new Date())?.toISOString()
   }
 });
-const is_consumed = ref(false);
+const is_consumed = ref(props.cardInfo.is_consumed);
+
+onMounted(() => {
+  is_consumed.value = props.cardInfo.is_consumed
+  console.log(props.cardInfo.is_consumed)
+})
 
 const emit = defineEmits(['removeMeal', 'selectMeal', 'editMeal']);
 
@@ -81,7 +86,7 @@ const toggleConsumed = async () => {
 	"mealLoggingId": props.cardInfo.id
   })
   console.log(results)
-  if(!results.isError && results.response != null) {
+  if(!results.isError && results.status != 200) {
     is_consumed.value = true;
   } 
   else {
