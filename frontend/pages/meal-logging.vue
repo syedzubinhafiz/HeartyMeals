@@ -28,9 +28,9 @@
                             v-for="(card, index) in breakfastList" 
                             :key="index" 
                             :cardInfo="card" 
-                            :isToday="isToday" 
-                            v-model:mealList="breakfastList" 
+                            :isToday="isToday"  
                             class="mb-4" 
+                            @removeMeal="removeMeal('breakfastList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
                     </div>
@@ -43,8 +43,8 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
-                            v-model:mealList="lunchList" 
                             class="mb-4" 
+                            @removeMeal="removeMeal('lunchList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>                    
                         </div>
@@ -57,8 +57,8 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
-                            v-model:mealList="dinnerList" 
                             class="mb-4" 
+                            @removeMeal="removeMeal('dinnerList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>                    
                         </div>
@@ -71,8 +71,9 @@
                             :key="index" 
                             :cardInfo="card" 
                             :isToday="isToday"  
-                            v-model:mealList="otherList" 
                             class="mb-4" 
+                            :dateStr="currentDate?.toISOString()"
+                            @removeMeal="removeMeal('otherList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
                     </div>
@@ -88,17 +89,15 @@
         <div class="section flex flex-col justify-end fixed-footer ">
             <Footer />
         </div>
-        <div ref="popupRef">
-            <EditMealPopUp 
+
+        <EditMealPopUp 
             v-if="showEditPopup" 
             :key="selectedMealData?.id" 
             :visible="showEditPopup" 
             :mealData="selectedMealData.value" 
             @close="toggleEditPopup" 
             @save="saveMealChanges"
-            />
-        </div>
-
+        /> 
     </div>
 </template>
 
@@ -131,7 +130,7 @@
             newDate.setDate(newDate.getDate() - 1);
             currentDate.value = newDate;
         } else {
-            alert("You can only view up to 7 days of history.");
+            useToast().info("You can only view up to 7 days of history.")
         }
     };
 
@@ -139,6 +138,7 @@
         console.log(currentDate.value)
 
         let formattedCurrentDate = new Date(currentDate.value);
+        // formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
         console.log(formattedCurrentDate)
         
         let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
@@ -175,7 +175,7 @@
     const nextDate = () => {
     const newDate = new Date(currentDate.value);
         if (newDate.toDateString() === today.toDateString()) {
-            alert("You can't log your meal for tomorrow, consider going to the meal planning page.");
+            useToast().info("You can't log your meal for tomorrow, consider going to the meal planning page.")
         } else {
             newDate.setDate(newDate.getDate() + 1);
             currentDate.value = newDate;
@@ -203,32 +203,14 @@
         showEditPopup.value = !showEditPopup.value;
     };
 
-    const popupRef = ref(null);
-
-
     const openEditMealPopup = (mealInfo) => {
         console.log("Before assignment:", mealInfo);
         selectedMealData.value = mealInfo ? { ...mealInfo } : {}; // Ensure it's an object
         console.log("After assignment:", selectedMealData.value);
-        window.addEventListener('click', handleOutsideClick);
-        setTimeout(()=>{toggleEditPopup();},300)
+        showEditPopup.value = true;
         console.log("Popup visibility:", showEditPopup.value);
 
     };
-
-    const handleOutsideClick = (event) => {
-        if (popupRef.value && !popupRef.value.contains(event.target) && showEditPopup.value) {
-            setTimeout(()=>{
-            showEditPopup.value = false;
-            window.removeEventListener('click', handleOutsideClick);
-            },
-            300)
-        }
-    };
-
-    onUnmounted(() => {
-        window.removeEventListener('click', handleOutsideClick);
-    });
 
     const saveMealChanges = async (updatedMealInfo) => {
         console.log("mealdate: ", selectedMealData.value.created_at);
@@ -237,9 +219,8 @@
         console.log("mealtype", updatedMealInfo.mealType);
 
         let currentDate = new Date()
-        currentDate = currentDate.toISOString().split('T')[0]
-
-  
+        // currentDate.setUTCHours(-8, 0, 0, 0)
+        currentDate = currentDate.toISOString()
 
         const portionSize = Number(updatedMealInfo.portionSize);
         const mealType = String(updatedMealInfo.mealType);
