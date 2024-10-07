@@ -104,7 +104,7 @@
 <script setup>
     import { ref, computed, onMounted, watch, toRaw } from 'vue';
     import backgroundImage from '/assets/img/meal-logging-bg.png';
-    import NutrientData from '../../classes/nutrientData.js'
+    import NutrientData from '../classes/nutrientData.js'
   
     const currentDate = ref(new Date());
     

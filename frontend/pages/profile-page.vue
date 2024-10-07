@@ -1,240 +1,267 @@
 <template>
-    <div class="page-wrapper">
-      <!-- Header component -->
-      <Header />
-  
-      <!-- Profile Page Content -->
-      <div class="profile-page">
-        <!-- Full-width Profile Header -->
-        <div class="profile-header full-width">
-          <div class="profile-avatar">
-            <!-- Placeholder for avatar -->
-            <img src="../assets/img/ProfilePIc.png" alt="Avatar" />
-          </div>
-          <div class="profile-info">
-            <h2 class="profile-name">{{ user.name }}</h2>
-          </div>
-          <div class="header-buttons">
-            <!-- Apply Changes Button -->
-            <button v-if="isEditing" class="apply-btn" @click="applyChanges">Apply Changes</button>
-  
-            <!-- Edit / Cancel Button -->
-            <button class="edit-btn" @click="toggleEditMode">
-              <img src="../assets/img/Edit_fill.png" alt="Edit Icon" class="edit-icon" />
-              {{ isEditing ? 'Cancel' : 'Edit Profile' }}
-            </button>
-          </div>
+  <div class="page-wrapper">
+    <!-- Header component -->
+    <Header />
+
+    <!-- Profile Page Content -->
+    <div class="profile-page">
+      <!-- Full-width Profile Header -->
+      <div class="profile-header full-width">
+        <div class="profile-avatar">
+          <!-- Placeholder for avatar -->
+          <img src="../assets/img/ProfilePIc.png" alt="Avatar" />
         </div>
-  
-        <!-- Profile Sections (Main Section and Nutrition Information) -->
-        <div class="profile-sections">
-          <!-- Main Section -->
-          <div class="main-section">
-            <!-- Main Information Section -->
-            <div class="info-section">
-              <!-- View Mode (Non-editable) -->
-              <div v-if="!isEditing">
-                <div class="info-row" v-for="(value, key) in userDetails" :key="key">
-                  <span class="info-label">{{ key }}</span>
-                  <span class="info-value">{{ value }}</span>
-                </div>
-              </div>
-  
-              <!-- Edit Mode (Editable) -->
-              <div v-else>
-                <div class="info-row">
-                  <label class="info-label">Email</label>
-                  <input type="text" :value="user.email" disabled class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Name</label>
-                  <input type="text" :value="user.name" disabled class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Age</label>
-                  <input type="number" v-model="user.age" class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Weight</label>
-                  <input type="number" v-model="user.weight" class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Height</label>
-                  <input type="number" v-model="user.height" class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Gender</label>
-                  <input type="text" v-model="user.gender" class="info-value" />
-                </div>
-                <div class="info-row">
-                  <label class="info-label">Country</label>
-                  <input type="text" v-model="user.country" class="info-value" />
-                </div>
-                <!-- Editable NYHA Classification -->
-                <div class="info-row">
-                  <label class="info-label">NYHA Classification</label>
-                  <input type="text" v-model="user.nyha" class="info-value" />
-                </div>
-                <!-- Editable Activity Level -->
-                <div class="info-row">
-                  <label class="info-label">Activity Level</label>
-                  <input type="text" v-model="user.activityLevel" class="info-value" />
-                </div>
+        <div class="profile-info">
+          <h2 class="profile-name">{{ userInfo.name || 'No Name Available' }}</h2>
+        </div>
+        <div class="header-buttons">
+          <!-- Apply Changes Button -->
+          <button v-if="isEditing" class="apply-btn" @click="applyChanges">Apply Changes</button>
+
+          <!-- Edit / Cancel Button -->
+          <button class="edit-btn" @click="toggleEditMode">
+            <img src="../assets/img/Edit_fill.png" alt="Edit Icon" class="edit-icon" />
+            {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Profile Sections (Main Section and Nutrition Information) -->
+      <div class="profile-sections">
+        <!-- Main Section -->
+        <div class="main-section">
+          <!-- Main Information Section -->
+          <div class="info-section">
+            <!-- View Mode (Non-editable) -->
+            <div v-if="!isEditing">
+              <div v-for="(label, key) in userDetails" :key="key" class="info-row">
+                <span class="info-label">{{ label }}</span>
+                <span class="info-value">{{ userInfo[key] || 'No Data Available' }}</span>
               </div>
             </div>
-          </div>
-  
-          <!-- Nutrition Information Section -->
-          <div class="nutrition-section">
-            <!-- Show Max Intake Budget in view mode -->
-            <div v-if="!isEditing" class="nutrition-card">
-              <h3 class="card-title">Max Intake Budget</h3>
-              <ul>
-                <li class="nutrition-row">
-                  <span class="nutrition-label">Carbs</span>
-                  <span class="nutrition-value">{{ carbs }} g</span>
-                </li>
-                <li class="nutrition-row">
-                  <span class="nutrition-label">Protein</span>
-                  <span class="nutrition-value">{{ protein }} g</span>
-                </li>
-                <li class="nutrition-row">
-                  <span class="nutrition-label">Fat</span>
-                  <span class="nutrition-value">{{ fat }} g</span>
-                </li>
-              </ul>
-            </div>
-  
-            <!-- Edit Nutrition Settings in edit mode -->
-            <div v-if="isEditing" class="nutrition-card">
-              <h3 class="card-title">Nutrition Settings</h3>
-              <div>
-                <label>Carbs: {{ carbsPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="carbsPercentage" @input="resetWarning" />
+
+            <!-- Edit Mode (Editable) -->
+            <div v-else>
+              <div class="info-row">
+                <label class="info-label">Email</label>
+                <input  type="text" :value="userInfoEdit['email']" disabled class="info-value"/>
               </div>
-              <div>
-                <label>Protein: {{ proteinPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="proteinPercentage" @input="resetWarning" />
+              <div class="info-row">
+                <label class="info-label">Name</label>
+                <input  type="text" :value="userInfoEdit['name']" disabled class="info-value"/>
               </div>
-              <div>
-                <label>Fat: {{ fatPercentage }}%</label>
-                <input type="range" min="0" max="100" v-model="fatPercentage" @input="resetWarning" />
+              <div class="info-row">
+                <label class="info-label">Age</label>
+                <input  type="number" v-model="userInfoEdit['age']" class="info-value" :placeholder="'Enter ' + label"/>
               </div>
-  
-              <!-- Red warning shown only if total percentage is not 100% -->
-              <div v-if="showWarning" class="warning">
-                The total must add up to 100%. Current: {{ totalPercentage }}%
+              <div class="info-row">
+                <label class="info-label">Weight</label>
+                <input  type="number" v-model="userInfoEdit['weight']" class="info-value" :placeholder="'Enter ' + label"/>
+              </div>
+              <div class="info-row">
+                <label class="info-label">Height</label>
+                <input  type="number" v-model="userInfoEdit['height']" class="info-value" :placeholder="'Enter ' + label"/>
+              </div>
+              <div class="info-row">
+                <label class="info-label">Gender</label>
+                <!-- <input  type="text" v-model="userInfo['gender']" class="info-value" :placeholder="'Enter ' + label"/> -->
+                <RadioButton name="Gender" :options="['Male','Female']" v-model="userInfoEdit['gender']"/>
+              </div>
+              <div class="info-row">
+                <label class="info-label">Country</label>
+                <DropdownSearchBar :dataList="countryList" v-model="userInfoEdit['country']"/>
+
+              </div>
+              <div class="info-row">
+                <label class="info-label">NYHA classification</label>
+                <Dropdown :options="['I','II','III','IV']" :optionValues="[1,2,3,4]" v-model="userInfoEdit['nyha_level']" color="bg-white w-96"/>
+              </div>
+              <div class="info-row">
+                <label class="info-label">Activity level</label>
+                <Dropdown :options="['1','2','3','4','5']" :optionValues="[1,2,3,4,5]" v-model="userInfoEdit['activity_level']" color="bg-white w-96"/>
               </div>
             </div>
           </div>
         </div>
-  
-        <!-- Profile Details Section (Dietary Preferences, Food Allergies, Medical Restrictions) -->
-        <div class="profile-details">
-          <div class="detail-card">
-            <h3 class="card-title">Dietary Preferences</h3>
+
+        <!-- Nutrition Information Section (View Only) -->
+        <div class="nutrition-section">
+          <div class="nutrition-card">
+            <h3 class="card-title">Max Intake Budget</h3>
             <ul>
-              <li v-for="item in user.dietaryPreferences" :key="item" class="detail-row">
-                <span class="detail-value">{{ item }}</span>
+              <li class="nutrition-row">
+                <span class="nutrition-label">Carbs</span>
+                <span class="nutrition-value">{{ userInfo.daily_budget?.carbs }} g</span>
               </li>
-            </ul>
-          </div>
-  
-          <div class="detail-card">
-            <h3 class="card-title">Food Allergies</h3>
-            <ul>
-              <li v-for="item in user.foodAllergies" :key="item" class="detail-row">
-                <span class="detail-value">{{ item }}</span>
+              <li class="nutrition-row">
+                <span class="nutrition-label">Protein</span>
+                <span class="nutrition-value">{{ userInfo.daily_budget?.protein }} g</span>
               </li>
-            </ul>
-          </div>
-  
-          <div class="detail-card">
-            <h3 class="card-title">Medical Restrictions</h3>
-            <ul>
-              <li v-for="item in user.medicalRestrictions" :key="item" class="detail-row">
-                <span class="detail-value">{{ item }}</span>
+              <li class="nutrition-row">
+                <span class="nutrition-label">Fat</span>
+                <span class="nutrition-value">{{ userInfo.daily_budget?.fat }} g</span>
               </li>
             </ul>
           </div>
         </div>
       </div>
-      <Footer />
+
+      <!-- Profile Details Section (Dietary Preferences, Food Allergies, Medical Restrictions) -->
+      <div class="profile-details">
+        <div class="detail-card">
+          <h3 class="card-title">Dietary Preferences</h3>
+          <ul>
+            <!-- <li v-if="dietaryPreferences.length === 0" class="detail-row no-data">No Dietary Preferences detected!</li>
+            <li v-for="item in dietaryPreferences" :key="item" class="detail-row">
+              <span class="detail-value">{{ item }}</span>
+            </li> -->
+            <li class="detail-row">
+              <span class="detail-value">{{ userInfo.dietary?.name }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="detail-card">
+          <h3 class="card-title">Food Allergies</h3>
+          <ul>
+            <li v-if="foodAllergies.length === 0" class="detail-row no-data">No Food Allergies detected!</li>
+            <li v-for="item in foodAllergies" :key="item" class="detail-row">
+              <span class="detail-value">{{ item }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="detail-card">
+          <h3 class="card-title">Medical Restrictions</h3>
+          <ul>
+            <li v-if="medicalRestrictions.length === 0" class="detail-row no-data">No Medical Restrictions detected!</li>
+            <li v-for="item in medicalRestrictions" :key="item" class="detail-row">
+              <span class="detail-value">{{ item }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </template>
+    <Footer />
+  </div>
+</template>
+<script setup>
+
+const countryList = ref([])
+const userInfo = ref({})
+const userInfoEdit = ref({})
+
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  const results = await useApi("/user/info","GET")
+  console.log(results)
+  userInfo.value = results.value
+  userInfo.value.name = userInfo.value.first_name + ' ' + userInfo.value.last_name
+  userInfo.value.country_name = userInfo.value.country.name
+  userInfo.value.activity_level = userInfo.value.user_nutrition_setting.activity_level
+  countryList.value = (await useApi('/country','GET')).value
+})
+const isEditing = ref(false)
+
+const toggleEditMode = () => {
+  isEditing.value = !isEditing.value;
+  if(isEditing.value) {
+    userInfoEdit.value = JSON.parse(JSON.stringify(userInfo.value))
+  }
+}
+
+const applyChanges = async () => {
+  let result = await useApi("/user/update","POST",{
+    countryId: userInfoEdit.value.country.id,
+    nyhaLevel: userInfoEdit.value.nyha_level,
+    dietaryId: userInfoEdit.value.dietary.id,
+    gender : userInfoEdit.value.gender,
+    ethnicityId: userInfoEdit.value.ethnicity.id,
+
+    medicalInfo : userInfoEdit.value.medical_info,
+    age: userInfoEdit.value.age,
+    height : userInfoEdit.value.weight,
+    weight: userInfoEdit.value.height,
+    userNutritionSetting: {
+      carbsPercentage: userInfoEdit.value.user_nutrition_setting.carbs_percentage,
+      proteinPercentage: userInfoEdit.value.user_nutrition_setting.protein_percentage,
+      fatPercentage: userInfoEdit.value.user_nutrition_setting.fat_percentage,
+      cholesterolLevel: userInfoEdit.value.user_nutrition_setting.cholesterol_level,
+      activityLevel: userInfoEdit.value.user_nutrition_setting.activity_level
+    }
+  })
+  console.log(result)
+  if(result.isError) {
+    useToast().error("update failed!")
+  }
+  else {
+    useToast().success("user info updated!")
+  }
+
+  const results = await useApi("/user/info","GET")
+  console.log(results)
+  userInfo.value = results.value
+  userInfo.value.name = userInfo.value.first_name + ' ' + userInfo.value.last_name
+  userInfo.value.country_name = userInfo.value.country.name
+  userInfo.value.activity_level = userInfo.value.user_nutrition_setting.activity_level
+
+  isEditing.value = false
+}
+
+</script>
+
   
-  <script>
-  export default {
-    data() {
+<script>
+export default {
+  data() {
+    return {
+      dietaryPreferences: [],
+      foodAllergies: [],
+      medicalRestrictions: [],
+      user: {
+        name: '',
+        email: '',
+        age: '',
+        weight: '',
+        height: '',
+        gender: '',
+        country: '',
+        nyha: '',
+        activityLevel: '',
+      },
+    };
+  },
+  mounted() {
+    this.fetchUserPreferences();
+  },
+  methods: {
+    fetchUserPreferences() {
+      // Simulate fetching data from an API
+      this.dietaryPreferences = []; 
+      this.foodAllergies = []; 
+      this.medicalRestrictions = []; 
+
+    },
+
+  },
+  computed: {
+    userDetails() {
       return {
-        isEditing: false,
-        showWarning: false,
-        user: {
-          name: "Alice Lebowski",
-          email: "alicesmith@fakemail.com",
-          age: 24,
-          weight: "65",
-          height: "165",
-          gender: "Female",
-          country: "Sri Lanka",
-          nyha: "II",
-          activityLevel: "3",
-          dietaryPreferences: ["No Beef"],
-          foodAllergies: ["Peanuts", "Shrimp", "Human Flesh"],
-          medicalRestrictions: ["Low Sugar", "Low Sodium"],
-        },
-        maxCalories: 2500, // Example max intake
-        carbsPercentage: 40,
-        proteinPercentage: 40,
-        fatPercentage: 20,
+        email: "Email",
+        name: "Name",
+        age: "Age",
+        weight: "Weight",
+        height: "Height",
+        gender: "Gender",
+        country_name : "Country",
+        nyha_level: "NYHA Classification",
+        activity_level: "Activity Level",
       };
     },
-    computed: {
-      userDetails() {
-        return {
-          Email: this.user.email,
-          Name: this.user.name,
-          Age: this.user.age,
-          Weight: this.user.weight + " kg",
-          Height: this.user.height + " cm",
-          Gender: this.user.gender,
-          Country: this.user.country,
-          "NYHA Classification": this.user.nyha,
-          "Activity Level": this.user.activityLevel,
-        };
-      },
-      carbs() {
-        return (this.maxCalories * this.carbsPercentage) / 4;
-      },
-      protein() {
-        return (this.maxCalories * this.proteinPercentage) / 4;
-      },
-      fat() {
-        return (this.maxCalories * this.fatPercentage) / 9;
-      },
-      totalPercentage() {
-        return this.carbsPercentage + this.proteinPercentage + this.fatPercentage;
-      },
-    },
-    methods: {
-      toggleEditMode() {
-        this.isEditing = !this.isEditing;
-      },
-      resetWarning() {
-        this.showWarning = false; // Reset the warning on input change
-      },
-      applyChanges() {
-        if (this.totalPercentage !== 100) {
-          this.showWarning = true;
-        } else {
-          this.showWarning = false;
-          this.isEditing = false;
-          // Save all the changes here
-        }
-      },
-    },
-  };
-  </script>
+  },
+};
+</script>
+
   
   <style scoped>
   .page-wrapper {

@@ -127,7 +127,7 @@ height: '980px' // Adjust the height as needed
 const scrollContainer = ref(null);
 
 import { ref, computed, onMounted, watch } from 'vue';
-import NutrientData from '../../classes/nutrientData.js'
+import NutrientData from '../classes/nutrientData.js'
 const maxNutrientData = ref(null)
 const nutrientData = ref(null)
 onMounted(async() => {
