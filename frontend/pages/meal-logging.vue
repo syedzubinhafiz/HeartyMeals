@@ -6,8 +6,7 @@
     
     <div class="left-base">
         <img :src="leftBase">
-    </div>
-    
+    </div>    
     <div class="right-base">
         <img :src="rightBase">
     </div>
@@ -48,10 +47,9 @@
                 <MealLoggingMoreOverlay
                   style="position:absolute; right:0; top:65%"
                   :dishInfo="dish"
-                  :mealLogTime="currentDate"                 
+                  :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
-                  @remove="openRemoveMealOverlay"
-                  @edit="editMeal"
+                  @edit="openEditMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -82,6 +80,7 @@
                   :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
                   @edit="openEditMealOverlay"
+                  @remove="openRemoveMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -109,8 +108,10 @@
                 <MealLoggingMoreOverlay
                   style="position:absolute; right:0; top:65%"
                   :dishInfo="dish"
-                  :mealLogTime="currentDate"
+                  :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
+                  @edit="openEditMealOverlay"
+                  @remove="openRemoveMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -138,8 +139,10 @@
                 <MealLoggingMoreOverlay
                   style="position:absolute; right:0; top:65%"
                   :dishInfo="dish"
-                  :mealLogTime="currentDate"
+                  :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
+                  @edit="openEditMealOverlay"
+                  @remove="openRemoveMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -157,7 +160,7 @@
     <RemoveMealOverlay
       :visible="removeMealOverlayVisible"
       :mealInfo="removeMealInfo"
-      @close="removeMealOverlayVisible = false"
+      @close="removeMealOverlayVisible = $event"
       @removeLogMeal="removeLogMeal"
     />
 
@@ -376,24 +379,42 @@ function openRemoveMealOverlay(mealInfo){
   removeMealOverlayVisible.value = true;
 }
 
+const today_date_time = () => {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            return formattedDate;
+};
+
 async function removeLogMeal(mealInfo){
   const token =  localStorage.getItem('accessToken');
   try{
-    await $axios.delete('/meal-logging/delete', {
-      mealDate: formatDate(mealInfo,consumed_date_time),
+    const response = await $axios.delete('/meal-logging/delete',{
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+      mealDate: formatDate(currentDate.value),
       userLocalDate: formatDate(currentDate.value),
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       mealLoggingId: mealInfo.id,
       mealType: mealInfo.type
     }
-    ,{
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-
     });
-    await getMeals();
+
+    if (response.data.status === 200){
+      useToast().success('Meal removed successfully');
+      await getMeals();
+    } else {
+      useToast().error(response.data.message);
+    }
 
   } catch(e) {
     console.log(e);
@@ -442,7 +463,7 @@ async function editLogMeal(newValue){
         },
       });
       
-      if(response.status === 200){
+      if(response.data.status === 200){
         useToast().success('Meal updated successfully');
         await getMeals();
 

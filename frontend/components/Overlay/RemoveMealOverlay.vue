@@ -4,12 +4,12 @@
         <span class="header">Are you sure you ?</span>
         <span class="confirmation-msg">Once removed, you cannot undo this action.</span>
         <div class="button-container">
-            <div class="remove-button"> Remove</div>
-            <div class="cancel-button"> Cancel</div>
+            <div class="remove-button" @click="removeMeal"> Remove</div>
+            <div class="cancel-button" @click="close"> Cancel</div>
         </div>
     </div>
 
-    <div v-if="visible" class="overlay-bg"></div>
+    <div v-if="visible" class="overlay-bg" @click="close"></div>
 </template>
 
 <script >

@@ -342,6 +342,19 @@ function removeSelectedMeal(id) {
 }
 
 
+const today_date_time = () => {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+            return formattedDate;
+};
+
 async function logMeal(){
   isLoading.value = true;
     // store data to db 
@@ -359,7 +372,7 @@ async function logMeal(){
   try{
     const response = await $axios.post('/meal-log-summary/add', {
         mealDate: mealInfo.value.logDate,
-        userLocalDateTime: new Date().toISOString(),
+        userLocalDateTime:today_date_time(),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         recipeIdPortions: meal_info,
         mealType: mealInfo.value.mealType,

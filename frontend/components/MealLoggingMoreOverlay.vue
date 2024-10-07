@@ -31,19 +31,19 @@
             <div :class="['remove-button', { 'disabled': !isToday(dishInfo.consumed_date_time) }]" @click="removeMeal(dishInfo)">
                 Remove
             </div>
-            <div :class="['edit-button', {'disabled': !withinAWeek(dishInfo.consumed_date_time)}]" @click="EditMealPopUp(dishInfo)">
+            <div :class="['edit-button', {'disabled': !isToday(dishInfo.consumed_date_time)}]" @click="EditMealPopUp(dishInfo)">
                 Edit
             </div>
         </div>
 
-        <div :class="['consume-button', { 'consumed': dishInfo.is_consumed }]" @click="consumeMeal" :disabled="dishInfo.is_consumed">
+        <div :class="['consume-button', { 'consumed': !canFoodBeConsumed()}]" @click="consumeMeal" :disabled="dishInfo.is_consumed">
             {{ dishInfo.is_consumed ? "Consumed" : "Consume Now" }}
         </div>
     </div>
 </template>
 
 <script>
-import { isSameDay, isWithinInterval, subDays } from 'date-fns';
+import { isSameDay, isToday, isWithinInterval, subDays } from 'date-fns';
 
 export default {
     props: {
@@ -75,6 +75,16 @@ export default {
             const weekAgo = subDays(today, 7);
             return isWithinInterval(this.mealLogTime, { start: weekAgo, end: today });
         },
+        canFoodBeConsumed() {
+            console.log(this.dishInfo);
+            console.log(this.isToday());
+            if (!this.dishInfo.is_consumed) {
+                if (this.isToday()) {
+                    return true;
+                }
+            } 
+            return false;
+    },
         hidePopup() {
             this.$emit('update:visible', !this.visible);
         },
