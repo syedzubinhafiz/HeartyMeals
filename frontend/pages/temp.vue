@@ -49,23 +49,10 @@
                     <NutritionWidgetCurve :nutrients="nutrients"/>
                 </div>
             </div>
-            <!-- <div class="flex-1 h-25">
-                <WaterDroplet :maxVolume="maxVolume" :remainingVolume="remainingVolume" :subtractVolume="subtractVolume" style="transform: scale(0.90);"/>
-            </div>
-            <div class="flex-1 h-31">
-                <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
-            </div> -->
-
-            <!-- <div class="flex-1 h-25">
-                <WaterTankWidget/>
-            </div>
-            <div class="flex-1 h-31">
-                <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
-            </div> -->
         </div>
 
         <!-- section 3 -->
-        <div class="section relative z-10 text-center py-16 h-screen flex flex-col justify-center items-center">
+        <div class="section section-3">
             <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
             <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
                 <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
@@ -78,12 +65,17 @@
         </div>
 
         <!-- section 4 -->
-        <div class="section h-screen flex flex-col justify-end">
-            <div class="flex flex-col items-center justify-center h-full">
-                <RecipeOfTheDay recipeName="Nasi Ayam"/>
-            </div>
-            <Footer/>
+        <div class="section section-4">
+                <RecipeOfTheDay 
+                :recipeName="recipeName"
+                :recipeDescription="recipeDescription"
+                :recipeImage="recipeImage"
+                :recipeId="recipeId"
+                :recipeNutrition="recipeNutrition"
+                />
+            
         </div>
+        <Footer/>
     </div>
 </template>
 
@@ -101,18 +93,7 @@ definePageMeta({
     // middleware: "login-check",
 });
 
-const onClickButton = async () => {
-    navigateTo("/vueExample");
-}
-
 const { $axios } = useNuxtApp();
-
-// Create a reactive style object
-const backgroundStyle = ref({
-background: `url(${backgroundImage}) no-repeat center center`,
-// backgroundSize: 'cover',
-height: '980px' // Adjust the height as needed
-});
 
 const scrollContainer = ref(null);
 
@@ -340,13 +321,36 @@ onMounted(getEducationalContent);
  * Section 4 code
  */
 
+const recipeName = ref("");
+const recipeDescription = ref("");
+const recipeImage = ref("");
+const recipeId = ref("");
+const recipeNutrition = ref({
+    calories: 0,
+    fat: 0,
+    sodium: 0,
+    protein: 0,
+    carbohydrates: 0,
+    cholesterol: 0
+});
+
 const getRecipeOfTheDay = async () => {
     // get recipe of the day
     try {
         const response = await $axios.get(`/recipe/recipe-of-the-day`);
         if (response.status === 200){
             // set recipe of the day
-            console.log(response.data)
+            recipeName.value = response.data.name;
+            recipeDescription.value = response.data.description;
+            recipeImage.value = response.data.storage_links.thumbnail;
+            recipeId.value = response.data.id;
+
+            recipeNutrition.value.calories = (response.data.nutrition_info.calories).toFixed(2);
+            recipeNutrition.value.fat = (response.data.nutrition_info.fat).toFixed(2);
+            recipeNutrition.value.sodium = (response.data.nutrition_info.sodium).toFixed(2);
+            recipeNutrition.value.cholesterol = (response.data.nutrition_info.cholesterol).toFixed(2);
+            recipeNutrition.value.protein = (response.data.nutrition_info.protein).toFixed(2);
+            recipeNutrition.value.carbohydrates = (response.data.nutrition_info.totalCarbohydrate).toFixed(2);
         } else {
             console.log(response);
         }
@@ -415,7 +419,7 @@ html {
     justify-content: center;
     text-align: center;
     background-image: url('@/assets/img/topcurve.svg');
-    background-size: 150% auto;
+    background-size: 120% auto;
     background-repeat: no-repeat;
     background-position: center top;
     background-attachment: fixed;
@@ -503,8 +507,8 @@ html {
 .section1-quote {
     display: flex;
     justify-content: center;
-    padding-top: 2rem;
-    padding-bottom: 1rem;
+    position: absolute;
+    bottom: 10%;
 }
 
 @media (min-width: 768px) {
@@ -527,7 +531,7 @@ html {
 
 .quote-text {
     text-align: center;
-    font-size: 1rem;
+    font-size: 150%;
     font-style: italic;
     color: #000000;
     font-weight: 600;
@@ -641,6 +645,26 @@ html {
 
 /deep/ .budget-container{
     transform: scale(0.85);
+}
+
+.section-3 {
+    position: relative; /* Establishes a positioning context */
+    z-index: 10; /* Places this element above others */
+    height: 100vh; /* Full height of the viewport */
+    display: flex; /* Enables flexbox layout */
+    flex-direction: column; /* Stacks children vertically */
+    justify-content: center; /* Centers items vertically */
+    align-items: center; /* Centers items horizontally */
+    text-align: center; /* Centers text within the element */
+    }
+
+
+.section-4 {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    position: relative;
+    margin: auto;
 }
 </style>
 
