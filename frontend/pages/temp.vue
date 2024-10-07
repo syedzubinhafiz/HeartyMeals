@@ -224,12 +224,12 @@ onMounted(getFluidData);
 // user daily budget, user remaining budget, and user after meal  budget
 const nutrients = ref([
     {
-      calories: 2000,
-      carbs: 2000,
-      protein: 2000,
-      fat: 2000,
-      sodium: 2000,
-      cholesterol: 2000
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
     },
     {
       calories: 0,
@@ -240,14 +240,67 @@ const nutrients = ref([
       cholesterol: 0
     },
     {
-      calories: 1800,
-      carbs: 1800,
-      protein: 1800,
-      fat: 1800,
-      sodium: 1800,
-      cholesterol: 1800
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
     }
   ]);
+
+  const getUserBudget = async () => {
+    try {
+        const today_date = () => {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}`;
+            return formattedDate;
+        };
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get(`/user/budget?startDate=${today_date()}&timeZone=${timeZone}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.status === 200) {
+            // maxVolume.value = response.data.logging_history[0].remaining_fluid;
+            // remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
+            const userNutrition = response.data[today_date()];
+            for (let i = 0; i < 2; i++) {
+                if (i === 0) {
+                    nutrients.value[0].calories = userNutrition[i].calories;
+                    nutrients.value[0].carbs = userNutrition[i].carbs;
+                    nutrients.value[0].protein = userNutrition[i].protein;
+                    nutrients.value[0].fat = userNutrition[i].fat;
+                    nutrients.value[0].sodium = userNutrition[i].sodium;
+                    nutrients.value[0].cholesterol = userNutrition[i].cholesterol;
+                }
+                else {
+                    nutrients.value[2].calories = userNutrition[i].calories;
+                    nutrients.value[2].carbs = userNutrition[i].carbs;
+                    nutrients.value[2].protein = userNutrition[i].protein;
+                    nutrients.value[2].fat = userNutrition[i].fat;
+                    nutrients.value[2].sodium = userNutrition[i].sodium;
+                    nutrients.value[2].cholesterol = userNutrition[i].cholesterol;
+                }
+            }
+        }
+        else {
+            console.log(response);
+        }
+    }
+    catch (e) {
+        useToast().error("Failed to load fluid intake data")
+    }
+}
+
+onMounted(getUserBudget);
 
 /**
  * Section 3 code
@@ -260,7 +313,6 @@ const getEducationalContent = async () => {
     try {
         const response = await $axios.get(`/education/get`);
         if (response.status === 200){
-            console.log(response.data)
             const educationalContent = response.data;
             const randomNumbers = new Set();
 
@@ -283,6 +335,28 @@ const getEducationalContent = async () => {
     }
 }
 onMounted(getEducationalContent);
+
+/**
+ * Section 4 code
+ */
+
+const getRecipeOfTheDay = async () => {
+    // get recipe of the day
+    try {
+        const response = await $axios.get(`/recipe/recipe-of-the-day`);
+        if (response.status === 200){
+            // set recipe of the day
+            console.log(response.data)
+        } else {
+            console.log(response);
+        }
+    } catch (e) {
+        useToast().error("Failed to get recipe of the day")
+    }
+}
+
+onMounted(getRecipeOfTheDay);
+
 </script>
 
 <style scoped>
