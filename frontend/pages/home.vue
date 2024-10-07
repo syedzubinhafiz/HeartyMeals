@@ -66,14 +66,13 @@
 
         <!-- section 4 -->
         <div class="section section-4">
-                <RecipeOfTheDay 
-                :recipeName="recipeName"
-                :recipeDescription="recipeDescription"
-                :recipeImage="recipeImage"
-                :recipeId="recipeId"
-                :recipeNutrition="recipeNutrition"
-                />
-            
+            <RecipeOfTheDay 
+            :recipeName="recipeName"
+            :recipeDescription="recipeDescription"
+            :recipeImage="recipeImage"
+            :recipeId="recipeId"
+            :recipeNutrition="recipeNutrition"
+            />
         </div>
         <Footer/>
     </div>
@@ -203,6 +202,7 @@ const getFluidData = async () => {
 onMounted(getFluidData);
 
 // user daily budget, user remaining budget, and user after meal  budget
+const showNutrition = ref(false);
 const nutrients = ref([
     {
       calories: 0,
@@ -423,7 +423,7 @@ html {
     background-repeat: no-repeat;
     background-position: center top;
     background-attachment: fixed;
-    padding-bottom: 5vh;
+    padding-bottom: 20vh;
     color: white;
 }
 
