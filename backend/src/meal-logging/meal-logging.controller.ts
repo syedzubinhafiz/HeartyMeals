@@ -1,21 +1,22 @@
-import { Body, Controller, Delete, Get, Headers, HttpException, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, HttpException, HttpStatus, Param, Post, Query } from "@nestjs/common";
 import { MealLoggingService } from "./meal-logging.service";
 import { CommonService } from "src/common/common.service";
-import { AddMealLoggingDTO } from "./dto/add-meal-logging-dto";
 import { UpdateMealLoggingDTO } from "./dto/update-meal-logging-dto";
-import { DateValidationDTO } from "src/common/dto/date-validation-dto";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { EntityManager } from "typeorm";
 import { DeleteMealLoggingDTO } from "./dto/delete-meal-logging-dto";
-import { UpdateMealLoggingSummaryDTO } from "src/meal-log-summary/dto/update-meal-logging-summary-dto";
 import { MealLogSummaryService } from "src/meal-log-summary/meal-log-summary.service";
-import { RemoveMealLoggingIdDTO } from "src/meal-log-summary/dto/remove-meal-logging-id-dto";
+import { GetMealLoggingDTO } from "./dto/get-meal-logging-dto";
+import { MarkMealConsumedDTO } from "./dto/mark-meal-consumed-dto";
+import { StorageService } from "src/storage/storage.service";
+import { Storage } from "src/storage/storage.entity";
 
 @Controller('meal-logging')
 export class MealLoggingController {
     constructor(
         private mealLoggingService: MealLoggingService,
         private commonService: CommonService,
+        private storageService: StorageService,
         @InjectEntityManager()
         private readonly entityManager: EntityManager,
         private mealLoggingSummaryService: MealLogSummaryService,
@@ -24,26 +25,83 @@ export class MealLoggingController {
     /**
      * Get method to get all the meals in a specific date
      * @param headers - headers that contains the authorization token
-     * @param payload - payload that contains the userId and the date requested to get the meals from
+     * @param query - query that contains the date range requested to get the meals from
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
-    async getMealsPerDay(@Headers() headers, @Query('date') date: string,){
+    async getMealsPerDay(@Headers() headers, @Query() payload: GetMealLoggingDTO){
     try {
-        const auth_header = headers.authorization;
-        const decoded_headers = this.commonService.decodeHeaders(auth_header);
-        const dateValidationDTO = new DateValidationDTO();
-        dateValidationDTO.date = date;
+            const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
 
-        return await this.mealLoggingService.getMealsPerDay(decoded_headers, dateValidationDTO);
+            // get meals
+            const meals = await this.mealLoggingService.getMeals(decoded_headers, payload);
+
+            // get budget
+            const budget = await this.mealLoggingSummaryService.getRemainingBudget(decoded_headers, payload.startDate, payload.endDate, payload.timeZone, null);
+
+            // for each date, put the budget in the meals
+            for (const date in meals){
+                if (budget[date]){
+                    meals[date].budget = budget[date];
+                }
+            }
+
+            // get the thumnails
+            const storage_ids = [];
+            // for each date
+            for (const date in meals) {
+                const meals_in_a_day = meals[date].meals;
+                // for each meal type
+                for (const meal_type in meals_in_a_day) {
+                    // for each meal in meal type
+                    meals_in_a_day[meal_type].forEach(meal => {
+                        // push storage_id
+                        storage_ids.push(meal.recipe.storage_links.thumbnail);
+                    });
+                }
+            }
+
+            // if new day no meal is inside
+            if (storage_ids.length > 0){
+                // get storage entries
+                const storage_entries = await this.storageService.getLink(storage_ids) as Storage[];
+
+                // map the storage id with its link
+                const storage_map = {};
+                storage_entries.forEach(storage => {
+                    storage_map[storage.storage_id] = storage.link; 
+                });
+
+                // replace the storage id with the link
+                // for each date
+                for (const date in meals) {
+                    const meals_in_a_day = meals[date].meals;
+                    // for each meal type
+                    for (const meal_type in meals_in_a_day) {
+                        // for each meal in meal type
+                        meals_in_a_day[meal_type].forEach(meal => {
+                            if (meal.recipe && meal.recipe.storage_links && meal.recipe.storage_links.thumbnail) {
+                                // replace storage_id with link
+                                const thumbnail_id = meal.recipe.storage_links.thumbnail;
+                                meal.recipe.storage_links.thumbnail = storage_map[thumbnail_id]; 
+                            }
+                        });
+                    }
+                }
+            }
+            
+
+
+            return meals;
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
     }
 
     /**
      * Post method to update the meal logging to change to another day
+     * @param headers - headers that contains the authorization token
      * @param payload - payload that contains the meal logging id and the new date
      * @returns HttpException 200 if the meal is updated 
      */
@@ -52,27 +110,30 @@ export class MealLoggingController {
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
-                const old_meal_type = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
+                // update meal logging 
+                const [old_meal_type, updated] = await this.mealLoggingService.updateMealLogging(decoded_headers, payload, transactionalEntityManager);
 
-                const update_meal_logging_summary = new UpdateMealLoggingSummaryDTO();
-                update_meal_logging_summary.mealLoggingId = payload.mealLoggingId;
-                update_meal_logging_summary.oldMealType = old_meal_type;
-                update_meal_logging_summary.newMealType = payload.mealType;
-                update_meal_logging_summary.mealDate = payload.mealDate;
-
-                await this.mealLoggingSummaryService.updateNutritionBudget(decoded_headers, update_meal_logging_summary, transactionalEntityManager);
+                // if there is no update to the meal logging
+                if (!updated){
+                    // return status OK
+                    throw new HttpException("Meal is not updated.", HttpStatus.OK);
+                }
+                else {
+                    // update meal logging summary 
+                    await this.mealLoggingSummaryService.updateMealLoggingSummary(decoded_headers, payload, old_meal_type, transactionalEntityManager);
+                }
             });
-            return new HttpException("Meal is updated.", 200);
+            return new HttpException("Meal is updated.", HttpStatus.OK);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
     }
 
     /**
      * Post method to delete meal logging entries
      * @param headers - headers that contains the authorization token
-     * @param payload - payload that contains a list of meal logging ids
+     * @param payload - payload that contains the DTO
      * @returns HttpException 200 when the meal is deleted 
      */
     @Delete('delete')
@@ -81,39 +142,35 @@ export class MealLoggingController {
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
 
-                const removeMealLoggingIdDTO = new RemoveMealLoggingIdDTO();
-                removeMealLoggingIdDTO.mealLoggingId = payload.mealLoggingId;
-                removeMealLoggingIdDTO.date = payload.mealDate;
-                removeMealLoggingIdDTO.mealType = payload.mealType;
-
-                const meal_logging_summary_id = await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers, removeMealLoggingIdDTO, transactionalEntityManager);
+                // remove from summary
+                await this.mealLoggingSummaryService.removeMealLoggingId(decoded_headers,payload,transactionalEntityManager);
+                
+                // remove from database
                 await this.mealLoggingService.deleteMealLogging(decoded_headers, payload, transactionalEntityManager);
             });
-            return new HttpException("Meal is deleted.", 200);
+            return new HttpException("Meal is deleted.", HttpStatus.OK);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
         
     }
 
     /**
-     * Post method to mark a meal is consumed
-     * @param headers - headers that contains the authorization token
-     * @param payload - payload that contains the specific meal logging id
-     * @returns HttpException 200 when the meal is successfully marked consumed
+     * Post method to mark meal is consumed
+     * @param payload - payload that contains the meal logging id
+     * @returns HttpException 200 when the meal is marked as consumed
      */
-    @Post('mark_consumed')
-    async markMealConsumed(@Headers() headers, @Body("mealLoggingId") payload){
+    @Post('mark_consume')
+    async markConsume(@Body() payload: MarkMealConsumedDTO){
         try {
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
-            await this.mealLoggingService.markIsConsumed(decoded_headers, payload);
+            await this.mealLoggingService.markMealConsumed(payload);
+
+            return new HttpException("Meal is consumed.", HttpStatus.OK);
         }
         catch (e){
-            return new HttpException(e.message, 400);
+            return new HttpException(e.message, e.status);
         }
-
-        return new HttpException("Meal is marked consumed.", 200);
+        
     }
 }

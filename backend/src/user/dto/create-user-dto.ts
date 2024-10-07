@@ -3,7 +3,7 @@ import { Gender } from "../enum/gender.enum";
 import { NutritionSettingDTO } from "./nutrition-setting-dto";
 import { Type } from "class-transformer";
 
-export class CreatUserDTO{
+export class CreateUserDTO{
 
     
     @IsString()
