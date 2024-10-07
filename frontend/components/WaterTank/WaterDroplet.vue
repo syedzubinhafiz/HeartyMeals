@@ -119,7 +119,7 @@
     const defaultText = ref('unit');
     const units = [
         { id: 1, display: 'ml' },
-        { id: 2, display: 'L' },
+        { id: 2, display: 'l' },
         { id: 3, display: 'fl oz' },
         { id: 4, display: 'gal' },
         { id: 5, display: 'pt' },
@@ -156,7 +156,7 @@
             const unit = units[selectedItem.value - 1]['display'];
             // Calculate the intake value in ml based on the selected unit
             let intakeValueInMl = inputValue.value;
-            if (unit === 'L') intakeValueInMl *= 1000; // Convert to ml if needed
+            if (unit === 'l') intakeValueInMl *= 1000; // Convert to ml if needed
             else if (unit === 'fl oz') intakeValueInMl *= 29.5735; // Convert to ml
             else if (unit === 'gal') intakeValueInMl *= 3785.41; // Convert to ml
             else if (unit === 'pt') intakeValueInMl *= 473.176; // Convert to ml
