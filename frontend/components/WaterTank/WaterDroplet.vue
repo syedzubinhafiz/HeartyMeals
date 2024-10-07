@@ -54,7 +54,7 @@
             <!-- Input fields container -->
             <div class="input-container">
                 <input type="number" placeholder="Enter number" v-model="inputValue"/>
-                <SingleSelectionDropdown class="unit-dropdown" :defaultText="defaultText" :items="units" @item-selected="handleItemSelected"/>
+                <SingleSelectionDropdown class="unit-dropdown" :defaultText="defaultText" :items="units" @update:modelValue="handleItemSelected"/>
             </div>
 
             <!-- Button below the fields -->

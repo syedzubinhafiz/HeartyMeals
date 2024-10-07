@@ -117,6 +117,13 @@ onMounted(async() => {
     };
 
     scrollContainer.value.addEventListener('wheel', handleWheel);
+    await getRecipeOfTheDay();
+    await getUserInfo();
+    await getFluidData();
+    await getUserBudget();
+    await getEducationalContent();
+
+
 });
 
 import { ref, computed, onMounted, watch } from 'vue';
@@ -154,7 +161,7 @@ import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
     }
  }
 
- onMounted(getUserInfo);
+
 /**
  * Section 2 code
  */
@@ -199,7 +206,7 @@ const getFluidData = async () => {
     }
 }
 
-onMounted(getFluidData);
+// (onMounted(getFluidData);
 
 // user daily budget, user remaining budget, and user after meal  budget
 const showNutrition = ref(false);
@@ -281,8 +288,6 @@ const nutrients = ref([
     }
 }
 
-onMounted(getUserBudget);
-
 /**
  * Section 3 code
  */
@@ -293,29 +298,29 @@ const getEducationalContent = async () => {
     // get educational content
     try {
         const response = await $axios.get(`/education/get`);
-        if (response.status === 200){
-            const educationalContent = response.data;
-            const randomNumbers = new Set();
+        // if (response.status === 200){
+        //     const educationalContent = response.data;
+        //     const randomNumbers = new Set();
 
-            while (randomNumbers.size < 4) {
-                randomNumbers.add(Math.floor(Math.random() * educationalContent.length));
-            }
+        //     while (randomNumbers.size < 4) {
+        //         randomNumbers.add(Math.floor(Math.random() * educationalContent.length));
+        //     }
 
-            for (let i of randomNumbers) {
-                cardData.value.push({
-                    title: educationalContent[i].title,
-                    description: educationalContent[i].summary,
-                    image: educationalContent[i].storage_links.thumbnail
-                });
-            }
-        } else {
-            console.log(response);
-        }
+        //     for (let i of randomNumbers) {
+        //         cardData.value.push({
+        //             title: educationalContent[i].title,
+        //             description: educationalContent[i].summary,
+        //             image: educationalContent[i].storage_links.thumbnail
+        //         });
+        //     }
+        // } else {
+        //     console.log(response);
+        // }
     } catch (e) {
         useToast().error("Failed to get educational content")
     }
 }
-onMounted(getEducationalContent);
+// onMounted(getEducationalContent);
 
 /**
  * Section 4 code
@@ -358,8 +363,6 @@ const getRecipeOfTheDay = async () => {
         useToast().error("Failed to get recipe of the day")
     }
 }
-
-onMounted(getRecipeOfTheDay);
 
 </script>
 

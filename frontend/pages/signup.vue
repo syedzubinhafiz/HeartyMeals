@@ -536,7 +536,7 @@ async function signUp(){
     }
 
     useToast().success("Account created successfully");
-    navigateTo('/temp');
+    navigateTo('/home');
 }
 
 

@@ -205,8 +205,9 @@ onMounted(() => {
 
   if(localStorage.getItem("recipeOfTheDay")) {
     const meal = {id: localStorage.getItem("recipeOfTheDay")}
-      openOverlay(meal)
-      localStorage.removeItem("recipeOfTheDay")
+    console.log(meal)
+    openOverlay(meal)
+    localStorage.removeItem("recipeOfTheDay")
   }
 });
 
@@ -217,6 +218,7 @@ onBeforeUnmount(() => {
 const openOverlay = async (meal) => {
   const detailedRecipeInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
   selectedRecipe.value = detailedRecipeInfo
+  console.log(detailedRecipeInfo.value)
   instruction.value = detailedRecipeInfo.value.recipe.instruction
   isOverlayVisible.value = true
 }

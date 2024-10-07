@@ -406,8 +406,9 @@ function closeStomachOverlay() {
   isStomachOverlayVisible.value = false;
 }
 
-function closeCustomRecipeOverlay() {
+async function closeCustomRecipeOverlay() {
   isCustomRecipeOverlayVisible.value = false;
+  await fetchRecipes(savedFilters.value);
 }
 
 function openCustomRecipeOverlay() {

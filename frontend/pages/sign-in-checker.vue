@@ -39,7 +39,7 @@ export default defineComponent({
                     await navigateTo("/admin/add-recipe");
                 } else {
                     console.log("User is not an admin, redirecting to main page");
-                    await navigateTo("/temp"); //TODO: Change to main page 
+                    await navigateTo("/home"); //TODO: Change to main page 
                     
                 }
             }
