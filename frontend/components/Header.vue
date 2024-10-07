@@ -9,7 +9,7 @@
         <button @click="toggleSidebar" class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white">
           <i class="bi bi-list text-2xl"></i>
         </button>
-        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/temp')" />
+        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/home')" />
        
       </div>
     </div>
@@ -25,7 +25,7 @@
       <nav class="mt-5">
         <ul>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/temp')">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/home')">
               <i class="bi bi-house mr-2"></i> Home
             </a>
           </li>
