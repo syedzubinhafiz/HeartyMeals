@@ -10,7 +10,7 @@
         </div>
         <div v-if="isOpen" class="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5" :style='dropdownStyle'>
             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                <input type="text" v-model="searchQuery" placeholder="Search..." class="block w-full px-4 py-2 text-sm text-gray-700 border-b border-gray-300 focus:outline-none" />
+                <input type="text" v-model="searchQuery" placeholder="Search..." class="block w-full px-4 py-2 text-sm text-gray-700 border-b border-gray-300 focus:outline-none sticky" />
                 <a @click.prevent="unselectItem" class="block px-4 py-2 text-sm text-gray-400 hover:bg-gray-100" role="menuitem">
                     Clear Selection
                 </a>
@@ -102,4 +102,10 @@ export default {
 
 <style scoped>
 /* Add any additional styling here */
+
+.sticky{
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
 </style>

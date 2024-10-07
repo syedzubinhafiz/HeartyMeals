@@ -468,13 +468,17 @@ export class RecipeService {
             .leftJoinAndSelect("recipe.dietary", "dietary")
             .select()
             .where("recipe.user_id IS NULL AND recipe.visibility = :visibility", { visibility: Visibility.PUBLIC})
-            .andWhere(`
+
+
+            if(user_allergy_food_category_ids.length > 0){
+                query.andWhere(`
                 NOT EXISTS (
                     SELECT 1 
                     FROM jsonb_array_elements_text(recipe.related_food_categories) AS category 
                     WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
                 )
             `, { user_allergy_food_category_ids });
+            }
 
             // If user has dietary restriction, filter out recipes that does not match the dietary restriction 
             if (user.dietary !== null){
