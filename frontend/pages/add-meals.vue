@@ -132,6 +132,7 @@ import CustomDishPopup from '~/components/CustomDish/Popup.vue';
 
 definePageMeta({
   layout: "emptylayout",
+  middleware: ["auth"],
   components: {
     RecipeCard,
     RecipeFilterOverlay,

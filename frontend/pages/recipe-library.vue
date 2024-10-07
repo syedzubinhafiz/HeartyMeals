@@ -81,6 +81,7 @@ const { $axios } = useNuxtApp();
 
 definePageMeta({
   layout: "emptylayout",
+  middleware: ["auth"],
 });
 
 // for search query 
@@ -201,6 +202,12 @@ function onScroll(event) {
 onMounted(() => {
   fetchData(savedFilters.value);
   document.addEventListener('click', handleClickOutside);
+
+  if(localStorage.getItem("recipeOfTheDay")) {
+    const meal = {id: localStorage.getItem("recipeOfTheDay")}
+      openOverlay(meal)
+      localStorage.removeItem("recipeOfTheDay")
+  }
 });
 
 onBeforeUnmount(() => {
@@ -208,7 +215,6 @@ onBeforeUnmount(() => {
 });
 
 const openOverlay = async (meal) => {
-  console.log('here')
   const detailedRecipeInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
   selectedRecipe.value = detailedRecipeInfo
   instruction.value = detailedRecipeInfo.value.recipe.instruction

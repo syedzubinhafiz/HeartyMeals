@@ -198,17 +198,16 @@ import { ref } from "vue";
 
 const {$axios} = useNuxtApp();
 
-  definePageMeta({
-    middleware: ["auth"],
-  });
-  
+
 defineOptions({
 	name: "SignUpPage",
 });
 
 
 definePageMeta({
-	layout: "emptylayout"
+	layout: "emptylayout",
+      middleware: ["auth"],
+
 });
 
 //Section identification

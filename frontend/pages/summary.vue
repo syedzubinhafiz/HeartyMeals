@@ -233,6 +233,7 @@ const nutrients =  [
 
 definePageMeta({
 	layout: "emptylayout",
+  middleware: ["auth"],
   components: {
     NutritionBar
   }

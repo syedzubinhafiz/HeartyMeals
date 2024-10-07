@@ -64,7 +64,7 @@
                             defaultText="Choose a visibility" 
                             buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
                             dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-x:auto; height:200px;"
-                            @item-selected="updateSelectedVisibility($event)"
+                            @update:modelValue="updateSelectedVisibility($event)"
                             >
                             </SingleSelectionDropdown>
                         </div>
@@ -78,7 +78,7 @@
                                 defaultText="Choose a cuisine"
                                 buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
                                 dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-x:auto; height:200px;"
-                                @item-selected="updateSelectedCuisine($event)"
+                                @update:modelValue="updateSelectedCuisine($event)"
                             />
                         </div>
 
@@ -97,7 +97,7 @@
                                 defaultText="Choose a dietary"
                                 buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
                                 dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-x:auto; height:200px;"
-                                @item-selected="updateSelectedDietary($event)"
+                                @update:modelValue="updateSelectedDietary($event)"
                             />
                         </div>
 
@@ -118,8 +118,8 @@
                         <div class="form-group" style="margin-top:50px; display: grid; grid-template-columns: 60% 40%; margin-bottom: 0px;">
                             <label class="form-label-format">Ingredients</label>
                             <ButtonOrange style="margin-left: 24%;" @click="openPopupIngredient">
-                            <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 30px; height: 30px; margin-right: 2px; padding-bottom: 3px;"/>
-                            Add Ingredient
+                              <img src="~/assets/icon/Add_Icon.svg" alt="Back Icon" style="width: 30px; height: 30px; margin-right: 2px; padding-bottom: 3px;"/>
+                              Add Ingredient
                             </ButtonOrange>
                         </div>
 
@@ -127,8 +127,8 @@
                         <div class="form-group" style="margin-top:50px; display: grid; grid-template-columns: 60% 40%; margin-bottom: 0px">
                             <label class="form-label-format">Seasonings</label>
                             <ButtonOrange style="margin-left: 24%;" @click="openPopupSeasoning">
-                            <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 30px; height: 30px; margin-right: 2px; padding-bottom: 3px;"/>
-                            Add Seasoning
+                              <img src="~/assets/icon/Add_Icon.svg" alt="Back Icon" style="width: 30px; height: 30px; margin-right: 2px; padding-bottom: 3px;"/>
+                              Add Seasoning
                             </ButtonOrange>
                         </div>
 
@@ -141,7 +141,7 @@
                             <input type="number" v-model="ingredient.serving" class="form-normal-text-input" placeholder="Enter Serving" min="1" step="0.01" />
                             <SingleSelectionDropdown
                                 :items="measuring_unit_dropdown_option"
-                                @item-selected="ingredient.selectedUnit = $event"
+                                @update:modelValue="ingredient.selectedUnit = $event"
                                 defaultText="Unit"
                                 buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
                                 dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
@@ -161,7 +161,7 @@
                             <input type="number" v-model="seasoning.serving" class="form-normal-text-input" placeholder="Enter Serving" min="0" step="0.01" />
                             <SingleSelectionDropdown
                                 :items="measuring_unit_dropdown_option"
-                                @item-selected="seasoning.selectedUnit = $event"
+                                @update:modelValue="seasoning.selectedUnit = $event"
                                 defaultText="Unit"
                                 buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
                                 dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"

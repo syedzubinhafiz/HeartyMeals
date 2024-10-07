@@ -11,49 +11,22 @@
         </ButtonOrange>
     </div>
 
-    <h1 class="title">Add New Admin</h1>
+    <h1 class="title">Add New Dietary</h1>
 
     <div class="content-container">
         <form class="form-format" @submit.prevent>
             
             <!-- First Name -->
             <div class="form-group">
-                <label class="form-label-format" for="f-name">First Name</label>
+                <label class="form-label-format" for="name">Dietary Name</label>
                 <div></div>
-                <input type="text" id="f-name" class="form-normal-text-input" placeholder="Enter admin first name"/>
+                <input type="text" id="name" class="form-normal-text-input" placeholder="Name"/>
             </div>
             
-            
-            <!-- Email -->
-            <div class="form-group">
-                <label class="form-label-format" for="email">Email</label>
-                <div></div>
-                <input type="email" id="email" class="form-normal-text-input" placeholder="Enter email"/>
-            </div>
-
-            <!-- Last Name -->
-            <div class="form-group">
-                <label class="form-label-format" for="l-name">Last Name</label>
-                <div></div>
-                <input type="text" id="l-name" class="form-normal-text-input" placeholder="Enter admin last name"/>
-            </div>
-            
-            <!-- Gender -->
-            <div class="form-group">
-                <label class="form-label-format" for="gender">Gender</label>
-                <div></div>
-                <SingleSelectionDropdown
-                    :items="gender_dropdown_option"
-                    @update:modelValue="updateSelectedGender($event)"
-                    defaultText="Select a Gender"
-                    buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
-                    dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
-                />
-            </div>
             
             <!-- Add Button  -->
             <div style="grid-column: span 2; display: flex; align-items: center; justify-content: center;">
-                <button type="submit" class="submit-button" @click="gatherAdminData">Add Admin</button>
+                <button type="submit" class="submit-button" @click="createNewCategory">Add Dietary</button>
             </div>
         </form>
     </div>
@@ -68,12 +41,11 @@
 
 <script setup>
 import { ref } from 'vue';
-import SingleSelectionDropdown from '~/components/Dropdown/SingleSelectionDropdown.vue';
 import { useNuxtApp } from '#app';
 import { useToast } from 'vue-toast-notification';
 
 defineOptions({
-  name: "Add Component",
+  name: "Add Dietary",
 });
 
 definePageMeta({
@@ -83,52 +55,22 @@ definePageMeta({
 
 const { $axios } = useNuxtApp();
 
-const gender_dropdown_option = ref([
-  { id: 'Male', display: 'Male' },
-  { id: 'Female', display: 'Female' },
-]);
-
-const selected_gender = ref(null);
 
 const isLoading = ref(false)
-
-const updateSelectedGender = (selected) => {
-    selected_gender.value = selected;
-    console.log(selected_gender.value)
-}
 
 const validateForm = () => {
   let isValid = true;
 
   // Check if firs name is empty
-  if (!document.getElementById('f-name').value) {
-    useToast().error("First name is required");
+  if (!document.getElementById('name').value) {
+    useToast().error("Name is required");
     isValid = false;
-  }
-
-  // Check if last name is empty
-  if (!document.getElementById('l-name').value) {
-    useToast().error("Last name is required");
-    isValid = false;
-  }
-
-  // Check if gender is selected
-  if (!selected_gender.value) {
-    useToast().error("Gender is required");
-    isValid = false;
-  }
-
-  //Check if email is empty
-  if (!document.getElementById('email').value) {
-    useToast().error("Email is required");
-    isValid = false;
-  
   }
 
   return isValid;
 };
   
-const gatherAdminData = async () => {
+const createNewCategory = async () => {
   if (!validateForm()) {
     return;
   }
@@ -136,24 +78,22 @@ const gatherAdminData = async () => {
   isLoading.value = true; // Show loading indicator
 
 
-  const admin_data = {
-    first_name: document.getElementById('f-name').value,
-    last_name: document.getElementById('l-name').value,
-    email: document.getElementById('email').value,
-    gender: selected_gender.value,
-  };
-
   try {
     const token = localStorage.getItem('accessToken');
-    const response = await $axios.post('/user/signup/admin', admin_data, {
+    const response = await $axios.post('/dietary/add', {
+        dietaryName: document.getElementById('name').value,
+    }, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
     });
     
-    if (response.data.status === 200) {
-      useToast().success("Component added successfully!");
+    if (response.data.name == document.getElementById('name').value) {
+      useToast().success("Dietary added successfully!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } else if (response.data.status === 400) {
       useToast().warning(response.data.message);
     }
@@ -197,11 +137,8 @@ const gatherAdminData = async () => {
 }
 
 .form-format {
-    display: grid;
     padding: 2.5% 2.5%;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 40px;
-    row-gap: 28px;
+
 }
 
 .form-group {
@@ -210,23 +147,6 @@ const gatherAdminData = async () => {
     margin-bottom: 15px;
 }
 
-.nutrition-group {
-    display: grid;
-    max-width: 80%;
-    grid-template-columns: 60% 10% 15% 15%;
-    margin-bottom: 15px;
-}
-
-.nutrition-unit-format{
-    font-family: 'Overpass', sans-serif;
-    font-weight: 600; /* SemiBold */
-    font-size: 15px;
-    align-self: center;
-    margin-left: 5px;
-    letter-spacing: normal; /* Auto */
-    text-transform: none; /* No text transformation */
-    text-align: left;
-}
 
 .form-normal-text-input {
     width: 100%;

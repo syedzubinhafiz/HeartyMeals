@@ -189,6 +189,7 @@ import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 
 definePageMeta({
   layout: 'emptylayout',
+  middleware: ["auth"],
   components: {
     RemoveMealOverlay
   },
