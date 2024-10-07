@@ -163,9 +163,17 @@ const addRecipe = async () => {
         "dietaryId": customMeal.dietaryID
     },
     "components": customMeal.ingredientList.map((ingredient)=>{return ingredient.toJson()})
-        .concat(customMeal.seasoningList.map((seasoning)=>{return seasoning.toJson()}))
+        .concat(customMeal.seasoningList.map((seasoning)=>{return seasoning.toJson()})),
+    "files": {
+        "thumbnail": {
+            "fileName": "beef.jpg",
+            "fileType": "image/jpeg",
+            "fileDataInBase64": await useSampleImages(1)
+        },
+        "content": []
+    }
+})
 
-    })
     if(result.isError) {
         useToast().error( `${result?.value?.data?.statusCode} ${result?.value?.data?.error}: ${result?.value?.data?.message}`)
     }
