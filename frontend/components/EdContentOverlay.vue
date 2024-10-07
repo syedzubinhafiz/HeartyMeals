@@ -13,7 +13,7 @@
         </div>
          <!-- Text Content Box -->
          <div class="text-box">
-          <h2>First steps for getting diagnosed</h2>
+          <!-- <h2>First steps for getting diagnosed</h2>
           <p>
             It's always important to have regular checkups even if you're not noticing any particular symptoms. 
             If you do notice any of the potential signs of heart failure, take action and talk to a health care professional.
@@ -39,20 +39,36 @@
             Imaging tests can help show your health care professional the structure and function of your heart's various chambers and ventricles.
             Blood tests can also reveal how much oxygen, electrolytes and other things your blood is circulating.
             All of this information can help clarify what in your heart is responsible for your heart failure symptoms.
-          </p>
+          </p> -->
+          <div class="text-box">
+          <div v-for="(content, index) in content" :key="index" v-html="content"></div>
         </div>
-        
+        </div>
       </div>
     </div>
   </template>
   
   <script>
+  const isOverlayVisible = ref(false);
+const overlayHeader = ref('');
+const overlayContent = ref([]);
+const overlayImageSrc = ref('');
+
+const openOverlay = (content) => {
+  overlayHeader.value = content.title;
+  overlayContent.value = content.content;
+  overlayImageSrc.value = content.storage_links.thumbnail;
+  isOverlayVisible.value = true;
+};
+
   export default {
     props: {
-      show: Boolean,
-      header: String,
-      imageSrc: String,
-    },
+  show: Boolean,
+  header: String,
+  content: Array,
+  imageSrc: String,
+},
+
     methods: {
       closeOverlay() {
         this.$emit('close');
