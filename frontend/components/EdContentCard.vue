@@ -1,15 +1,17 @@
 <template>
   <div class="card-container shadow-lg overflow-hidden">
-    <div class="image-container">
+    <!-- <div class="image-container">
       <img :src="thumbnail" alt="Card Image" class="w-full h-full object-cover" />
+    </div> -->
+    <div class="image-container">
+      <img :src="'assets/img/potato.svg'" alt="Card Image" class="w-full h-full object-cover" />
     </div>
     <div class="text-container bg-white p-4">
-      <h3 class="text-lg font-bold" style="color: black;">{{ title }}</h3>
+      <h3 class="text-lg font-bold text-black">{{ title }}</h3>
       <p class="mt-2 text-gray-600">{{ summary }}</p>
     </div>
   </div>
 </template>
-
   
   <script>
   export default {

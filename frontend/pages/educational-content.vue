@@ -58,7 +58,7 @@
 
     <EdContentOverlay
       v-if="isOverlayVisible"
-      :show="isOverlayVisible"
+      v-model:show="isOverlayVisible"
       :header="overlayHeader"
       :content="overlayContent"
       :imageSrc="overlayImageSrc"
@@ -93,7 +93,7 @@ const searchBar = ref(null);
 const isOverlayVisible = ref(false);
 const overlayHeader = ref('');
 const overlayImageSrc = ref('');
-
+const overlayContent = ref('');
 // Simulated data fetch for EdContent (replace with your API call if needed)
 const fetchContentData = async () => {
   isLoading.value = true;
@@ -105,23 +105,19 @@ const fetchContentData = async () => {
   };
 
   try {
+    await useApi("/dietary","GET")
     console.log("Fetching data with params:", params);
-    const result = await useApi('/education/get', 'POST', params);
+    const result = await useApi(`/education/get?page=${pageNumber.value}&pageSize=${10}&search=${searchValue.value}`, 'GET');
 
-    // Unwrap the ref from the API response
-    const unwrappedResult = result.value;
 
     // Log the response to see the returned data
-    console.log('API Response:', unwrappedResult);
+    console.log('API Response:', result);
 
-    if (unwrappedResult && !unwrappedResult.isError && unwrappedResult.educational_content) {
-      if (pageNumber.value === 1) {
-        searchResults.value = [unwrappedResult.educational_content];
-      } else {
-        searchResults.value = [...searchResults.value, unwrappedResult.educational_content];
-      }
+    if (result && !result.isError && result.value.data) {
+      searchResults.value = result.value.data
     } else {
-      console.error('Error or no data in the response:', unwrappedResult);
+      console.error('Error or no data in the response:', result);
+      useToast().error("Educational content retrieval failed, or there is no educational content in the database")
     }
   } catch (error) {
     console.error('Unexpected error:', error);
@@ -140,28 +136,29 @@ const onScroll = (event) => {
 
 onMounted(() => {
   fetchContentData();  // Load initial content data
-  document.addEventListener("click", handleClickOutside);
+  // document.addEventListener("click", handleClickOutside);
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
+// onBeforeUnmount(() => {
+//   document.removeEventListener("click", handleClickOutside);
+// });
 
 const openOverlay = (content) => {
   overlayHeader.value = content.title;
   overlayImageSrc.value = content.thumbnail;
   isOverlayVisible.value = true;
+  overlayContent.value = content.storage_links.content
 };
 
-const toggleFilterOverlay = () => {
-  isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
-};
+// const toggleFilterOverlay = () => {
+//   isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
+// };
 
-const handleClickOutside = (event) => {
-  if (searchBar.value && !searchBar.value.contains(event.target)) {
-    isFilterOverlayVisible.value = false;
-  }
-};
+// const handleClickOutside = (event) => {
+//   if (searchBar.value && !searchBar.value.contains(event.target)) {
+//     isFilterOverlayVisible.value = false;
+//   }
+// };
 
 </script>
 
