@@ -155,6 +155,10 @@
         </div>
       </div>
 
+      <div class="nutrition-budget">
+        <NutritionWidgetCurve :nutrients="nutrients"/>
+      </div>
+
     </div>
    
     <RemoveMealOverlay
@@ -186,6 +190,7 @@ import rightBase from '@/assets/img/meal_logging/summary_right_base.svg';
 import { isSameDay } from 'date-fns';
 import RemoveMealOverlay from '~/components/Overlay/RemoveMealOverlay.vue';
 import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
+import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 
 definePageMeta({
   layout: 'emptylayout',
@@ -218,6 +223,33 @@ const removeMealInfo= ref(null);
 
 const editMealOverlayVisible = ref(false);
 const editMealInfo = ref(null);
+
+  const nutrients = ref([
+    {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    },
+    {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    },
+    {
+      calories: 0,
+      carbs: 0,
+      protein: 0,
+      fat: 0,
+      sodium: 0,
+      cholesterol: 0
+    }
+  ]);
 
 function toggleOverlayVisibility(dishId) {
  
@@ -481,8 +513,60 @@ async function editLogMeal(newValue){
   }
 }
 
+const getUserBudget = async () => {
+    try {
+        const today_date = () => {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}`;
+            return formattedDate;
+        };
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get(`/user/budget?startDate=${today_date()}&timeZone=${timeZone}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.status === 200) {
+            // maxVolume.value = response.data.logging_history[0].remaining_fluid;
+            // remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
+            const userNutrition = response.data[today_date()];
+            for (let i = 0; i < 2; i++) {
+                if (i === 0) {
+                    nutrients.value[0].calories = userNutrition[i].calories;
+                    nutrients.value[0].carbs = userNutrition[i].carbs;
+                    nutrients.value[0].protein = userNutrition[i].protein;
+                    nutrients.value[0].fat = userNutrition[i].fat;
+                    nutrients.value[0].sodium = userNutrition[i].sodium;
+                    nutrients.value[0].cholesterol = userNutrition[i].cholesterol;
+                }
+                else {
+                    nutrients.value[2].calories = userNutrition[i].calories;
+                    nutrients.value[2].carbs = userNutrition[i].carbs;
+                    nutrients.value[2].protein = userNutrition[i].protein;
+                    nutrients.value[2].fat = userNutrition[i].fat;
+                    nutrients.value[2].sodium = userNutrition[i].sodium;
+                    nutrients.value[2].cholesterol = userNutrition[i].cholesterol;
+                }
+            }
+        }
+        else {
+            console.log(response);
+        }
+    }
+    catch (e) {
+        useToast().error("Failed to load fluid intake data")
+    }
+  }
+
 onMounted(async () => {
   await getMeals();
+  await getUserBudget();
 });
 </script>
 
@@ -564,6 +648,15 @@ onMounted(async () => {
   padding: 0;
   width: 100%;
   cursor: pointer;
+}
+
+.nutrition-budget {
+  position: absolute;
+  top: 15%;
+  right: 0%;
+  width: 45%;
+  height: 60%;
+  transform: scale(0.85);
 }
 
 .meal-type-list-container{

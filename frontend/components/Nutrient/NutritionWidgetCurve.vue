@@ -49,21 +49,33 @@
             <span class="budget-title">Today's Nutrition Budget</span>
         </div>
         <div class="budget-bar-overlay">
-            <NutritionBar
-            v-for="(nutrient, index) in nutrientsList"
-            :key="index"
-            :icon="nutrient.icon"
-            :label="nutrient.label"
-            :totalValue="nutrient.totalValue"
-            :currentValue="nutrient.currentValue"
-            :afterMealValue="nutrient.afterMealValue"
-            :unit="nutrient.unit"
-            :maxColor="nutrient.maxColor"
-            :currentColor="nutrient.currentColor"
-            :afterMealColor="nutrient.afterMealColor"
-            :fontColor="nutrient.fontColor"
-            :progressBarContainerStyle="'margin-top: 3%; margin-bottom: 3%;'"
-            />
+            <div v-for="(nutrient, index) in nutrientsList.slice(0, 6)" :key="index" class="tooltip-wrapper">
+                <div 
+                class="tooltip-container"
+                @mouseenter="showTooltip(index)" 
+                @mouseleave="hideTooltip"
+                >
+                    <!-- Nutrition Bar Component -->
+                    <NutritionBar
+                        :icon="nutrient.icon"
+                        :label="nutrient.label"
+                        :totalValue="nutrient.totalValue"
+                        :currentValue="nutrient.currentValue"
+                        :afterMealValue="nutrient.afterMealValue"
+                        :unit="nutrient.unit"
+                        :maxColor="nutrient.maxColor"
+                        :currentColor="nutrient.currentColor"
+                        :afterMealColor="nutrient.afterMealColor"
+                        :fontColor="nutrient.fontColor"
+                        :progressBarContainerStyle="'margin-top: 3%; margin-bottom: 3%;'"
+                    />
+                
+                    <!-- Custom Tooltip -->
+                    <div v-if="activeTooltip === index" class="custom-tooltip">
+                        {{ tooltips[index] }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -142,6 +154,24 @@ import NutritionBar from './NutritionBar.vue';
             fontColor: '#be9a83',
         },
     ]);
+
+    const tooltips = ref([
+        'Carbohydrates are energy sources found in foods like sugar and grains. Simple carbs, like fruits, provide quick energy. Complex carbs, like whole grains, offer lasting energy. Opt for complex carbs for better health.',
+        'Proteins are building blocks for the body found in foods like meat and beans. Animal sources, like chicken, provide complete proteins. Plant-based sources, like lentils, offer diverse nutrients. Include both for a balanced diet.',
+        'Fats are energy-rich molecules found in foods like nuts and oils. Healthy fats, like avocados, support heart health. Omega-3 fatty acids in salmon are good for the brain. Balance fats for overall well-being.',
+        'Sodium is a mineral found in salt and processed foods. Too much can harm health, raising blood pressure. Limit salty snacks and canned foods for a healthier diet.',
+        'Cholesterol is a fatty substance in the blood. High levels can clog arteries, leading to heart issues. Foods like eggs contain cholesterol. Focus on a balanced diet to manage cholesterol levels.'
+    ])
+
+    const activeTooltip = ref(null);
+
+    const showTooltip = (index) => {
+        activeTooltip.value = index;
+    }
+
+    const hideTooltip = () => {
+        activeTooltip.value = null;
+    }
 
     const caloriesBar = ref(null);
     const maxCalories = computed(() => props.nutrients[0]['calories']);
@@ -299,4 +329,39 @@ import NutritionBar from './NutritionBar.vue';
         cursor: pointer;
     }
 
+    .tooltip-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0%;
+    }
+
+    .tooltip-container {
+        position: relative;
+        cursor: initial;
+    }
+
+    .custom-tooltip {
+        position: absolute;
+        top: -100%; /* Adjust based on your layout */
+        left: 75%;
+        transform: translateX(-50%);
+        background-color: #E3D4BE;
+        border-radius: 3vh;
+        z-index: 10;
+        width: 50vh;
+        cursor: initial;
+
+
+
+        font-size: 100%;
+        padding: 2vh;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 1; /* Tooltip is visible */
+    }
+
+    .tooltip-container:hover .custom-tooltip {
+        opacity: 1;
+    }
 </style>

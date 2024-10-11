@@ -89,7 +89,6 @@ defineOptions({
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
     layout: "emptylayout",
-    // middleware: "login-check",
 });
 
 const { $axios } = useNuxtApp();
@@ -206,10 +205,7 @@ const getFluidData = async () => {
     }
 }
 
-// (onMounted(getFluidData);
-
 // user daily budget, user remaining budget, and user after meal  budget
-const showNutrition = ref(false);
 const nutrients = ref([
     {
       calories: 0,
@@ -297,30 +293,24 @@ const cardData = ref([]);
 const getEducationalContent = async () => {
     // get educational content
     try {
-        const response = await $axios.get(`/education/get`);
-        // if (response.status === 200){
-        //     const educationalContent = response.data;
-        //     const randomNumbers = new Set();
+        const response = await $axios.get(`/education/get/random`);
+        if (response.status === 200){
+            const educationalContent = response.data;
 
-        //     while (randomNumbers.size < 4) {
-        //         randomNumbers.add(Math.floor(Math.random() * educationalContent.length));
-        //     }
-
-        //     for (let i of randomNumbers) {
-        //         cardData.value.push({
-        //             title: educationalContent[i].title,
-        //             description: educationalContent[i].summary,
-        //             image: educationalContent[i].storage_links.thumbnail
-        //         });
-        //     }
-        // } else {
-        //     console.log(response);
-        // }
+            for (let i = 0; i < educationalContent.length; i++) {
+                cardData.value.push({
+                    title: educationalContent[i].title,
+                    description: educationalContent[i].summary,
+                    image: educationalContent[i].storage_links.thumbnail
+                });
+            }
+        } else {
+            console.log(response);
+        }
     } catch (e) {
         useToast().error("Failed to get educational content")
     }
 }
-// onMounted(getEducationalContent);
 
 /**
  * Section 4 code

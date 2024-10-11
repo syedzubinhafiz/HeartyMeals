@@ -42,20 +42,6 @@ export class EducationalService {
     }
 
     /**
-     * Get Educational Content
-     * @param eduId - educational id
-        const edu_object = await this.educatinoalContentRepository.save(new_entry);
-
-        // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
-        // update the educational object with storage links and saved_content array
-
-        // files CAN be empty if edu content only upload the text first
-
-        edu_object.storage_links = {} as JSON;
-        return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
-    }
-
-    /**
      * Get Educational Content based on the search criteria, or get the educational content based on the educational content id
      * @param page - page number
      * @param pageSize - page size
@@ -136,6 +122,33 @@ export class EducationalService {
 
             return [edu_content, 1];
         }
+    }
+
+    /**
+     * Get 4 for the main landing page educational content 
+     * @returns a list of 4 educational content objects
+     */
+    async getMainLandingPageContent(){
+        const query = this.educatinoalContentRepository.createQueryBuilder("educational_content")
+            .select([
+                'educational_content.id', 
+                'educational_content.title', 
+                'educational_content.summary',
+                'educational_content.storage_links',
+                'educational_content.visibility'                
+            ])
+            .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
+            .orderBy("RANDOM()")
+            .limit(4);
+
+        const result = await query.getMany();
+
+        for (const edu_content of result){
+            // set the thumbnail link
+            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+        }
+
+        return result;
     }
 
     replaceSrcInArray(strings, replacements) {
