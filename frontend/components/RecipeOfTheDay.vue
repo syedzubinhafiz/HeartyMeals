@@ -128,7 +128,7 @@ const showNutrition = ref(false);
 function navigateToRecipeLibrary() {
   // Navigate to recipe library
   // use props to get data
-  localStorage.setItem('recipeOfTheDay', recipeId.value);
+  localStorage.setItem('recipeId', recipeId.value);
 
   navigateTo('/recipe-library');
 }

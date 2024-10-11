@@ -5,8 +5,8 @@
     
     <div class="overlay-content">
       <div class="left-section">
-        <h2>{{ meal.value.recipe.name }}</h2>
-        <img :src="meal.value.recipe.storage_links.thumbnail" alt="Meal Image" />
+        <h2>{{ meal.recipe.name }}</h2>
+        <img :src="meal.recipe.storage_links.thumbnail" alt="Meal Image" />
       </div>
       <div class="right-section">
         <div class="tabs">
@@ -21,34 +21,34 @@
               <span class="nutrition-label">
                 <img src="/assets/img/macroEnergy.svg" alt="icon" width="16" height="16">
                 Calories</span>
-              <span>{{meal.value.recipe.nutrition_info.calories}}kcal</span>
+              <span>{{meal.recipe.nutrition_info.calories}}kcal</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroCarb.svg" alt="icon" width="16" height="16">Carbohydrates</span>
-              <span>{{meal.value.recipe.nutrition_info.totalCarbohydrate}}g</span>
+              <span>{{meal.recipe.nutrition_info.totalCarbohydrate}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroProtein.svg" alt="icon" width="16" height="16">Proteins</span>
-              <span>{{meal.value.recipe.nutrition_info.protein}}g</span>
+              <span>{{meal.recipe.nutrition_info.protein}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroFat.svg" alt="icon" width="10" height="10">Fats</span>
-              <span>{{meal.value.recipe.nutrition_info.fat}}g</span>
+              <span>{{meal.recipe.nutrition_info.fat}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroSodium.svg" alt="icon" width="16" height="16">Sodium</span>
-              <span>{{meal.value.recipe.nutrition_info.sodium}}g</span>
+              <span>{{meal.recipe.nutrition_info.sodium}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/cholesterolsIcon.png" alt="icon" width="16" height="16">Cholesterol</span>
-              <span>{{meal.value.recipe.nutrition_info.cholesterol}}g</span>
+              <span>{{meal.recipe.nutrition_info.cholesterol}}g</span>
             </div>
-            <p class="preparation-time">* Preparation time: {{ meal.value.recipe.preparation_time }}</p>
+            <p class="preparation-time">* Preparation time: {{ meal.recipe.preparation_time }}</p>
           </div>
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
@@ -58,7 +58,7 @@
           <div v-if="activeTab === 'ingredients'">
             <!-- Ingredients Content -->
             <div class="card-grid">
-              <div v-for="ingredient in props.meal.value.components.ingredients" :key="ingredient.name" class="card horizontal-card">
+              <div v-for="ingredient in props.meal.components.ingredients" :key="ingredient.name" class="card horizontal-card">
                 <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" />
                 <div class="card-content">
                   <p class="card-title">{{ ingredient.name }}</p>
@@ -66,7 +66,7 @@
                 </div>
               </div>
 
-              <div v-for="seasoning in props.meal.value.components.seasonings" :key="seasoning.name" class="card horizontal-card">
+              <div v-for="seasoning in props.meal.components.seasonings" :key="seasoning.name" class="card horizontal-card">
                 <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" />
                 <div class="card-content">
                   <p class="card-title">{{ seasoning.name }}</p>

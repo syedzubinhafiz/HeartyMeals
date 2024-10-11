@@ -76,6 +76,7 @@
         </div>
         <Footer/>
     </div>
+
 </template>
 
 
@@ -89,6 +90,7 @@ defineOptions({
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
     layout: "emptylayout",
+    middleware: "auth",
 });
 
 const { $axios } = useNuxtApp();

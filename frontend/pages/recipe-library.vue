@@ -203,12 +203,13 @@ onMounted(() => {
   fetchData(savedFilters.value);
   document.addEventListener('click', handleClickOutside);
 
-  if(localStorage.getItem("recipeOfTheDay")) {
-    const meal = {id: localStorage.getItem("recipeOfTheDay")}
-    console.log(meal)
+  if(localStorage.getItem("recipeId")) {
+    const meal = {id: localStorage.getItem("recipeId")}
     openOverlay(meal)
-    localStorage.removeItem("recipeOfTheDay")
+    localStorage.removeItem("recipeId")
   }
+
+  
 });
 
 onBeforeUnmount(() => {
@@ -216,11 +217,22 @@ onBeforeUnmount(() => {
 });
 
 const openOverlay = async (meal) => {
-  const detailedRecipeInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
-  selectedRecipe.value = detailedRecipeInfo
-  console.log(detailedRecipeInfo.value)
-  instruction.value = detailedRecipeInfo.value.recipe.instruction
-  isOverlayVisible.value = true
+  try {
+    const response = await $axios.get(`/recipe/get?recipeId=${meal.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const detailedRecipeInfo = ref(response.data);
+    console.log(detailedRecipeInfo)
+    selectedRecipe.value = detailedRecipeInfo.value
+    instruction.value = detailedRecipeInfo.value.recipe.instruction
+    isOverlayVisible.value = true
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+
 }
 
 const toggleFilterOverlay = () => {

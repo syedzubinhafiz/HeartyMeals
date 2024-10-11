@@ -288,5 +288,38 @@ export class RecipeController {
         recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
         return recipe;
     }  
+
+
+
+    @Get('get-custom-recipe')
+    async getCustomRecipe(
+        @Headers() headers: any,
+        @Query("page") page: string,
+        @Query("pageSize") pageSize: string,
+        ){
+        const decoded = this.commonService.decodeHeaders(headers.authorization);
+
+        // Get the page number and page size
+        const page_number = page != undefined ? parseInt(page, 10) : 1;
+        const page_size = pageSize != undefined ? parseInt(pageSize, 10) : 10;
+
+
+        // Call the get recipe business logic to get the recipe
+        const [recipes, total_recipe] = await this.recipeService.getCustomRecipe(decoded, page_number, page_size)
+        
+        // post processing to get thumbnail link and remove instruction
+        for (const recipe of recipes){
+            recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+            delete recipe.instruction;
+        }
+        return {
+            data: recipes,
+            page_number,
+            page_size,
+            total_recipe,
+            total_pages: Math.ceil(total_recipe / page_size)
+        }
+
+    }
     
 }

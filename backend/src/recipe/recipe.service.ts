@@ -221,13 +221,21 @@ export class RecipeService {
                 }
             })
 
+            const user = await this.userRepository.findOne({
+                where: {
+                    user_id: decodedHeaders['sub']
+                }
+            });
+
             if (recipe == null){
                 throw new HttpException("Recipe not found", 400)
             }
 
             //Check if recipe belongs to the user
             if (recipe.user !== null  && recipe.user.user_id !==  decodedHeaders['sub']) {
-                throw new HttpException("Recipe does not belong to user", 400)
+                if(user.user_role !== UserRole.ADMIN){
+                    throw new HttpException("Recipe does not belong to user", 400)
+                }
             }
 
 
@@ -499,5 +507,47 @@ export class RecipeService {
             nutrition_info: recipe_of_the_day.recipe.nutrition_info,
             storage_links: recipe_of_the_day.recipe.storage_links
         }
-    } 
+    }
+    
+    
+    async getCustomRecipe(decodedHeaders: any, page: number, pageSize: number): Promise<[Recipe[], number]>{
+
+
+        //check if user is an admin 
+        const user = await this.userRepository.findOne({
+            where: {
+                user_id: decodedHeaders['sub']
+            }
+        });
+
+        if (user == null){
+            throw new HttpException("User not found", 400);
+        } else if (user.user_role !== UserRole.ADMIN){
+            throw new HttpException("You have no access to the information.", 400);
+        }
+
+        // Calculate the number of items to skip
+        const skip = (page - 1) * pageSize;
+        const take = pageSize;
+
+        // Get all custom recipes for the user that has not been approved
+        const [result, length] = await this.recipeRepository.createQueryBuilder("recipe")
+        .leftJoinAndSelect("recipe.user", "user")
+        .select([
+            'recipe.id', 
+            'recipe.name', 
+            'recipe.is_approved', 
+            'recipe.storage_links',
+            'recipe.created_at',
+            'user.first_name',
+            'user.last_name'
+        ])
+        .where("recipe.is_approved = false")
+        .skip(skip)
+        .take(take)
+        .getManyAndCount();
+
+
+        return  [result, length];
+    }
 }
