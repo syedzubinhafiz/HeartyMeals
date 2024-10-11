@@ -36,7 +36,7 @@ export default defineComponent({
 
                 if(isAdmin == "true") {
                     console.log("User is an admin, redirecting to admin page");
-                    await navigateTo("/admin/add-recipe");
+                    await navigateTo("/admin");
                 } else {
                     console.log("User is not an admin, redirecting to main page");
                     await navigateTo("/home"); //TODO: Change to main page 

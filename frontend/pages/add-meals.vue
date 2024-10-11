@@ -469,14 +469,14 @@ async function openAddMealOverlay(id) {
         userOriginalRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
         userRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
       }
-
+      console.log(selectedMeals.value);
       if (selectedMeals.value.length > 0){
         selectedMeals.value.forEach((meal) => {
           userRemainingNutrients.value = {
             calories: parseFloat((userRemainingNutrients.value.calories - meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
             carbs: parseFloat((userRemainingNutrients.value.carbs - meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
             protein: parseFloat((userRemainingNutrients.value.protein - meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            fat: parseFloat((userRemainingNutrients.value.fat - meal.recipe.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            fat: parseFloat((userRemainingNutrients.value.fat - meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
             sodium: parseFloat((userRemainingNutrients.value.sodium - meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
             cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
           }
@@ -487,6 +487,10 @@ async function openAddMealOverlay(id) {
     console.error(error)
     console.error("Error fetching recipe info");
   }
+  console.log(recipeInfo.value);
+  console.log(userDailyNutrients.value);
+  console.log(userOriginalRemainingNutrients.value);
+  console.log(userRemainingNutrients.value);
   isAddMealOverlayVisible.value = true;
 }
 
