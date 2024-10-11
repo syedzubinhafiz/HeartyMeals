@@ -47,7 +47,7 @@
                   
                   <div class="metric-row-with-border">
                     <span class="metric-label">Difference</span>
-                    <span :class="['metric-value', { 'positive': metric.data['Difference'].startsWith('-'), 'negative': metric.data['Difference'].startsWith('') }]">
+                    <span :class="['metric-value', { 'negative': metric.data['Difference'].startsWith('-'), 'positive': !metric.data['Difference'].startsWith('-') }]">
                         {{ metric.data['Difference'] }}
                       </span>
                   </div> 
@@ -271,14 +271,14 @@ const nextMonth = () => {
 
 const startOfMonth = computed(() => {
   const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth() + 1 // JavaScript months are 0-indexed
+  const month = currentDate.value.getMonth() + 1 
   return `${year}-${month.toString().padStart(2, '0')}-01`
 })
 
 const endOfMonth = computed(() => {
   const year = currentDate.value.getFullYear()
   const month = currentDate.value.getMonth() + 1
-  const lastDay = new Date(year, month, 0).getDate() // Get the last day of the month
+  const lastDay = new Date(year, month, 0).getDate() 
   return `${year}-${month.toString().padStart(2, '0')}-${lastDay.toString().padStart(2, '0')}`
 })
 
@@ -388,6 +388,7 @@ let monthlyData = ref(null)
           'Guideline per Day': `${monthlyData.value.sodium.daily_budget}g`,
           'Average Daily Consumption': `${monthlyData.value.sodium.average_daily.toFixed(0)}g`,
           'Difference': `${monthlyData.value.sodium.difference}`,
+          '% Days Under Guideline': `${(monthlyData.value.sodium.percentage_of_daily_budget)}%`
         }
       }
     ]
@@ -416,17 +417,17 @@ let monthlyData = ref(null)
   }
   
   .top-section{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    width: 50%;
-  }
-  .analytics-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* margin-bottom: 0.5rem; */
+  width: 50%;
+}
+.analytics-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
   
   .main-content {
     padding: 1rem;
@@ -436,11 +437,10 @@ let monthlyData = ref(null)
     border-radius: 10px;
     padding: 1rem;
   }
-  
   .title {
-    font-size: 48px;
+    font-size: 2rem; /* Smaller title */
     margin: 0;
-    font-weight: bold;
+    font-weight: semibold;
   }
   
   .view-selector {
@@ -471,11 +471,13 @@ let monthlyData = ref(null)
   }
   
   .date-navigation {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
+  font-size: 1rem; /* Smaller title */
+  display: flex;
+  align-items: center;
+  margin-bottom: 0rem;
+  font-weight: normal;
+}
+
   .nav-arrow {
     background: none;
     border: none;
@@ -485,36 +487,42 @@ let monthlyData = ref(null)
   }
   
   .date-range {
-    margin: 0 1rem;
-    font-size: 36px;
-  }
+  margin: 0 1rem;
+  font-size: 1.5rem; /* Smaller title */
+
+}
   
-  .layout-container {
-    display: flex;
-    gap: 1rem;
-  }
+.layout-container {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem; 
+
+}
+.chart-section {
+  background-color: #F3EADA;
+  flex: 1;
+  min-width: 0; /* Allows the flex item to shrink below its minimum content size */
+  min-height: 0;
+  height: 540px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+}
   
-  .chart-section {
-    background-color: #F3EADA;
-    flex: 1;
-    min-width: 0; /* Allows the flex item to shrink below its minimum content size */
-    height: 550px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  
-  }
-  
-  .metrics-section {
-    flex: 1;
-    min-width: 0; /* Allows the flex item to shrink below its minimum content size */
-  }
-  
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+.metrics-section {
+  flex: 1;
+  min-width: 0; /* Allows the flex item to shrink below its minimum content size */
+  gap: 0.5rem; /* Reduce gap for tighter layout */
+  grid-template-columns: repeat(2, 1fr); /* Adjust as necessary */
+
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
   
   .metric-card {
     background-color: #F3EADA;
@@ -524,22 +532,28 @@ let monthlyData = ref(null)
   }
   
   .metric-title {
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    font-style: bold;
-    border-radius: 10px;
-  
-  }
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  font-style: bold;
+  border-radius: 10px;
+}
   
   .metric-icon-wrapper {
     margin: 0.5rem;
   }
-  
   .metric-icon{
-    width: 30px;
-    height: 30px;
-  }
+  width: 15px;
+  height: 15px;
+}
+
+  .metric-value{
+  color: #919191
+}
+
+.metric-label{
+  color: #555555;
+}
   
   .metric-row-with-border{
   display: flex;
@@ -550,24 +564,24 @@ let monthlyData = ref(null)
 .metric-row{
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 
 .metric-row-with-border {
   border-bottom: 1px solid #000000;
 }
-  .metric-content {
-    margin: 1rem;
-  }
-  
-  .positive {
-    color: green;
-  }
+.metric-content {
+  margin: 0.5rem;
+}
   
   .negative {
-    color: red;
-  }
+  color: green;
+}
+
+.positive {
+  color: red;
+}
   
   .chart-container {
     /* background-color: #f7f3eb; */
@@ -577,22 +591,20 @@ let monthlyData = ref(null)
     display: flex;
     flex-direction: column;
   }
-  
   .chart-title {
-    font-size: 40px;
-    margin-bottom: 1rem;
+  font-size: 35px;
+  margin-bottom: 0.5rem;
   }
-  
   .chart-legend {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1rem;
-    background-color: #FFFEF1;
-    width: 450px;
-    border-radius: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  
-  }
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+  background-color: #FFFEF1;
+  /* width: 460px; */
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+}
   
   
   .chart-legend-wrapper {
@@ -600,17 +612,15 @@ let monthlyData = ref(null)
     justify-content: center;
     margin-top: 1rem;
   }
-  
   .legend-item {
-    transition: opacity 0.3s;
-    border: none;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    opacity: 0.5;
-    padding: 0.5rem 1rem;
-    margin-left: 0.5rem;
-    border-radius: 20px;
-  }
+  transition: opacity 0.3s;
+  border: none;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0.5rem 1.2rem;
+  margin-left: 1zrem;
+  border-radius: 20px;
+}
   
   .legend-item.active {
     opacity: 1;

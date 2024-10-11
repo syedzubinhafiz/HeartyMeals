@@ -82,8 +82,8 @@
       </div>
     </main>
       </div>
-      <div class="section flex flex-col justify-end">
-            <Footer/>
+      <div class="section flex flex-col justify-end fixed-footer ">
+            <Footer />
         </div>
 </template>
 
@@ -247,8 +247,11 @@ const chartData = computed(() => {
 
 
 
-const currentDate = ref(new Date());
-currentDate.value.setDate(currentDate.value.getDate() + (7 - currentDate.value.getDay()))
+const today = ref(new Date())
+today.value.setHours(0, 0, 0, 0) // Set to beginning of the day
+
+const currentDate = ref(new Date(today.value))
+currentDate.value.setDate(currentDate.value.getDate() + (6 - currentDate.value.getDay())) // Set to end of current week (Saturday)
 
 const startDate = computed(() => {
   const start = new Date(currentDate.value)
@@ -256,11 +259,11 @@ const startDate = computed(() => {
   return start
 })
 
-const formattedStartDate = computed(() => formatDate(startDate.value))
-const formattedEndDate = computed(() => formatDate(currentDate.value))
+const formattedStartDate = computed(() => formatDateLong(startDate.value))
+const formattedEndDate = computed(() => formatDateLong(currentDate.value))
 
 
-function formatDate(date) {
+function formatDateLong(date) {
   return date.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'long',
@@ -270,20 +273,35 @@ function formatDate(date) {
 
 function prevWeek() {
   currentDate.value = new Date(currentDate.value.getTime() - 7 * 24 * 60 * 60 * 1000)
-  
-
-
+  console.log('Navigated to previous week:', formatDate(currentDate.value))
 }
 
 function nextWeek() {
-  const proposedDate = new Date(currentDate.value.getTime() + 7 * 24 * 60 * 60 * 1000)
-  if (proposedDate <= new Date()) {
-    currentDate.value = proposedDate
+  const oneWeekInMs = 7 * 24 * 60 * 60 * 1000
+  const proposedEndDate = new Date(currentDate.value.getTime() + oneWeekInMs)
+  
+  // Set endOfCurrentWeek to the end of the current week (Saturday)
+  const endOfCurrentWeek = new Date(today.value)
+  endOfCurrentWeek.setDate(endOfCurrentWeek.getDate() + (6 - endOfCurrentWeek.getDay()))
+  endOfCurrentWeek.setHours(23, 59, 59, 999)
+
+  console.log('Current date:', formatDate(currentDate.value))
+  console.log('Proposed end date:', formatDate(proposedEndDate))
+  console.log('End of current week:', formatDate(endOfCurrentWeek))
+
+  if (proposedEndDate <= endOfCurrentWeek) {
+    currentDate.value = proposedEndDate
+    console.log('Navigated to:', formatDate(currentDate.value))
   } else {
-    alert("You cannot view future data")
+    currentDate.value = new Date(endOfCurrentWeek)
+    console.log('Set to current week:', formatDate(currentDate.value))
+    alert('Cannot navigate to future weeks')
   }
 }
 
+function formatDate(date) {
+  return date.toISOString().split('T')[0] // YYYY-MM-DD format for logging
+}
 const apiStartDate = computed(() => startDate.value.toISOString().split('T')[0])
 const apiEndDate = computed(() => currentDate.value.toISOString().split('T')[0])
 
@@ -424,13 +442,13 @@ const chartOptions = {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  /* margin-bottom: 0.5rem; */
   width: 50%;
 }
 .analytics-container {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .main-content {
@@ -443,9 +461,9 @@ const chartOptions = {
 }
 
 .title {
-  font-size: 48px;
+  font-size: 2rem; /* Smaller title */
   margin: 0;
-  font-weight: bold;
+  font-weight: semibold;
 }
 
 .view-selector {
@@ -454,7 +472,6 @@ const chartOptions = {
   display: flex;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-
 }
 
 .view-selector button {
@@ -476,9 +493,11 @@ const chartOptions = {
 }
 
 .date-navigation {
+  font-size: 1rem; /* Smaller title */
   display: flex;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0rem;
+  font-weight: normal;
 }
 
 .nav-arrow {
@@ -491,19 +510,23 @@ const chartOptions = {
 
 .date-range {
   margin: 0 1rem;
-  font-size: 36px;
+  font-size: 1.5rem; /* Smaller title */
+
 }
 
 .layout-container {
   display: flex;
   gap: 1rem;
+  margin-top: 0.5rem; 
+
 }
 
 .chart-section {
   background-color: #F3EADA;
   flex: 1;
   min-width: 0; /* Allows the flex item to shrink below its minimum content size */
-  height: 550px;
+  min-height: 0;
+  height: 540px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 
@@ -512,28 +535,31 @@ const chartOptions = {
 .metrics-section {
   flex: 1;
   min-width: 0; /* Allows the flex item to shrink below its minimum content size */
+  gap: 0.5rem; /* Reduce gap for tighter layout */
+  grid-template-columns: repeat(2, 1fr); /* Adjust as necessary */
+
 }
 
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .metric-card {
   background-color: #F3EADA;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-
 }
 
 .metric-title {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   font-style: bold;
   border-radius: 10px;
+
 
 }
 
@@ -542,8 +568,8 @@ const chartOptions = {
 }
 
 .metric-icon{
-  width: 30px;
-  height: 30px;
+  width: 15px;
+  height: 15px;
 }
 
 .metric-row-with-border{
@@ -554,12 +580,13 @@ const chartOptions = {
 
 .metric-label{
   color: #555555;
+  
 }
 
 .metric-row{
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .metric-value{
@@ -571,7 +598,7 @@ const chartOptions = {
   border-bottom: 1px solid #000000;
 }
 .metric-content {
-  margin: 1rem;
+  margin: 0.5rem;
 }
 
 .negative {
@@ -592,16 +619,16 @@ const chartOptions = {
 }
 
 .chart-title {
-  font-size: 40px;
-  margin-bottom: 1rem;
+  font-size: 35px;
+  margin-bottom: 0.5rem;
 }
 
 .chart-legend {
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   background-color: #FFFEF1;
-  width: 400px;
+  width: 450px;
   border-radius: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 
@@ -617,11 +644,10 @@ const chartOptions = {
 .legend-item {
   transition: opacity 0.3s;
   border: none;
-  padding: 0.5rem 1rem;
   cursor: pointer;
   opacity: 0.5;
-  padding: 0.5rem 1rem;
-  margin-left: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  margin-left: 1zrem;
   border-radius: 20px;
 }
 
@@ -672,5 +698,13 @@ const chartOptions = {
     justify-content: center;
     margin-bottom: 1rem;
   }
+
+  .fixed-footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000; 
+    background-color: inherit; 
+}
 }
 </style>
