@@ -10,12 +10,13 @@
           <i class="bi bi-list text-2xl"></i>
         </button>
         <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/home')" />
-       
       </div>
     </div>
-  <!-- sidebar -->
-  <div v-if="isSidebarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50">
-    <div class="fixed top-0 left-0 w-64 bg-custom-sidebar-yellow h-full shadow-md z-50 p-5 rounded-r-lg">
+
+  <!-- sidebar with backdrop -->
+  <div v-if="isSidebarOpen" @click="toggleSidebar" class="fixed inset-0 bg-black bg-opacity-50 z-50">
+    <!-- Sidebar container -->
+    <div class="fixed top-0 left-0 w-64 bg-custom-sidebar-yellow h-full shadow-md z-50 p-5 rounded-r-lg" @click.stop>
       <div class="flex items-center justify-between">
         <img src="../assets/img/HeartYellow.png" alt="Hearty Meal" :width="50">
         <button @click="toggleSidebar" class="text-black">
@@ -30,7 +31,7 @@
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black"  @click.prevent="navigateTo('/meal-logging')">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/meal-logging')">
               <i class="bi bi-journals mr-2"></i> Meal Logging
             </a>
           </li>
@@ -59,11 +60,6 @@
               <i class="bi bi-person mr-2"></i> Profile Page
             </a>
           </li>
-          <li class="mb-4">
-            <button @click.prevent="useUserInfo().logout(); navigateTo('/login')" class="flex items-center text-black">
-              <i class="bi bi-box-arrow-right mr-2"></i> Log Out
-            </button>
-          </li>
         </ul>
       </nav>
     </div>
@@ -83,7 +79,6 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 </script>
-
 
 <style scoped>
 .clickable-img{

@@ -1,6 +1,6 @@
 <template>
     <div class="absolute w-screen z-40" style="z-index: 10">
-        <Header/>
+        <AdminHeader/>
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
@@ -234,6 +234,7 @@ import AddComponentPopup from '~/components/AddComponentPopup.vue';
 import { useNuxtApp } from '#app';
 import { NutritionLabelList } from '~/assets/template/nutritionLabel';
 import { useToast } from 'vue-toast-notification';
+import AdminHeader from '~/components/AdminHeader.vue';
 
 defineOptions({
   name: "Add Recipe",

@@ -101,20 +101,36 @@
         </div>
 
         <div class="nutrition-widget">
-          <NutritionBar
-            v-for="(nutrient, index) in nutrients"
-            :key="index"
-            :icon="nutrient.icon"
-            :label="nutrient.label"
-            :totalValue="userDailyBudget[nutrient.key]"
-            :currentValue="userRemainingNutrients[nutrient.key]"
-            :afterMealValue="userAfterMealNutrients[nutrient.key]"
-            :unit="nutrient.unit"
-            :maxColor="nutrient.maxColor"
-            :currentColor="nutrient.currentColor"
-            :afterMealColor="nutrient.afterMealColor"
-            :fontColor="nutrient.fontColor"
-          />  
+          <span style="font-weight: 600; font-size: 150%; margin-left: -5%;">Total Nutrition</span>
+          <div v-for="(nutrient, index) in nutrients" :key="index" class="tooltip-wrapper">
+            <div 
+              class="tooltip-container"
+              @mouseenter="showTooltip(index)" 
+              @mouseleave="hideTooltip"
+            >
+              <!-- Nutrition Bar Component -->
+              <NutritionBar
+                :icon="nutrient.icon"
+                :label="nutrient.label"
+                :totalValue="userDailyBudget[nutrient.key]"
+                :currentValue="userRemainingNutrients[nutrient.key]"
+                :afterMealValue="userAfterMealNutrients[nutrient.key]"
+                :unit="nutrient.unit"
+                :maxColor="nutrient.maxColor"
+                :currentColor="nutrient.currentColor"
+                :afterMealColor="nutrient.afterMealColor"
+                :fontColor="nutrient.fontColor"
+                :progressBarContainerStyle="'margin-top: 2.5%; margin-bottom: 2.5%;'"
+              />
+              
+              <!-- Custom Tooltip -->
+              <div v-if="activeTooltip === index" class="custom-tooltip">
+                <div v-for="line in tooltips[index]" :key="line">
+                  {{ line }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
     </div>
@@ -230,6 +246,8 @@ const nutrients =  [
         }
       ];
 
+  const tooltips = ref([]);
+  const activeTooltip = ref(null);
 
 definePageMeta({
 	layout: "emptylayout",
@@ -246,7 +264,7 @@ onMounted(() => {
 
   if (localStorage.getItem('selectedMeals')){
     selectedMeals.value = JSON.parse(localStorage.getItem('selectedMeals'))
-    const nutrientList =  JSON.parse(localStorage.getItem('userNutrientsInfo'))
+    const nutrientList =  JSON.parse(localStorage.getItem('userNutrientsInfo')) 
     mealInfo.value = JSON.parse(localStorage.getItem('mealInfo'))
     userDailyBudget.value = nutrientList[0];
     userRemainingNutrients.value = nutrientList[1];
@@ -260,6 +278,15 @@ onMounted(() => {
       navigateTo('/meal-logging')
     }, 2000)
   }
+
+  // set the text
+  tooltips.value = [];
+  tooltips.value.push([`Current calories: ${userRemainingNutrients.value.calories} cal`,`After adding meal: ${userAfterMealNutrients.value.calories} cal`]);
+  tooltips.value.push([`Current protein: ${userRemainingNutrients.value.protein} g`,`After adding meal: ${userAfterMealNutrients.value.protein} g`]);
+  tooltips.value.push([`Current carbs: ${userRemainingNutrients.value.carbs} g`,`After adding meal: ${userAfterMealNutrients.value.carbs} g`]);
+  tooltips.value.push([`Current fat: ${userRemainingNutrients.value.fat} g`,`After adding meal: ${userAfterMealNutrients.value.fat} g`]);
+  tooltips.value.push([`Current sodium: ${userRemainingNutrients.value.sodium} mg`,`After adding meal: ${userAfterMealNutrients.value.sodium} mg`]);
+  tooltips.value.push([`Current cholesterol: ${userRemainingNutrients.value.cholesterol} mg`,`After adding meal: ${userAfterMealNutrients.value.cholesterol} mg`]);
 });
 
 onBeforeUnmount(() => {
@@ -294,6 +321,14 @@ onBeforeUnmount(() => {
 
 
 });
+
+const showTooltip = (index) => {
+  activeTooltip.value = index;
+}
+
+const hideTooltip = () => {
+  activeTooltip.value = null;
+}
 
 function handleBeforeUnload(e) {
   const confirmationMessage = 'Your selected meal won\'t be logged or saved if you leave this page.';
@@ -332,6 +367,14 @@ function updateChanges(id=null, portion=null) {
     userAfterMealNutrients.value[key] = parseFloat(userAfterMealNutrients.value[key].toFixed(2));
   }
   
+  // set the text
+  tooltips.value = [];
+  tooltips.value.push([`Current calories: ${userRemainingNutrients.value.calories} cal`,`After adding meal: ${userAfterMealNutrients.value.calories} cal`]);
+  tooltips.value.push([`Current protein: ${userRemainingNutrients.value.protein} g`,`After adding meal: ${userAfterMealNutrients.value.protein} g`]);
+  tooltips.value.push([`Current carbs: ${userRemainingNutrients.value.carbs} g`,`After adding meal: ${userAfterMealNutrients.value.carbs} g`]);
+  tooltips.value.push([`Current fat: ${userRemainingNutrients.value.fat} g`,`After adding meal: ${userAfterMealNutrients.value.fat} g`]);
+  tooltips.value.push([`Current sodium: ${userRemainingNutrients.value.sodium} mg`,`After adding meal: ${userAfterMealNutrients.value.sodium} mg`]);
+  tooltips.value.push([`Current cholesterol: ${userRemainingNutrients.value.cholesterol} mg`,`After adding meal: ${userAfterMealNutrients.value.cholesterol} mg`]);
 }
 
 
@@ -626,16 +669,52 @@ async function logMeal(){
   position:absolute;
   top: 25%;
   right: 11%;
-  width: 25%;
-  height: 39%;
+  width: 22.5%;
+  height: 50%;
   background-color: #FFFEF1;
-  padding: 0% 2.5%;
+  padding: 1% 2.5%;
   padding-bottom: 1%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-radius: 15px;
+  border-radius: 5vh;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
 }
+
+.tooltip-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0%;
+}
+
+.tooltip-container {
+  position: relative;
+  cursor: initial;
+}
+
+.custom-tooltip {
+  position: absolute;
+  top: -100%; /* Adjust based on your layout */
+  left: 75%;
+  transform: translateX(-50%);
+  background-color: rgb(227, 212, 190);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 2vh;
+  z-index: 10;
+  width: 25vh;
+  cursor: initial;
+
+
+
+  font-size: 90%;
+  font-weight: 600;
+  padding: 2vh;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1; /* Tooltip is visible */
+}
+
 
 .loading-greyed-bg{
   position: absolute;

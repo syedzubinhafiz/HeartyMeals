@@ -18,22 +18,36 @@
           <span style="font-weight: bold; font-size: 90%; align-self: center;">Portion</span>
           <input type="number" id="selectedPortion" step="0.5" min="0.5" placeholder="Portion" v-model="portion" @input="applyChanges">
         </div>
-        <div style="z-index: 102;">
-            <NutritionBar
-            v-for="(nutrient, index) in nutrients"
-            :key="index"
-            :icon="nutrient.icon"
-            :label="nutrient.label"
-            :totalValue="userDailyBudget[nutrient.key]"
-            :currentValue="userRemainingNutrients[nutrient.key]"
-            :afterMealValue="afterAddingMeal[nutrient.key]"
-            :unit="nutrient.unit"
-            :maxColor="nutrient.maxColor"
-            :currentColor="nutrient.currentColor"
-            :afterMealColor="nutrient.afterMealColor"
-            :fontColor="nutrient.fontColor"
-            :progressBarContainerStyle="'margin-top: 0.5%; margin-bottom: 0.5%;'"
-        />
+        <div style="z-index: 102;"> 
+          <div v-for="(nutrient, index) in nutrients" :key="index" class="tooltip-wrapper">
+            <div 
+              class="tooltip-container"
+              @mouseenter="showTooltip(index)" 
+              @mouseleave="hideTooltip"
+            >
+              <!-- Nutrition Bar Component -->
+              <NutritionBar
+                :icon="nutrient.icon"
+                :label="nutrient.label"
+                :totalValue="userDailyBudget[nutrient.key]"
+                :currentValue="userRemainingNutrients[nutrient.key]"
+                :afterMealValue="afterAddingMeal[nutrient.key]"
+                :unit="nutrient.unit"
+                :maxColor="nutrient.maxColor"
+                :currentColor="nutrient.currentColor"
+                :afterMealColor="nutrient.afterMealColor"
+                :fontColor="nutrient.fontColor"
+                :progressBarContainerStyle="'margin-top: 0.25%; margin-bottom: 0.25%;'"
+              />
+              
+              <!-- Custom Tooltip -->
+              <div v-if="activeTooltip === index" class="custom-tooltip">
+                <div v-for="line in tooltips[index]" :key="line">
+                  {{ line }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -184,7 +198,10 @@ export default {
           afterMealColor: '#be9a83',
           fontColor: '#be9a83',
         }
-      ]
+      ],
+      tooltips: [
+      ],
+      activeTooltip: null,
     };
   },
   watch: {
@@ -218,6 +235,22 @@ export default {
       };
       
       console.log(this.meal.recipe);
+
+      // set the text
+      this.tooltips = [];
+      this.tooltips.push([`Current calories: ${this.userRemainingNutrients.calories} cal`,`After adding meal: ${this.afterAddingMeal.calories} cal`]);
+      this.tooltips.push([`Current protein: ${this.userRemainingNutrients.protein} g`,`After adding meal: ${this.afterAddingMeal.protein} g`]);
+      this.tooltips.push([`Current carbs: ${this.userRemainingNutrients.carbs} g`,`After adding meal: ${this.afterAddingMeal.carbs} g`]);
+      this.tooltips.push([`Current fat: ${this.userRemainingNutrients.fat} g`,`After adding meal: ${this.afterAddingMeal.fat} g`]);
+      this.tooltips.push([`Current sodium: ${this.userRemainingNutrients.sodium} mg`,`After adding meal: ${this.afterAddingMeal.sodium} mg`]);
+      this.tooltips.push([`Current cholesterol: ${this.userRemainingNutrients.cholesterol} mg`,`After adding meal: ${this.afterAddingMeal.cholesterol} mg`]);
+      
+    },
+    showTooltip(index) {
+      this.activeTooltip = index;
+    },
+    hideTooltip() {
+      this.activeTooltip = null;
     }
   }
 };
@@ -387,6 +420,40 @@ export default {
         height: 80px;
         width: 80px;
         object-fit: cover;
+    }
+
+    .tooltip-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0%;
+    }
+
+    .tooltip-container {
+        position: relative;
+        cursor: initial;
+    }
+
+    .custom-tooltip {
+        position: absolute;
+        top: -100%; /* Adjust based on your layout */
+        left: 75%;
+        transform: translateX(-50%);
+        background-color: rgb(227, 212, 190);
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 2vh;
+        z-index: 10;
+        width: 25vh;
+        cursor: initial;
+
+
+
+        font-size: 90%;
+        font-weight: 600;
+        padding: 2vh;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        opacity: 1; /* Tooltip is visible */
     }
 
 </style>

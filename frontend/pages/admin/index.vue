@@ -3,11 +3,11 @@
 
     <div class="page-container">
         <header class="header">
-            <Header></Header>
+            <AdminHeader></AdminHeader>
         </header>
 
         <div class="message-container">
-            <h1>Welcome back, Alvin</h1>
+            <h1>Welcome back, {{userName}}</h1>
             <span>What would you like to do today ?</span>
         </div>
 
@@ -89,6 +89,7 @@ const pageNumber = ref(1);
 const pageSize = ref(10);
 const totalPages = ref(0);
 const result = ref([]);
+const userName = ref("");
 
 async function fetchData() {
 
@@ -126,6 +127,7 @@ async function fetchData() {
     pageNumber.value += 1;
 
     console.log('Data:', data);
+
   } catch (error) {
     console.error('Error fetching data:', error);
   } finally {
@@ -133,9 +135,30 @@ async function fetchData() {
   }
 }
 
+const getUserInfo = async () => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get('/user/info', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            }
+        });
+        if (response.status === 200) {
+            userName.value = response.data.first_name;
+        }
+        else {
+            console.log(response);
+        }
+    }
+    catch (e) {
+        useToast().error("Failed to get user information");
+    }
+ }
 
 onMounted(() => {
-  fetchData();
+    getUserInfo();
+    fetchData();
 });
 
 function goToRecipeDetails(id) {

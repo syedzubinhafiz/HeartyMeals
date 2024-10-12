@@ -1,8 +1,17 @@
 <template>
   <div class="page-container" @click="handleClickOutside">
-    <header class="header">
-      <Header></Header>
-    </header>
+    
+    <div v-if="userRole === 'admin'">
+      <header class="header">
+        <AdminHeader></AdminHeader>
+      </header>
+    </div>
+    <div v-else>
+      <header class="header">
+        <Header></Header>
+      </header>
+    </div>
+    
 
     <div class="image-container">
       <img src="@/assets/img/recipe_lib/bg.svg" class="background-image"/>
@@ -100,6 +109,7 @@ const instruction = ref('');
 
 const isOverlayVisible = ref(false)
 const selectedRecipe = ref(null)
+const userRole = ref(null);
 
 // for filter overlay
 const isFilterOverlayVisible = ref(false);
@@ -185,6 +195,26 @@ async function fetchData(filters = {}) {
   }
 }
 
+async function verifyAdmin(){
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await $axios.get('/user/verify/admin', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(response.data);
+    if (response.data) {
+      userRole.value = 'admin';
+    } else {
+      userRole.value = 'patient';
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
 const debouncedOnInput = debounce(async () => {
   pageNumber.value = 1;
   searchResults.value = [];
@@ -197,9 +227,9 @@ function onScroll(event) {
   if (bottom) {
     fetchData(savedFilters.value);
   }
-}
+} 
 
-onMounted(() => {
+onMounted(async() => {
   fetchData(savedFilters.value);
   document.addEventListener('click', handleClickOutside);
 
@@ -209,6 +239,7 @@ onMounted(() => {
     localStorage.removeItem("recipeId")
   }
 
+  await verifyAdmin();
   
 });
 

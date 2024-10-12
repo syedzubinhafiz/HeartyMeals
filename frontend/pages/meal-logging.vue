@@ -652,7 +652,7 @@ onMounted(async () => {
 
 .nutrition-budget {
   position: absolute;
-  top: 15%;
+  top: 12.5%;
   right: 0%;
   width: 45%;
   height: 60%;

@@ -1,7 +1,7 @@
 
 <template>
     <div class="absolute w-screen z-40" style="z-index: 10">
-        <Header/>
+        <AdminHeader/>
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
