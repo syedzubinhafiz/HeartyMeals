@@ -1,7 +1,7 @@
 <!-- AnalyticsMonth.vue -->
 <template>
+  <Header/>
   <div class="analytics-container">
-    <Header/>
     <main class="main-content">
       <div class="top-section">
       <h1 class="title">Diet Analytics</h1>
@@ -81,10 +81,11 @@
 
       </div>
     </main>
-      </div>
-      <div class="section flex flex-col justify-end fixed-footer ">
-            <Footer />
-        </div>
+  </div>
+
+  <div class="fixed-footer ">
+        <Footer />
+    </div>
 </template>
 
 <script setup>
@@ -439,7 +440,6 @@ const chartOptions = {
 .analytics-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 .main-content {
@@ -656,7 +656,11 @@ const chartOptions = {
   color: white;
 }
 
-
+.fixed-footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
 
 /* Color classes for metric cards */
 .calories .metric-title { background-color: #B8B396; }
@@ -690,12 +694,6 @@ const chartOptions = {
     margin-bottom: 1rem;
   }
 
-  .fixed-footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    z-index: 1000; 
-    background-color: inherit; 
-}
+
 }
 </style>

@@ -22,9 +22,11 @@
                         </button>
                     </NuxtLink>
 
-                    <button class="custom-button">
-                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
-                    </button>
+                    <NuxtLink to="/meal-planning">
+                        <button class="custom-button">
+                            <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
+                        </button>
+                    </NuxtLink>
                 </div>
                 
             </div>

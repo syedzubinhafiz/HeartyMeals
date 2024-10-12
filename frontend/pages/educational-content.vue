@@ -206,7 +206,6 @@ const handleClickOutside = (event) => {
   display: flex;
   align-items: center;
   background-color: #F8F2E2;
-  margin-top:6%;
   width: 50%;
   border: 1px solid #ccc;
   border-radius: 50px;

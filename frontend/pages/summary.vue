@@ -432,7 +432,12 @@ async function logMeal(){
     if (response.data.status == 200){
       isLoading.value = false;
       useToast().success("All meals has been logged!")
-      navigateTo('/meal-logging')
+      console.log(mealInfo.value.logType)
+      if (mealInfo.value.logType === "planning"){
+        navigateTo('/meal-planning')
+      } else {
+        navigateTo('/meal-logging')
+      }
     } else if(response.data.status == 400){
       useToast().error(response.data.message)
     }

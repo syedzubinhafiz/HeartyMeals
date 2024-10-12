@@ -82,7 +82,7 @@
         </div>
       </main>
     </div>
-    <div class="section flex flex-col justify-end fixed-footer ">
+    <div class="fixed-footer ">
             <Footer />
         </div>
   </template>
@@ -428,7 +428,6 @@ width: 50%;
 .analytics-container {
 display: flex;
 flex-direction: column;
-min-height: 100vh;
 }
 
 .main-content {
@@ -638,6 +637,12 @@ border-radius: 20px;
   color: white;
 }
 
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
 
 
 /* Color classes for metric cards */
