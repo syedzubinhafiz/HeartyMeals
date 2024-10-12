@@ -218,7 +218,6 @@ import NutritionBar from './NutritionBar.vue';
                 if (caloriesBar.value) {
                     caloriesBar.value.style.transition = 'stroke-dashoffset 1s';
                     caloriesBar.value.style.strokeDashoffset = strokeDashoffset;
-                    console.log(caloriesBar.value.style.strokeDashoffset);
                 }
 
             }

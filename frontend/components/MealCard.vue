@@ -1,6 +1,7 @@
 <template>
   <div class="meal-card-wrapper">
-    <div class="p-6 rounded-lg w-72 flex-shrink-0 flex flex-col items-center justify-between transition-all duration-300">
+    <div class="p-6 rounded-lg w-72 flex-shrink-0 flex flex-col items-center justify-between transition-all duration-300"
+      @click="handleCardClick">
       <div class="relative w-full">
         <!-- Image, positioned absolutely to not affect layout -->
         <img :src="cardInfo.image" alt="Meal Image" class="absolute w-20 h-20 object-cover rounded-full mb-4 z-10 left-1/2 transform -translate-x-1/2 -top-1" />
@@ -57,6 +58,10 @@ export default {
       this.cardStyle.backgroundColor = '#427573'; // Reset background color
       this.isHovered = false; // Show title, hide description when not hovered
       this.hoveredDescriptionClass = ''; // Remove the margin when not hovered
+    },
+    handleCardClick() {
+      localStorage.setItem('educationalContentId', this.cardInfo.id);
+      navigateTo('/educational-content');
     }
   }
 };

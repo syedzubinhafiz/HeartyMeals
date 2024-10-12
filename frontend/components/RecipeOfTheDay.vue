@@ -124,8 +124,6 @@ watch(() => props.recipeNutrition, (newVal, oldVal) => {
   recipeNutrition.value.cholesterol = newVal.cholesterol;
   recipeNutrition.value.protein = newVal.protein;
   recipeNutrition.value.carbohydrates = newVal.carbohydrates;
-
-  console.log(recipeNutrition.value);
 }, { deep: true });
 
 const showNutrition = ref(false);

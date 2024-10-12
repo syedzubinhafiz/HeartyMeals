@@ -303,6 +303,7 @@ const getEducationalContent = async () => {
 
             for (let i = 0; i < educationalContent.length; i++) {
                 cardData.value.push({
+                    id: educationalContent[i].id,
                     title: educationalContent[i].title,
                     description: educationalContent[i].summary,
                     image: educationalContent[i].storage_links.thumbnail

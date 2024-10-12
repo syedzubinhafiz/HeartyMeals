@@ -156,6 +156,13 @@ const onScroll = (event) => {
 
 onMounted(() => {
   fetchContentData();  // Load initial content data
+
+  if (localStorage.getItem('educationalContentId')) {
+    const content = {id: localStorage.getItem('educationalContentId')};
+    // Fetch content data for the selected content
+    openOverlay(content);
+    localStorage.removeItem('educationalContentId');
+  }
 });
 
 watch(searchValue, (newQuery) => {
