@@ -52,198 +52,200 @@
                     </span>
                 </div> 
 
-                <div class="metric-row">
-                  <span class="metric-label">% Days Under Guideline</span>
-                  <span class="metric-value">
-                      {{ metric.data['% Days Under Guideline'] }}
-                    </span>
-                </div> 
+                  <div class="metric-row">
+                    <span class="metric-label">% Days Under Guideline</span>
+                    <span class="metric-value">
+                        {{ metric.data['% Days Under Guideline'] }}
+                      </span>
+                  </div> 
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-        <div class="chart-section">
-            <div class="chart-container">
-              <h3 class="chart-title">Daily Protein Intake</h3>
-              <Line :data="chartData" :options="chartOptions" />
-              <div class="chart-legend-wrapper">
-              <div class="chart-legend">
-                <button v-for="dataset in datasets" :key="dataset" 
-                        :class="['legend-item', { active: activeDataset === dataset }]" 
-                        @click="setActiveDataset(dataset)">
-                  {{ dataset }}
-                </button>
+  
+          <div class="chart-section">
+              <div class="chart-container">
+                <h3 class="chart-title">Daily Protein Intake</h3>
+                <Line :data="chartData" :options="chartOptions" />
+                <div class="chart-legend-wrapper">
+                <div class="chart-legend">
+                  <button v-for="dataset in datasets" :key="dataset" 
+                          :class="['legend-item', { active: activeDataset === dataset }]" 
+                          @click="setActiveDataset(dataset)">
+                    {{ dataset }}
+                  </button>
+                </div>
+              </div>
               </div>
             </div>
-            </div>
-          </div>
-
-      </div>
-    </main>
-    <Footer/>
-  </div>
-</template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { Line } from 'vue-chartjs'
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
-import caloriesIcon from '/assets/img/Calories-Icon.svg'
-import proteinIcon from '/assets/img/Protein.svg'
-import carbsIcon from '/assets/img/Carbo-Icon.svg'
-import fatsIcon from '/assets/img/Olive-oil.svg'
-import sodiumIcon from '/assets/img/Salt.svg'
-import cholesterolIcon from '/assets/img/Egg.svg'
-import { useNuxtApp } from '#app'
-
-const {$axios} = useNuxtApp()
-
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-
-defineOptions({
-  name: "AnalyticsMonth",
-})
-
-definePageMeta({
-  layout: "emptylayout"
-})
-
-const view = ref('month')
-const setView = (newView) => {
-  view.value = newView
-  navigateTo(`/analytics-${newView}`)
-}
-
-const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']
-const activeDataset = ref('Protein')
-
-
-const proteinData = computed(() => {
-  if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
-  return {
-    daily_budget: monthlyData.value.protein.daily_budget,
-    days: monthlyData.value.protein.days
+  
+        </div>
+      </main>
+    </div>
+    <div class="section flex flex-col justify-end fixed-footer ">
+            <Footer />
+        </div>
+  </template>
+  
+  <script setup>
+  import { ref, onMounted } from 'vue'
+  import { Line } from 'vue-chartjs'
+  import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
+  import caloriesIcon from '/assets/img/Calories-Icon.svg'
+  import proteinIcon from '/assets/img/Protein.svg'
+  import carbsIcon from '/assets/img/Carbo-Icon.svg'
+  import fatsIcon from '/assets/img/Olive-oil.svg'
+  import sodiumIcon from '/assets/img/Salt.svg'
+  import cholesterolIcon from '/assets/img/Egg.svg'
+  import { useNuxtApp } from '#app'
+  
+  const {$axios} = useNuxtApp()
+  
+  
+  ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+  
+  defineOptions({
+    name: "AnalyticsMonth",
+  })
+  
+  definePageMeta({
+    layout: "emptylayout"
+  })
+  
+  const view = ref('month')
+  const setView = (newView) => {
+    view.value = newView
+    navigateTo(`/analytics-${newView}`)
   }
-})
-
-
-const carbsData = computed(() => {
-  if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
-  return {
-    daily_budget: monthlyData.value.carbs.daily_budget,
-    days: monthlyData.value.carbs.days
+  
+  const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']
+  const activeDataset = ref('Protein')
+  
+  
+  const proteinData = computed(() => {
+    if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
+    return {
+      daily_budget: monthlyData.value.protein.daily_budget,
+      days: monthlyData.value.protein.days
+    }
+  })
+  
+  
+  const carbsData = computed(() => {
+    if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
+    return {
+      daily_budget: monthlyData.value.carbs.daily_budget,
+      days: monthlyData.value.carbs.days
+    }
+  })
+  
+  
+  const cholestrolData = computed(() => {
+    if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
+    return {
+      daily_budget: monthlyData.value.cholesterol.daily_budget,
+      days: monthlyData.value.cholesterol.days
+    }
+  })
+  
+  const fatsData = computed(() => {
+    if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
+    return {
+      daily_budget: monthlyData.value.fat.daily_budget,
+      days: monthlyData.value.fat.days
+    }
+  })
+  
+  const sodiumData = computed(() => {
+    if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
+    return {
+      daily_budget: monthlyData.value.sodium.daily_budget,
+      days: monthlyData.value.sodium.days
+    }
+  })
+  
+  
+  
+  const setActiveDataset = (dataset) => {
+    activeDataset.value = dataset
+    console.log('Active dataset:', proteinData.value)
+    // Update chart data based on selected dataset
+    switch (dataset) {
+      case 'Protein':
+        chartData.value = proteinData
+        break
+      case 'Carbs':
+        chartData.value = carbsData
+        break
+      case 'Fats':
+        chartData.value = fatsData
+        break
+      case 'Sodium':
+        chartData.value = sodiumData
+        break
+      case 'Cholestrol':
+        chartData.value = cholestrolData
+        break
+    }
   }
-})
-
-
-const cholestrolData = computed(() => {
-  if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
-  return {
-    daily_budget: monthlyData.value.cholesterol.daily_budget,
-    days: monthlyData.value.cholesterol.days
-  }
-})
-
-const fatsData = computed(() => {
-  if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
-  return {
-    daily_budget: monthlyData.value.fat.daily_budget,
-    days: monthlyData.value.fat.days
-  }
-})
-
-const sodiumData = computed(() => {
-  if (!monthlyData.value) return [] // Return empty array if data is not yet loaded
-  return {
-    daily_budget: monthlyData.value.sodium.daily_budget,
-    days: monthlyData.value.sodium.days
-  }
-})
-
-
-
-const setActiveDataset = (dataset) => {
-  activeDataset.value = dataset
-  console.log('Active dataset:', proteinData.value)
-  // Update chart data based on selected dataset
-  switch (dataset) {
-    case 'Protein':
-      chartData.value = proteinData
-      break
-    case 'Carbs':
-      chartData.value = carbsData
-      break
-    case 'Fats':
-      chartData.value = fatsData
-      break
-    case 'Sodium':
-      chartData.value = sodiumData
-      break
-    case 'Cholestrol':
-      chartData.value = cholestrolData
-      break
-  }
-}
-
-const chartData = computed(() => {
-  if (!monthlyData.value) return { labels: [], datasets: [] }; // Return empty chart data if weeklyData is not loaded
-
-  let activeData;
-  let unit = '';
-  switch (activeDataset.value) {
-    case 'Protein':
-      activeData = monthlyData.value.protein;
-      unit = 'g';
-      break;
-    case 'Carbs':
-      activeData = monthlyData.value.carbs;
-      unit = 'g';
-      break;
-    case 'Cholestrol':
-      activeData = monthlyData.value.cholesterol;
-      unit = 'mg';
-      break;
-    case 'Fats':
-      activeData = monthlyData.value.fat;
-      unit = 'g';
-      break;
-    case 'Sodium':
-      activeData = monthlyData.value.sodium;
-      unit = 'mg';
-      break;
-    default:
-      activeData = monthlyData.value.calories;
-      unit = 'kcal';
-  }
-
-  return {
-    labels: activeData.days.map(day => day.date),
-    datasets: [
-      {
-        label: `Daily Budget (${unit})`,
-        borderColor: '#000000',
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        data: Array(activeData.days.length).fill(activeData.daily_budget),
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: true
-      },
-      {
-        label: `Daily Consumption (${unit})`,
-        borderColor: '#4CAF50',
-        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-        data: activeData.days.map(day => day.consumption),
-        borderWidth: 2,
-        pointRadius: 4,
-        fill: true
-      }
-    ]
-  };
-});
-
-
+  
+  const chartData = computed(() => {
+    if (!monthlyData.value) return { labels: [], datasets: [] }; // Return empty chart data if weeklyData is not loaded
+  
+    let activeData;
+    let unit = '';
+    switch (activeDataset.value) {
+      case 'Protein':
+        activeData = monthlyData.value.protein;
+        unit = 'g';
+        break;
+      case 'Carbs':
+        activeData = monthlyData.value.carbs;
+        unit = 'g';
+        break;
+      case 'Cholestrol':
+        activeData = monthlyData.value.cholesterol;
+        unit = 'mg';
+        break;
+      case 'Fats':
+        activeData = monthlyData.value.fat;
+        unit = 'g';
+        break;
+      case 'Sodium':
+        activeData = monthlyData.value.sodium;
+        unit = 'mg';
+        break;
+      default:
+        activeData = monthlyData.value.calories;
+        unit = 'kcal';
+    }
+  
+    return {
+      labels: activeData.days.map(day => day.date),
+      datasets: [
+        {
+          label: `Daily Budget (${unit})`,
+          borderColor: '#000000',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          data: Array(activeData.days.length).fill(activeData.daily_budget),
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true
+        },
+        {
+          label: `Daily Consumption (${unit})`,
+          borderColor: '#4CAF50',
+          backgroundColor: 'rgba(76, 175, 80, 0.1)',
+          data: activeData.days.map(day => day.consumption),
+          borderWidth: 2,
+          pointRadius: 4,
+          fill: true
+        }
+      ]
+    };
+  });
+  
+  
 // const currentDate = ref(new Date());
 
 
