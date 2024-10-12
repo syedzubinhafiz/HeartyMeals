@@ -31,13 +31,18 @@
         <div 
           v-if="showNutrition" 
           class="absolute bottom-10 right-0 bg-white text-black p-4 rounded-lg shadow-lg nutrition-info-container"
+          style="display: flex; column-gap: 15%; align-items: center; width: 35vh;"
         >
+        <div>
           <p>Calories: {{ recipeNutrition.calories }}cal</p>
-          <p>Fat: {{ recipeNutrition.fat }}g</p>
           <p>Sodium: {{ recipeNutrition.sodium }}mg</p>
-          <p>Protein: {{ recipeNutrition.protein }}g</p>
           <p>Carbohydrates: {{ recipeNutrition.carbohydrates }}g</p>
+        </div>
+        <div>
+          <p>Fat: {{ recipeNutrition.fat }}g</p>
+          <p>Protein: {{ recipeNutrition.protein }}g</p>
           <p>Cholesterol: {{ recipeNutrition.cholesterol }}mg</p>
+        </div>
         </div>
       </div>
     </div>
@@ -224,5 +229,9 @@ function navigateToRecipeLibrary() {
   width: 100%;
   font-size: 0.75rem;
   cursor: pointer;
+}
+
+.nutrition-info-container p {
+  margin-bottom: 2.5%;
 }
 </style>
