@@ -149,16 +149,16 @@ const getData = async () => {
   console.log(currentDate)
   analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
   console.log(analyticsData.value)
-  breakfastTotal.value = analyticsData.value.value.Breakfast_total
-  breakfastList.value = analyticsData.value.value.Breakfast
-  lunchTotal.value = analyticsData.value.value.Lunch_total
-  lunchList.value = analyticsData.value.value.Lunch
-  dinnerTotal.value = analyticsData.value.value.Dinner_total
-  dinnerList.value = analyticsData.value.value.Dinner
-  otherTotal.value = analyticsData.value.value.Other_total
-  otherList.value = analyticsData.value.value.Other
+  breakfastTotal.value = analyticsData.value.value.breakfast_total ?? analyticsData.value.value.Breakfast_total 
+  breakfastList.value = analyticsData.value.value.breakfast ?? analyticsData.value.value.Breakfast 
+  lunchTotal.value = analyticsData.value.value.lunch_total ?? analyticsData.value.value.Lunch_total 
+  lunchList.value = analyticsData.value.value.lunch ?? analyticsData.value.value.Lunch 
+  dinnerTotal.value = analyticsData.value.value.dinner_total ?? analyticsData.value.value.Dinner_total 
+  dinnerList.value = analyticsData.value.value.dinner ?? analyticsData.value.value.Dinner 
+  otherTotal.value = analyticsData.value.value.other_total ?? analyticsData.value.value.Other_total 
+  otherList.value = analyticsData.value.value.other ?? analyticsData.value.value.Other 
 
-
+  console.log(analyticsData.value.value)
   let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
   console.log(result);
 

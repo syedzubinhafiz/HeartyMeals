@@ -6,7 +6,7 @@
         <!-- section 1 -->
         <div class="section1-container">
             <div class="section1-content">
-                <h1 class="section1-heading">Welcome back, Bruno Mars</h1>
+                <h1 class="section1-heading">Welcome back, {{ firstName }}</h1>
                 <p class="section1-subheading">What do you want to do today?</p>
 
                 <div class="section1-buttons">
@@ -21,10 +21,12 @@
                             <img src="/assets/img/logging-icon.png" alt="Meal Logging" /> Meal Logging
                         </button>
                     </NuxtLink>
+                    <NuxtLink to="/meal-planning">
+                        <button class="custom-button">
+                            <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
+                        </button>
+                    </NuxtLink>
 
-                    <button class="custom-button">
-                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
-                    </button>
                 </div>
                 
             </div>
@@ -130,6 +132,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import NutrientData from '../classes/nutrientData.js'
 const maxNutrientData = ref(null)
 const nutrientData = ref(null)
+const firstName = ref("");
 onMounted(async() => {
     const sections = document.querySelectorAll('.section');
     let currentSection = 0;
@@ -154,14 +157,19 @@ onMounted(async() => {
     await useApi("/dietary","GET")
 
     let currentDate = new Date()
-    currentDate.setUTCHours(-8, 0, 0, 0)
-    currentDate = currentDate.toISOString()
-
-    let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
+    currentDate = currentDate.toISOString().split('T')[0];
+    let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
     console.log(result)
 
-    maxNutrientData.value = NutrientData.fromApi2(result.value[0])
-    nutrientData.value = NutrientData.fromApi2(result.value[1])
+    maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0])
+    nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1])
+
+    const userInfo = await useApi("/user/info", "GET");
+    console.log("userinfo");
+    console.log(userInfo)
+    firstName.value = userInfo.value.first_name || "Guest";
+    console.log("name");
+    console.log(firstName.value);
 });
 
 

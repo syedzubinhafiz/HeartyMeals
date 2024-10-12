@@ -180,8 +180,8 @@ const applyChanges = async () => {
 
     medicalInfo : userInfoEdit.value.medical_info,
     age: userInfoEdit.value.age,
-    height : userInfoEdit.value.weight,
-    weight: userInfoEdit.value.height,
+    weight: userInfoEdit.value.weight,
+    height : userInfoEdit.value.height,
     userNutritionSetting: {
       carbsPercentage: userInfoEdit.value.user_nutrition_setting.carbs_percentage,
       proteinPercentage: userInfoEdit.value.user_nutrition_setting.protein_percentage,

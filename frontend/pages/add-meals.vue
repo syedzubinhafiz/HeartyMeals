@@ -69,7 +69,13 @@
     <div class="text-black">
 
       <!-- Sidebar Component -->
-      <StomachSidebar v-model="mealDataList2" v-model:isSidebarOpen="isSidebarOpen" :mealType="mealType" />
+      <StomachSidebar 
+      v-model="mealDataList2" 
+      v-model:isSidebarOpen="isSidebarOpen" 
+      :mealType="mealType" 
+      :selectedDate="selectedDate"
+      :ismealplanning="ismealplanning"
+    />
       <!-- Popup Overlay -->
       <CustomDishPopup v-model:isPopupOpen="isPopupOpen" class="text-black"/>
     </div>
@@ -104,6 +110,8 @@ const searchDataList = ref([]);
 
 const route = useRoute()
 const mealType = ref(route.query.mealType || "");
+const selectedDate = ref(route.query.selectedDate || "");
+const ismealplanning = ref(route.query.ismealplanning === 'true');
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -166,7 +174,7 @@ const selectedMeal = ref(null)
 
 const openOverlay = async (meal) => {
   const detailedMealInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
-  console.log(detailedMealInfo)
+  console.log(detailedMealInfo.value)
   selectedMeal.value = detailedMealInfo.value
   isOverlayVisible.value = true
 }
