@@ -156,8 +156,7 @@ onMounted(async() => {
 
     await useApi("/dietary","GET")
 
-    let currentDate = new Date()
-    currentDate = currentDate.toISOString().split('T')[0];
+    let currentDate = useDate().getFormattedDateShort()
     let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
     console.log(result)
 
