@@ -34,6 +34,13 @@
         >
           Search Results for "{{ searchValue }}"
         </p>
+        <p
+          class="aligned-paragraph"
+          style="font-size: 15px; margin-top: 20px;"
+          v-if="!searchValue"
+        >
+          Recently Added Content
+        </p>
       </div>
 
       <div class="search-result-container" @scroll="onScroll">
@@ -158,11 +165,31 @@ watch(searchValue, (newQuery) => {
 
 });
 
-const openOverlay = (content) => {
-  overlayHeader.value = content.title;
-  overlayImageSrc.value = content.thumbnail;
-  isOverlayVisible.value = true;
-  overlayContent.value = content.storage_links.content
+const openOverlay = async (content) => {
+
+  try{ 
+    const token = localStorage.getItem('accessToken');
+    const response = await $axios.get('/education/get', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        educationalContentId: content.id,
+      },
+    });
+
+    content = response.data;
+    console.log(content)
+    overlayHeader.value = content.title;
+    overlayImageSrc.value = content.storage_links.thumbnail;
+    isOverlayVisible.value = true;
+    overlayContent.value = content.content
+  } catch (error) {
+    console.error('Unexpected error:', error);
+  } 
+
+
 };
 
 
@@ -253,7 +280,6 @@ const openOverlay = (content) => {
   display: flex;
   justify-content: flex-start;
   padding-left: 15px;
-  padding-bottom: 2.5%;
 }
 
 .search-result-container {

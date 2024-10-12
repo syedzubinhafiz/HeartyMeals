@@ -70,7 +70,8 @@ export class EducationalService {
                 'educational_content.title', 
                 'educational_content.summary',
                 'educational_content.storage_links',
-                'educational_content.visibility'                
+                'educational_content.visibility',
+                'educational_content.created_at',             
             ])
             .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
                 
@@ -86,7 +87,7 @@ export class EducationalService {
                 .take(take)
             };
             
-            const [result, no_of_results] = await query.getManyAndCount();
+            const [result, no_of_results] = await query.orderBy("educational_content.created_at", "DESC").getManyAndCount();
 
             for (const edu_content of result){
                 // set the thumbnail link
