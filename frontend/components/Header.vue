@@ -25,37 +25,37 @@
       <nav class="mt-5">
         <ul>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/temp" class="flex items-center text-black">
               <i class="bi bi-house mr-2"></i> Home
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/meal-logging" class="flex items-center text-black">
               <i class="bi bi-journals mr-2"></i> Meal Logging
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/recipe-library" class="flex items-center text-black">
               <i class="bi bi-basket mr-2"></i> Recipe Library
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/meal-planning" class="flex items-center text-black">
               <i class="bi bi-card-list mr-2"></i> Meal Planning
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/analytics-day" class="flex items-center text-black">
               <i class="bi bi-graph-up mr-2"></i> Diet Analytics
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/educational-content" class="flex items-center text-black">
               <i class="bi bi-easel mr-2"></i> Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black">
+            <a href="/profile-page" class="flex items-center text-black">
               <i class="bi bi-person mr-2"></i> Profile Page
             </a>
           </li>

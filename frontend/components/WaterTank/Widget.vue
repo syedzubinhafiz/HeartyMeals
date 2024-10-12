@@ -116,8 +116,10 @@ async function logIntake() {
   showOverlay.value = false;
 
   const result = await useApi("/fluid-logging/update","POST",{
-    "loggingDate": currentDate,
-    "waterIntake": waterConsumed.value
+    "loggingDateTime": currentDate,
+    "timeZone": "Asia/Kuala_Lumpur",
+    "waterIntake": waterConsumed.value,
+    "fluidUnit": "ml"
   })
   console.log(result)
   if(result.isError) {

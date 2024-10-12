@@ -72,7 +72,9 @@ const selectMeal = () => {
 
 const removeMeal = async () => {
   let result = await useApi("/meal-logging/delete", "DELETE", {
-    "mealDate": props.cardInfo.created_at,
+    "mealDate": props.cardInfo.created_at.split('T')[0],
+    "userLocalDate": (new Date()).toISOString().split('T')[0],
+    "timeZone": "Asia/Kuala_Lumpur",
     "mealLoggingId": props.cardInfo.id,
     "mealType": props.cardInfo.type
   });
