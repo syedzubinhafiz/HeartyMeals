@@ -1,22 +1,35 @@
 <template>
-    <div class="card-container shadow-lg overflow-hidden">
-      <!-- Image section -->
-      <div class="image-container">
-        <!-- You can add your image here -->
-        <img :src="('assets/img/edcontentimg.svg')" alt="Card Image" class="w-full h-full object-cover" />
-      </div>
-  
-      <!-- Text section -->
-      <div class="text-container bg-white p-4">
-        <h3 class="text-lg font-bold" style="color: black;">Diagnosing Heart Failure</h3>
-        <p class="mt-2 text-gray-600">
-          It's always important to have regular checkups even if you're not noticing any particular symptoms. If you do notice any of the potential signs of heart failure, take action and talk to a health care professional.
-        </p>
-      </div>
+  <div class="card-container shadow-lg overflow-hidden">
+    <!-- <div class="image-container">
+      <img :src="thumbnail" alt="Card Image" class="w-full h-full object-cover" />
+    </div> -->
+    <div class="image-container">
+      <img :src="'assets/img/potato.svg'" alt="Card Image" class="w-full h-full object-cover" />
     </div>
-  </template>
+    <div class="text-container bg-white p-4">
+      <h3 class="text-lg font-bold text-black">{{ title }}</h3>
+      <p class="mt-2 text-gray-600">{{ summary }}</p>
+    </div>
+  </div>
+</template>
   
-  <script setup>
+  <script>
+  export default {
+  props: {
+    title: {
+      type: String,
+      required: true,
+    },
+    summary: {
+      type: String,
+      required: true,
+    },
+    thumbnail: {
+      type: String,
+      required: false,
+    },
+  },
+};
   </script>
   
   <style scoped>
