@@ -194,8 +194,6 @@ const fetchDataForCurrentDate = async () => {
 
 onMounted(async () => {
   await useApi("/dietary", "GET");
-  let recipes = await useFillData().fillRecipes();
-  let mealLoggingRecipes = await useFillData().fillMealLogging();
   await fetchDataForCurrentDate();
 });
 </script>
