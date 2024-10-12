@@ -16,7 +16,7 @@
 
         <div class="date-navigation">
           <button class="nav-arrow" @click="prevWeek">‹</button>
-          <span class="date-range">21 April 2024 - 27 April 2024</span>
+          <span class="date-range">{{ formattedStartDate }} - {{ formattedEndDate }}</span>
           <button class="nav-arrow" @click="nextWeek">›</button>
         </div>
 
@@ -413,15 +413,6 @@ const metrics = computed(() => {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      max: 100,
-      ticks: {
-        stepSize: 20
-      }
-    }
-  },
   plugins: {
     legend: {
       display: true
