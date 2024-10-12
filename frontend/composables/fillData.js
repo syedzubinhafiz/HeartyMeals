@@ -466,7 +466,7 @@ export const useFillData = () => {
     }
     const fillMealLogging = async() => {
         let currentDate = new Date()
-        currentDate = currentDate.toISOString().split('T')[0]
+        currentDate = useDate().getFormattedDateShort()
         console.log(currentDate)
         // get
         let data = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")

@@ -97,7 +97,7 @@ onMounted(async () => {
 async function fetchFluidLogging() {
   try {
     let currentDate = new Date();
-    currentDate = currentDate.toISOString().split('T')[0];
+    currentDate = useDate().getFormattedDateShort();
     const response = await useApi(`/fluid-logging/get?dateTime=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
     console.log(response)
     intakeAmount.value = response.value.remaining_fluid
@@ -112,7 +112,7 @@ async function logIntake() {
 
   
   let currentDate = new Date();
-  currentDate = currentDate.toISOString().split('T')[0];
+  currentDate = useDate().getFormattedDateShort()
   showOverlay.value = false;
 
   const result = await useApi("/fluid-logging/update","POST",{

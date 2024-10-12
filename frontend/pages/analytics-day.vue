@@ -143,9 +143,11 @@ onMounted(async() => {
 })
 
 const getData = async () => {
+  console.log((new Date()))
+  console.log(useDate().getFormattedDateLong())
 
   let currentDate = currentDay.value
-  currentDate = currentDate.toISOString().split('T')[0]
+  currentDate = useDate().getFormattedDateShort(true)
   console.log(currentDate)
   analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
   console.log(analyticsData.value)

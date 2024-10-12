@@ -141,12 +141,12 @@
         // formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
         console.log(formattedCurrentDate)
         
-        let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
+        let formattedISODate = useDate().getFormattedDateShort(formattedCurrentDate);
         console.log(formattedISODate)
 
         
         //formattedCurrentDate.setUTCHours(formattedCurrentDate.getUTCHours() + 8);
-        let formattedISODate8 = formattedCurrentDate.toISOString().split('T')[0];
+        let formattedISODate8 = useDate().getFormattedDateShort(formattedCurrentDate);
         console.log(formattedISODate8);
 
 

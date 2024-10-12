@@ -54,7 +54,7 @@ const props = defineProps({
   isFuture: Boolean,
   isoDate: {
     type: String,
-    default: (new Date()).toISOString(),
+    default: useDate().getFormattedDateLong(),
   },
 });
 

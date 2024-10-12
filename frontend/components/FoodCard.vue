@@ -46,7 +46,7 @@ const props = defineProps({
   },
   dateStr: {
     type: String,
-    default: (new Date())?.toISOString()
+    default: useDate().getFormattedDateLong()
   }
 });
 const is_consumed = ref(props.cardInfo.is_consumed);
@@ -73,7 +73,7 @@ const selectMeal = () => {
 const removeMeal = async () => {
   let result = await useApi("/meal-logging/delete", "DELETE", {
     "mealDate": props.cardInfo.created_at.split('T')[0],
-    "userLocalDate": (new Date()).toISOString().split('T')[0],
+    "userLocalDate": useDate().getFormattedDateShort(),
     "timeZone": "Asia/Kuala_Lumpur",
     "mealLoggingId": props.cardInfo.id,
     "mealType": props.cardInfo.type

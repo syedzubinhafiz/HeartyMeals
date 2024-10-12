@@ -112,8 +112,7 @@ const alreadyLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, c
 const aboutToLog = ref({calories: 0, carbs: 0, protein: 0, fats: 0, sodium: 0, cholesterol: 0});
 
 const calculateNutrition = async () => {
-  let currentDate = new Date();
-  currentDate = currentDate.toISOString().split('T')[0];
+  let currentDate = useDate().getFormattedDateShort();
 
   console.log(mealType.value);
 
@@ -159,9 +158,8 @@ const handleDoneClick = async () => {
   currentDate = currentDate.toISOString();
 
   for (let i = 0; i < summaryData.value.length; i++) {
-    let currentDate = new Date()
 
-    currentDate = currentDate.toISOString().split('T')[0]
+    let currentDate = useDate().getFormattedDateShort()
     let result = await useFillData().createMeal(currentDate,summaryData.value[i].id,mealType.value,summaryData.value[i].servings)
     if(result.isError) {
       useToast().error("Meal logging failed!")

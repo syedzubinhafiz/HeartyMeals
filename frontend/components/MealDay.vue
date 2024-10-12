@@ -175,7 +175,7 @@ const openEditMealPopup = (meal) => {
 const fetchDataForCurrentDate = async () => {
   const formattedDateStr = `${props.formattedDate} ${new Date().getFullYear()}`;
   let formattedCurrentDate = new Date(formattedDateStr);
-  let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
+  let formattedISODate = useDate().getFormattedDateShort(formattedCurrentDate);
 
   let result = await useApi(`/user/budget?startDate=${formattedISODate}&timeZone=Asia/Kuala_Lumpur`, "GET");
 
