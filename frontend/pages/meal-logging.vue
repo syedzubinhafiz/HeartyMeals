@@ -72,6 +72,7 @@
                             :cardInfo="card" 
                             :isToday="isToday"  
                             class="mb-4" 
+                            :dateStr="currentDate?.toISOString()"
                             @removeMeal="removeMeal('otherList', index)"
                             @editMeal="openEditMealPopup(card)"
                             @selectMeal="setSelectedMeal"/>
@@ -129,7 +130,7 @@
             newDate.setDate(newDate.getDate() - 1);
             currentDate.value = newDate;
         } else {
-            alert("You can only view up to 7 days of history.");
+            useToast().info("You can only view up to 7 days of history.")
         }
     };
 
@@ -137,32 +138,33 @@
         console.log(currentDate.value)
 
         let formattedCurrentDate = new Date(currentDate.value);
+        // formattedCurrentDate.setUTCHours(-8, 0, 0, 0)
         console.log(formattedCurrentDate)
         
-        let formattedISODate = formattedCurrentDate.toISOString();
+        let formattedISODate = formattedCurrentDate.toISOString().split('T')[0];
         console.log(formattedISODate)
 
         
         //formattedCurrentDate.setUTCHours(formattedCurrentDate.getUTCHours() + 8);
-        let formattedISODate8 = formattedCurrentDate.toISOString();
+        let formattedISODate8 = formattedCurrentDate.toISOString().split('T')[0];
         console.log(formattedISODate8);
 
 
-        let result = await useApi(`/user/budget?date=${formattedISODate8}`, "GET");
+        let result = await useApi(`/user/budget?startDate=${formattedISODate8}&timeZone=Asia/Kuala_Lumpur`, "GET");
         console.log(result);
 
-        maxNutrientData.value = NutrientData.fromApi2(result.value[0]);
-        nutrientData.value = NutrientData.fromApi2(result.value[1]);
+        maxNutrientData.value = NutrientData.fromApi2(result.value[formattedISODate8][0]);
+        nutrientData.value = NutrientData.fromApi2(result.value[formattedISODate8][1]);
 
         let mealLoggingRecipes = await useFillData().fillMealLogging();
         console.log(mealLoggingRecipes)
         
-        let meals = await useApi(`/meal-logging/get?date=${formattedISODate8}`, "GET");
+        let meals = await useApi(`/meal-logging/get?startDate=${formattedISODate8}&timeZone=Asia/Kuala_Lumpur`, "GET");
         console.log(meals)
-        breakfastList.value = meals.value["Breakfast"];
-        lunchList.value = meals.value["Lunch"];
-        dinnerList.value = meals.value["Dinner"];
-        otherList.value = meals.value["Other"]; 
+        breakfastList.value = meals.value[formattedISODate8].meals["Breakfast"];
+        lunchList.value = meals.value[formattedISODate8].meals["Lunch"];
+        dinnerList.value = meals.value[formattedISODate8].meals["Dinner"];
+        otherList.value = meals.value[formattedISODate8].meals["Other"]; 
     };
 
     watch(currentDate, async () => {
@@ -173,7 +175,7 @@
     const nextDate = () => {
     const newDate = new Date(currentDate.value);
         if (newDate.toDateString() === today.toDateString()) {
-            alert("You can't log your meal for tomorrow, consider going to the meal planning page.");
+            useToast().info("You can't log your meal for tomorrow, consider going to the meal planning page.")
         } else {
             newDate.setDate(newDate.getDate() + 1);
             currentDate.value = newDate;
@@ -217,10 +219,8 @@
         console.log("mealtype", updatedMealInfo.mealType);
 
         let currentDate = new Date()
-        currentDate.setUTCHours(-8, 0, 0, 0)
+        // currentDate.setUTCHours(-8, 0, 0, 0)
         currentDate = currentDate.toISOString()
-
-  
 
         const portionSize = Number(updatedMealInfo.portionSize);
         const mealType = String(updatedMealInfo.mealType);
@@ -258,6 +258,8 @@
     onMounted(async () => {  
         await useApi("/dietary","GET")
         let recipes = await useFillData().fillRecipes()
+        console.log("recipes")
+        console.log(recipes)
         let mealLoggingRecipes = await useFillData().fillMealLogging()
         await fetchDataForCurrentDate();   
 

@@ -1,6 +1,5 @@
 <template>
   <div v-if="visible" class="mini-card bg-custom-bg-light p-4 rounded-lg shadow-lg absolute z-50" :style="customStyle">
-
     <div class="flex justify-between mb-2">
       <div>
         <div class="flex items-center mb-1">
@@ -28,69 +27,33 @@
       </div>
     </div>
 
-    <!-- Buttons (conditionally rendered) -->
-    <div v-if="showButtons" class="flex justify-between mb-2">
+    <!-- Conditionally render buttons -->
+    <div v-if="showButtons" class="flex justify-between">
       <button class="p-2 rounded-lg w-1/2 mr-2" @click="removeFood">Remove</button>
       <button class="p-2 rounded-lg w-1/2" @click="emitEditMeal">Edit</button>
-    </div>
-
-    <!-- Consume button -->
-    <div v-if="showButtons" class="flex justify-between">
-      <button
-        class="p-2 rounded-lg w-full"
-        :class="isConsumed ? 'bg-gray-400' : 'bg-green-400'"
-        @click="consumeMeal"
-      >
-        {{ isConsumed ? 'Consumed' : 'Consume Now' }}
-      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 const props = defineProps({
-  visible: {
-    type: Boolean,
-    required: true
-  },
-  nutritionInfo: {
-    type: Object,
-    required: true
-  },
+  visible: Boolean,
+  nutritionInfo: Object,
   showButtons: {
     type: Boolean,
     default: true
-  },
-  isConsumed: {
-    type: Boolean,
-    required: true
   }
 });
 
-const emit = defineEmits(['close', 'remove', 'editMeal', 'consumeMeal']);
+const emit = defineEmits(['close', 'remove', 'editMeal']);
+
+const removeFood = () => {
+  emit('remove');
+};
 
 const emitEditMeal = () => {
   emit('editMeal');
 };
-
-const closeCard = () => {
-  emit('close');
-};
-
-const removeFood = () => {
-  emit('remove');
-  closeCard();
-};
-
-const consumeMeal = () => {
-  emit('consumeMeal');
-};
-
-const customStyle = ref({
-  top: '100%',
-  right: '0',
-  transform: 'translateY(10px)'
-});
 </script>
 
 <style scoped>
@@ -102,18 +65,5 @@ const customStyle = ref({
 .icon-style {
   width: 20px;
   height: 20px;
-}
-
-button {
-  background-color: #b59f89;
-  color: #fff;
-}
-
-.bg-green-400 {
-  background-color: #68D391;
-}
-
-.bg-gray-400 {
-  background-color: #A0AEC0;
 }
 </style>

@@ -4,7 +4,7 @@
             <div class="w-full h-full" :style="`border-radius: 50%; background: conic-gradient( from -45deg, ${barColor} 0deg ${angle}deg, ${uncoveredBarColor} ${angle}deg 180deg, transparent 180deg 360deg); transform: rotate(-45deg);`"></div>
             <div :class="'absolute flex flex-col items-center '+bgColor" :style="`top: 50%; left: 50%; padding-top: 10%; width: ${componentSize*0.8}px; height: ${componentSize*0.8}px; border-radius: 50%; transform: translate(-50%, -50%);`">
                 <P>{{label}}</P>
-                <P>{{Math.round(props.value)}}/{{Math.round(props.maxValue)}}mg</P>
+                <P>{{Math.round(props.value)}}/{{Math.round(props.maxValue)}}{{unit}}</P>
             </div>
 
         </div>
@@ -45,6 +45,10 @@ const props = defineProps({
     componentSize: {
 		type: Number,
 		default: 200,
+	},
+	unit: {
+		type: String,
+		default: "g",
 	},
 })
 

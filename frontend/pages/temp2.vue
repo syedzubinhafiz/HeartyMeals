@@ -88,7 +88,7 @@ onMounted(async () => {
   await useApi("/dietary","GET")
   let recipes = await useFillData().fillRecipes();
   let currentDate = new Date()
-    currentDate.setUTCHours(-8, 0, 0, 0)
+    // currentDate.setUTCHours(-8, 0, 0, 0)
     currentDate = currentDate.toISOString()
   let result = await useApi(`/user/budget?date=${currentDate}`,"GET")
   console.log(result)

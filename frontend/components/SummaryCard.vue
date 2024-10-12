@@ -12,7 +12,7 @@
       </div>
       <div class="serving-selector">
         <label for="servings">Servings:</label>
-        <select v-model="servings" id="servings" @change="updateServings" @click.stop>
+        <select class="text-black" v-model="servings" id="servings" @change="updateServings" @click.stop>
           <option class="option-button" v-for="value in options" :key="value" :value="value">{{ value }}</option>
         </select>
       </div>
@@ -76,7 +76,7 @@ export default {
   data() {
     return {
       servings: this.item.servings,
-      options: [0.25, 0.5, 0.75, 1, 2],
+      options: [0.25, 0.5, 0.75, 1, 2, 3, 4],
       isExpanded: false,
       nutritionIcons: {
         calories: '/assets/img/Calories-Icon.svg',
@@ -186,7 +186,6 @@ export default {
 
 .option-button {
   background-color: white;
-  color: white;
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
