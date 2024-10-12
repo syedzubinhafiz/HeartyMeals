@@ -3,8 +3,8 @@
     <div class="relative text-center w-64">
       <div class="relative z-10 flex flex-col space-y-5 items-center translate-y-12">
         <P>{{ label }}</P>
-        <P>{{ value }}/{{ maxValue }}ml</P>
-        <button @click="showOverlay = true" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
+        <P>{{ intakeAmount }}/{{ maxValue }} {{ intakeUnit }}</P>
+        <button @click="openOverlay" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
           <img src="../../assets/img/Water Droplet.png" alt="Water Base" class="w-4 h-4 mr-2" />
           <p>Log Intake</p>
         </button>
@@ -54,22 +54,21 @@ const props = defineProps({
     type: String,
     default: "Remaining Water Intake",
   },
-  value: {
-    type: Number,
-    default: 1500,
-  },
   maxValue: {
     type: Number,
     default: 2000,
   },
-  icon:{
+  icon: {
     type: String,
-    default:""
+    default: ""
   }
 });
 
+console.log(props.label)
 const bgFile = computed(() => {
-  return `water${Math.round(props.value/props.maxValue*10)}.png`;
+  const percentage = Math.round(Math.min(1,Math.max(intakeAmount.value / props.maxValue,0)) * 10);
+  console.log(percentage)
+  return `water${percentage}.png`;
 });
 
 const showOverlay = ref(false);
@@ -96,6 +95,47 @@ async function logIntake() {
   //   unit: intakeUnit.value,
   // });
   console.log(`Logged ${intakeAmount.value} ${intakeUnit.value}`);
+  showOverlay.value = false;
+
+  const result = await useApi("/fluid-logging/update","POST",{
+    "loggingDateTime": currentDate,
+    "timeZone": "Asia/Kuala_Lumpur",
+    "waterIntake": waterConsumed.value,
+    "fluidUnit": "ml"
+  })
+  console.log(result)
+  if(result.isError) {
+    useToast().error("Fluid logging failed!")
+  }
+  else {
+    useToast().success(result.value.response)
+    fetchFluidLogging()
+  }
+
+  // remainingIntake.value = maxValue.value - intakeAmount.value;
+
+  // let currentDate = new Date();
+  // currentDate.setUTCHours(-8, 0, 0, 0);
+  // currentDate = currentDate.toISOString();
+
+  // try {
+  //   const updateFluidLogging = await useApi('/fluid-logging/update', 'POST', {
+  //     loggingDate: currentDate,
+  //     waterIntake: intakeAmount.value 
+  //   });
+
+  //   if (updateFluidLogging && updateFluidLogging.success) {
+  //     console.log("Data updated successfully", updateFluidLogging);
+  //     await fetchFluidLogging(); 
+  //   } else {
+  //     console.error("Failed to update the database", updateFluidLogging);
+  //   }
+  // } catch (error) {
+  //   console.error("Error updating fluid logging:", error);
+  // }
+}
+
+function closeOverlay() {
   showOverlay.value = false;
 }
 

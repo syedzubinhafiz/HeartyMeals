@@ -45,6 +45,10 @@ const props = defineProps({
 		type: Number,
 		default: 200,
 	},
+	unit: {
+		type: String,
+		default: "g",
+	},
 })
 
 const angle = computed({

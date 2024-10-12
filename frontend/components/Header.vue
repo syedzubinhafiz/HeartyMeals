@@ -46,17 +46,17 @@
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/analytics-day')">
               <i class="bi bi-graph-up mr-2"></i> Diet Analytics
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/educational-content')">
               <i class="bi bi-easel mr-2"></i> Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/')">
+            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/profile-page')">
               <i class="bi bi-person mr-2"></i> Profile Page
             </a>
           </li>
