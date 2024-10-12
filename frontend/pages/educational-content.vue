@@ -43,7 +43,7 @@
             :key="content.id"
             :title="content.title"
             :summary="content.summary"
-            :thumbnail="content.storage_links?.thumbnail"
+            :thumbnail="content.storage_links.thumbnail"
             @click="openOverlay(content)"
           />
         </div>
@@ -74,12 +74,13 @@
 
 
 <script setup>
-import { useApi } from '@/composables/api';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import debounce from 'lodash/debounce';
+import { useNuxtApp } from '#app';
 import EdContentOverlay from '@/components/EdContentOverlay.vue';
 import EdContentCard from '@/components/EdContentCard.vue';
-import axios from 'axios';
+
+
+const { $axios } = useNuxtApp();
 
 
 // For search functionality and data fetching
@@ -95,30 +96,42 @@ const overlayHeader = ref('');
 const overlayImageSrc = ref('');
 const overlayContent = ref('');
 // Simulated data fetch for EdContent (replace with your API call if needed)
-const fetchContentData = async () => {
+const fetchContentData = async () => { 
+
+  if (
+    isLoading.value 
+  )
+    return;
+
   isLoading.value = true;
 
-  const params = {
-    page: pageNumber.value,
-    pageSize: 10,
-    search: searchValue.value,
-  };
 
+  const token = localStorage.getItem('accessToken');
   try {
-    await useApi("/dietary","GET")
-    console.log("Fetching data with params:", params);
-    const result = await useApi(`/education/get?page=${pageNumber.value}&pageSize=${10}&search=${searchValue.value}`, 'GET');
+    console.log('here')
+    // Ensure meal_type is an array of strings
 
+    const response = await $axios.get('/education/get', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        page: pageNumber.value,
+        pageSize: 10,
+        search: searchValue.value || undefined,
+      },
+    });
 
-    // Log the response to see the returned data
-    console.log('API Response:', result);
+    const data = response.data;
 
-    if (result && !result.isError && result.value.data) {
-      searchResults.value = result.value.data
-    } else {
-      console.error('Error or no data in the response:', result);
-      useToast().error("Educational content retrieval failed, or there is no educational content in the database")
+    if (data.data.length === 0) {
+      isLoading.value = false;
+      return;
     }
+    searchResults.value = [...searchResults.value, ...data.data];
+    totalPages.value = data.totalPages;
+    pageNumber.value += 1;
   } catch (error) {
     console.error('Unexpected error:', error);
   } finally {
@@ -136,12 +149,14 @@ const onScroll = (event) => {
 
 onMounted(() => {
   fetchContentData();  // Load initial content data
-  // document.addEventListener("click", handleClickOutside);
 });
 
-// onBeforeUnmount(() => {
-//   document.removeEventListener("click", handleClickOutside);
-// });
+watch(searchValue, (newQuery) => {
+  pageNumber.value = 1;
+  searchResults.value = [];
+  fetchContentData();
+
+});
 
 const openOverlay = (content) => {
   overlayHeader.value = content.title;
@@ -150,15 +165,7 @@ const openOverlay = (content) => {
   overlayContent.value = content.storage_links.content
 };
 
-// const toggleFilterOverlay = () => {
-//   isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
-// };
 
-// const handleClickOutside = (event) => {
-//   if (searchBar.value && !searchBar.value.contains(event.target)) {
-//     isFilterOverlayVisible.value = false;
-//   }
-// };
 
 </script>
 

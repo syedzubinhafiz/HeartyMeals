@@ -77,7 +77,7 @@ export class EducationalService {
 
             // Search for educational content through summary or title
             if (search != null){
-                query.andWhere("educational_content.title ILIKE :search OR educational_content.summary ILIKE :search", { search: `%${search}%` })
+                query.andWhere("educational_content.title ILIKE :search ", { search: `%${search}%` })
             }
 
             // Pagination
