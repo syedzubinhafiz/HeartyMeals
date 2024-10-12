@@ -1,5 +1,5 @@
 <template>
-    <div v-if="show" class="overlay">
+    <div class="overlay" :onclick="closeTab">
       <div class="overlay-content">
         <!-- Background image -->
         <img src="/assets/img/centerBlob.svg" class="center-blob">
@@ -11,55 +11,57 @@
         <div class="content">
           <img src="/assets/img/overlayimg.svg" alt="Overlay Image" />
         </div>
-         <!-- Text Content Box -->
-         <div class="text-box">
-          <h2>First steps for getting diagnosed</h2>
-          <p>
-            It's always important to have regular checkups even if you're not noticing any particular symptoms. 
-            If you do notice any of the potential signs of heart failure, take action and talk to a health care professional.
-          </p>
-
-          <h2>Symptoms to report to your health care professional</h2>
-          <p>
-            It can be appropriate to begin testing for heart failure if you or a family member has any of the potential signs of heart failure, such as:
-          </p>
-          <ul>
-            <li>Shortness of breath</li>
-            <li>Persistent coughing or wheezing</li>
-            <li>Buildup of excess fluid in body tissues (edema)</li>
-            <li>Unusual fatigue</li>
-            <li>Lack of appetite or nausea</li>
-            <li>Impaired thinking</li>
-            <li>Increased heart rate</li>
-          </ul>
-
-          <h2>Testing can provide insights</h2>
-          <p>
-            After an examination, your doctor could decide that tests and procedures should be ordered to help determine the nature of the possible problem.
-            Imaging tests can help show your health care professional the structure and function of your heart's various chambers and ventricles.
-            Blood tests can also reveal how much oxygen, electrolytes and other things your blood is circulating.
-            All of this information can help clarify what in your heart is responsible for your heart failure symptoms.
-          </p>
+        <div class="text-box">
+          <div v-for="(content, index) in content" :key="index" v-html="content"></div>
         </div>
-        
       </div>
     </div>
   </template>
-  
-  <script>
-  export default {
-    props: {
-      show: Boolean,
-      header: String,
-      imageSrc: String,
-    },
-    methods: {
-      closeOverlay() {
-        this.$emit('close');
-      },
-    },
-  };
-  </script>
+<script setup>
+const props = defineProps({
+  show: Boolean,
+  header: String,
+  content: Array,
+  imageSrc: String
+})
+
+const emits = defineEmits(["update:show"])
+
+const closeTab = () => {
+  console.log('AAAAAAAAAAAAAA')
+  props.show = false
+  console.log(props.show)
+  emits("update:show",false)
+}
+</script> 
+//   <script>
+//   const isOverlayVisible = ref(false);
+// const overlayHeader = ref('');
+// const overlayContent = ref([]);
+// const overlayImageSrc = ref('');
+
+// const openOverlay = (content) => {
+//   overlayHeader.value = content.title;
+//   overlayContent.value = content.content;
+//   overlayImageSrc.value = content.storage_links.thumbnail;
+//   isOverlayVisible.value = true;
+// };
+
+//   export default {
+//     props: {
+//   show: Boolean,
+//   header: String,
+//   content: Array,
+//   imageSrc: String,
+// },
+
+//     methods: {
+//       closeOverlay() {
+//         this.$emit('close');
+//       },
+//     },
+//   };
+//   </script>
   
   <style scoped>
   .overlay {

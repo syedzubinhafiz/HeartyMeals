@@ -5,16 +5,18 @@
     </header>
 
     <div class="image-container">
-      <img src="/assets/img/backGround.svg" class="background-image"/>
+      <img src="/assets/img/backGround.svg" class="background-image" />
       <div class="text-overlay">
         <h2 class="text-white text-3xl font-bold text-center">Educational Content</h2>
-        <p class="mt-[15px] text-white text-xl text-center italic">Caring for your body with wholesome foods is a lifelong investment in your health and well-being.</p>
+        <p class="mt-[15px] text-white text-xl text-center italic">
+          Caring for your body with wholesome foods is a lifelong investment in your health and well-being.
+        </p>
       </div>
     </div>
 
     <div class="body">
       <div class="search-bar" ref="searchBar">
-        <img src="/assets/img/Search_Icon.svg">
+        <img src="/assets/img/Search_Icon.svg" alt="Search Icon" />
         <input
           type="text"
           v-model="searchValue"
@@ -22,38 +24,45 @@
           class="search-input"
           aria-label="Search Content"
         />
-        <!-- <img :src="filter_on ? activeFilterIcon : filterIcon" alt="Filter" class="filter-button" @click="toggleFilterOverlay">
-        <RecipeFilterOverlay 
-          v-show="isFilterOverlayVisible" 
-          @hideOverlay="isFilterOverlayVisible = false" 
-          @applyFilters="applyFilters"
-          @clearFilters ="clearFilters"
-        /> -->
       </div>
 
       <div class="search-result-text-display">
-        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="searchValue">Search Results for "{{ searchValue }}"</p>
+        <p
+          class="aligned-paragraph"
+          style="font-size: 15px; margin-top: 20px;"
+          v-if="searchValue"
+        >
+          Search Results for "{{ searchValue }}"
+        </p>
       </div>
 
       <div class="search-result-container" @scroll="onScroll">
-        <div class="search-result-item-display">
-          <EdContentCard 
-            v-for="(content, index) in searchResults" 
-            :key="index"
+        <div v-if="searchResults && searchResults.length > 0" class="search-result-item-display">
+          <EdContentCard
+            v-for="(content, index) in searchResults"
+            :key="content.id"
+            :title="content.title"
+            :summary="content.summary"
+            :thumbnail="content.storage_links?.thumbnail"
             @click="openOverlay(content)"
           />
-          <div v-if="isLoading" class="loading-indicator">Loading...</div>
+        </div>
+        <div v-else-if="!isLoading" class="no-data-message">
+          No content available.
+        </div>
+        <div v-if="isLoading" class="loading-indicator">
+          Loading...
         </div>
       </div>
     </div>
 
     <EdContentOverlay
       v-if="isOverlayVisible"
-      :show="isOverlayVisible"
+      v-model:show="isOverlayVisible"
       :header="overlayHeader"
+      :content="overlayContent"
       :imageSrc="overlayImageSrc"
       @close="isOverlayVisible = false"
-      @click.self="isOverlayVisible = false"
     />
 
     <footer class="footer">
@@ -62,60 +71,61 @@
   </div>
 </template>
 
+
+
 <script setup>
+import { useApi } from '@/composables/api';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import debounce from 'lodash/debounce';
 import EdContentOverlay from '@/components/EdContentOverlay.vue';
 import EdContentCard from '@/components/EdContentCard.vue';
-// import RecipeFilterOverlay from '@/components/RecipeFilterOverlay.vue';  // Assuming you are still using this for filtering
+import axios from 'axios';
 
-// import filterIcon from '@/assets/icon/filter-icon.svg';
-// import activeFilterIcon from '@/assets/icon/active-filter-icon.svg';
 
 // For search functionality and data fetching
 const isLoading = ref(false);
 const searchValue = ref("");
 const searchResults = ref([]);
 const pageNumber = ref(1);
-const pageSize = ref(10);
 const totalPages = ref(1);
-
+const searchBar = ref(null);
 // For overlay functionality
 const isOverlayVisible = ref(false);
 const overlayHeader = ref('');
 const overlayImageSrc = ref('');
-
-// For filter functionality
-// const isFilterOverlayVisible = ref(false);
-// const searchBar = ref(null);
-// const filter_on = ref(false);
-
+const overlayContent = ref('');
 // Simulated data fetch for EdContent (replace with your API call if needed)
-const fetchContentData = async (filters = {}) => {
+const fetchContentData = async () => {
   isLoading.value = true;
+
+  const params = {
+    page: pageNumber.value,
+    pageSize: 10,
+    search: searchValue.value,
+  };
+
   try {
-    // Simulate fetching content data (this should be replaced with actual API call)
-    const simulatedResults = Array(10).fill().map((_, i) => ({
-      id: i + 1,
-      title: `Content ${i + 1}`,
-      description: "Lorem ipsum dolor sit amet.",
-      thumbnail: "@/assets/img/content-thumbnail.png"
-    }));
+    await useApi("/dietary","GET")
+    console.log("Fetching data with params:", params);
+    const result = await useApi(`/education/get?page=${pageNumber.value}&pageSize=${10}&search=${searchValue.value}`, 'GET');
 
-    if (pageNumber.value === 1) {
-      searchResults.value = simulatedResults;
+
+    // Log the response to see the returned data
+    console.log('API Response:', result);
+
+    if (result && !result.isError && result.value.data) {
+      searchResults.value = result.value.data
     } else {
-      searchResults.value = [...searchResults.value, ...simulatedResults];
+      console.error('Error or no data in the response:', result);
+      useToast().error("Educational content retrieval failed, or there is no educational content in the database")
     }
-
-    totalPages.value = 5;  // Example, set the total pages
-    pageNumber.value += 1;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error('Unexpected error:', error);
   } finally {
     isLoading.value = false;
   }
 };
+
 
 const onScroll = (event) => {
   const bottom = event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight + 1;
@@ -126,28 +136,30 @@ const onScroll = (event) => {
 
 onMounted(() => {
   fetchContentData();  // Load initial content data
-  document.addEventListener("click", handleClickOutside);
+  // document.addEventListener("click", handleClickOutside);
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
+// onBeforeUnmount(() => {
+//   document.removeEventListener("click", handleClickOutside);
+// });
 
 const openOverlay = (content) => {
   overlayHeader.value = content.title;
   overlayImageSrc.value = content.thumbnail;
   isOverlayVisible.value = true;
+  overlayContent.value = content.storage_links.content
 };
 
-const toggleFilterOverlay = () => {
-  isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
-};
+// const toggleFilterOverlay = () => {
+//   isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
+// };
 
-const handleClickOutside = (event) => {
-  if (searchBar.value && !searchBar.value.contains(event.target)) {
-    isFilterOverlayVisible.value = false;
-  }
-};
+// const handleClickOutside = (event) => {
+//   if (searchBar.value && !searchBar.value.contains(event.target)) {
+//     isFilterOverlayVisible.value = false;
+//   }
+// };
+
 </script>
 
 <style scoped>
