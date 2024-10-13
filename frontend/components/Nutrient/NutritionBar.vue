@@ -5,7 +5,7 @@
             <img :src="icon" class="icon"/>
             <label class="label-grid-left">{{ label }}</label>
           </div>
-            <span :style="{ color: fontColor }" class="label-grid-right">{{ afterMealValue}}/{{ totalValue }}{{ unit }}</span>
+            <span :style="{ color: fontColor }" class="label-grid-right">{{ parseFloat(afterMealValue.toFixed(2)) }}/{{ totalValue }}{{ unit }}</span>
         </div>
 
         <div class="progress-bar-container" :style="progressBarContainerStyle">
