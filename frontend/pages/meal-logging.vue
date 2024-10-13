@@ -224,32 +224,32 @@ const removeMealInfo= ref(null);
 const editMealOverlayVisible = ref(false);
 const editMealInfo = ref(null);
 
-  const nutrients = ref([
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    },
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    },
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    }
-  ]);
+const nutrients = ref([
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  },
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  },
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  }
+]);
 
 function toggleOverlayVisibility(dishId) {
  
@@ -301,6 +301,7 @@ async function goToPreviousDay() {
   } else {
     currentDate.value = newDate;
     await getMeals();
+    await getUserBudget();
   }
 }
 
@@ -318,6 +319,7 @@ async function goToNextDay() {
   } else {
     currentDate.value = newDate;
     await getMeals();
+    await getUserBudget();
   }
 }
 
@@ -445,6 +447,7 @@ async function removeLogMeal(mealInfo){
     if (response.data.status === 200){
       useToast().success('Meal removed successfully');
       await getMeals();
+      await getUserBudget();
     } else {
       useToast().error(response.data.message);
     }
@@ -499,6 +502,7 @@ async function editLogMeal(newValue){
       if(response.data.status === 200){
         useToast().success('Meal updated successfully');
         await getMeals();
+        await getUserBudget();
 
       } else {
         useToast().error(response.data.message);
@@ -515,27 +519,16 @@ async function editLogMeal(newValue){
 
 const getUserBudget = async () => {
     try {
-        const today_date = () => {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-
-            const formattedDate = `${year}-${month}-${day}`;
-            return formattedDate;
-        };
         const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const token = localStorage.getItem('accessToken');
-        const response = await $axios.get(`/user/budget?startDate=${today_date()}&timeZone=${timeZone}`, {
+        const response = await $axios.get(`/user/budget?startDate=${formatDate(currentDate.value)}&timeZone=${timeZone}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
             }
         });
         if (response.status === 200) {
-            // maxVolume.value = response.data.logging_history[0].remaining_fluid;
-            // remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
-            const userNutrition = response.data[today_date()];
+            const userNutrition = response.data[formatDate(currentDate.value)];
             for (let i = 0; i < 2; i++) {
                 if (i === 0) {
                     nutrients.value[0].calories = userNutrition[i].calories;
@@ -560,7 +553,7 @@ const getUserBudget = async () => {
         }
     }
     catch (e) {
-        useToast().error("Failed to load fluid intake data")
+        useToast().error("Failed to get user budget")
     }
   }
 

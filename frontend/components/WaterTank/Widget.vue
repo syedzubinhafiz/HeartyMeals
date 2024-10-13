@@ -73,28 +73,53 @@ const bgFile = computed(() => {
 
 const showOverlay = ref(false);
 const intakeAmount = ref(0);
-const intakeUnit = ref(null);
+const intakeUnit = ref("mL");
+const waterConsumed = ref(0);
+const maxValue = ref(props.maxValue)
+const popupRef = ref(null)
 
-const measuring_units_dropdown_option = [
-  { id: "ml", display: "ml" },
-  { id: "l", display: "l" },
-  { id: "fl oz", display: "fl oz" },
-  { id: "cup", display: "cup" },
-  { id: "pint", display: "pint" },
-  { id: "quat", display: "quart" },
-  { id: "gallon", display: "gallon" },
-];
+const openOverlay = () => {
+  window.addEventListener('click', handleOutsideClick);
+  setTimeout(()=>{showOverlay.value = true;},300) 
+}
 
-const updateSelectedUnit = (unit) => {
-  intakeUnit.value = unit.id;
+const handleOutsideClick = (event) => {
+  if (popupRef.value && !popupRef.value.contains(event.target) && showOverlay.value) {
+    setTimeout(()=>{
+      showOverlay.value = false;
+      window.removeEventListener('click', handleOutsideClick);
+    },300)
+  }
 };
 
+onUnmounted(() => {
+  window.removeEventListener('click', handleOutsideClick);
+});
+
+onMounted(async () => {
+  await useApi("/dietary","GET")
+  await fetchFluidLogging();  // Fetch data when component mounts
+});
+
+async function fetchFluidLogging() {
+  try {
+    let currentDate = new Date();
+    currentDate = useDate().getFormattedDateShort();
+    const response = await useApi(`/fluid-logging/get?dateTime=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+    console.log(response)
+    intakeAmount.value = response.value.remaining_fluid
+
+  } catch (error) {
+    console.error('Error fetching fluid logging data:', error);
+  }
+}
+
 async function logIntake() {
-  // const response = await $axios.post('/fluid-logging/update', {
-  //   amount: intakeAmount.value,
-  //   unit: intakeUnit.value,
-  // });
-  console.log(`Logged ${intakeAmount.value} ${intakeUnit.value}`);
+  console.log(`Consumed ${waterConsumed.value} mL`);
+
+  
+  let currentDate = new Date();
+  currentDate = useDate().getFormattedDateShort()
   showOverlay.value = false;
 
   const result = await useApi("/fluid-logging/update","POST",{

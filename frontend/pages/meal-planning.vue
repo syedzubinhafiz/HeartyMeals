@@ -90,7 +90,7 @@ async function generateWeekMeals(date) {
   for (let i = 0; i < 7; i++) {
     const day = new Date(date);
     day.setDate(date.getDate() - date.getDay() + i + 1);
-    const currentDate = day.toISOString().split('T')[0]
+    const currentDate = useDate().getFormattedDateShort(day)
     // Fetch meal data (add error handling for API calls)
     try {
       let meals = await useApi(`/meal-logging/get?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");

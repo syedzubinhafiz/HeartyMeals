@@ -284,7 +284,7 @@ const nutrients = ref([
         }
     }
     catch (e) {
-        useToast().error("Failed to load fluid intake data")
+        useToast().error("Failed to load user budget")
     }
 }
 
