@@ -21,7 +21,7 @@
               <span class="nutrition-label">
                 <img src="/assets/img/macroEnergy.svg" alt="icon" width="16" height="16">
                 Calories</span>
-              <span>{{meal.recipe.nutrition_info.calories}}kcal</span>
+              <span>{{meal.recipe.nutrition_info.calories}}cal</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
@@ -62,7 +62,7 @@
                 <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" />
                 <div class="card-content">
                   <p class="card-title">{{ ingredient.name }}</p>
-                  <p class="card-details">{{ `Amount: ${ingredient.amount} ${ingredient.unit}` }}</p>
+                  <p class="card-details">{{ `Amount: ${ingredient.amount.toFixed(2)} ${ingredient.unit}` }}</p>
                 </div>
               </div>
 
@@ -70,7 +70,7 @@
                 <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" />
                 <div class="card-content">
                   <p class="card-title">{{ seasoning.name }}</p>
-                  <p class="card-details">{{ `Amount: ${seasoning.amount} ${seasoning.unit}` }}</p>
+                  <p class="card-details">{{ `Amount: ${seasoning.amount.toFixed(2)} ${seasoning.unit}` }}</p>
                 </div>
               </div>
             </div>

@@ -168,9 +168,11 @@ export class UserService {
             //try to find the user by email and update the user_id to the new user_id if it is a newly created admin
             const new_admin_user =  await this.userRepository.findOneBy({email: decoded['email']});
             if (new_admin_user !== null){
+                const old_user_id = new_admin_user.user_id;
                 new_admin_user.user_id = decoded['sub'];
                 // update the user_id to the new user_id
                 await this.userRepository.save(new_admin_user);
+                await this.userRepository.delete({user_id: old_user_id});
                 return true;
             }
             return false; 
