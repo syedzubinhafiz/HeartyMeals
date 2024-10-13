@@ -23,7 +23,7 @@
                     <img src="@/assets/icon/add-recipe-admin-icon.svg" alt="">
                     Add Recipe
                 </div>
-                <div class="button edu-content" @click="navigateTo('/edu-content')">
+                <div class="button edu-content" @click="navigateTo('/educational-content')">
                     <img src="@/assets/icon/edu-content-icon.svg" alt="" >
                     Educational Content
                 </div>

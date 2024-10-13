@@ -1,8 +1,15 @@
 <template>
   <div class="page-container" @click="handleClickOutside">
-    <header class="header">
-      <Header />
-    </header>
+    <div v-if="userRole === 'admin'">
+      <header class="header">
+        <AdminHeader></AdminHeader>
+      </header>
+    </div>
+    <div v-else>
+      <header class="header">
+        <Header></Header>
+      </header>
+    </div>
 
     <div class="image-container">
       <img src="/assets/img/backGround.svg" class="background-image" />
@@ -89,7 +96,7 @@ import EdContentCard from '@/components/EdContentCard.vue';
 
 const { $axios } = useNuxtApp();
 
-
+const userRole = ref(null);
 // For search functionality and data fetching
 const isLoading = ref(false);
 const searchValue = ref("");
@@ -146,6 +153,25 @@ const fetchContentData = async () => {
   }
 };
 
+async function verifyAdmin(){
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await $axios.get('/user/verify/admin', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(response.data);
+    if (response.data) {
+      userRole.value = 'admin';
+    } else {
+      userRole.value = 'patient';
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
 
 const onScroll = (event) => {
   const bottom = event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight + 1;
@@ -154,7 +180,8 @@ const onScroll = (event) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await verifyAdmin();
   fetchContentData();  // Load initial content data
 
   if (localStorage.getItem('educationalContentId')) {
