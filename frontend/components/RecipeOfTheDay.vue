@@ -206,7 +206,9 @@ function navigateToRecipeLibrary() {
 .recipe-description {
   font-size: 100%;
   width: 400px;
-  height: 100px;
+  height: fit-content;
+  max-height: 200px;
+  overflow: hidden;
 }
 
 .recipe-image{

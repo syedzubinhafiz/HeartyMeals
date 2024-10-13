@@ -44,7 +44,7 @@
         <div class="budget-curve-overlay">
             <div class="calories-container">
                 <span class="calories-title">Calories</span>
-                <span class="calories-value">{{ remainingCalories }}/{{ maxCalories }}cal</span>
+                <span>{{ remainingCalories }}/{{ maxCalories }}cal</span>
             </div>
             <span class="budget-title">Today's Nutrition Budget</span>
         </div>
@@ -252,25 +252,29 @@ import NutritionBar from './NutritionBar.vue';
         font-weight: 600;
     }
 
+    .budget-curve-overlay{
+        width: 100%;
+        height: 100%;
+        top: 0%;
+        position: absolute;
+        pointer-events: all; /* Enable interaction with labels */
+    }
+
     .calories-container{
         top: 11.25%;
-        left: 41.25%;
         position: absolute;
         pointer-events: all; /* Enable interaction with labels */
         width: fit-content;
         display:flex;
         flex-direction: column;
         text-align: center;
+        width: 100%;
 
         font-weight: 600;
     }
 
     .calories-title{
         font-size: 175%;
-    }
-
-    .calories-value{
-
     }
 
     .grey {
