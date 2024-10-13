@@ -18,7 +18,7 @@ export class DietaryService {
     async addDietary(dietaryName: string){
 
         if (await this.dietaryRepo.findOneBy({name: dietaryName}) != null) {
-            return "Dietary already Exist."
+            return {message:"Dietary already Exist.", status: 400};
         }
 
         return await this.dietaryRepo.save({name: dietaryName})

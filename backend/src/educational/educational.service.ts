@@ -42,20 +42,6 @@ export class EducationalService {
     }
 
     /**
-     * Get Educational Content
-     * @param eduId - educational id
-        const edu_object = await this.educatinoalContentRepository.save(new_entry);
-
-        // upload the files by calling the storage service. the return json should be the same order as the order in the saved_content array
-        // update the educational object with storage links and saved_content array
-
-        // files CAN be empty if edu content only upload the text first
-
-        edu_object.storage_links = {} as JSON;
-        return await this.educatinoalContentRepository.update(edu_object.id, edu_object);
-    }
-
-    /**
      * Get Educational Content based on the search criteria, or get the educational content based on the educational content id
      * @param page - page number
      * @param pageSize - page size
@@ -84,14 +70,15 @@ export class EducationalService {
                 'educational_content.title', 
                 'educational_content.summary',
                 'educational_content.storage_links',
-                'educational_content.visibility'                
+                'educational_content.visibility',
+                'educational_content.created_at',             
             ])
             .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
                 
 
             // Search for educational content through summary or title
             if (search != null){
-                query.andWhere("educational_content.title ILIKE :search OR educational_content.summary ILIKE :search", { search: `%${search}%` })
+                query.andWhere("educational_content.title ILIKE :search ", { search: `%${search}%` })
             }
 
             // Pagination
@@ -100,7 +87,7 @@ export class EducationalService {
                 .take(take)
             };
             
-            const [result, no_of_results] = await query.getManyAndCount();
+            const [result, no_of_results] = await query.orderBy("educational_content.created_at", "DESC").getManyAndCount();
 
             for (const edu_content of result){
                 // set the thumbnail link
@@ -136,6 +123,33 @@ export class EducationalService {
 
             return [edu_content, 1];
         }
+    }
+
+    /**
+     * Get 4 for the main landing page educational content 
+     * @returns a list of 4 educational content objects
+     */
+    async getMainLandingPageContent(){
+        const query = this.educatinoalContentRepository.createQueryBuilder("educational_content")
+            .select([
+                'educational_content.id', 
+                'educational_content.title', 
+                'educational_content.summary',
+                'educational_content.storage_links',
+                'educational_content.visibility'                
+            ])
+            .where("educational_content.visibility = :visibility", { visibility: Visibility.PUBLIC })
+            .orderBy("RANDOM()")
+            .limit(4);
+
+        const result = await query.getMany();
+
+        for (const edu_content of result){
+            // set the thumbnail link
+            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+        }
+
+        return result;
     }
 
     replaceSrcInArray(strings, replacements) {

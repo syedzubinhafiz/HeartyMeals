@@ -1,8 +1,15 @@
 <template>
   <div class="page-container" @click="handleClickOutside">
-    <header class="header">
-      <Header />
-    </header>
+    <div v-if="userRole === 'admin'">
+      <header class="header">
+        <AdminHeader></AdminHeader>
+      </header>
+    </div>
+    <div v-else>
+      <header class="header">
+        <Header></Header>
+      </header>
+    </div>
 
     <div class="image-container">
       <img src="/assets/img/backGround.svg" class="background-image" />
@@ -34,6 +41,13 @@
         >
           Search Results for "{{ searchValue }}"
         </p>
+        <p
+          class="aligned-paragraph"
+          style="font-size: 15px; margin-top: 20px;"
+          v-if="!searchValue"
+        >
+          Recently Added Content
+        </p>
       </div>
 
       <div class="search-result-container" @scroll="onScroll">
@@ -43,7 +57,7 @@
             :key="content.id"
             :title="content.title"
             :summary="content.summary"
-            :thumbnail="content.storage_links?.thumbnail"
+            :thumbnail="content.storage_links.thumbnail"
             @click="openOverlay(content)"
           />
         </div>
@@ -74,14 +88,15 @@
 
 
 <script setup>
-import { useApi } from '@/composables/api';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import debounce from 'lodash/debounce';
+import { useNuxtApp } from '#app';
 import EdContentOverlay from '@/components/EdContentOverlay.vue';
 import EdContentCard from '@/components/EdContentCard.vue';
-import axios from 'axios';
 
 
+const { $axios } = useNuxtApp();
+
+const userRole = ref(null);
 // For search functionality and data fetching
 const isLoading = ref(false);
 const searchValue = ref("");
@@ -95,30 +110,42 @@ const overlayHeader = ref('');
 const overlayImageSrc = ref('');
 const overlayContent = ref('');
 // Simulated data fetch for EdContent (replace with your API call if needed)
-const fetchContentData = async () => {
+const fetchContentData = async () => { 
+
+  if (
+    isLoading.value 
+  )
+    return;
+
   isLoading.value = true;
 
-  const params = {
-    page: pageNumber.value,
-    pageSize: 10,
-    search: searchValue.value,
-  };
 
+  const token = localStorage.getItem('accessToken');
   try {
-    await useApi("/dietary","GET")
-    console.log("Fetching data with params:", params);
-    const result = await useApi(`/education/get?page=${pageNumber.value}&pageSize=${10}&search=${searchValue.value}`, 'GET');
+    console.log('here')
+    // Ensure meal_type is an array of strings
 
+    const response = await $axios.get('/education/get', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        page: pageNumber.value,
+        pageSize: 10,
+        search: searchValue.value || undefined,
+      },
+    });
 
-    // Log the response to see the returned data
-    console.log('API Response:', result);
+    const data = response.data;
 
-    if (result && !result.isError && result.value.data) {
-      searchResults.value = result.value.data
-    } else {
-      console.error('Error or no data in the response:', result);
-      useToast().error("Educational content retrieval failed, or there is no educational content in the database")
+    if (data.data.length === 0) {
+      isLoading.value = false;
+      return;
     }
+    searchResults.value = [...searchResults.value, ...data.data];
+    totalPages.value = data.totalPages;
+    pageNumber.value += 1;
   } catch (error) {
     console.error('Unexpected error:', error);
   } finally {
@@ -126,6 +153,25 @@ const fetchContentData = async () => {
   }
 };
 
+async function verifyAdmin(){
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await $axios.get('/user/verify/admin', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(response.data);
+    if (response.data) {
+      userRole.value = 'admin';
+    } else {
+      userRole.value = 'patient';
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
 
 const onScroll = (event) => {
   const bottom = event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight + 1;
@@ -134,31 +180,53 @@ const onScroll = (event) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await verifyAdmin();
   fetchContentData();  // Load initial content data
-  // document.addEventListener("click", handleClickOutside);
+
+  if (localStorage.getItem('educationalContentId')) {
+    const content = {id: localStorage.getItem('educationalContentId')};
+    // Fetch content data for the selected content
+    openOverlay(content);
+    localStorage.removeItem('educationalContentId');
+  }
 });
 
-// onBeforeUnmount(() => {
-//   document.removeEventListener("click", handleClickOutside);
-// });
+watch(searchValue, (newQuery) => {
+  pageNumber.value = 1;
+  searchResults.value = [];
+  fetchContentData();
 
-const openOverlay = (content) => {
-  overlayHeader.value = content.title;
-  overlayImageSrc.value = content.thumbnail;
-  isOverlayVisible.value = true;
-  overlayContent.value = content.storage_links.content
+});
+
+const openOverlay = async (content) => {
+
+  try{ 
+    const token = localStorage.getItem('accessToken');
+    const response = await $axios.get('/education/get', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        educationalContentId: content.id,
+      },
+    });
+
+    content = response.data;
+    console.log(content)
+    overlayHeader.value = content.title;
+    overlayImageSrc.value = content.storage_links.thumbnail;
+    isOverlayVisible.value = true;
+    overlayContent.value = content.content
+  } catch (error) {
+    console.error('Unexpected error:', error);
+  } 
+
+
 };
 
-// const toggleFilterOverlay = () => {
-//   isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
-// };
 
-// const handleClickOutside = (event) => {
-//   if (searchBar.value && !searchBar.value.contains(event.target)) {
-//     isFilterOverlayVisible.value = false;
-//   }
-// };
 
 </script>
 
@@ -218,7 +286,6 @@ const openOverlay = (content) => {
   display: flex;
   align-items: center;
   background-color: #F8F2E2;
-  margin-top:6%;
   width: 50%;
   border: 1px solid #ccc;
   border-radius: 50px;
@@ -247,7 +314,6 @@ const openOverlay = (content) => {
   display: flex;
   justify-content: flex-start;
   padding-left: 15px;
-  padding-bottom: 2.5%;
 }
 
 .search-result-container {

@@ -1,11 +1,11 @@
 
 <template>
     <div class="absolute w-screen z-40" style="z-index: 10">
-        <Header/>
+        <AdminHeader/>
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
-        <ButtonOrange>
+        <ButtonOrange @click="navigateTo('/admin')">
             <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 20px; height: 20px; margin-right: 8px;"/>
             Back
         </ButtonOrange>
@@ -44,7 +44,7 @@
                 <div></div>
                 <SingleSelectionDropdown
                     :items="gender_dropdown_option"
-                    @item-selected="updateSelectedGender($event)"
+                    @update:modelValue="updateSelectedGender($event)"
                     defaultText="Select a Gender"
                     buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
                     dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
@@ -78,6 +78,7 @@ defineOptions({
 
 definePageMeta({
   layout: "emptylayout",
+    middleware: ["auth"],
 });
 
 const { $axios } = useNuxtApp();

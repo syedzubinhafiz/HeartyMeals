@@ -27,13 +27,21 @@ export default defineComponent({
 
             //check if db contains user
             const result = (await useApi("/user/verify", "GET")).value
-            console.log(result)
+
             if (result == "false") {
                 console.log("User not found in db, redirecting to sign up page");
                 await navigateTo("/signup");
             } else {
-                console.log("User found in db, redirecting to main page");
-                await navigateTo("/temp"); //TODO: Change to main page 
+                const isAdmin = (await useApi("/user/verify/admin", "GET")).value
+
+                if(isAdmin == "true") {
+                    console.log("User is an admin, redirecting to admin page");
+                    await navigateTo("/admin");
+                } else {
+                    console.log("User is not an admin, redirecting to main page");
+                    await navigateTo("/home"); //TODO: Change to main page 
+                    
+                }
             }
 
         } catch (error) {

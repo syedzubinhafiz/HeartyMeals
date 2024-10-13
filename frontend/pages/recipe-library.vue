@@ -1,222 +1,431 @@
 <template>
-  <div class="absolute w-screen z-40">
-    <Header />
-  </div>
+  <div class="page-container" @click="handleClickOutside">
+    
+    <div v-if="userRole === 'admin'">
+      <header class="header">
+        <AdminHeader></AdminHeader>
+      </header>
+    </div>
+    <div v-else>
+      <header class="header">
+        <Header></Header>
+      </header>
+    </div>
+    
 
-  <div class="relative min-h-screen text-white">
-    <!-- Background image section -->
-    <div class="bg-header-image flex flex-col items-center justify-center relative-parent">
-      <h2 class="text-white text-4xl font-bold text-center">Recipe Library</h2>
-      <p class="mt-[15px] text-xl text-center italic">Because healthy food should be tasty too.</p>
+    <div class="image-container">
+      <img src="@/assets/img/recipe_lib/bg.svg" class="background-image"/>
+      <div class="text-overlay">
+        <h2 class="text-white text-3xl font-bold text-center">Recipe Library</h2>
+        <p class="mt-[15px] text-white text-xl text-center italic">Because healthy food should be tasty too.</p>
+      </div>
     </div>
 
-    <!-- Search Bar and Recipe Cards Container -->
-    <div class="flex items-end justify-between">
-      <div class="left-0 bottom-0 flex items-end">
-        <img src="/assets/img/curvyLeft.svg" alt="Curvy Left" style="height: 60vh"/>
+    <div class="body">
+      <div class="search-bar" ref="searchBar">
+        <img src="../assets/icon/Search_Icon.svg" alt="Search Icon">
+        <input
+          type="text"
+          v-model="query"
+          @input="debouncedOnInput"
+          placeholder="Enter Keywords (e.g. Chicken, Rice)"
+          class="search-input"
+          aria-label="Search Recipe"
+        />
+        <img :src="filter_on ? activeFilterIcon : filterIcon" alt="Filter" class="filter-button" @click="toggleFilterOverlay">
+        <RecipeFilterOverlay 
+          v-show="isFilterOverlayVisible" 
+          @hideOverlay="isFilterOverlayVisible = false" 
+          @applyFilters="applyFilters"
+          @clearFilters ="clearFilters"
+         />
       </div>
-      <div>
-        <div class="content-container">
-          <div class="flex justify-center mb-10 text-black">
-            <MealSearchBar v-model="searchValue" :dataList="searchDataList"/>
-          </div>
-          <!-- :dataList="['Tomato and Cheese Croissant','Banana Cake', 'Overnight Oats', 'Bok Choy', 'Creamy Alfredo Pizza']" -->
-          <h1 class="card-heading">Recently Added</h1>
-          <!-- Scrollable Recipe Cards -->
-            <div class="cards-grid">
-              <RecipeCard
-                v-for="(meal, index) in paginatedMealList"
-                :key="index"
-                :imageSrc="'../assets/img/croissant.svg'"
-                :mealName="meal.name"
-                :mealDescription="meal.description"
-                :labels="meal.recommended_meal_time ?? {}"
-                @click.native="openOverlay(meal)"
-                :isCustomRecipe="meal.user && meal.user.user_id != null && meal.user.user_id !== undefined"
-                :isAdminApproved="meal.is_approved && meal"
-                
-              />
-            </div>
-        </div>
-        <!-- Pagination Component -->
-        <Pagination
-            :totalItems="recipeList.length"
-            :itemsPerPage="itemsPerPage"
-            v-model:currentPage="currentPage"
+
+      <div class="search-result-text-display">
+        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="query">Search Result of "{{ query }}"</p>
+        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="!query">Recently Added</p>
+      </div>
+
+      <div class="search-result-container" @scroll="onScroll">
+        <div class="search-result-item-display">
+          <RecipeCard 
+          v-for="(recipe, index) in searchResults" 
+          :key="index"
+          :meal-id="recipe.id" 
+          :meal-name="recipe.name"
+          :meal-description="recipe.description"
+          :labels="recipe.recommended_meal_time ?? {}"
+          :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
+          :is-admin-approved="recipe.is_approved"
+          :image-src="recipe.storage_links.thumbnail"
+          @click.native="openOverlay(recipe)"     
           />
+          <div v-if="isLoading" class="loading-indicator">Loading...</div>
+        </div>
       </div>
-      <!-- <div class="right-0 bottom-0 flex items-end"> -->
-        <img src="/assets/img/curvyRight.svg" alt="Curvy Right" style="height: 50vh"/>
     </div>
-  </div>
-  <RecipeOverlay
+    <RecipeOverlay
     :visible="isOverlayVisible"
-    :meal="selectedMeal"
+    :meal="selectedRecipe"
+    :instruction="instruction"
     @closeOverlay="isOverlayVisible = false"
-  />
-  <Footer/>
+    />
+    <footer class="footer">
+      <Footer></Footer>
+    </footer>
+  </div>
 </template>
 
 <script setup>
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { useNuxtApp } from '#app';
+import debounce from 'lodash/debounce';
+import RecipeOverlay from '/components/RecipeOverlay.vue';
+import RecipeFilterOverlay from '/components/RecipeFilterOverlay.vue';
+import filterIcon from '@/assets/icon/filter-icon.svg';
+import activeFilterIcon from '@/assets/icon/active-filter-icon.svg';
+
+
+const { $axios } = useNuxtApp();
+
+definePageMeta({
+  layout: "emptylayout",
+  middleware: ["auth"],
+});
+
+// for search query 
+const isLoading = ref(false);
+const query = ref("");
+const searchResults = ref([]);
+const pageNumber = ref(1);
+const pageSize = ref(10);
+const totalPages = ref(1);
+
+// for overlay
 const recipeList = ref([])
 const searchValue = ref("");
 const searchDataList = ref([]);
-onMounted(async () => {
-  await useApi("/dietary","GET")
-  recipeList.value = await useFillData().fillRecipes()
-  console.log(recipeList)
-})
+const instruction = ref('');
 
 const isOverlayVisible = ref(false)
-const selectedMeal = ref(null)
-const currentPage = 1
-const itemsPerPage = 6
-const paginatedMealList = computed({
-  get() {
-      const start = (currentPage - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      return recipeList.value?.value?.slice(start, end);
-    },
-})
+const selectedRecipe = ref(null)
+const userRole = ref(null);
 
-const openOverlay = async (meal) => {
-  const detailedMealInfo = await useApi(`/recipe/get?recipeId=${meal.id}`,"GET")
-  console.log(detailedMealInfo)
-  selectedMeal.value = detailedMealInfo
-  isOverlayVisible.value = true
-}
-watch(searchValue,async ()=>{
-  await useApi("/dietary","GET")
-  let endpoint = "/recipe/get"
-  if(searchValue.value!=""){
-    endpoint=`/recipe/get?search=${searchValue.value}`
-  }
-  recipeList.value=await useApi(endpoint,"GET")
-  searchDataList.value=recipeList.value.value.map((val)=>{return val.name})
-  totalItems.value=recipeList.value.value.length
-})
-</script>
-<script>
-definePageMeta({
-    layout: "emptylayout",
+// for filter overlay
+const isFilterOverlayVisible = ref(false);
+const searchBar = ref(null);
+const filter_on = ref(false);
+const savedFilters = ref({
+  cuisine: [],
+  dietary: [],
+  food_category: [],
+  recommended_meal_time: {
+    Breakfast: false,
+    Lunch: false,
+    Dinner: false,
+    Other: false,
+  },
 });
 
-import RecipeOverlay from '/components/RecipeOverlay.vue';
-import Pagination from '/components/Pagination.vue';
-export default {
-  name: "RecipePage",
-  components: {
-    Pagination,
-    RecipeOverlay,
-  },
-  data() {
-    return {
-      searchValue: "",
-    };
+watch(query, (newQuery) => {
+  if (newQuery === '') {
+    pageNumber.value = 1;
+    searchResults.value = [];
+    fetchData(savedFilters.value);
   }
-};
+});
+
+async function fetchData(filters = {}) {
+  console.log('fetchData called with filters:', filters); // Debug log
+
+  if (
+    isLoading.value 
+  )
+    return;
+
+  console.log('fetchData called'); // Debug log
+
+  isLoading.value = true;
+  const token = localStorage.getItem('accessToken');
+  try {
+    let suffix = '/recipe/get';
+    let  meal_type = []
+
+    if(filters.recommended_meal_time.Breakfast) meal_type.push('Breakfast')
+    if(filters.recommended_meal_time.Lunch) meal_type.push('Lunch')
+    if(filters.recommended_meal_time.Dinner) meal_type.push('Dinner')
+    if(filters.recommended_meal_time.Other) meal_type.push('Other')
+
+    // Ensure meal_type is an array of strings
+    if (Array.isArray(meal_type)) {
+      meal_type = meal_type.map(item => item.toString());
+    } else {
+      meal_type = [];
+    }
+
+    const response = await $axios.get(suffix, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params: {
+        page: pageNumber.value,
+        pageSize: pageSize.value,
+        search: query.value || undefined,
+        cuisine: JSON.stringify(filters.cuisine) || [],
+        dietary: JSON.stringify(filters.dietary) || [],
+        food_category: JSON.stringify(filters.foodCategory) || [],
+        mealType: meal_type.length > 0 ? JSON.stringify(meal_type) : undefined
+      },
+    });
+
+    const data = response.data;
+
+    if (data.data.length === 0) {
+      isLoading.value = false;
+      return;
+    }
+    searchResults.value = [...searchResults.value, ...data.data];
+    totalPages.value = data.totalPages;
+    pageNumber.value += 1;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function verifyAdmin(){
+  const token = localStorage.getItem('accessToken');
+  try {
+    const response = await $axios.get('/user/verify/admin', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(response.data);
+    if (response.data) {
+      userRole.value = 'admin';
+    } else {
+      userRole.value = 'patient';
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+const debouncedOnInput = debounce(async () => {
+  pageNumber.value = 1;
+  searchResults.value = [];
+  await fetchData(savedFilters.value);
+
+}, 300);
+
+function onScroll(event) {
+  const bottom = event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight + 1;
+  if (bottom) {
+    fetchData(savedFilters.value);
+  }
+} 
+
+onMounted(async() => {
+  fetchData(savedFilters.value);
+  document.addEventListener('click', handleClickOutside);
+
+  if(localStorage.getItem("recipeId")) {
+    const meal = {id: localStorage.getItem("recipeId")}
+    openOverlay(meal)
+    localStorage.removeItem("recipeId")
+  }
+
+  await verifyAdmin();
+  
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
+const openOverlay = async (meal) => {
+  try {
+    const response = await $axios.get(`/recipe/get?recipeId=${meal.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const detailedRecipeInfo = ref(response.data);
+    console.log(detailedRecipeInfo)
+    selectedRecipe.value = detailedRecipeInfo.value
+    instruction.value = detailedRecipeInfo.value.recipe.instruction
+    isOverlayVisible.value = true
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+
+}
+
+const toggleFilterOverlay = () => {
+  isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
+}
+
+const applyFilters = async (filters) => {
+  savedFilters.value = filters; // Save the filters
+  if (filterOn()){
+    filter_on.value = true;
+  } else {
+    filter_on.value = false;
+  }
+  debouncedOnInput(); // Fetch data with the new filters
+}
+
+function filterOn(){
+  if (savedFilters.value.cuisine.length > 0) return true;
+  if (savedFilters.value.dietary.length > 0) return true;
+  if (savedFilters.value.foodCategory.length > 0) return true;
+  if (savedFilters.value.recommended_meal_time.Breakfast) return true;
+  if (savedFilters.value.recommended_meal_time.Lunch) return true;
+  if (savedFilters.value.recommended_meal_time.Dinner) return true;
+  if (savedFilters.value.recommended_meal_time.Other) return true;
+}
+
+const clearFilters = () => {
+  savedFilters.value = {
+    cuisine: [],
+    dietary: [],
+    foodCategory: [],
+    recommended_meal_time: {
+      Breakfast: false,
+      Lunch: false,
+      Dinner: false,
+      Other: false,
+    },
+  };
+  filter_on.value = false;
+  debouncedOnInput();
+}
+
+
+
+const handleClickOutside = (event) => {
+  if (searchBar.value && !searchBar.value.contains(event.target)) {
+    isFilterOverlayVisible.value = false;
+  }
+}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
-
-* {
-  font-family: 'Overpass', sans-serif;
-}
-
-.bg-header-image {
-  background-image: url('@/assets/img/smallerBlob.svg');
-  background-size: 100% auto;
-  background-repeat: no-repeat;
-  background-position: center;
-  height: 35vh;
+.page-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding-top: 20px;
-  position: relative;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* Container for Search Bar and Recipe Cards */
-.content-container {
+.header {
+  position: fixed;
+  top: 0;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  z-index: 40;
 }
 
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns */
-  gap: 20px; /* Space between cards */
-  padding-left: 85px;
-  padding-right: 85px;
-  z-index:3;
+.image-container {
+  position: relative;
+  width: 100%;
 }
 
-
-
-/* Styling the curvy blobs */
-.curvy-left {
-  position: absolute;
-  bottom: 0;
-  left: -55px;
-  top: 310px;
-  width: 150px;
-  height: 500px;
-  z-index: 1;
-}
-
-.curvy-right {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  top: 310px;
-  width: 130px;
-  height: 500px;
-  z-index: 1;
-}
-
-.curvy-left img,
-.curvy-right img {
+.background-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.cards-grid, .pagination {
-  margin-bottom: 20px; /* Reduce if this is too large */
-}
-.relative {
-  min-height: auto;  /* Adjust this from min-h-screen or 100vh to auto */
-}
-.cards-grid, .content-container {
-  margin-bottom: 0;  /* Ensure bottom margins are minimal */
-  padding-bottom: 0;
+
+.text-overlay {
+  position: absolute;
+  width: 100%;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.bg-header-image, .cards-grid {
-  margin-bottom: 0px; /* Reduce or adjust based on your needs */
-}
-/* If your main container uses flex, make sure it's not spreading items too much */
-.main-container {  /* Replace .main-container with actual class or element */
+.body {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;  /* Change this if necessary */
-}
-.footer {  /* Add or modify an existing class */
-  position: relative;  /* Position it relative to its natural flow */
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
-.card-heading{
- color:black;
- padding-bottom:20px;
- padding-left:80px;
- font-size: x-large;
- 
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 40;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  width: 50%;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  padding: 2px 15px;
+  position: relative; /* Add this to position the filter overlay */
+}
+
+.search-input {
+  width: 100%;
+  align-self: center;
+  padding: 5px;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+.search-result-item-display {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+  padding: 15px;
+}
+
+.search-result-text-display {
+  height: 5%;
+  width: 60%;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 15px;
+  padding-bottom: 2.5%;
+}
+
+.search-result-container {
+  width: 60%;
+  height: 65%;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.aligned-paragraph {
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.loading-indicator {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.filter-button {
+  cursor: pointer;
+  height: 70%;
 }
 </style>

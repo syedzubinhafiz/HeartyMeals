@@ -2,19 +2,23 @@
     <div class="overlay" :onclick="closeTab">
       <div class="overlay-content">
         <!-- Background image -->
-        <img src="/assets/img/centerBlob.svg" class="center-blob">
+       
         <!-- <button @click="closeOverlay" class="close-btn">X</button> -->
          <!-- Scrollable Content -->
-      <div class="scrollable-content"></div>
-        <!-- Header and Image on top of the background -->
-        <h1 class="header">{{ header }}</h1>
-        <div class="content">
-          <img src="/assets/img/overlayimg.svg" alt="Overlay Image" />
-        </div>
-        <div class="text-box">
-          <div v-for="(content, index) in content" :key="index" v-html="content"></div>
+        <div class="scrollable-content">
+          
+          <h1 class="header">{{ header }}</h1>
+          <div class="content">
+            <img :src="imageSrc" alt="Overlay Image" class="image-container"/>
+          </div>
+          <div class="text-box">
+            <div v-for="(htmlString, index) in content" :key="index" v-html="htmlString"></div>
+          </div>
+
+          <img src="/assets/img/centerBlob.svg" class="center-blob">
         </div>
       </div>
+
     </div>
   </template>
 <script setup>
@@ -28,7 +32,6 @@ const props = defineProps({
 const emits = defineEmits(["update:show"])
 
 const closeTab = () => {
-  console.log('AAAAAAAAAAAAAA')
   props.show = false
   console.log(props.show)
   emits("update:show",false)
@@ -96,8 +99,6 @@ const closeTab = () => {
     width: 85%;
     height: 85%;
     transform: translate(-50%, -50%);
-    z-index: 1; /* The background should be below the header and content */
-    opacity: 100%; /* You can adjust opacity as per your design preference */
   }
   
   .header {
@@ -118,12 +119,13 @@ const closeTab = () => {
     margin-top: 20px;
   }
   
-  .content img {
-    width: 50%;
-    height: auto;
-  }
+
   .text-box {
-margin-top:200px;
+  position: relative;
+  z-index: 2;
+  margin-top: 5%;
+  margin-left: 5%;
+  width: 90%;
   background-color: #F3EADA;
   padding: 20px;
   border-radius: 8px;
@@ -148,6 +150,15 @@ margin-top:200px;
 
 .text-box ul li {
   list-style-type: disc;
+}
+
+.image-container {
+  width: 350px;
+  height: 350px;
+  object-fit: cover;
+  border-radius: 10px; 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
 }
   </style>
   

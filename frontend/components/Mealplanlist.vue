@@ -77,10 +77,24 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
 const onAddDishes = () => {
-  useMealLogging().unsavedMealList.value = [];
-  useMealLogging().mealDate.value = props.isoDate;
-  navigateTo(`/add-meals?mealType=${props.title}&selectedDate=${props.isoDate}&ismealplanning=true`);
+  const currentDate =  new Date(props.isoDate);
+  console.log(currentDate);
+  console.log(props.isoDate);
+  localStorage.setItem("mealInfo", JSON.stringify({
+    logType: "planning",
+    logDate: formatDate(currentDate),
+    mealType: props.title,
+    expiryTime: new Date().getTime().toLocaleString() + (5*60*1000),
+  }));
+  navigateTo('/add-meals')
 };
 </script>
 

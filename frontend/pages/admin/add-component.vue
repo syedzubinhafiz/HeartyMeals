@@ -1,10 +1,10 @@
 <template>
     <div class="absolute w-screen z-40" style="z-index: 10">
-        <Header/>
+        <AdminHeader/>
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
-        <ButtonOrange>
+        <ButtonOrange  @click="navigateTo('/admin')">
             <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 20px; height: 20px; margin-right: 8px;"/>
             Back
         </ButtonOrange>
@@ -50,7 +50,7 @@
                     <input type="number" id="amount" class="form-normal-text-input" placeholder="Enter Amount" min="1" step="0.01"/>
                     <SingleSelectionDropdown
                     :items="measuring_unit_dropdown_option"
-                    @item-selected="updateSelectedUnit($event)"
+                    @update:modelValue="updateSelectedUnit($event)"
                     defaultText="Unit"
                     buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
                     dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
@@ -64,7 +64,7 @@
                 <div></div>
                 <SingleSelectionDropdown
                     :items="component_type_dropdown_option"
-                    @item-selected="updateSelectedComponentType($event)"
+                    @update:modelValue="updateSelectedComponentType($event)"
                     defaultText="Component Type"
                     buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
                     dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
@@ -80,7 +80,6 @@
                     defaultText="Choose a category"
                     buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
                     dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
-
                     @item-selected="updateSelectedFoodCategory($event)"
                 />
             </div>
@@ -130,6 +129,8 @@ defineOptions({
 
 definePageMeta({
   layout: "emptylayout",
+    middleware: ["auth"],
+
 });
 
 const { $axios } = useNuxtApp();

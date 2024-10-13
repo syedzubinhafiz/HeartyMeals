@@ -7,20 +7,19 @@
             <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
             <img src="../assets/img/BrownBlob.svg" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
             <div class="w-fit flex justify-center grow">
-                <div class="space-y-5 m-9 z-10">
+                <div class="space-y-5 m-9 z-10 container">
                     <H1 class="">Login to your account</H1>
                     <H2>Welcome back 👋</H2>
+                    <div class="flex justify-center">
+                        <ButtonOrange @click.prevent="onVerify">Log In</ButtonOrange>
+                    </div>
+                    <!-- 
                     <Overlay :level="1" class="flex flex-col space-y-5">
                         <div class="flex justify-center">
                             <ButtonOrange @click.prevent="onVerify">Log In</ButtonOrange>
                         </div>
                         
-                    </Overlay>
-                    <Overlay :level="1" class="flex flex-col space-y-5">
-                        <P>Temporary quick login to skip needing to enter an email</P>
-                        <NuxtLink to="/temp" class="rounded-md shadow-md bg-custom-button-green w-fit text-white p-3">Quicker Login</NuxtLink>
-                        <Button @click.prevent="quickLogin">Quick Login</Button>
-                    </Overlay>
+                    </Overlay> -->
                 </div>
             </div>
 
@@ -44,3 +43,18 @@ const onVerify = () => {
 }
 
 </script>
+
+<style scoped>
+
+.container {
+    width: fit-content;
+    background-color: #F3EADA;
+    padding:2.5%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+</style>

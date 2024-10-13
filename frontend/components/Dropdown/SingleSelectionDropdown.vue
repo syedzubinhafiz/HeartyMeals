@@ -32,6 +32,10 @@ export default {
             type: Array,
             required: true
         },
+        modelValue: {
+            type: String,
+            default: null
+        },
         defaultText: {
             type: String,
             default: 'Select an item'
@@ -49,8 +53,14 @@ export default {
         return {
             isOpen: false,
             selectedItemDisplay: this.defaultText,
-            selectedItemId: null
+            selectedItemId: this.modelValue
         };
+    },
+    watch: {
+        modelValue(newVal) {
+            const selectedItem = this.items.find(item => item.id === newVal);
+            this.selectedItemDisplay = selectedItem ? selectedItem.display : this.defaultText;
+        }
     },
     methods: {
         toggleDropdown() {
@@ -60,13 +70,13 @@ export default {
             this.selectedItemDisplay = item.display;
             this.selectedItemId = item.id;
             this.isOpen = false;
-            this.$emit('item-selected', item.id); // Emit the selected item's id
+            this.$emit('update:modelValue', item.id); // Emit the selected item's id
         },
         unselectItem() {
             this.selectedItemDisplay = this.defaultText;
             this.selectedItemId = null;
             this.isOpen = false;
-            this.$emit('item-selected', null); // Emit null when selection is cleared
+            this.$emit('update:modelValue', null); // Emit null when selection is cleared
         },
         handleClickOutside(event) {
             if (this.$refs.dropdown && !this.$refs.dropdown.contains(event.target)) {

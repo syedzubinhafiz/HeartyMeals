@@ -1,10 +1,10 @@
 <template>
     <div class="absolute w-screen z-40" style="z-index: 10">
-        <Header/>
+        <AdminHeader/>
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
-        <ButtonOrange>
+        <ButtonOrange  @click="navigateTo('/admin')">
             <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 20px; height: 20px; margin-right: 8px;"/>
             Back
         </ButtonOrange>
@@ -76,7 +76,7 @@
                 defaultText="Choose a visibility" 
                 buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
                 dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-x:auto; height:120px;"
-                @item-selected="updateSelectedVisibility($event)"
+                @update:modelValue="updateSelectedVisibility($event)"
                 style="grid-column: span 2;"
                 >
                 </SingleSelectionDropdown>
@@ -117,6 +117,8 @@ defineOptions({
 
 definePageMeta({
   layout: "emptylayout",
+    middleware: ["auth"],
+
 });
 
 // reset form fields on page load

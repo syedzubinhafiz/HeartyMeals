@@ -95,7 +95,9 @@ export class UserService {
         new_user.daily_budget = user_daily_budget;
 
         // save the user to the database
-        return await this.userRepository.save(new_user);
+        await this.userRepository.save(new_user);
+
+        return { message: "User created successfully", status: 200};
     }
 
     /**

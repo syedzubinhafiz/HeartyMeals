@@ -76,4 +76,9 @@ export class EducationController {
             return educational_content;            
         }
     }
+
+    @Get('get/random')
+    async getRandom(){
+        return await this.educationalContentService.getMainLandingPageContent();
+    }
 }

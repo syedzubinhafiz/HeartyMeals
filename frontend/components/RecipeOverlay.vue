@@ -5,8 +5,8 @@
     
     <div class="overlay-content">
       <div class="left-section">
-        <h2>{{ meal.value.recipe.name }}</h2>
-        <img :src="'../assets/img/croissant.svg'" alt="Meal Image" />
+        <h2>{{ meal.recipe.name }}</h2>
+        <img :src="meal.recipe.storage_links.thumbnail" alt="Meal Image" />
       </div>
       <div class="right-section">
         <div class="tabs">
@@ -14,55 +14,67 @@
           <button :class="{ active: activeTab === 'recipe' }" @click="activeTab = 'recipe'">Recipe</button>
           <button :class="{ active: activeTab === 'ingredients' }" @click="activeTab = 'ingredients'">Ingredients</button>
         </div>
-        <div class="tab-content">
+        <div class="tab-content scrollable-content">
           <div v-if="activeTab === 'nutrition'" class="nutrition-content">
             <!-- Nutrition Information Content -->
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroEnergy.svg" alt="icon" width="16" height="16">
                 Calories</span>
-              <span>{{meal.value.recipe.nutrition_info.calories}}kcal</span>
+              <span>{{meal.recipe.nutrition_info.calories}}kcal</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroCarb.svg" alt="icon" width="16" height="16">Carbohydrates</span>
-              <span>{{meal.value.recipe.nutrition_info.totalCarbohydrate}}g</span>
+              <span>{{meal.recipe.nutrition_info.totalCarbohydrate}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroProtein.svg" alt="icon" width="16" height="16">Proteins</span>
-              <span>{{meal.value.recipe.nutrition_info.protein}}g</span>
+              <span>{{meal.recipe.nutrition_info.protein}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroFat.svg" alt="icon" width="10" height="10">Fats</span>
-              <span>{{meal.value.recipe.nutrition_info.fat}}g</span>
+              <span>{{meal.recipe.nutrition_info.fat}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/macroSodium.svg" alt="icon" width="16" height="16">Sodium</span>
-              <span>{{meal.value.recipe.nutrition_info.sodium}}g</span>
+              <span>{{meal.recipe.nutrition_info.sodium}}g</span>
             </div>
             <div class="nutrition-item">
               <span class="nutrition-label">
                 <img src="/assets/img/cholesterolsIcon.png" alt="icon" width="16" height="16">Cholesterol</span>
-              <span>{{meal.value.recipe.nutrition_info.cholesterol}}g</span>
+              <span>{{meal.recipe.nutrition_info.cholesterol}}g</span>
             </div>
-            <p class="preparation-time">* Preparation time: {{ meal.value.recipe.preparation_time }}</p>
+            <p class="preparation-time">* Preparation time: {{ meal.recipe.preparation_time }}</p>
           </div>
           <div v-if="activeTab === 'recipe'">
             <!-- Recipe Content -->
-            <p v-for="instruction of meal.value.recipe.instruction">{{ instruction }}</p>
+            <div v-for="(htmlString, index) in instruction" :key="index" v-html="htmlString"></div>
             <!-- Add more recipe details here -->
           </div>
           <div v-if="activeTab === 'ingredients'">
-            <p v-for="ingredient in props.meal.value.components.ingredient">
-              {{ `${ingredient.name}: ${ingredient.amount} ${ingredient.unit}` }}
-            </p>
-            <p v-for="seasoning in props.meal.value.components.seasonings">
-              {{ `${seasoning.name}: ${seasoning.amount} ${seasoning.unit}` }}
-            </p>
+            <!-- Ingredients Content -->
+            <div class="card-grid">
+              <div v-for="ingredient in props.meal.components.ingredients" :key="ingredient.name" class="card horizontal-card">
+                <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" />
+                <div class="card-content">
+                  <p class="card-title">{{ ingredient.name }}</p>
+                  <p class="card-details">{{ `Amount: ${ingredient.amount} ${ingredient.unit}` }}</p>
+                </div>
+              </div>
+
+              <div v-for="seasoning in props.meal.components.seasonings" :key="seasoning.name" class="card horizontal-card">
+                <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" />
+                <div class="card-content">
+                  <p class="card-title">{{ seasoning.name }}</p>
+                  <p class="card-details">{{ `Amount: ${seasoning.amount} ${seasoning.unit}` }}</p>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
         </div>
       </div>
@@ -75,7 +87,10 @@ const props = defineProps({
   },
   meal: {
     type: Object
-  }
+  },
+  instruction: {
+    type: String
+  },
 })
 
 </script>
@@ -148,7 +163,8 @@ export default {
 }
 
 .left-section img {
-  width: 80%; /* Reduced the image size to 80% of the container's width */
+  height: 300px;
+  object-fit: cover;
   border-radius: 10px;
 }
 
@@ -264,5 +280,56 @@ export default {
 .nutrition-label img {
   margin-right: 10px; /* Adjusts space between icon and text */
 
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust the gap between cards as needed */
+  max-height: 100vh; /* Set a fixed height for the container */
+}
+
+.scrollable-content {
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  word-wrap: break-word; /* Wrap long words */
+  max-height: 95%; /* Set a fixed height for the content */
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.horizontal-card {
+  flex-direction: row; /* Arrange content horizontally */
+  width: 100%; /* Full width for horizontal layout */
+}
+
+.card img {
+  max-width: 100px; /* Adjust the image size as needed */
+  border-radius: 4px;
+  margin-right: 16px; /* Space between image and text */
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 1em; /* Larger text for the title */
+  margin: 0;
+  font-weight: bold; /* Bold title for better readability */
+}
+
+.card-details {
+  font-size: 1em; /* Smaller text for the details */
+  margin: 4px 0 0; /* Adjust margin as needed */
 }
 </style>

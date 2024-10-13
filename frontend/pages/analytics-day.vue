@@ -1,7 +1,7 @@
 <template>
-  <div class="analytics-page min-h-screen flex flex-col">
+  <Header />
+  <div class="analytics-page">
     <!-- Header Section -->
-    <Header />
 
     <!-- Page Title, Time Frame Switcher, and Date Selector -->
     <div class="container mx-auto px-4 py-6 relative">
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto grid grid-cols-3 gap-6 px-4 pb-6 items-start">
+    <div class="container-main">
       <!-- Left Column: Meal Cards -->
       <div class="col-span-2 grid grid-cols-2 gap-6">
         <AnalyticsDayCard :mode="breakfastList.length>0 ? 0 : 2" mealType="Breakfast" :totalNutrition="breakfastTotal" :mealList="breakfastList"/>
@@ -42,25 +42,28 @@
         <AnalyticsDayCard :mode="otherList.length>0 ? 0 : 2" mealType="Other" :totalNutrition="otherTotal" :mealList="otherList"/>
       </div>
       <!-- Right Column: Nutrient Widget -->
-      <div class="nutrient-widget-container self-start">
-        <div class="widget-content flex flex-col justify-start items-start">
-          <NutrientWidget v-model:maxNutrientData="maxNutrientData" v-model:nutrientData="nutrientData"/>
-        </div>
-      </div>
     </div>
+      <div style="position: absolute; top: 7.5%; right: 2.5%; transform: scale(0.7);">
+          <NutritionWidgetCurve :nutrients="nutrients"/>
+      </div>
   </div>
   <!-- Footer -->
-  <Footer />
+   <footer>
+    <Footer />
+   </footer>
 </template>
 
 
 <script setup>
 import { ref, computed } from 'vue';
 import NutrientData from '../../classes/nutrientData.js'
+import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 
 definePageMeta({
   layout: 'emptylayout',
 });
+
+const { $axios } = useNuxtApp();
 
 // Tooltip visibility state
 const tooltipVisible = ref({
@@ -83,14 +86,6 @@ const nextDay = async () => {
 }
 
 
-function formatDate(date) {
-  const day = date.getDate();
-  const suffix = getOrdinalSuffix(day);
-  const options = { month: 'long', year: 'numeric' };
-  const monthYear = date.toLocaleDateString('en-US', options);
-  return `${day}${suffix} ${monthYear}`;
-}
-
 function getOrdinalSuffix(day) {
   if (day > 3 && day < 21) return 'th';
   switch (day % 10) {
@@ -104,18 +99,6 @@ function getOrdinalSuffix(day) {
       return 'th';
   }
 }
-
-// function previousDate() {
-//   const date = new Date(currentDate.value);
-//   date.setDate(date.getDate() - 1);
-//   currentDate.value = date;
-// }
-
-// function nextDate() {
-//   const date = new Date(currentDate.value);
-//   date.setDate(date.getDate() + 1);
-//   currentDate.value = date;
-// }
 
 // View state and function
 const view = ref('day');
@@ -134,50 +117,93 @@ const dinnerList = ref([])
 const otherTotal = ref({})
 const otherList = ref([])
 
+const nutrients = ref([
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  },
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  },
+  {
+    calories: 0,
+    carbs: 0,
+    protein: 0,
+    fat: 0,
+    sodium: 0,
+    cholesterol: 0
+  }
+]);
 
-const maxNutrientData = ref(null)
-const nutrientData = ref(null)
 onMounted(async() => {
   await useApi("/dietary","GET")
   await getData()
 })
 
-const getData = async () => {
-  console.log((new Date()))
-  console.log(useDate().getFormattedDateLong())
-
-  let currentDate = currentDay.value
-  currentDate = useDate().getFormattedDateShort(true)
-  console.log(currentDate)
-  analyticsData.value = await useApi(`/analytics/daily?date=${currentDate}&timeZone=Asia/Kuala_Lumpur`,"GET")
-  console.log(analyticsData.value)
-  breakfastTotal.value = analyticsData.value.value.breakfast_total ?? analyticsData.value.value.Breakfast_total 
-  breakfastList.value = analyticsData.value.value.breakfast ?? analyticsData.value.value.Breakfast 
-  lunchTotal.value = analyticsData.value.value.lunch_total ?? analyticsData.value.value.Lunch_total 
-  lunchList.value = analyticsData.value.value.lunch ?? analyticsData.value.value.Lunch 
-  dinnerTotal.value = analyticsData.value.value.dinner_total ?? analyticsData.value.value.Dinner_total 
-  dinnerList.value = analyticsData.value.value.dinner ?? analyticsData.value.value.Dinner 
-  otherTotal.value = analyticsData.value.value.other_total ?? analyticsData.value.value.Other_total 
-  otherList.value = analyticsData.value.value.other ?? analyticsData.value.value.Other 
-
-  console.log(analyticsData.value.value)
-  let result = await useApi(`/user/budget?startDate=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
-  console.log(result);
-
-  maxNutrientData.value = NutrientData.fromApi2(result.value[currentDate][0]);
-  nutrientData.value = NutrientData.fromApi2(result.value[currentDate][1]);
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
 }
 
+const getData = async () => {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  let currentDate = currentDay.value;
+
+  const token = localStorage.getItem('accessToken');
+  analyticsData.value = await $axios.get(`/analytics/daily?date=${formatDate(currentDate)}&timeZone=${timeZone}`,{
+          headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+          }
+      });
+      
+  breakfastTotal.value = analyticsData.value.data.Breakfast_total
+  breakfastList.value = analyticsData.value.data.Breakfast
+  lunchTotal.value = analyticsData.value.data.Lunch_total
+  lunchList.value = analyticsData.value.data.Lunch
+  dinnerTotal.value = analyticsData.value.data.Dinner_total
+  dinnerList.value = analyticsData.value.data.Dinner
+  otherTotal.value = analyticsData.value.data.Other_total
+  otherList.value = analyticsData.value.data.Other
+
+  nutrients.value[0].calories = analyticsData.value.data.daily_budget.calories;
+  nutrients.value[0].carbs = analyticsData.value.data.daily_budget.carbohydrates;
+  nutrients.value[0].protein = analyticsData.value.data.daily_budget.protein;
+  nutrients.value[0].fat = analyticsData.value.data.daily_budget.fat;
+  nutrients.value[0].sodium = analyticsData.value.data.daily_budget.sodium;
+  nutrients.value[0].cholesterol = analyticsData.value.data.daily_budget.cholesterol;
+
+  nutrients.value[2].calories = analyticsData.value.data.remaining_budget.calories;
+  nutrients.value[2].carbs = analyticsData.value.data.remaining_budget.carbohydrates;
+  nutrients.value[2].protein = analyticsData.value.data.remaining_budget.protein;
+  nutrients.value[2].fat = analyticsData.value.data.remaining_budget.fat;
+  nutrients.value[2].sodium = analyticsData.value.data.remaining_budget.sodium;
+  nutrients.value[2].cholesterol = analyticsData.value.data.remaining_budget.cholesterol;
+}
 </script>
-
-
-
-
 
 <style>
 /* Page background color */
 .analytics-page {
   background-color: #dac2a8; /* Darker beige background for the entire page */
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 40;
 }
 
 /* Meal card background color */
@@ -217,19 +243,13 @@ const getData = async () => {
   background-color: #ddcb9c;
 }
 
-.nutrient-widget-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  height: auto;
-  margin-left: 12rem;
-}
-
-.widget-content {
-  position: sticky;
-  top: 1rem;
-  width: 100%;
+.container-main {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 auto;
+  margin-top: 1%;
+  width: 90%;
+  grid-template-rows: 70%;
 }
 
 .content-wrapper {
@@ -343,10 +363,6 @@ const getData = async () => {
 .calories-info {
   font-weight: bold;
   text-align: right;
-}
-
-.calories-value {
-  color: #e53e3e; /* Red color for calories */
 }
 
 @media (min-width: 768px) {

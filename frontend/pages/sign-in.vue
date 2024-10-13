@@ -7,6 +7,6 @@
     middleware: ["auth"],
   });
   
-  await navigateTo("/temp");
+  await navigateTo("/home");
   </script>
   
