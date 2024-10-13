@@ -153,6 +153,7 @@ export class RecipeService {
                 'recipe.description', 
                 'recipe.instruction',
                 'recipe.recommended_meal_time', 
+                'recipe.related_food_categories',
                 'recipe.is_approved', 
                 'recipe.visibility', 
                 'recipe.storage_links',
@@ -171,7 +172,7 @@ export class RecipeService {
                     WHERE category::uuid = ANY(:user_allergy_food_category_ids::uuid[])
                 )
             `, { user_allergy_food_category_ids });
-            
+            console.log(user_allergy_food_category)
         
             // Get user selected cuisine
             if (cuisineIds.length > 0){

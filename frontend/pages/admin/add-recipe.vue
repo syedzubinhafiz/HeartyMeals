@@ -610,6 +610,7 @@ const gatherRecipeData = async () => {
     });
     if (response.data.status === 200) {
       useToast().success("Recipe added successfully!");
+      window.location.reload();
     }
   } catch (error) {
     if (error.response && error.response.data.status === 400) {

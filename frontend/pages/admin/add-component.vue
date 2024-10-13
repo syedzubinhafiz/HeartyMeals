@@ -323,6 +323,7 @@ const gatherComponentData = async () => {
     });
     if (response.data.status === 200) {
       useToast().success("Component added successfully!");
+      window.location.reload();
     }
   } catch (error) {
     if (error.response && error.response.data.status === 400) {
