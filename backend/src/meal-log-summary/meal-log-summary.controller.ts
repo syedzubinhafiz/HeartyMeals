@@ -6,6 +6,7 @@ import { EntityManager } from "typeorm";
 import { InjectEntityManager } from "@nestjs/typeorm";
 import { MealLoggingService } from "src/meal-logging/meal-logging.service";
 
+
 @Controller('meal-log-summary')
 export class MealLogSummaryController {
     constructor(
