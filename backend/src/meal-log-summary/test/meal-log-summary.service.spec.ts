@@ -143,12 +143,12 @@ describe('MealLogSummaryService', () => {
         ethnicity: {
           id: '51980097-745e-4ea2-b7a3-7dbc0ad5f308',
           name: 'Chinese'
-        } as Ethnicity, // Assuming this structure for ethnicity
+        } as Ethnicity, 
         user_nutrition_setting: {
-          activity_level: 2, // 1 for sedentary, 2 for light, etc.
+          activity_level: 2, 
           fat_percentage: 0.2,
           carbs_percentage: 0.4,
-          cholesterol_level: CholesterolLevel.HIGH, // Assuming this enum value
+          cholesterol_level: CholesterolLevel.HIGH, 
           protein_percentage: 0.4
         },
         daily_budget: {
@@ -158,11 +158,11 @@ describe('MealLogSummaryService', () => {
           protein: 247.8,
           sodium: 2300,
           cholesterol: 200,
-          water_intake: 2000 // Assuming this is part of daily_budget based on your example
+          water_intake: 2000 
         },
         created_at: new Date(),
         updated_at: new Date(),
-        deleted_at: null // Assuming null means the user is not deleted
+        deleted_at: null 
       };
   
       const dto: AddMealLoggingSummaryDTO = {

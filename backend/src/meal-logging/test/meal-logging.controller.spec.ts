@@ -5,6 +5,7 @@ import { CommonService } from 'src/common/common.service';
 import { MealLogSummaryService } from 'src/meal-log-summary/meal-log-summary.service';
 import { StorageService } from 'src/storage/storage.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { StorageType } from 'src/storage/enum/storage.enum';
 
 describe('MealLoggingController', () => {
   let controller: MealLoggingController;
@@ -76,13 +77,24 @@ describe('MealLoggingController', () => {
         },
       };
       const budget = { '2024-10-15': 2000 };
-      const storageEntries = [{ storage_id: 'thumbnail1', link: 'http://example.com/thumbnail1.jpg' }];
+      const storageEntries = [
+        {
+          storage_id: 'thumbnail1',
+          file_path: 'path/to/file',
+          type: StorageType.JPEG,
+          size: 1024,
+          link: 'http://example.com/thumbnail1.jpg',
+        },
+      ];
 
       jest.spyOn(mealLoggingService, 'getMeals').mockResolvedValue(meals);
       jest.spyOn(mealLogSummaryService, 'getRemainingBudget').mockResolvedValue(budget);
       jest.spyOn(storageService, 'getLink').mockResolvedValue(storageEntries);
 
-      const result = await controller.getMealsPerDay({ authorization: 'Bearer token' }, payload);
+      const result = await controller.getMealsPerDay(
+        { authorization: 'Bearer token' },
+        payload,
+      );
 
       expect(result).toEqual({
         '2024-10-15': {
@@ -101,10 +113,21 @@ describe('MealLoggingController', () => {
     });
 
     it('should throw an error when the service fails', async () => {
-      jest.spyOn(mealLoggingService, 'getMeals').mockRejectedValue(new HttpException('Internal Error', HttpStatus.INTERNAL_SERVER_ERROR));
+      jest
+        .spyOn(mealLoggingService, 'getMeals')
+        .mockRejectedValue(
+          new HttpException('Internal Error', HttpStatus.INTERNAL_SERVER_ERROR),
+        );
 
       try {
-        await controller.getMealsPerDay({ authorization: 'Bearer token' }, { startDate: '2024-10-15' });
+        await controller.getMealsPerDay(
+          { authorization: 'Bearer token' },
+          {
+            startDate: '2024-10-15',
+            endDate: '2024-10-15',
+            timeZone: 'Asia/Kuala_Lumpur',
+          },
+        );
       } catch (e) {
         expect(e.message).toBe('Internal Error');
       }
