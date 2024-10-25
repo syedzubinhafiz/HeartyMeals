@@ -26,7 +26,7 @@
           :items= "measuring_units_dropdown_option"
           defaultText="unit"
           buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
-          dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-x:auto; height:200px;"
+          dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-y:scroll; height:100px;"
           @item-selected="updateSelectedUnit($event)"
         
           />

@@ -11,11 +11,11 @@
                     <input type="number" id="age" name="age" placeholder="Age" min="1" step="1" required class="from-input-box">
                 </div>
                 <div class="input-container">
-                    <label for="weight">Weight</label>
+                    <label for="weight">Weight (kg)</label>
                     <input type="number" id="weight" name="weight" placeholder="Weight" min="1" step="0.01" required class="from-input-box">
                 </div>
                 <div class="input-container">
-                    <label for="height">Height</label>
+                    <label for="height">Height (cm)</label>
                     <input type="number" id="height" name="height" placeholder="Height" min="1" step="0.01" required class="from-input-box">
                 </div>
                 <div class="input-container">

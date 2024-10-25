@@ -178,47 +178,6 @@ export class RecipeController {
 
 
     /**
-     *  This endpoint is used to get the recently added recipe list
-     * @param headers  Authorization header
-     * @param page      Page number
-     * @param pageSize  Page size
-     * @returns  return the recently added recipe list
-     */
-    @Get('get-recently-added-list')
-    async getRecentlyAddedList(
-        @Headers() headers: any, 
-        @Query("page") page: string,
-        @Query("pageSize") pageSize: string,
-    ){
-        // Get the page number and page size
-        const page_number = page != undefined ? parseInt(page, 10) : 1;
-        const page_size = pageSize != undefined ? parseInt(pageSize, 10) : 4;
-
-        // Decode the headers to get the user_id
-        const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
-        
-        // Call the getRecentlyAddedList business logic to get the recently added recipe list
-        const[recipe_list, total_recipe] = await this.recipeService.getRecentlyAddedList(decoded_headers, page_number, page_size);
-
-        var recipe_list_with_thumbnail = recipe_list as Recipe[];
-
-        for (const recipe of recipe_list_with_thumbnail){
-            recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
-            delete recipe.instruction;
-        }
-
-        // Return the recently added recipe list with pagination info
-        return {
-            data: recipe_list_with_thumbnail,
-            total_recipe,
-            page_number,
-            page_size,
-            totalPages: Math.ceil(total_recipe / page_size)
-        };
-
-    }
-
-    /**
      * Get recipe components based on the recipeId
      * @param recipeId Recipe ID to get the recipe components
      * @returns {ingridients: [], seasonings: []} List of components for the recipe
