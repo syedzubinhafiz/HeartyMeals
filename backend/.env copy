@@ -1,10 +1,9 @@
-
 # HF Nutrition DB Info
 #postgresql://{hosting}:{port}/{database}?user={username}&password={password}
 POSTGRES_URL=postgresql://localhost:5432/HF_Nutrition?user=postgres&password=admin123
 
 # FIREBASE INFO
-DEBUG = false
+SAVE_FIREBASE = true
 FIREBASE_STORAGE_BUCKET = FIREBASE_STORAGE_BUCKET
 FIREBASE_TYPE = FIREBASE_TYPE
 FIREBASE_PROJECT_ID = FIREBASE_PROJECT_ID
