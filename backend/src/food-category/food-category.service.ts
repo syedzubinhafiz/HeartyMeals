@@ -11,12 +11,21 @@ export class FoodCategoryService {
         private foodCategoryRepository: Repository<FoodCategory>
     ){}
 
-
+    /**
+     * Get all the food categories stored in database
+     * @returns all food categories
+     */
     async getAllFoodCategory(){
         return await this.foodCategoryRepository.find();
     }
 
+    /**
+     * Add a new food category to the database
+     * @param newFoodCategory - new food category to be added
+     * @returns the new food category added entry
+     */
     async addFoodCategory(newFoodCategory: string){
+        // check if the food category already exist
         if (await this.foodCategoryRepository.findOneBy({type: newFoodCategory}) != null) {
             return "Dietary already Exist."
         }

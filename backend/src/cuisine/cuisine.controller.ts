@@ -9,6 +9,11 @@ export class CuisineController {
         private cuisineService: CuisineService
     ){}
 
+    /**
+     * Post method to  add a new cuisine to the database
+     * @param payload - payload that contains the cuisine information
+     * @returns the cuisine entry added to the database
+     */
     @Post()
     async addCuisine(@Body() payload: AddCuisineDTO){
 
@@ -22,7 +27,6 @@ export class CuisineController {
      */
     @Get()
     async getAllCuisine(){
-
         return await this.cuisineService.getAllCuisine();
     }
 }

@@ -13,6 +13,11 @@ export class EducationController {
         private storageService: StorageService,
     ){}
 
+    /**
+     * Post method to upload educational content
+     * @param payload - payload that contains the educational content information
+     * @returns HttpException 200 if the educational content is uploaded
+     */
     @Post('add')
     async upload(@Body() payload: AddEducationalContentDTO){
         try {
@@ -32,6 +37,14 @@ export class EducationController {
         }
     }
 
+    /**
+     * Get method to get a list of educational content or a specific educational content based on the educational content id
+     * @param educationalContentId - educational content id
+     * @param page - page number
+     * @param pageSize - page size
+     * @param search - search query to search in the summary of the educational content
+     * @returns a list of educational content or a specific educational content based on the educational content id
+     */
     @Get('get')
     async get(
         @Query('educationalContentId') educationalContentId: string = null,

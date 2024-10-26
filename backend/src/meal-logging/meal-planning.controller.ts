@@ -26,7 +26,7 @@ export class MealPlanningController {
      * @returns a list of meals on the date, sorted by meal types
      */
     @Get('get')
-    async getMealsPerDay(@Headers() headers, @Query() payload: GetMealLoggingDTO){
+    async getMealsPerDay(@Headers() headers: any, @Query() payload: GetMealLoggingDTO){
     try {
             const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
 
@@ -57,7 +57,7 @@ export class MealPlanningController {
      * @returns HttpException 200 if the meal is updated 
      */
     @Post('update')
-    async updateMealLogging(@Headers() headers, @Body() payload: UpdateMealLoggingDTO){
+    async updateMealLogging(@Headers() headers: any, @Body() payload: UpdateMealLoggingDTO){
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => {
@@ -82,13 +82,13 @@ export class MealPlanningController {
     }
 
     /**
-     * Post method to delete meal logging entries
+     * Delete method to delete meal planning entries
      * @param headers - headers that contains the authorization token
      * @param payload - payload that contains the DTO
      * @returns HttpException 200 when the meal is deleted 
      */
     @Delete('delete')
-    async delete(@Headers() headers, @Body() payload: DeleteMealLoggingDTO){
+    async delete(@Headers() headers: any, @Body() payload: DeleteMealLoggingDTO){
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
             await this.entityManager.transaction(async transactionalEntityManager => { 
