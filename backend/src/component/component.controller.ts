@@ -158,6 +158,7 @@ export class ComponentController {
             pagination = true
         }
         
+        
 
         // Get the list of seasonings
         const [component_list, total] = await this.componentService.getComponents(decoded_header, ComponentType.SEASONING, page_number, page_size, pagination, search);

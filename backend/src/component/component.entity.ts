@@ -20,6 +20,7 @@ export class Component{
 
     @Column({type: 'jsonb'})
     nutrition_info: Record<string, any>;
+    
     @Column({
         type: 'enum',
         enum: MeasuringUnit
