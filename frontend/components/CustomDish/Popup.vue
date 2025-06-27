@@ -134,41 +134,61 @@
 
                         <!-- Ingredient Display -->
                         <div class="form-group">
-                        <CollapsibleSection :title="`Selected Ingredient (${selectedIngredients.length})`" style="grid-column: span 3; width: 100%;">
-                            <div v-for="ingredient in selectedIngredients" :key="ingredient.id" class="selected-component-item">
-                            <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" class="w-20 h-20 mr-2" />
-                            <p class="selected-item-name">{{ ingredient.name }}</p>
-                            <input type="number" v-model="ingredient.serving" class="form-normal-text-input" placeholder="Enter Serving" min="1" step="0.01" />
-                            <SingleSelectionDropdown
-                                :items="measuring_unit_dropdown_option"
-                                @update:modelValue="ingredient.selectedUnit = $event"
-                                defaultText="Unit"
-                                buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
-                                dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
-                            />
-                            <button class="remove-component-button" @click="removeIngredient(ingredient.id)">-</button>
+                            <div class="selected-components-container">
+                                <h3 class="selected-components-title">Selected Ingredients ({{ selectedIngredients.length }})</h3>
+                                
+                                <!-- Empty state message -->
+                                <div v-if="selectedIngredients.length === 0" class="empty-state-message" @click.stop>
+                                    <p>No ingredients selected yet. Click the "Add Ingredient" button above to start building your custom dish!</p>
+                                </div>
+                                
+                                <!-- Selected ingredients list -->
+                                <div v-else class="selected-components-list">
+                                    <div v-for="ingredient in selectedIngredients" :key="ingredient.id" class="selected-component-item">
+                                        <img :src="ingredient.storage_links.thumbnail" :alt="ingredient.name" class="w-20 h-20 mr-2" />
+                                        <p class="selected-item-name">{{ ingredient.name }}</p>
+                                        <input type="number" v-model="ingredient.serving" class="form-normal-text-input small-serving-input" placeholder="Enter Serving Size" min="1" step="0.01" />
+                                        <SingleSelectionDropdown
+                                            :items="measuring_unit_dropdown_option"
+                                            @update:modelValue="ingredient.selectedUnit = $event"
+                                            defaultText="Unit"
+                                            buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
+                                            dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; overflow-x: hidden; max-height: 150px; width: 100%; z-index: 25;"
+                                        />
+                                        <button class="remove-component-button" @click="removeIngredient(ingredient.id)">-</button>
+                                    </div>
+                                </div>
                             </div>
-                        </CollapsibleSection>
                         </div>
 
 
                         <!-- Seasoning Display -->
                         <div class="form-group">
-                        <CollapsibleSection :title="`Selected Seasoning (${selectedSeasonings.length})`" style="grid-column: span 3;">
-                            <div v-for="seasoning in selectedSeasonings" :key="seasoning.id" class="selected-component-item">
-                            <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" class="w-20 h-20 mr-2" />
-                            <p class="selected-item-name">{{ seasoning.name }}</p>
-                            <input type="number" v-model="seasoning.serving" class="form-normal-text-input" placeholder="Enter Serving" min="0" step="0.01" />
-                            <SingleSelectionDropdown
-                                :items="measuring_unit_dropdown_option"
-                                @update:modelValue="seasoning.selectedUnit = $event"
-                                defaultText="Unit"
-                                buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
-                                dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; max-height: 200px; width: 100%; z-index: 25;"
-                            />
-                            <button class="remove-component-button" @click="removeSeasoning(seasoning.id)">-</button>
+                            <div class="selected-components-container">
+                                <h3 class="selected-components-title">Selected Seasonings ({{ selectedSeasonings.length }})</h3>
+                                
+                                <!-- Empty state message -->
+                                <div v-if="selectedSeasonings.length === 0" class="empty-state-message" @click.stop>
+                                    <p>No seasonings selected yet. Click the "Add Seasoning" button above to add flavor to your custom dish!</p>
+                                </div>
+                                
+                                <!-- Selected seasonings list -->
+                                <div v-else class="selected-components-list">
+                                    <div v-for="seasoning in selectedSeasonings" :key="seasoning.id" class="selected-component-item">
+                                        <img :src="seasoning.storage_links.thumbnail" :alt="seasoning.name" class="w-20 h-20 mr-2" />
+                                        <p class="selected-item-name">{{ seasoning.name }}</p>
+                                        <input type="number" v-model="seasoning.serving" class="form-normal-text-input small-serving-input" placeholder="Enter Serving Size" min="0" step="0.01" />
+                                        <SingleSelectionDropdown
+                                            :items="measuring_unit_dropdown_option"
+                                            @update:modelValue="seasoning.selectedUnit = $event"
+                                            defaultText="Unit"
+                                            buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px; width: 100%; z-index: 10;"
+                                            dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; overflow-y: auto; overflow-x: hidden; max-height: 150px; width: 100%; z-index: 25;"
+                                        />
+                                        <button class="remove-component-button" @click="removeSeasoning(seasoning.id)">-</button>
+                                    </div>
+                                </div>
                             </div>
-                        </CollapsibleSection>
                         </div>
 
                         
@@ -216,7 +236,7 @@
 
 </template>
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed } from 'vue';
 import SingleSelectionDropdown from '~/components/Dropdown/SingleSelectionDropdown.vue';
 import AddComponentPopup from '~/components/AddComponentPopup.vue';
 import { useNuxtApp } from '#app';
@@ -260,7 +280,6 @@ const showPopupSeasoning = ref(false);
 
 const selectedIngredients = ref([]);
 const selectedSeasonings = ref([]);
-const selectedType = ref('');
 
 const measuring_unit_dropdown_option = ref([]);
 const cuisine_dropdown_option = ref([]);
@@ -390,7 +409,6 @@ const handleClosePopup = ({ selectedItems, type }) => {
       selectedUnit: ''
     }));
   }
-  selectedType.value = type;
   showPopupIngredient.value = false;
   showPopupSeasoning.value = false;
 };
@@ -664,8 +682,9 @@ const gatherRecipeData = async () => {
     display: grid;
     padding: 2.5% 2.5%;
     grid-template-columns: 1fr 1fr;
-    column-gap: 40px;
+    column-gap: 50px;
     row-gap: 28px;
+    align-items: start;
 }
 
 .form-group {
@@ -719,22 +738,36 @@ const gatherRecipeData = async () => {
 }
 
 .selected-component-item{
-    display: grid;
-    column-gap: 15px;
-    margin: 10px;
-    grid-template-columns: 15% 30% 10% 25% 10%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.625rem 0;
+    padding: 0.75rem;
     background-color: #FFFEF1;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     border-radius: 20px;
-    align-items: center;
-
+    min-height: 60px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .remove-component-button{
     font-family: 'Overpass', sans-serif;
-    font-size:  35px;
-    font-weight: 500;
-    color:red;
+    font-size: 28px;
+    font-weight: 600;
+    color: #dc3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.remove-component-button:hover {
+    color: #c82333;
 }
 
 .selected-item-name{
@@ -747,6 +780,116 @@ const gatherRecipeData = async () => {
 .large-checkbox {
     width: 20px;
     height: 20px;
+}
+
+/* Selected Components Container Styles */
+.selected-components-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 15px;
+    margin-top: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1.5px solid #8B8585;
+    border-radius: 5px;
+    min-height: 120px;
+    cursor: default;
+    box-sizing: border-box;
+    grid-column: 1 / -1;
+}
+
+.selected-components-title {
+    font-family: 'Overpass', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+    cursor: default;
+    user-select: none;
+}
+
+.empty-state-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 2px dashed #ddd;
+    padding: 15px;
+}
+
+.empty-state-message p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.selected-components-list {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Override any collapsible/dropdown behavior */
+.selected-components-container * {
+    pointer-events: auto !important;
+}
+
+/* Remove any dropdown arrows */
+.selected-components-container::after,
+.selected-components-container::before {
+    display: none !important;
+}
+
+/* Ensure no hover effects that suggest clickability */
+.selected-components-container:hover {
+    cursor: default !important;
+}
+
+.selected-components-title:hover {
+    cursor: default !important;
+}
+
+/* Fix container sizing and scrolling */
+.selected-components-container {
+    overflow: hidden !important;
+    max-width: 100% !important;
+}
+
+/* Responsive component item children */
+.selected-component-item img {
+    width: 4rem;
+    height: 4rem;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.selected-item-name {
+    flex: 1;
+    min-width: 0;
+    margin-right: 0.5rem;
+}
+
+.selected-component-item input[type="number"], .small-serving-input {
+    width: 8rem;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+}
+
+.selected-component-item .dropdown-container,
+.selected-component-item > div:has(button) {
+    width: 6rem;
+    flex-shrink: 0;
+}
+
+.remove-component-button {
+    flex-shrink: 0;
+    margin-left: 0.5rem;
 }
 
 .submit-button{

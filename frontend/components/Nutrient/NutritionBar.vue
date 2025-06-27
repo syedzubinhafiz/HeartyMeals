@@ -5,7 +5,7 @@
             <img :src="icon" class="icon"/>
             <label class="label-grid-left">{{ label }}</label>
           </div>
-            <span :style="{ color: fontColor }" class="label-grid-right">{{ parseFloat(afterMealValue.toFixed(2)) }}/{{ totalValue }}{{ unit }}</span>
+            <span :style="{ color: fontColor }" class="label-grid-right">{{ parseFloat((afterMealValue || 0).toFixed(2)) }}/{{ totalValue || 0 }}{{ unit }}</span>
         </div>
 
         <div class="progress-bar-container" :style="progressBarContainerStyle">
@@ -36,9 +36,18 @@
     }
   });
   
-  const maxPercentage = computed(() => (props.totalValue / props.totalValue) * 100);
-  const currentPercentage = computed(() => (props.currentValue / props.totalValue) * 100);
+  const maxPercentage = computed(() => {
+    if (!props.totalValue) return 0;
+    return (props.totalValue / props.totalValue) * 100;
+  });
+  
+  const currentPercentage = computed(() => {
+    if (!props.totalValue || !props.currentValue) return 0;
+    return (props.currentValue / props.totalValue) * 100;
+  });
+  
   const afterMealPercentage = computed(() => {
+    if (!props.totalValue || !props.afterMealValue) return 0;
     const value = (props.afterMealValue / props.totalValue) * 100;
     return value < 0 ? 0 : value;
   });

@@ -23,10 +23,8 @@
 </template>
 
 <script>
-defineOptions({
-    name: "SingleSelectionDropdown",
-});
 export default {
+    name: "SingleSelectionDropdown",
     props: {
         items: {
             type: Array,

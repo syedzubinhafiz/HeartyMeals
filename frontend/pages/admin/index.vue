@@ -19,11 +19,11 @@
                     <img src="@/assets/icon/tick-circle-icon.svg" alt="">
                     Approve Custom Recipe
                 </div>
-                <div class="button add-recipe" @click="navigateTo('/admin/add-recipe')">
+                <div class="button add-recipe" @click="async () => await navigateTo('/admin/add-recipe')">
                     <img src="@/assets/icon/add-recipe-admin-icon.svg" alt="">
                     Add Recipe
                 </div>
-                <div class="button edu-content" @click="navigateTo('/educational-content')">
+                <div class="button edu-content" @click="async () => await navigateTo('/educational-content')">
                     <img src="@/assets/icon/edu-content-icon.svg" alt="" >
                     Educational Content
                 </div>
@@ -31,15 +31,15 @@
             
             <div class="col">
 
-                <div class="button recipe-library"  @click="navigateTo('/recipe-library')">
+                <div class="button recipe-library"  @click="async () => await navigateTo('/recipe-library')">
                     <img src="@/assets/icon/recipe-lib-icon.svg" alt="">
                     Recipe Library
                 </div>
-                <div class="button add-component" @click="navigateTo('/admin/add-component')">
+                <div class="button add-component" @click="async () => await navigateTo('/admin/add-component')">
                     <img src="@/assets/icon/add-component-admin-icon.svg" alt="" >
                     Add Component
                 </div>
-                <div class="button add-edu-content" @click="navigateTo('/admin/add-edu-content')">
+                <div class="button add-edu-content" @click="async () => await navigateTo('/admin/add-edu-content')">
                     <img src="@/assets/icon/add-edu-content-admin-icon.svg" alt="" >
                     Add Educational Content
                 </div>
@@ -161,9 +161,9 @@ onMounted(() => {
     fetchData();
 });
 
-function goToRecipeDetails(id) {
+async function goToRecipeDetails(id) {
     localStorage.setItem('recipeId', id);
-    navigateTo('/recipe-library');
+    await navigateTo('/recipe-library');
 }
 
 function onScroll(event) {

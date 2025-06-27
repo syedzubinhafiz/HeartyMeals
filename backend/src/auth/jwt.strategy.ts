@@ -2,26 +2,31 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy } from "@nestjs/passport";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { passportJwtSecret } from "jwks-rsa";
+
+export interface JwtPayload {
+  sub: string;      // user_id
+  email: string;    // user email
+  role: string;     // Admin/Patient/Dietitian
+  iat: number;      // issued at
+  exp?: number;     // expiration (optional, set automatically by JWT library)
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly configService: ConfigService) {
-    const issuer = configService.getOrThrow<string>(
-      "GREENSHEART_ACCOUNTS_ISSUER",
-    );
-
     super({
-      secretOrKeyProvider: passportJwtSecret({
-        jwksUri: `${issuer}/protocol/openid-connect/certs`,
-      }),
+      secretOrKey: configService.getOrThrow<string>("JWT_SECRET"),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      issuer,
+      ignoreExpiration: false,
     });
   }
 
-  async validate(payload: any) {
-    // TODO Return a User model from database based on payload.sub
-    return { id: payload.sub };
+  async validate(payload: JwtPayload) {
+    // Return user info that will be attached to request.user
+    return {
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role
+    };
   }
 }

@@ -68,26 +68,29 @@
     const dietaryDropdown = ref(null);
     const foodCategoryDropdown = ref(null);
 
-  try {
-    // Get all cuisines
-    const cuisine_response = await $axios.get('/cuisine', {
-      headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'application/json'
-      }
-    });
-    const dietary_response = await $axios.get('/dietary', {
-      headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'application/json'
-      }
-    });
-    const food_category_response = await $axios.get('/food_category/get', {
-      headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
-        'Content-Type': 'application/json'
-      }
-    });
+  // Only run on client side
+  if (process.client) {
+    try {
+      const token = localStorage.getItem('accessToken');
+      // Get all cuisines
+      const cuisine_response = await $axios.get('/cuisine', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      });
+      const dietary_response = await $axios.get('/dietary', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      });
+      const food_category_response = await $axios.get('/food_category/get', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      });
   
     cuisine_response.data.forEach(cuisine => {
       cuisine_dropdown_option.value.push({
@@ -110,8 +113,9 @@
       });
     });
   
-  } catch (error) {
-    console.log(error);
+    } catch (error) {
+      console.log(error);
+    }
   }
   
   const filters = ref({
@@ -136,22 +140,22 @@
   };
   
   const clearFilters = () => {
-  filters.value = {
-    cuisine: [],
-    dietary: [],
-    foodCategory: [],
-    recommended_meal_time: {
-      Breakfast: false,
-      Lunch: false,
-      Dinner: false,
-      Other: false
-    },
-  };
-  cuisineDropdown.value.reset();      
+    filters.value = {
+      cuisine: [],
+      dietary: [],
+      foodCategory: [],
+      recommended_meal_time: {
+        Breakfast: false,
+        Lunch: false,
+        Dinner: false,
+        Other: false
+      },
+    };
+    cuisineDropdown.value.reset();
     dietaryDropdown.value.reset();
     foodCategoryDropdown.value.reset();
-  emit('clearFilters');
-};
+    emit('clearFilters');
+  };
 
   const updateSelectedCuisine = (selectedItems) => {
     filters.value.cuisine = selectedItems;

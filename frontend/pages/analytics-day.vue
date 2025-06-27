@@ -102,9 +102,9 @@ function getOrdinalSuffix(day) {
 
 // View state and function
 const view = ref('day');
-const setView = (newView) => {
+const setView = async (newView) => {
   view.value = newView;
-  navigateTo(`/analytics-${newView}`);
+  await navigateTo(`/analytics-${newView}`);
 };
 
 const analyticsData = ref(null)

@@ -238,6 +238,11 @@ export class AnalyticsService {
                             throw new Error(`Log ${log} is not found in the database.`);
                         }
                         
+                        // Only count nutrition for consumed meals
+                        if (!meal_log.is_consumed) {
+                            return; // Skip non-consumed meals
+                        }
+                        
                         // Get the nutrition and calories for each of the log meal 
                         const multiplier = Number(meal_log.portion) / Number(meal_log.recipe.serving_size);
                         data.push({

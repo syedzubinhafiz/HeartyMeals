@@ -174,19 +174,36 @@ const openEditMealPopup = (meal) => {
 
 const fetchDataForCurrentDate = async () => {
   const formattedDateStr = `${props.formattedDate} ${new Date().getFullYear()}`;
-  let formattedCurrentDate = new Date(formattedDateStr);
-  let formattedISODate = useDate().getFormattedDateShort(formattedCurrentDate);
+  const formattedCurrentDate = new Date(formattedDateStr);
+  const formattedISODate = useDate().getFormattedDateShort(formattedCurrentDate);
 
-  let result = await useApi(`/user/budget?startDate=${formattedISODate}&timeZone=Asia/Kuala_Lumpur`, "GET");
+  const result = await useApi(`/user/budget?startDate=${formattedISODate}&timeZone=Asia/Kuala_Lumpur`, "GET");
 
-  nutrientData.value = NutrientData.fromApi2(result.value[formattedISODate][1]);
+  if (result.isError || !result.value) {
+    console.warn("Budget API returned an error", formattedISODate, result.error);
+    return;
+  }
+
+  let dayData = result.value[formattedISODate];
+  if (!dayData) {
+    // backend returned previous/next date because of TZ rounding; take first entry
+    const firstKey = Object.keys(result.value)[0];
+    dayData = result.value[firstKey];
+  }
+
+  if (!Array.isArray(dayData) || dayData.length < 2) {
+    console.warn("Unexpected budget data format", dayData);
+    return;
+  }
+
+  nutrientData.value = NutrientData.fromApi2(dayData[1]);
 
   nutritionInfo.value = {
-    totalCarbohydrate: nutrientData.value.carbohydrtates,
+    totalCarbohydrate: nutrientData.value.carbohydrates,
     protein: nutrientData.value.protein,
     fat: nutrientData.value.fats,
     cholesterol: nutrientData.value.cholesterol,
-    dietaryFiber: nutrientData.value.sodium
+    dietaryFiber: nutrientData.value.sodium,
   };
 
   console.log(nutritionInfo.value);

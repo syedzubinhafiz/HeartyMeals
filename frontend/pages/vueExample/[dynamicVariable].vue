@@ -13,17 +13,13 @@
 </template>
 <script setup>
 
-definePageMeta({
-    middleware: ["auth"],
-  });
-  
 defineOptions({
 	name: "dynamicPage",
 });
 
-
 definePageMeta({
-	layout: "baselayout"
+	layout: "baselayout",
+    middleware: ["auth"]
 });
 
 // we can retrieve the parameters of the route like this:

@@ -32,10 +32,8 @@
 </template>
 
 <script>
-defineOptions({
-    name: "MultiSelectionWSearchbarDropdown",
-});
 export default {
+    name: "MultiSelectionWSearchbarDropdown",
     props: {
         items: {
             type: Array,

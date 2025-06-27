@@ -59,9 +59,9 @@ export default {
       this.isHovered = false; // Show title, hide description when not hovered
       this.hoveredDescriptionClass = ''; // Remove the margin when not hovered
     },
-    handleCardClick() {
+    async handleCardClick() {
       localStorage.setItem('educationalContentId', this.cardInfo.id);
-      navigateTo('/educational-content');
+      await navigateTo('/educational-content');
     }
   }
 };

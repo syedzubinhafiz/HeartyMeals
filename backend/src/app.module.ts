@@ -12,8 +12,6 @@ import { CuisineModule } from './cuisine/cuisine.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { UserModule } from './user/user.module';
 import { StorageModule } from './storage/storage.module';
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 
 // Seeder import
@@ -54,8 +52,8 @@ import { AnalyticsModule } from './analytics/analytics.module';
     MealLogSummaryModule,
     AnalyticsModule
   ],
-  controllers: [AppController, AuthController],
-  providers: [AppService, AuthService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {

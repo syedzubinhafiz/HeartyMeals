@@ -4,7 +4,7 @@
     </div>
 
     <div style="padding-top: 7%; padding-left: 5%;">
-        <ButtonOrange  @click="navigateTo('/admin')">
+        <ButtonOrange  @click="async () => await navigateTo('/admin')">
             <img src="~/assets/icon/Back_Icon.svg" alt="Back Icon" style="width: 20px; height: 20px; margin-right: 8px;"/>
             Back
         </ButtonOrange>

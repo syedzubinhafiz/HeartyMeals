@@ -5,10 +5,10 @@
                 <img :src="icon" alt="icon" class="w-5 h-5 mr-2"/>
                 <P>{{label}}</P>
             </div>
-            <P :style="{color: color}">{{+roundedValue.toFixed(2)}}/{{+roundedMaxValue.toFixed(2)}}{{unit}}</P>
+            <P :style="{color: color}">{{roundedValue?.toFixed(2) || 0}}/{{roundedMaxValue?.toFixed(2) || 0}}{{unit}}</P>
         </div>
         <div class="rounded-md h-2 w-full shadow-md" :style="`background-color: ${bgColor}`">
-            <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${color};width: ${Math.max(0, Math.min(100, props.value / props.maxValue * 100))}%`"/>
+            <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${color};width: ${Math.max(0, Math.min(100, (props.value && props.maxValue) ? (props.value / props.maxValue * 100) : 0))}%`"/>
         </div>
     </div>
     
@@ -51,19 +51,19 @@ const props = defineProps({
 
 // one decimal point
 const formattedValue = computed(() => {
-    return props.value.toFixed(1);
+    return props.value != null ? props.value.toFixed(1) : '0';
 });
 
 const formattedMaxValue = computed(() => {
-    return props.maxValue.toFixed(1);
+    return props.maxValue != null ? props.maxValue.toFixed(1) : '0';
 });
 
 // whole number
 const roundedValue = computed(() => {
-    return Math.round(props.value);
+    return props.value != null ? Math.round(props.value) : 0;
 });
 
 const roundedMaxValue = computed(() => {
-    return Math.round(props.maxValue);
+    return props.maxValue != null ? Math.round(props.maxValue) : 0;
 });
 </script>

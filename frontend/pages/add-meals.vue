@@ -298,12 +298,12 @@ onMounted(() => {
       useToast().warning("Session expired, redirecting to previous page");
       
       if (mealInfo.value.logType === "planning"){
-        setTimeout(() => {
-          navigateTo("/meal-planning");
+        setTimeout(async () => {
+          await navigateTo("/meal-planning");
         }, 1500);    
       } else {
-        setTimeout(() => {
-          navigateTo("/meal-logging");
+        setTimeout(async () => {
+          await navigateTo("/meal-logging");
         }, 1500);
       }
     } else {
@@ -378,12 +378,12 @@ const handleClickOutside = (event) => {
     }
 }
 
-const back = () => {
+const back = async () => {
   localStorage.removeItem("mealInfo");
   if (mealInfo.value.logType === "planning") {
-    navigateTo("/meal-planning");
+    await navigateTo("/meal-planning");
   } else{
-    navigateTo("/meal-logging");
+    await navigateTo("/meal-logging");
   }
 }
 
@@ -431,7 +431,7 @@ async function proceedToSummary(){
   localStorage.setItem("selectedMeals", JSON.stringify(selectedMeals.value));
 
   localStorage.setItem("userNutrientsInfo", JSON.stringify([userDailyNutrients.value, userOriginalRemainingNutrients.value, userRemainingNutrients.value]));
-  navigateTo("/summary");
+  await navigateTo("/summary");
 
 }
 

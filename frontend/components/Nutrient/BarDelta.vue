@@ -8,8 +8,8 @@
             <P :style="{color: colorAfter}">{{roundedValBefore}}/{{roundedMaxVal}}mg</P>
         </div>
         <div class="rounded-md h-2 w-full shadow-md" :style="`background-color: ${bgColor}`">
-            <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${colorBefore};width: ${Math.max(0, Math.min(100, props.valueBefore / props.maxValue * 100))}%`">
-                <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${colorAfter};width: ${Math.max(0, Math.min(100, props.valueAfter / props.valueBefore * 100))}%`"/>
+            <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${colorBefore};width: ${Math.max(0, Math.min(100, (props.valueBefore && props.maxValue) ? (props.valueBefore / props.maxValue * 100) : 0))}%`">
+                <div class="rounded-md h-2 shadow-sm" :style="`background-color: ${colorAfter};width: ${Math.max(0, Math.min(100, (props.valueAfter && props.valueBefore) ? (props.valueAfter / props.valueBefore * 100) : 0))}%`"/>
             </div>
         </div>
     </div>

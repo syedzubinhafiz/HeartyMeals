@@ -113,9 +113,9 @@
   })
   
   const view = ref('month')
-  const setView = (newView) => {
+  const setView = async (newView) => {
     view.value = newView
-    navigateTo(`/analytics-${newView}`)
+    await navigateTo(`/analytics-${newView}`)
   }
   
   const datasets = ['Protein', 'Carbs', 'Cholestrol', 'Fats', 'Sodium']

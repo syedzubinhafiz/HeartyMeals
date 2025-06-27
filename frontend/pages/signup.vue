@@ -190,7 +190,7 @@
     </div>
 </template>
 <script setup>
-import SingleSelectionWSearchbarDropdown from "@/components/Dropdown/SingleSelectionWSearchbarDropdown.vue";
+import SingleSelectionWSearchbarDropdown from "@/components/Dropdown/SingleSelectionWSearchBarDropdown.vue";
 import SingleSelectionDropdown from "~/components/Dropdown/SingleSelectionDropdown.vue";
 import MultiSelectionWSearchbarDropdown from "~/components/Dropdown/MultiSelectionWSearchbarDropdown.vue";
 import { useNuxtApp } from "#app";
@@ -536,7 +536,7 @@ async function signUp(){
     }
 
     useToast().success("Account created successfully");
-    navigateTo('/home');
+    await navigateTo('/home');
 }
 
 

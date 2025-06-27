@@ -13,6 +13,8 @@ import { NutritionSettingDTO } from './dto/nutrition-setting-dto';
 import { CholesterolLevel } from './enum/cholesterol.enum';
 import { CommonService } from 'src/common/common.service';
 import { v4 as uuidv4 } from 'uuid';
+import * as bcrypt from 'bcrypt';
+import { RegisterUserDto } from '../auth/dto/register-user.dto';
 
 @Injectable()
 export class UserService {
@@ -28,6 +30,103 @@ export class UserService {
         private ethnicityRepository: Repository<Ethnicity>,
         private commonService: CommonService,
     ){}
+
+    /**
+     * Hash password using bcrypt
+     * @param password plain text password
+     * @returns hashed password
+     */
+    async hashPassword(password: string): Promise<string> {
+        const saltRounds = 12;
+        return bcrypt.hash(password, saltRounds);
+    }
+
+    /**
+     * Compare password with hashed password
+     * @param password plain text password
+     * @param hashedPassword hashed password from database
+     * @returns true if passwords match
+     */
+    async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+        return bcrypt.compare(password, hashedPassword);
+    }
+
+    /**
+     * Find user by email
+     * @param email user email
+     * @returns user or null
+     */
+    async findByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findOne({ where: { email } });
+    }
+
+    /**
+     * Find user by ID
+     * @param userId user ID
+     * @returns user or null
+     */
+    async findById(userId: string): Promise<User | null> {
+        return this.userRepository.findOne({ where: { user_id: userId } });
+    }
+
+    /**
+     * Create a new user with email/password authentication
+     * @param registerDto user registration data
+     * @returns created user
+     */
+    async createUserWithPassword(registerDto: RegisterUserDto): Promise<User> {
+        // Check if user already exists
+        const existingUser = await this.findByEmail(registerDto.email);
+        if (existingUser) {
+            throw new HttpException('User with this email already exists', 400);
+        }
+
+        // Hash password
+        const hashedPassword = await this.hashPassword(registerDto.password);
+
+        // Create new user
+        const newUser = new User();
+        newUser.user_id = uuidv4();
+        newUser.email = registerDto.email;
+        newUser.password = hashedPassword;
+        newUser.first_name = registerDto.firstName;
+        newUser.last_name = registerDto.lastName;
+        newUser.user_role = registerDto.role || UserRole.PATIENT;
+        
+        // Set default values for required fields
+        newUser.gender = Gender.MALE; // Default, should be updated in profile
+        newUser.age = 25; // Default age
+        newUser.height = 170; // Default height in cm
+        newUser.weight = 70; // Default weight in kg
+        newUser.medical_info = JSON.parse("{}");
+        
+        // Set nullable foreign key relationships to null
+        newUser.country = null;
+        newUser.dietary = null;
+        newUser.ethnicity = null;
+        newUser.nyha_level = null;
+        
+        // Set default nutrition settings and daily budget
+        newUser.user_nutrition_setting = {
+            'carbs_percentage': 0.5,
+            'protein_percentage': 0.3,
+            'fat_percentage': 0.2,
+            'cholesterol_level': CholesterolLevel.NORMAL,
+            'activity_level': 1
+        };
+        
+        newUser.daily_budget = {
+            "calories": 2000, // Default daily calories
+            "carbs": 250,
+            "protein": 150,
+            "fat": 67,
+            "sodium": 2300,
+            "cholesterol": 300,
+            "water_intake": 2000
+        };
+
+        return this.userRepository.save(newUser);
+    }
 
 
     /**

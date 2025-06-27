@@ -1,6 +1,4 @@
 <template>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
- 
   <div class="meal-list">
     <!-- Card Container with dynamic background color based on day type -->
     <div :class="['card-container', { 'prev-list': isPast, 'today-list': isToday, 'future-list': isFuture }]" class="p-1 rounded-lg shadow-md mb-2">
@@ -84,7 +82,7 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-const onAddDishes = () => {
+const onAddDishes = async () => {
   const currentDate =  new Date(props.isoDate);
   console.log(currentDate);
   console.log(props.isoDate);
@@ -94,7 +92,7 @@ const onAddDishes = () => {
     mealType: props.title,
     expiryTime: new Date().getTime().toLocaleString() + (5*60*1000),
   }));
-  navigateTo('/add-meals')
+  await navigateTo('/add-meals')
 };
 </script>
 

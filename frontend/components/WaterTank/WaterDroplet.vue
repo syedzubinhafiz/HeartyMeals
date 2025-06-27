@@ -95,12 +95,16 @@
     });
 
     // Compute the fill percentage based on the updated values
-    const fillPercentage = computed(() => (remainingVolume.value / maxVolume.value) * 100);
+    const fillPercentage = computed(() => {
+        if (!remainingVolume.value || !maxVolume.value) return 0;
+        return (remainingVolume.value / maxVolume.value) * 100;
+    });
 
     // Calculate the mask position dynamically
     const maskY = computed(() => {
         const svgHeight = 699; // Height of the SVG
-        return svgHeight - (svgHeight * (fillPercentage.value / 100)); // Adjust mask position based on fill percentage
+        const percentage = fillPercentage.value || 0;
+        return svgHeight - (svgHeight * (percentage / 100)); // Adjust mask position based on fill percentage
     });
     
     // Modal state

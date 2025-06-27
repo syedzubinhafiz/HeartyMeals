@@ -23,7 +23,7 @@
 
     <div class="body">
 
-        <div class="done-button" @click="logMeal()">
+        <div class="done-button" @click="logMeal">
           <img src="@/assets/icon/done-icon.svg" alt="">
           Done
         </div>
@@ -134,11 +134,12 @@
         </div>
 
     </div>
+
+    </div>
     
     <footer class="footer">
       <Footer></Footer>
     </footer>
-  </div>
 
   <div v-if="isLoading" class="loading-greyed-bg">
     <div class="loader"></div>
@@ -148,8 +149,9 @@
 
 
 <script setup>
-import { ref } from "vue";
-import { useNuxtApp } from "#app";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useNuxtApp, navigateTo } from "#app";
+import { useToast } from "vue-toast-notification";
 import leftBase from "@/assets/img/meal_logging/summary_left_base.svg";
 import rightBase from "@/assets/img/meal_logging/summary_right_base.svg";
 import NutritionBar from "~/components/Nutrient/NutritionBar.vue";
@@ -274,9 +276,9 @@ onMounted(() => {
     localStorage.removeItem('selectedMeals')
   } else {
     useToast().error('No meals selected, redirecting to meal logging page')
-    setTimeout(() => {
-      navigateTo('/meal-logging')
-    }, 2000)
+          setTimeout(async () => {
+        await navigateTo('/meal-logging')
+      }, 2000)
   }
 
   // set the text
@@ -336,9 +338,30 @@ function handleBeforeUnload(e) {
   return confirmationMessage; // Gecko, WebKit, Chrome <34
 }
 
-const back = () => {
+const back = async () => {
+  console.log('=== Summary Back button clicked ===');
+  console.log('selectedMeals:', selectedMeals.value);
+  console.log('mealInfo:', mealInfo.value);
+  
   localStorage.setItem('selectedMeals', JSON.stringify(selectedMeals.value))
-  navigateTo('/add-meals')
+  // Restore mealInfo to localStorage for add-meals page
+  localStorage.setItem('mealInfo', JSON.stringify(mealInfo.value))
+  
+  // Prevent "Leave site?" prompt
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  
+  try {
+    // TEMP FIX: Since navigateTo is not completing route transitions,
+    // use window.location.href as immediate workaround
+    console.log('Using window.location.href (temp fix for navigation bug)');
+    window.location.href = '/add-meals';
+  } catch (error) {
+    console.error('Navigation completely failed:', error);
+    // Additional fallback for any rare edge cases
+    await navigateTo('/add-meals').catch(() => {
+      console.error('Even navigateTo fallback failed');
+    });
+  }
 }
 
 
@@ -400,9 +423,14 @@ const today_date_time = () => {
 };
 
 async function logMeal(){
+  console.log('Done button clicked - logMeal function called');
+  console.log('mealInfo:', mealInfo.value);
+  console.log('selectedMeals:', selectedMeals.value);
+  
   isLoading.value = true;
     // store data to db 
   const token = localStorage.getItem("accessToken");  
+  console.log('Token exists:', !!token);
   const meal_info = [];
 
   selectedMeals.value.forEach((meal) => {
@@ -428,21 +456,29 @@ async function logMeal(){
         }
     })
 
-    console.log(response.data); 
-    if (response.data.status == 200){
-      isLoading.value = false;
-      useToast().success("All meals has been logged!")
-      console.log(mealInfo.value.logType)
+    console.log(response);
+    const successStatuses = [200, 201, 204];
+    if (successStatuses.includes(response.status)){
+      useToast().success("All meals have been logged!")
+      // Prevent "Leave site?" prompt
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // navigate
       if (mealInfo.value.logType === "planning"){
-        navigateTo('/meal-planning')
+        window.location.href = '/meal-planning';
       } else {
-        navigateTo('/meal-logging')
+        window.location.href = '/meal-logging';
       }
-    } else if(response.data.status == 400){
-      useToast().error(response.data.message)
     }
   } catch(e){
     console.error("Error logging meal", e);
+    // Handle error response
+    if (e.response && e.response.data && e.response.data.message) {
+      useToast().error(e.response.data.message)
+    } else {
+      useToast().error("Failed to log meals. Please try again.")
+    }
+  } finally {
+    isLoading.value = false;
   }
 }
 

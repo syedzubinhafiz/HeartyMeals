@@ -9,7 +9,7 @@
         <button @click="toggleSidebar" class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white">
           <i class="bi bi-list text-2xl"></i>
         </button>
-        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/admin')" />
+        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click="handleNavigation('/admin')" />
       </div>
     </div>
 
@@ -26,52 +26,52 @@
       <nav class="mt-5">
         <ul>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin')">
               <i class="bi bi-house mr-2"></i> Home
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/recipe-library')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/recipe-library')">
               <!-- <i class="bi bi-journals mr-2"></i> Recipe Library -->
               <img src="@/assets/icon/recipe-lib-icon-black.svg" alt="" style="transform: scale(0.8); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;">
               Recipe Library
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/educational-content')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/educational-content')">
               <img src="@/assets/icon/edu-content-icon-black.svg" alt="" style="transform: scale(0.8); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;">
                     Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-component')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-component')">
               <img src="@/assets/icon/add-component-admin-icon-black.svg" alt="" style="transform: scale(0.8); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;">
               Add Component
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-edu-content')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-edu-content')">
               <img src="@/assets/icon/add-edu-content-admin-icon-black.svg" alt="" style="transform: scale(0.8); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;">
                     Add Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-admin')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-admin')">
               <i class="bi bi-person mr-2"></i> Add Admin
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-dietary')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-dietary')">
               <img src="@/assets/icon/dietary-sidebar-icon.svg" alt="" style="transform: scale(0.7); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;"> Add Dietary
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-food-category')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-food-category')">
               <img src="@/assets/icon/food-category-sidebar-icon.svg" alt="" style="transform: scale(0.7); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;"> Add Food Category
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/admin/add-cuisine')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/admin/add-cuisine')">
               <img src="@/assets/icon/cuisine-sidebar-icon.svg" alt="" style="transform: scale(0.7); margin-left: -2%; margin-right: 2%; margin-top: -1.5%; height: 24px;"> Add Cuisine
             </a>
           </li>
@@ -85,13 +85,22 @@
 import { ref } from 'vue';
 
 defineOptions({
-  name: 'Header',
+  name: 'AdminHeader',
 });
 
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+// Proper navigation handler with await
+const handleNavigation = async (path) => {
+  try {
+    await navigateTo(path);
+  } catch (error) {
+    console.error('Navigation error:', error);
+  }
 };
 </script>
 

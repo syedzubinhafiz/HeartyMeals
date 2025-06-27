@@ -437,6 +437,11 @@ export class RecipeService {
             this.recipeOfTheDayRepository.save(recipe_of_the_day);
         }
         
+        // Check if recipe exists before returning
+        if (!recipe_of_the_day.recipe) {
+            throw new HttpException("No recipes available. Please add some recipes to the database.", 404);
+        }
+        
         return {
             id: recipe_of_the_day.recipe.id,
             name: recipe_of_the_day.recipe.name,

@@ -23,10 +23,8 @@
 </template>
 
 <script>
-defineOptions({
-    name: "MultiSelectionDropdown",
-});
 export default {
+    name: "MultiSelectionDropdown",
     props: {
         items: {
             type: Array,

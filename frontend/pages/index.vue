@@ -38,8 +38,8 @@ definePageMeta({
 	layout: "emptylayout"
 });
 
-const onVerify = () => {
-    navigateTo('/sign-in');
+const onVerify = async () => {
+    await navigateTo('/sign-in');
 }
 
 </script>

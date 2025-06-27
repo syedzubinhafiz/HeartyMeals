@@ -21,5 +21,6 @@ import { MealLoggingService } from 'src/meal-logging/meal-logging.service';
     ],
     controllers: [UserController],
     providers: [UserService, CommonService, MealLogSummaryService, MealLoggingService],
+    exports: [UserService],
 })
 export class UserModule {}

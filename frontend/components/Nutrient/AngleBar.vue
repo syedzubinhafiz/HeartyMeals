@@ -5,7 +5,7 @@
 			</div>
             <div :class="'absolute flex flex-col items-center '+bgColor" :style="`top: 50%; left: 50%; padding-top: 10%; width: ${componentSize*0.8}px; height: ${componentSize*0.8}px; border-radius: 50%; transform: translate(-50%, -50%);`">
                 <P>{{label}}</P>
-                <P>{{Math.round(props.value)}}/{{Math.round(props.maxValue)}}cal</P>
+                <P>{{Math.round(props.value || 0)}}/{{Math.round(props.maxValue || 0)}}cal</P>
             </div>
         </div>
     </div> 
@@ -53,6 +53,7 @@ const props = defineProps({
 
 const angle = computed({
 	get() {
+		if (!props.value || !props.maxValue) return 0;
 		return props.value/props.maxValue * 180
 	},
 });

@@ -1,15 +1,37 @@
-import { Controller, Get, Headers, Request } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as jwt from 'jsonwebtoken';
-import { User } from 'src/user/user.entity';
-import { Repository } from 'typeorm';
+import { Controller, Get, Post, Body, Request, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
-@Controller()
+@Controller('auth')
 export class AuthController {
+  constructor(private authService: AuthService) {}
 
-    @Get('me')
-    me(@Request() req) {
-        return req.user;
-    }
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() registerDto: RegisterUserDto) {
+    return this.authService.register(registerDto);
+  }
 
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: LoginUserDto) {
+    return this.authService.login(loginDto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  me(@Request() req) {
+    return req.user;
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Request() req) {
+    return {
+      message: 'Profile retrieved successfully',
+      user: req.user
+    };
+  }
 }

@@ -3,7 +3,7 @@
     <div class="relative text-center w-64">
       <div class="relative z-10 flex flex-col space-y-5 items-center translate-y-12">
         <P>{{ label }}</P>
-        <P>{{ intakeAmount }}/{{ maxValue }} {{ intakeUnit }}</P>
+        <P>{{ formatFluidDisplay() }}</P>
         <button @click="openOverlay" class="mt-4 bg-[#FFA17A] text-[#993300] py-2 px-3 rounded-xl text-sm flex justify-center items-center">
           <img src="../../assets/img/Water Droplet.png" alt="Water Base" class="w-4 h-4 mr-2" />
           <p>Log Intake</p>
@@ -21,14 +21,14 @@
         <div class="overlay-container">
 
           <p class="text-xl font-semibold mb-4 text-center" style="grid-column: span 2;">Enter the amount</p>
-          <input type="number" v-model="intakeAmount" min="0" step="0.01"/>
+          <input type="number" v-model="waterConsumed" min="0" step="0.01" placeholder="Enter amount"/>
           <SingleSelectionDropdown
           :items= "measuring_units_dropdown_option"
-          defaultText="unit"
+          defaultText="ml"
           buttonStyle="background-color: rgba(255, 255, 255, 0.8); border: 1.5px solid #8B8585; border-radius: 5px;"
           dropdownStyle="background-color: rgb(253, 251, 248); border: 1.5px solid #8B8585; border-radius: 5px; z-index: 10; overflow-y:scroll; height:100px;"
           @item-selected="updateSelectedUnit($event)"
-        
+          
           />
           <div style="grid-column: span 2; display: flex; justify-content: center;">
             <button @click="logIntake" class="mt-4 bg-[#87A98D] text-white py-2 px-4 rounded flex items-center justify-center">
@@ -52,7 +52,7 @@ defineOptions({
 const props = defineProps({
   label: {
     type: String,
-    default: "Remaining Water Intake",
+    default: "Water Intake Today",
   },
   maxValue: {
     type: Number,
@@ -64,10 +64,29 @@ const props = defineProps({
   }
 });
 
-console.log(props.label)
+// Dropdown options for measuring units
+const measuring_units_dropdown_option = ref([
+  { label: 'Milliliters (mL)', value: 'ml' },
+  { label: 'Liters (L)', value: 'l' },
+  { label: 'Cups', value: 'cup' },
+  { label: 'Fluid Ounces (fl oz)', value: 'fl oz' }
+]);
+
+// User-friendly display formatting
+const formatFluidDisplay = () => {
+  const consumed = Math.max(maxValue.value - remainingAmount.value, 0)
+  const remaining = Math.max(remainingAmount.value, 0)
+  const goal = maxValue.value
+  
+  if (remaining <= 0) {
+    return `${consumed}/${goal} mL - Goal Achieved! 🎉`
+  }
+  return `${consumed}/${goal} mL (${remaining} remaining)`
+}
+
 const bgFile = computed(() => {
-  const percentage = Math.round(Math.min(1,Math.max(intakeAmount.value / props.maxValue,0)) * 10);
-  console.log(percentage)
+  const consumed = Math.max(maxValue.value - remainingAmount.value, 0)
+  const percentage = Math.round(Math.min(1, Math.max(consumed / props.maxValue, 0)) * 10);
   return `water${percentage}.png`;
 });
 
@@ -77,6 +96,9 @@ const intakeUnit = ref("mL");
 const waterConsumed = ref(0);
 const maxValue = ref(props.maxValue)
 const popupRef = ref(null)
+const selectedUnit = ref('ml')
+const consumedAmount = ref(0)
+const remainingAmount = ref(props.maxValue)
 
 const openOverlay = () => {
   window.addEventListener('click', handleOutsideClick);
@@ -106,58 +128,64 @@ async function fetchFluidLogging() {
     let currentDate = new Date();
     currentDate = useDate().getFormattedDateShort();
     const response = await useApi(`/fluid-logging/get?dateTime=${currentDate}&timeZone=Asia/Kuala_Lumpur`, "GET");
-    console.log(response)
-    intakeAmount.value = response.value.remaining_fluid
+    console.log('Fluid logging response:', response)
+    
+    if (response.value && typeof response.value.remaining_fluid === 'number') {
+      remainingAmount.value = Math.max(response.value.remaining_fluid, 0)
+      consumedAmount.value = Math.max(maxValue.value - remainingAmount.value, 0)
+    } else {
+      // Default to no consumption if data is invalid
+      remainingAmount.value = maxValue.value
+      consumedAmount.value = 0
+      console.warn('Invalid fluid logging data received:', response.value)
+    }
 
   } catch (error) {
     console.error('Error fetching fluid logging data:', error);
+    // Default to no consumption on error
+    remainingAmount.value = maxValue.value
+    consumedAmount.value = 0
   }
 }
 
-async function logIntake() {
-  console.log(`Consumed ${waterConsumed.value} mL`);
+// Update selected unit when user changes dropdown
+function updateSelectedUnit(unit) {
+  selectedUnit.value = unit.value;
+}
 
+async function logIntake() {
+  if (!waterConsumed.value || waterConsumed.value <= 0) {
+    useToast().error("Please enter a valid amount");
+    return;
+  }
+
+  console.log(`Consumed ${waterConsumed.value} ${selectedUnit.value}`);
   
   let currentDate = new Date();
   currentDate = useDate().getFormattedDateShort()
   showOverlay.value = false;
 
-  const result = await useApi("/fluid-logging/update","POST",{
-    "loggingDateTime": currentDate,
-    "timeZone": "Asia/Kuala_Lumpur",
-    "waterIntake": waterConsumed.value,
-    "fluidUnit": "ml"
-  })
-  console.log(result)
-  if(result.isError) {
-    useToast().error("Fluid logging failed!")
+  try {
+    const result = await useApi("/fluid-logging/update","POST",{
+      "loggingDateTime": currentDate,
+      "timeZone": "Asia/Kuala_Lumpur", 
+      "waterIntake": waterConsumed.value,
+      "fluidUnit": selectedUnit.value
+    });
+    
+    console.log('Log intake result:', result);
+    
+    if(result.isError) {
+      useToast().error("Fluid logging failed!")
+    } else {
+      useToast().success("Water intake logged successfully!")
+      waterConsumed.value = 0; // Reset input
+      await fetchFluidLogging() // Refresh data
+    }
+  } catch (error) {
+    console.error('Error logging fluid intake:', error);
+    useToast().error("Failed to log water intake");
   }
-  else {
-    useToast().success(result.value.response)
-    fetchFluidLogging()
-  }
-
-  // remainingIntake.value = maxValue.value - intakeAmount.value;
-
-  // let currentDate = new Date();
-  // currentDate.setUTCHours(-8, 0, 0, 0);
-  // currentDate = currentDate.toISOString();
-
-  // try {
-  //   const updateFluidLogging = await useApi('/fluid-logging/update', 'POST', {
-  //     loggingDate: currentDate,
-  //     waterIntake: intakeAmount.value 
-  //   });
-
-  //   if (updateFluidLogging && updateFluidLogging.success) {
-  //     console.log("Data updated successfully", updateFluidLogging);
-  //     await fetchFluidLogging(); 
-  //   } else {
-  //     console.error("Failed to update the database", updateFluidLogging);
-  //   }
-  // } catch (error) {
-  //   console.error("Error updating fluid logging:", error);
-  // }
 }
 
 function closeOverlay() {

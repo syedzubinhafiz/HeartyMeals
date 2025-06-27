@@ -9,7 +9,7 @@
         <button @click="toggleSidebar" class="absolute top-1/2 left-8 transform -translate-y-1/2 text-white">
           <i class="bi bi-list text-2xl"></i>
         </button>
-        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click.prevent="navigateTo('/home')" />
+        <img src="../assets/img/HeartyMealLogo.png" alt="Hearty Meal" class="clickable-img" @click="handleNavigation('/home')" />
       </div>
     </div>
 
@@ -26,37 +26,37 @@
       <nav class="mt-5">
         <ul>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/home')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/home')">
               <i class="bi bi-house mr-2"></i> Home
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/meal-logging')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/meal-logging')">
               <i class="bi bi-journals mr-2"></i> Meal Logging
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/recipe-library')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/recipe-library')">
               <i class="bi bi-basket mr-2"></i> Recipe Library
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/meal-planning')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/meal-planning')">
               <i class="bi bi-card-list mr-2"></i> Meal Planning
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/analytics-day')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/analytics-day')">
               <i class="bi bi-graph-up mr-2"></i> Diet Analytics
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/educational-content')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/educational-content')">
               <i class="bi bi-easel mr-2"></i> Educational Content
             </a>
           </li>
           <li class="mb-4">
-            <a href="#" class="flex items-center text-black" @click.prevent="navigateTo('/profile-page')">
+            <a href="#" class="flex items-center text-black" @click.prevent="handleNavigation('/profile-page')">
               <i class="bi bi-person mr-2"></i> Profile Page
             </a>
           </li>
@@ -67,16 +67,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
+import { useNuxtApp } from 'nuxt/app';
 
 defineOptions({
   name: 'Header',
 });
 
+const { $router } = useNuxtApp();
 const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+// TEMPORARY FIX: Direct navigation handler to bypass navigateTo bug
+const handleNavigation = async (path) => {
+  try {
+    // Close sidebar first
+    isSidebarOpen.value = false;
+    
+    // Wait for DOM update to ensure sidebar is closed
+    await nextTick();
+    
+    console.log('Navigating to:', path);
+    
+    // TEMP FIX: Since navigateTo is not completing route transitions,
+    // use window.location.href as immediate workaround for critical bug
+    if (import.meta.client && typeof window !== 'undefined') {
+      console.log('Using window.location.href (temp fix for navigation bug)');
+      window.location.href = path;
+    } else {
+      // Server-side fallback (though less likely to be needed)
+      await navigateTo(path).catch(() => {
+        console.error('Server-side navigation also failed');
+      });
+    }
+    
+  } catch (error) {
+    console.error('Navigation error:', error);
+    
+    // Final fallback: try navigateTo if somehow window.location fails
+    try {
+      await navigateTo(path);
+    } catch (finalError) {
+      console.error('All navigation methods failed:', finalError);
+    }
+  }
 };
 </script>
 

@@ -3,11 +3,11 @@ import { AddRecipeDTO } from './dto/add-recipe-dto';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, getManager, Repository } from 'typeorm'; 
 import { RecipeService } from './recipe.service';
-import { RecipeComponentService } from 'src/recipe-component/recipe-component.service';
-import { RecipeComponentArchiveService } from 'src/recipe-component-archive/recipe-component-archive.service';
-import { CommonService } from 'src/common/common.service';
+import { RecipeComponentService } from '../recipe-component/recipe-component.service';
+import { RecipeComponentArchiveService } from '../recipe-component-archive/recipe-component-archive.service';
+import { CommonService } from '../common/common.service';
 import { Recipe } from './recipe.entity';
-import { StorageService } from 'src/storage/storage.service';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('recipe')
 export class RecipeController {
@@ -34,11 +34,11 @@ export class RecipeController {
                 if (is_custom){
                     await this.recipeService.updateNutritionInfo(new_recipe, recipe_component_list, transactionalEntityManager)
                     // get path for custom recipe
-                    upload_path = this.recipeService.getPath(decoded['sub'] as string, new_recipe.id, new_recipe.dietary.id);
+                    upload_path = this.recipeService.getPath(decoded?.['sub'] as string, new_recipe.id, new_recipe.dietary.id);
                 }
                 else {
                     // get path for official recipe
-                    upload_path = this.recipeService.getPath(null, new_recipe.id, new_recipe.dietary.id);
+                    upload_path = this.recipeService.getPath(undefined, new_recipe.id, new_recipe.dietary.id);
                 }
 
                 if (payload.files != undefined){
@@ -70,10 +70,10 @@ export class RecipeController {
     @Get('get')
     async getRecipe(
         @Headers() headers: any, 
-        @Query('recipeId') recipeId: string = null,
-        @Query("page") page: string,
-        @Query("pageSize") pageSize: string,
-        @Query("search") search: string = null,
+        @Query('recipeId') recipeId?: string,
+        @Query("page") page?: string,
+        @Query("pageSize") pageSize?: string,
+        @Query("search") search?: string,
         @Query("cuisine") cuisineIds: string = "[]",
         @Query("dietary") dietaryIds: string = "[]",
         @Query("mealType") mealType: string = "[]",
@@ -81,9 +81,16 @@ export class RecipeController {
     ){
 
         try {
-            // Decode the headers to get the user_id
-            const auth_header = headers.authorization;
-            const decoded_headers = this.commonService.decodeHeaders(auth_header);
+            // Decode the headers to get the user_id (optional)
+            let decoded_headers: any = { sub: null };
+            try {
+                if (headers && headers.authorization) {
+                    decoded_headers = this.commonService.decodeHeaders(headers.authorization);
+                }
+            } catch (e) {
+                // If token missing or invalid, treat as anonymous user
+                decoded_headers = { sub: null };
+            }
     
             // Get the page number and page size
             const page_number = page != undefined ? parseInt(page, 10) : 0;
@@ -100,13 +107,13 @@ export class RecipeController {
                 decoded_headers, 
                 page_number, 
                 page_size, 
-                search, 
+                search || null, 
                 JSON.parse(cuisineIds), 
                 JSON.parse(dietaryIds), 
                 JSON.parse(foodCategoryIds),
                 JSON.parse(mealType),
                 pagination,
-                recipeId
+                recipeId || null
             )
 
             // Return the recipe list or recipe details based on the pagination
@@ -116,7 +123,7 @@ export class RecipeController {
 
                 for (const recipe of recipe_list){
                     recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
-                    delete recipe.instruction;
+                    (recipe as any).instruction = undefined;
                 }
 
                 return {
@@ -133,7 +140,7 @@ export class RecipeController {
                 // post processing to get thumbnail link and remove instruction
                 for (const recipe of recipe_list){
                     recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
-                    delete recipe.instruction;
+                    (recipe as any).instruction = undefined;
                 }
 
                 return recipe_list;
@@ -253,8 +260,8 @@ export class RecipeController {
     @Get('get-custom-recipe')
     async getCustomRecipe(
         @Headers() headers: any,
-        @Query("page") page: string,
-        @Query("pageSize") pageSize: string,
+        @Query("page") page?: string,
+        @Query("pageSize") pageSize?: string,
         ){
         const decoded = this.commonService.decodeHeaders(headers.authorization);
 
@@ -269,7 +276,7 @@ export class RecipeController {
         // post processing to get thumbnail link and remove instruction
         for (const recipe of recipes){
             recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
-            delete recipe.instruction;
+            (recipe as any).instruction = undefined;
         }
         return {
             data: recipes,

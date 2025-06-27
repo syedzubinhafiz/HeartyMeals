@@ -2,13 +2,28 @@ import { Connection } from "typeorm";
 import { FoodCategory } from "./foodCategory.entity";
 
 const FOOD_CATEGORY_LIST = [
+    // Existing categories
     'Peanut',
     'Dairy product',
     'Red meat',
     'Soy bean',
     'Shellfish',
     'Seafood',
-    'Pork'
+    'Pork',
+
+    // Additional categories for mock data
+    'Protein',
+    'Vegetables',
+    'Grains',
+    'Fats',
+    'Nuts',
+    'Dairy',
+    'Herbs',
+    'Spices',
+    'Condiments',
+    'Fruits',
+    'Legumes',
+    'Beverages'
 ];
 
 

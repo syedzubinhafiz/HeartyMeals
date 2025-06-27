@@ -181,7 +181,7 @@ async function fetchData(filters = {}) {
 
     const data = response.data;
 
-    if (data.data.length === 0) {
+    if (!data.data || data.data.length === 0) {
       isLoading.value = false;
       return;
     }

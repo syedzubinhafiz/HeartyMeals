@@ -2,13 +2,14 @@
     "name": "chronicdiet",
     "version": "1.0.0",
     "scripts": {
-      "install": "cd frontend && npm install && cd .. && cd backend && npm install",
-      "devFrontend": "cd frontend && npm run dev",
-      "devBackend": "cd backend && npm run start:dev",
-      "devf": "cd frontend && npm run dev",
-      "devb": "cd backend && npm run start:dev",
-      "start": "npm run devb & npm run devf"
-
+        "install": "cd frontend && npm install && cd .. && cd backend && npm install",
+        "devFrontend": "cd frontend && npm run dev",
+        "devBackend": "cd backend && npm run start:dev",
+        "devf": "cd frontend && npm run dev",
+        "devb": "cd backend && npm run start:dev",
+        "start": "npm run devb & npm run devf"
+    },
+    "dependencies": {
+        "dotenv": "^16.5.0"
     }
-  }
-  
+}

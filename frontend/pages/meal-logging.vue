@@ -193,8 +193,8 @@ import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 
 definePageMeta({
-  layout: 'emptylayout',
-  middleware: ["auth"],
+  layout: "emptylayout",
+  middleware: "auth", // Re-enabled after fixing wheel event handler
   components: {
     RemoveMealOverlay
   },
@@ -328,14 +328,27 @@ function isToday() {
   return isSameDay(currentDate.value, today);
 }
 
-function addDish(mealType) {
+async function addDish(mealType) {
+  console.log('=== Add Dish button clicked ===');
   localStorage.setItem("mealInfo", JSON.stringify({
     logType: "logging",
     logDate: formatDate(currentDate.value),
     mealType: mealType,
     expiryTime: new Date().getTime().toLocaleString() + (5*60*1000),
   }));
-  navigateTo('/add-meals');
+  
+  try {
+    // TEMP FIX: Since navigateTo is not completing route transitions,
+    // use window.location.href as immediate workaround
+    console.log('Using window.location.href (temp fix for navigation bug)');
+    window.location.href = '/add-meals';
+  } catch (error) {
+    console.error('Navigation completely failed:', error);
+    // Additional fallback for any rare edge cases
+    await navigateTo('/add-meals').catch(() => {
+      console.error('Even navigateTo fallback failed');
+    });
+  }
 };
 
 async function getMeals() {

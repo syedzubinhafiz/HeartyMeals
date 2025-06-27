@@ -188,6 +188,7 @@ export class MealLogSummaryService {
             .select([
                 'mealLogging.id',
                 'mealLogging.portion',
+                'mealLogging.is_consumed',
                 'recipe.id',
                 'recipe.nutrition_info',
                 'recipe.serving_size'
@@ -210,13 +211,16 @@ export class MealLogSummaryService {
         // remove the meal logging id from the food consumed
         meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType] = meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType].filter(meal_logging_id => meal_logging_id !== deleteMealLoggingDTO.mealLoggingId);
 
-        // add the nutrition to the remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients["calories"] += parseFloat((meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        meal_logging_summary_entry.remaining_nutrients["carbs"] += parseFloat((meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        meal_logging_summary_entry.remaining_nutrients["protein"] += parseFloat((meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        meal_logging_summary_entry.remaining_nutrients["fat"] += parseFloat((meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        meal_logging_summary_entry.remaining_nutrients["sodium"] += parseFloat((meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        meal_logging_summary_entry.remaining_nutrients["cholesterol"] += parseFloat((meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        // Only restore nutrition budget if the meal was consumed
+        if (meal_logging_object.is_consumed) {
+            // add the nutrition to the remaining nutrients
+            meal_logging_summary_entry.remaining_nutrients["calories"] += parseFloat((meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+            meal_logging_summary_entry.remaining_nutrients["carbs"] += parseFloat((meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+            meal_logging_summary_entry.remaining_nutrients["protein"] += parseFloat((meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+            meal_logging_summary_entry.remaining_nutrients["fat"] += parseFloat((meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+            meal_logging_summary_entry.remaining_nutrients["sodium"] += parseFloat((meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+            meal_logging_summary_entry.remaining_nutrients["cholesterol"] += parseFloat((meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
+        }
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
@@ -305,17 +309,19 @@ export class MealLogSummaryService {
         
         // if there are meal logging ids after the update
         if (combined_meal_logging_ids.length > 0) {
-            // get all the recipe objects
+            // get all the recipe objects (only for consumed meals)
             const meal_logging_objects = await transactionalEntityManager.createQueryBuilder(MealLogging, 'mealLogging')
             .leftJoinAndSelect('mealLogging.recipe', 'recipe')
             .select([
                 'mealLogging.id',
                 'mealLogging.portion',
+                'mealLogging.is_consumed',
                 'recipe.id',
                 'recipe.nutrition_info',
                 'recipe.serving_size'
             ])
             .where('mealLogging.id IN (:...ids)', { ids: combined_meal_logging_ids })
+            .andWhere('mealLogging.is_consumed = :is_consumed', { is_consumed: true })
             .getMany();
 
             // get the recipe id and recipe nutrition info 

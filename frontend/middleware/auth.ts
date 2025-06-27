@@ -1,34 +1,39 @@
-export default defineNuxtRouteMiddleware(async (to, form) => {
-
-    if(!import.meta.client){
+export default defineNuxtRouteMiddleware(async (to, from) => {
+    // Only run on client side
+    if (!import.meta.client) {
         return;
-    };
+    }
 
-    const { $oauth4webapiUserInfo } = useNuxtApp();
+    const { $axios } = useNuxtApp() as any;
     
-    try{
-        localStorage.userInfo =  JSON.stringify(
-            await $oauth4webapiUserInfo(localStorage.accessToken),
-        );
-    } catch(error) {
-        // an error most of the time means the access token is expired
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("userInfo");
-        localStorage.removeItem("claims");
-
-        const {$oauth4webapiAuthorizationUrl} = useNuxtApp();
-
-        const url =  new URL(to.fullPath, window.location.origin);
-        if (url.pathname === "/sign-in") {
-            url.pathname = "/dashboard";
+    try {
+        // Check if user has a valid JWT token
+        const token = localStorage.getItem('accessToken');
+        
+        if (!token) {
+            // No token, redirect to sign-in
+            return navigateTo('/sign-in');
         }
 
-        const {authorizationUrl, codeVerifier} = await $oauth4webapiAuthorizationUrl(url);
-
-        sessionStorage.codeVerifier =  codeVerifier;
-
-        return navigateTo(authorizationUrl.href, {
-            external: true,
-        });
-    };
+        // Verify the token by calling the backend
+        const response = await $axios.get('/auth/me');
+        
+        if (response.data) {
+            // Token is valid, store user info
+            localStorage.setItem('user', JSON.stringify(response.data));
+        } else {
+            throw new Error('Invalid token response');
+        }
+        
+    } catch (error: any) {
+        // Token is invalid or expired, clear storage and redirect
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        
+        console.log('Authentication failed:', error.message);
+        
+        // Redirect to sign-in page
+        return navigateTo('/sign-in');
+    }
 });

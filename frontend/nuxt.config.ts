@@ -1,6 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  vite: {
+    build: {
+      sourcemap: false
+    }
+  },
   css: ['~/assets/css/main.css', 'vue-toast-notification/dist/theme-sugar.css'],
   postcss: {
     plugins: {
@@ -13,10 +19,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      greensheartAccountIssuer: "https://accounts.greensheart.com/realms/greensheart",
-      greensheartAccountClientId: "greensheart",
-      greensheartAccountScope: "openid profile email",
-      baseURL: "http://localhost:3001",
+      baseURL: "http://localhost:8000",
       webURL: "",
       isDebug: true,
       tinyMCEKey: "5xd0rqlwc0evl0pm1xyxcy0ztd40yr061ss8azv8um8694bu",

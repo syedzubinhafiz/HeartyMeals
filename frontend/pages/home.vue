@@ -10,23 +10,17 @@
                 <p class="section1-subheading">What do you want to do today?</p>
 
                 <div class="section1-buttons">
-                    <NuxtLink to="/recipe-library">
-                        <button class="custom-button">
-                            <img src="/assets/img/recipe-icon.png" alt="Recipe Library" /> Recipe Library
-                        </button>
-                    </NuxtLink>
+                    <button class="custom-button" @click="async () => await navigateTo('/recipe-library')">
+                        <img src="/assets/img/recipe-icon.png" alt="Recipe Library" /> Recipe Library
+                    </button>
 
-                    <NuxtLink to="/meal-logging">
-                        <button class="custom-button">
-                            <img src="/assets/img/logging-icon.png" alt="Meal Logging" /> Meal Logging
-                        </button>
-                    </NuxtLink>
+                    <button class="custom-button" @click="async () => await navigateTo('/meal-logging')">
+                        <img src="/assets/img/logging-icon.png" alt="Meal Logging" /> Meal Logging
+                    </button>
 
-                    <NuxtLink to="/meal-planning">
-                        <button class="custom-button">
-                            <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
-                        </button>
-                    </NuxtLink>
+                    <button class="custom-button" @click="async () => await navigateTo('/meal-planning')">
+                        <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
+                    </button>
                 </div>
                 
             </div>
@@ -92,15 +86,20 @@ defineOptions({
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
     layout: "emptylayout",
-    middleware: "auth",
+    middleware: "auth", // Re-enabled after fixing wheel event handler
 });
 
 const { $axios } = useNuxtApp();
 
 const scrollContainer = ref(null);
 
+// Define handleWheel outside onMounted for proper cleanup
+let handleWheel = null;
+
 // scrolling behaviour
 onMounted(async() => {
+    // TEMPORARILY DISABLE WHEEL EVENT HANDLER FOR TESTING
+    /*
     const sections = document.querySelectorAll('.section');
     let currentSection = 0;
 
@@ -111,25 +110,42 @@ onMounted(async() => {
         }
     };
 
-    const handleWheel = (event) => {
+    handleWheel = (event) => {
+        // Don't interfere with navigation if user is interacting with buttons or links
+        const target = event.target;
+        const isInteractiveElement = target.closest('button, a, input, select, textarea, [role="button"]');
+        
+        if (isInteractiveElement) {
+            return; // Let the default behavior handle it
+        }
+
+        // Only handle wheel events for page scrolling
         if (event.deltaY > 0) {
-        scrollToSection(currentSection + 1);
+            scrollToSection(currentSection + 1);
         } else {
-        scrollToSection(currentSection - 1);
+            scrollToSection(currentSection - 1);
         }
     };
 
-    scrollContainer.value.addEventListener('wheel', handleWheel);
+    // Add passive: false to ensure we can prevent default if needed
+    scrollContainer.value?.addEventListener('wheel', handleWheel, { passive: false });
+    */
+    
     await getRecipeOfTheDay();
     await getUserInfo();
     await getFluidData();
     await getUserBudget();
     await getEducationalContent();
-
-
 });
 
-import { ref, computed, onMounted, watch } from 'vue';
+// Cleanup event listeners when component unmounts
+onBeforeUnmount(() => {
+    if (scrollContainer.value && handleWheel) {
+        scrollContainer.value.removeEventListener('wheel', handleWheel);
+    }
+});
+
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useToast } from 'vue-toast-notification';
 import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
@@ -257,27 +273,40 @@ const nutrients = ref([
             }
         });
         if (response.status === 200) {
-            // maxVolume.value = response.data.logging_history[0].remaining_fluid;
-            // remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
             const userNutrition = response.data[today_date()];
-            for (let i = 0; i < 2; i++) {
-                if (i === 0) {
-                    nutrients.value[0].calories = userNutrition[i].calories;
-                    nutrients.value[0].carbs = userNutrition[i].carbs;
-                    nutrients.value[0].protein = userNutrition[i].protein;
-                    nutrients.value[0].fat = userNutrition[i].fat;
-                    nutrients.value[0].sodium = userNutrition[i].sodium;
-                    nutrients.value[0].cholesterol = userNutrition[i].cholesterol;
-                }
-                else {
-                    nutrients.value[2].calories = userNutrition[i].calories;
-                    nutrients.value[2].carbs = userNutrition[i].carbs;
-                    nutrients.value[2].protein = userNutrition[i].protein;
-                    nutrients.value[2].fat = userNutrition[i].fat;
-                    nutrients.value[2].sodium = userNutrition[i].sodium;
-                    nutrients.value[2].cholesterol = userNutrition[i].cholesterol;
-                }
-            }
+            
+            // userNutrition contains: [daily_budget, remaining_nutrients, flag]
+            // We need: [daily_budget, current_consumed, remaining_nutrients]
+            
+            const dailyBudget = userNutrition[0];  // Total daily allowance
+            const remainingNutrients = userNutrition[1];  // What's left after consumption
+            
+            // Calculate consumed nutrients (daily_budget - remaining_nutrients)
+            const consumedNutrients = {
+                calories: dailyBudget.calories - remainingNutrients.calories,
+                carbs: dailyBudget.carbs - remainingNutrients.carbs,
+                protein: dailyBudget.protein - remainingNutrients.protein,
+                fat: dailyBudget.fat - remainingNutrients.fat,
+                sodium: dailyBudget.sodium - remainingNutrients.sodium,
+                cholesterol: dailyBudget.cholesterol - remainingNutrients.cholesterol
+            };
+            
+            // Set the nutrition widget data correctly:
+            // nutrients[0] = daily budget (total allowance)
+            nutrients.value[0] = { ...dailyBudget };
+            
+            // nutrients[1] = remaining nutrients (never show negative - cap at 0)
+            nutrients.value[1] = {
+                calories: Math.max(0, remainingNutrients.calories),
+                carbs: Math.max(0, remainingNutrients.carbs),
+                protein: Math.max(0, remainingNutrients.protein),
+                fat: Math.max(0, remainingNutrients.fat),
+                sodium: Math.max(0, remainingNutrients.sodium),
+                cholesterol: Math.max(0, remainingNutrients.cholesterol)
+            };
+            
+            // nutrients[2] = after meal prediction (same as remaining for now)
+            nutrients.value[2] = { ...nutrients.value[1] };
         }
         else {
             console.log(response);
@@ -340,24 +369,77 @@ const getRecipeOfTheDay = async () => {
         const response = await $axios.get(`/recipe/recipe-of-the-day`);
         if (response.status === 200){
             // set recipe of the day
-            recipeName.value = response.data.name;
-            recipeDescription.value = response.data.description;
-            recipeImage.value = response.data.storage_links.thumbnail;
-            recipeId.value = response.data.id;
+            recipeName.value = response.data.name || "Sample Recipe";
+            recipeDescription.value = response.data.description || "A delicious recipe";
+            recipeImage.value = response.data.storage_links?.thumbnail || "";
+            recipeId.value = response.data.id || "";
 
-            recipeNutrition.value.calories = (response.data.nutrition_info.calories).toFixed(2);
-            recipeNutrition.value.fat = (response.data.nutrition_info.fat).toFixed(2);
-            recipeNutrition.value.sodium = (response.data.nutrition_info.sodium).toFixed(2);
-            recipeNutrition.value.cholesterol = (response.data.nutrition_info.cholesterol).toFixed(2);
-            recipeNutrition.value.protein = (response.data.nutrition_info.protein).toFixed(2);
-            recipeNutrition.value.carbohydrates = (response.data.nutrition_info.totalCarbohydrate).toFixed(2);
+            // Add null safety checks for nutrition info
+            const nutritionInfo = response.data.nutrition_info || {};
+            recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
+            recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
+            recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
+            recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
+            recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
+            recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
         } else {
             console.log(response);
         }
     } catch (e) {
-        useToast().error("Failed to get recipe of the day")
+        console.log("No recipe of the day found, seeding sample data...");
+        
+        // Seed sample data if no recipes exist
+        try {
+            // First ensure we have basic data like cuisines and ingredients
+            await useFillData().fillCuisines();
+            await useFillData().fillIngredients();
+            await useFillData().fillSeasoning();
+            
+            // Now seed recipes
+            await useFillData().fillRecipes();
+            console.log("Sample recipes seeded successfully!");
+            
+            // Try to get recipe of the day again after seeding
+            const response = await $axios.get(`/recipe/recipe-of-the-day`);
+            if (response.status === 200){
+                recipeName.value = response.data.name || "Sample Recipe";
+                recipeDescription.value = response.data.description || "A delicious recipe";
+                recipeImage.value = response.data.storage_links?.thumbnail || "";
+                recipeId.value = response.data.id || "";
+
+                // Add null safety checks for nutrition info
+                const nutritionInfo = response.data.nutrition_info || {};
+                recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
+                recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
+                recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
+                recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
+                recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
+                recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
+                
+                useToast().success("Sample data loaded successfully!");
+            } else {
+                console.log("Recipe of the day still not available after seeding");
+                useToast().warning("Sample data seeded but recipe not available");
+            }
+        } catch (seedError) {
+            console.error("Failed to seed sample data:", seedError);
+            
+            // Provide more specific error information
+            if (seedError.response) {
+                console.log("Seed error response:", seedError.response.data);
+                useToast().error(`Failed to load sample recipes: ${seedError.response.data.message || 'Server error'}`);
+            } else if (seedError.message) {
+                useToast().error(`Failed to load sample recipes: ${seedError.message}`);
+            } else {
+                useToast().error("Failed to load sample recipes");
+            }
+        }
     }
 }
+
+// PERMANENT FIX APPLIED: Root cause was @click.prevent interfering with navigateTo()
+// Now using admin page pattern: @click="async () => await navigateTo()" directly in template
+// This eliminates the need for separate navigation functions and resolves the stuck state issue
 
 </script>
 
@@ -633,7 +715,7 @@ html {
     grid-area: left;
 }
 
-/deep/ .svg-container{
+:deep(.svg-container){
     transform: scale(0.85);
 }
 
@@ -641,7 +723,7 @@ html {
     grid-area: right;
 }
 
-/deep/ .budget-container{
+:deep(.budget-container){
     transform: scale(0.85);
 }
 

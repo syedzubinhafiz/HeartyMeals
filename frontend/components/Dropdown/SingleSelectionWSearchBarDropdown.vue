@@ -23,10 +23,8 @@
 </template>
 
 <script>
-defineOptions({
-    name: "SingleSelectionWSearchbarDropdown",
-});
 export default {
+    name: "SingleSelectionWSearchbarDropdown",
     props: {
         items: {
             type: Array,

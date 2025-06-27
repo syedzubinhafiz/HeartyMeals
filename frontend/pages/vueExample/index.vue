@@ -146,19 +146,16 @@
 </template>
 <script setup>
 
-definePageMeta({
-    middleware: ["auth"],
-  });
-  
 // defines the name of the page
 defineOptions({
 	name: "vueExample",
 });
 
-// this defines the layout that the page uses
+// this defines the layout that the page uses and middleware
 // the page will be wrapped around the selected layout, which are defined in the layouts folder
 definePageMeta({
-	layout: "baselayout"
+	layout: "baselayout",
+    middleware: ["auth"]
 });
 
 // variable that automatically updates the HTML whenever the value within the reference is modified

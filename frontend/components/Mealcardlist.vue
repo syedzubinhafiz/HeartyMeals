@@ -59,10 +59,10 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const onAddDishes = () => {
+const onAddDishes = async () => {
   useMealLogging().unsavedMealList.value = []
   useMealLogging().mealDate.value = props.isoDate
-  navigateTo(`/add-meals?mealType=${props.title}&selectedDate=${props.isoDate}&ismealplanning=false`);
+      await navigateTo(`/add-meals?mealType=${props.title}&selectedDate=${props.isoDate}&ismealplanning=false`);
 }
 </script>
 

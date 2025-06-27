@@ -128,12 +128,12 @@ watch(() => props.recipeNutrition, (newVal, oldVal) => {
 
 const showNutrition = ref(false);
 
-function navigateToRecipeLibrary() {
+async function navigateToRecipeLibrary() {
   // Navigate to recipe library
   // use props to get data
   localStorage.setItem('recipeId', recipeId.value);
 
-  navigateTo('/recipe-library');
+  await navigateTo('/recipe-library');
 }
 </script>
 

@@ -1,30 +1,24 @@
-export const useApi = async (request, method,body=null) => {
-    let token = getItem("accessToken")
-    let result = await useLazyFetch(request, {
-        baseURL: "http://localhost:3001",
-        method: method,
-        body: method != "GET" ? JSON.stringify(body) : null,
-        headers: {
-            ...useRequestURL(),
+import { $fetch } from 'ofetch';
+
+export const useApi = async (request, method = "GET", body = null) => {
+  // Get access token if it exists
+  const token = process.client ? localStorage.getItem("accessToken") : null;
+
+  try {
+    const result = await $fetch(request, {
+      baseURL: "http://localhost:3001",
+      method,
+      body: method !== "GET" ? body : undefined,
+      headers: token
+        ? {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        }
+            "Content-Type": "application/json",
+          }
+        : { "Content-Type": "application/json" },
     });
 
-  if(result.error.value == null) {
-    result.data.isError = false
-		return result.data
-	}
-	else {
-    result.error.isError = true
-		return result.error
-	}
-}
-
-function getItem(item) {
-    if (process.client) {
-      return localStorage.getItem(item)
-    } else {
-      return undefined
-    }
-}
+    return { isError: false, value: result };
+  } catch (error) {
+    return { isError: true, error };
+  }
+};

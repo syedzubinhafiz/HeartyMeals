@@ -11,17 +11,13 @@
 </template>
 <script setup>
 
-definePageMeta({
-    middleware: ["auth"],
-  });
-  
 defineOptions({
 	name: "examplePage",
 });
 
-
 definePageMeta({
-	layout: "baselayout"
+	layout: "baselayout",
+    middleware: ["auth"]
 });
 
 

@@ -1,4 +1,3 @@
-
 export const useDate = () => {
     const getCurrentDate = (adjusted=false) => {
         let currentDate = new Date()
@@ -7,22 +6,33 @@ export const useDate = () => {
         }
         return currentDate
     }
-    const getFormattedDateLong = (date=null,adjusted=false) => {
+    const getFormattedDateLong = (date=null, adjusted=false) => {
+        let targetDate;
         if(date==null) {
-            return getCurrentDate(adjusted).toISOString()
+            targetDate = getCurrentDate(adjusted);
+        } else {
+            targetDate = new Date(date);
+            if(adjusted){
+                targetDate.setTime(targetDate.getTime()+8*60*60*1000);
+            }
         }
-        else {
-            return getCurrentDate(date, adjusted).toISOString()
-        }
+        return targetDate.toISOString();
     }
-    const getFormattedDateShort = (date=null,adjusted=false) => {
+    const getFormattedDateShort = (date=null, adjusted=false) => {
+        let targetDate;
         if(date==null) {
-            return getFormattedDateLong(adjusted).split('T')[0]
+            targetDate = getCurrentDate(adjusted);
+        } else {
+            targetDate = new Date(date);
+            if(adjusted){
+                targetDate.setTime(targetDate.getTime()+8*60*60*1000);
+            }
         }
-        else {
-            return getFormattedDateLong(date, adjusted).split('T')[0]
-        }
-        
+        // format YYYY-MM-DD in local timezone (no UTC shift)
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth()+1).padStart(2,'0');
+        const day = String(targetDate.getDate()).padStart(2,'0');
+        return `${year}-${month}-${day}`;
     }
     return {getCurrentDate, getFormattedDateLong, getFormattedDateShort}
 }
