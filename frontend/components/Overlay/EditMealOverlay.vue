@@ -37,14 +37,15 @@ import { ref, watch, nextTick } from 'vue';
 import SingleSelectionDropdown from '../Dropdown/SingleSelectionDropdown.vue';
 
 export default {
+    emits: ['update:visible', 'editLogMeal'],
     props: {
         visible: {
             type: Boolean,
-            default: false
+            default: false,
         },
         mealInfo: {
             type: Object,
-            required: true
+            default: () => ({}),
         },
     },
     components: {

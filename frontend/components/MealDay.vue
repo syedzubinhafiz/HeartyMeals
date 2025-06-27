@@ -44,8 +44,8 @@
           :cardInfo="card"
           :isToday="isToday"
           class="meal-card"
-          @removeMeal="removeMeal('breakfastList', index)"
-          @editMeal="openEditMealPopup(card)"
+          @removeMeal="() => removeMeal('breakfastList', index)"
+          @editMeal="() => openEditMealPopup(card)"
         />
       </Mealplanlist>
   
@@ -62,8 +62,8 @@
           :cardInfo="card"
           :isToday="isToday"
           class="meal-card"
-          @removeMeal="removeMeal('lunchList', index)"
-          @editMeal="openEditMealPopup(card)"
+          @removeMeal="() => removeMeal('lunchList', index)"
+          @editMeal="() => openEditMealPopup(card)"
         />
       </Mealplanlist>
   
@@ -80,8 +80,8 @@
           :cardInfo="card"
           :isToday="isToday"
           class="meal-card"
-          @removeMeal="removeMeal('dinnerList', index)"
-          @editMeal="openEditMealPopup(card)"
+          @removeMeal="() => removeMeal('dinnerList', index)"
+          @editMeal="() => openEditMealPopup(card)"
         />
       </Mealplanlist>
   
@@ -98,19 +98,29 @@
           :cardInfo="card"
           :isToday="isToday"
           class="meal-card"
-          @removeMeal="removeMeal('otherList', index)"
-          @editMeal="openEditMealPopup(card)"
+          @removeMeal="() => removeMeal('otherList', index)"
+          @editMeal="() => openEditMealPopup(card)"
         />
       </Mealplanlist>
+  
+      <!-- Edit Meal Overlay -->
+      <EditMealOverlay
+        v-if="editMealOverlayVisible"
+        :visible="editMealOverlayVisible"
+        :mealInfo="editMealInfo"
+        @update:visible="editMealOverlayVisible = $event"
+        @editLogMeal="handleEditMeal"
+      />
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useToast } from 'vue-toast-notification';
 import Mealplanlist from './Mealplanlist.vue';
 import Planningfoodcard from './Planningfoodcard.vue';
 import Planningdailynutrients from './Planningdailynutrients.vue';
-import NutrientData from '../classes/nutrientData.js'
+import EditMealOverlay from './Overlay/EditMealOverlay.vue';
 
 const props = defineProps({
   dayName: {
@@ -153,66 +163,137 @@ const props = defineProps({
 // Control visibility of the popup
 const showPopup = ref(false);
 
-// Create a ref for nutritionInfo that will be updated dynamically
 const nutritionInfo = ref({
   totalCarbohydrate: 0,
   protein: 0,
   fat: 0,
   cholesterol: 0,
-  dietaryFiber: 0
+  dietaryFiber: 0,
 });
 
-const nutrientData = ref(null);
+// Edit meal overlay controls
+const editMealOverlayVisible = ref(false);
+const editMealInfo = ref(null);
 
 const removeMeal = (mealType, index) => {
-  console.log(`Removing meal from ${mealType} at index ${index}`);
+  const list = props[mealType];
+  if (Array.isArray(list) && list[index] !== undefined) {
+    list.splice(index, 1);
+    computeNutritionInfo();
+  }
 };
 
 const openEditMealPopup = (meal) => {
-  console.log('Edit meal', meal);
+  editMealInfo.value = meal;
+  editMealOverlayVisible.value = true;
 };
 
-const fetchDataForCurrentDate = async () => {
-  const formattedDateStr = `${props.formattedDate} ${new Date().getFullYear()}`;
-  const formattedCurrentDate = new Date(formattedDateStr);
-  const formattedISODate = useDate().getFormattedDateShort(formattedCurrentDate);
+// Handle edited meal details coming back from overlay
+const handleEditMeal = async (newValue) => {
+  // Fall back to original values if unchanged
+  const newPortion = newValue.portion ?? newValue.mealInfo.portion;
+  const newMealType = newValue.mealType ?? newValue.mealInfo.type;
 
-  const result = await useApi(`/user/budget?startDate=${formattedISODate}&timeZone=Asia/Kuala_Lumpur`, "GET");
-
-  if (result.isError || !result.value) {
-    console.warn("Budget API returned an error", formattedISODate, result.error);
+  // Short-circuit if nothing changed
+  if (newPortion === newValue.mealInfo.portion && newMealType === newValue.mealInfo.type) {
+    useToast().info('No changes made');
+    editMealOverlayVisible.value = false;
     return;
   }
 
-  let dayData = result.value[formattedISODate];
-  if (!dayData) {
-    // backend returned previous/next date because of TZ rounding; take first entry
-    const firstKey = Object.keys(result.value)[0];
-    dayData = result.value[firstKey];
+  // Submit update to backend
+  const resp = await useApi('/meal-logging/update', 'POST', {
+    mealLoggingId: newValue.mealInfo.id,
+    mealType: newMealType,
+    portion: newPortion,
+    timeZone: 'Asia/Kuala_Lumpur',
+    userLocalDate: useDate().getFormattedDateShort(),
+    mealDate: useDate().getFormattedDateShort(new Date(newValue.mealInfo.created_at)),
+  });
+  
+  console.log('Edit meal API response:', resp);
+
+  if (!resp.isError && resp.status === 200) {
+    useToast().success('Meal updated');
+
+    // Update local arrays so UI refreshes immediately
+    const sourceListName = newValue.mealInfo.type.toLowerCase() + 'List';
+    const targetListName = newMealType.toLowerCase() + 'List';
+
+    const sourceList = props[sourceListName];
+    const targetList = props[targetListName];
+
+    // Remove from old list
+    const idx = sourceList.findIndex((m) => m.id === newValue.mealInfo.id);
+    if (idx !== -1) {
+      const [item] = sourceList.splice(idx, 1);
+      // Update item values
+      item.portion = newPortion;
+      item.type = newMealType;
+      // Push to target list
+      targetList.push(item);
+    }
+
+    computeNutritionInfo();
+  } else {
+    useToast().error('Failed to update meal');
   }
 
-  if (!Array.isArray(dayData) || dayData.length < 2) {
-    console.warn("Unexpected budget data format", dayData);
-    return;
+  editMealOverlayVisible.value = false;
+};
+
+// Helper to safely get nutrient value
+const getNutrientVal = (obj, keys, defaultVal = 0) => {
+  for (const k of keys) {
+    if (obj && obj[k] !== undefined && obj[k] !== null) {
+      return Number(obj[k]);
+    }
   }
+  return defaultVal;
+};
 
-  nutrientData.value = NutrientData.fromApi2(dayData[1]);
+// Calculate nutrition totals from all meal lists
+const computeNutritionInfo = () => {
+  const allMeals = [
+    ...props.breakfastList,
+    ...props.lunchList,
+    ...props.dinnerList,
+    ...props.otherList,
+  ];
 
-  nutritionInfo.value = {
-    totalCarbohydrate: nutrientData.value.carbohydrates,
-    protein: nutrientData.value.protein,
-    fat: nutrientData.value.fats,
-    cholesterol: nutrientData.value.cholesterol,
-    dietaryFiber: nutrientData.value.sodium,
+  const totals = {
+    totalCarbohydrate: 0,
+    protein: 0,
+    fat: 0,
+    cholesterol: 0,
+    dietaryFiber: 0,
   };
 
-  console.log(nutritionInfo.value);
+  allMeals.forEach((meal) => {
+    const info = meal?.recipe?.nutrition_info || {};
+    totals.totalCarbohydrate += getNutrientVal(info, ['totalCarbohydrate', 'carbs']);
+    totals.protein += getNutrientVal(info, ['protein']);
+    totals.fat += getNutrientVal(info, ['fat', 'fats']);
+    totals.cholesterol += getNutrientVal(info, ['cholesterol']);
+    totals.dietaryFiber += getNutrientVal(info, ['dietaryFiber', 'sodium']);
+  });
+
+  nutritionInfo.value = totals;
 };
 
-onMounted(async () => {
-  await useApi("/dietary", "GET");
-  await fetchDataForCurrentDate();
+// Recompute when component mounts
+onMounted(() => {
+  computeNutritionInfo();
 });
+
+// Watch for changes in meal lists to update totals reactively
+watch(
+  () => [props.breakfastList, props.lunchList, props.dinnerList, props.otherList],
+  () => {
+    computeNutritionInfo();
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>
@@ -240,32 +321,40 @@ onMounted(async () => {
 }
 
 .meal-day {
-  padding: 5px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-clip: padding-box;
 }
 
 .meal-list {
-  margin-bottom: 5px; 
+  margin-bottom: 16px;
 }
 
 .today-day {
-  background-color: rgba(1, 91, 89, 0.3); 
+  background-color: rgba(1, 91, 89, 0.15);
+  border-color: rgba(1, 91, 89, 0.4);
+  box-shadow: 0 4px 12px rgba(1, 91, 89, 0.2);
 }
 
 .past-day {
-  background-color: None; 
+  background-color: rgba(176, 172, 165, 0.1);
+  border-color: rgba(176, 172, 165, 0.3);
 }
 
 .future-day {
-  background-color: None; 
+  background-color: rgba(243, 234, 218, 0.3);
+  border-color: rgba(139, 107, 85, 0.2);
 }
 
 .day-header {
   text-align: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
   background: linear-gradient(to bottom, #F3EADA 50%, #8A6B55 50%);
-  border-radius: 10px;
-  position: relative; 
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(139, 107, 85, 0.2);
 }
 
 .today-header {
@@ -281,16 +370,18 @@ onMounted(async () => {
 }
 
 .day-name {
-  padding-top: 10px;
+  padding-top: 12px;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  color: #2d3748;
 }
 
 .day-date {
-  font-size: 1.2rem;
-  margin-top: 5px;
-  padding-bottom: 5px;
+  font-size: 1rem;
+  margin-top: 4px;
+  padding-bottom: 12px;
   color: #fff;
+  font-weight: 500;
 }
 
 /* MAIN ADDITION FOR SCROLLABLE LIST */
@@ -312,6 +403,37 @@ onMounted(async () => {
 
 .meal-items-container::-webkit-scrollbar-track {
   background-color: #e0e0e0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .meal-day {
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .day-header {
+    margin-bottom: 0.7rem;
+    border-radius: 10px;
+  }
+
+  .day-name {
+    font-size: 1rem;
+    padding-top: 10px;
+  }
+
+  .day-date {
+    font-size: 1rem;
+    padding-bottom: 6px;
+  }
+
+  .meal-list {
+    margin-bottom: 8px;
+  }
+
+  .meal-items-container {
+    max-height: 35vh;
+  }
 }
 
 </style>

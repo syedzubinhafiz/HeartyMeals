@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" class="mini-card bg-custom-bg-light p-4 rounded-lg shadow-lg absolute z-50" :style="customStyle">
+  <div v-if="visible" class="mini-card bg-custom-bg-light p-4 rounded-lg shadow-lg absolute z-50">
     <div class="flex justify-between mb-2">
       <div>
         <div class="flex items-center mb-1">

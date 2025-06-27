@@ -14,8 +14,9 @@
     </div>
 
     <!-- More Options Icon -->
-    <div class="ml-auto" @click="selectMeal">
-      <i class="fas fa-ellipsis-v text-gray-600"></i>
+    <div v-if="!is_consumed" class="ml-auto" @click="selectMeal">
+      <!-- Font Awesome 6 vertical ellipsis icon -->
+      <i class="fas fa-ellipsis-vertical text-gray-600"></i>
     </div>
 
     <FoodCardNutrients 
@@ -34,6 +35,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useToast } from 'vue-toast-notification';
 
 const props = defineProps({
   cardInfo: {
@@ -79,6 +81,7 @@ const removeMeal = async () => {
     "mealType": props.cardInfo.type
   });
   console.log(result);
+  emit('removeMeal');
 };
 
 const toggleConsumed = async () => {
@@ -88,13 +91,12 @@ const toggleConsumed = async () => {
 	"mealLoggingId": props.cardInfo.id
   })
   console.log(results)
-  if(!results.isError && results.status != 200) {
+  if (!results.isError) {
     is_consumed.value = true;
-  } 
-  else {
-    useToast().error("Meal consumption failed!")
+    useToast().success("Meal marked as consumed");
+  } else {
+    useToast().error("Meal consumption failed!");
   }
-  
 };
 </script>
 
