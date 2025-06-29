@@ -381,6 +381,9 @@ import NutritionBar from './NutritionBar.vue';
         pointer-events: all; /* Enable interaction with labels */
         font-weight: 600;
         font-size: 1rem; /* Base font size */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
     }
 
     :deep(.progress-bar) {
@@ -530,7 +533,13 @@ import NutritionBar from './NutritionBar.vue';
             font-size: 1.5rem;
         }
         .budget-bar-overlay {
-            font-size: 0.875rem;
+            top: 30%;
+        }
+    }
+
+    @media (min-width: 769px) and (max-width: 1200px) {
+        .budget-bar-overlay {
+            top: 30%;
         }
     }
 

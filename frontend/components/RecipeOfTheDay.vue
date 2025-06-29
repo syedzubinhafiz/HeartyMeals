@@ -154,6 +154,21 @@ async function navigateToRecipeLibrary() {
   margin: 0 auto; 
 }
 
+@media (max-width: 768px) {
+  .recipe-of-the-day-container {
+    width: 95vw;
+    height: 70vh;
+    min-height: 500px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .recipe-of-the-day-container {
+    width: 75vh;
+    height: 75vh;
+  }
+}
+
 .recipe-of-the-day-bg {
   object-fit: cover;
   max-width: 100%;
@@ -168,6 +183,14 @@ async function navigateToRecipeLibrary() {
   justify-content: center;
   align-items: center;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .recipe-of-the-day-overlay {
+    width: 95vw;
+    height: 65vh;
+    padding: 1rem;
+  }
 }
 
 
@@ -186,6 +209,14 @@ async function navigateToRecipeLibrary() {
   justify-content: center; /* Center items horizontally */
 }
 
+@media (max-width: 768px) {
+  .recipe-of-the-day-content {
+    flex-direction: column;
+    height: auto;
+    gap: 1rem;
+  }
+}
+
 
 .recipe-of-the-day-column-left  {
   width: 60%; /* Each column takes up half the space */
@@ -193,6 +224,13 @@ async function navigateToRecipeLibrary() {
   flex-direction: column; /* Stack content vertically within each column */
   align-items: center; /* Center items in each column */
   justify-content: center; /* Center items in each column */
+}
+
+@media (max-width: 768px) {
+  .recipe-of-the-day-column-left {
+    width: 100%;
+    order: 2;
+  }
 }
 
 .recipe-of-the-day-column-right {
@@ -203,6 +241,13 @@ async function navigateToRecipeLibrary() {
   justify-content: center; /* Center items in each column */
 }
 
+@media (max-width: 768px) {
+  .recipe-of-the-day-column-right {
+    width: 100%;
+    order: 1;
+  }
+}
+
 .recipe-description {
   font-size: 100%;
   width: 400px;
@@ -211,12 +256,30 @@ async function navigateToRecipeLibrary() {
   overflow: hidden;
 }
 
+@media (max-width: 768px) {
+  .recipe-description {
+    width: 100%;
+    max-width: 350px;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+}
+
 .recipe-image{
   height: 200px; 
   width: 200px;
   border-radius: 10px;
   margin-bottom: 15%;
   object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .recipe-image {
+    height: 150px;
+    width: 150px;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .view-nutrition-info {
@@ -232,7 +295,36 @@ async function navigateToRecipeLibrary() {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .view-nutrition-info {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    justify-content: center;
+    width: auto;
+    margin-top: 1rem;
+    padding-right: 0;
+  }
+}
+
 .nutrition-info-container p {
   margin-bottom: 2.5%;
+}
+
+@media (max-width: 768px) {
+  .nutrition-info-container {
+    width: 90vw !important;
+    max-width: 300px;
+    bottom: auto !important;
+    top: 100%;
+    right: 50% !important;
+    transform: translateX(50%);
+    font-size: 0.8rem;
+  }
+  
+  .recipe-of-the-day-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
 }
 </style>

@@ -224,27 +224,47 @@
         position: relative; /* Set the position to relative to allow absolute positioning of overlay */
         width: 100%;
         height: auto;
+        transform-origin: center;
     }
     
     .svg-container svg {
         margin-left:auto;
         margin-right:auto;
+        width: 85%; /* Make SVG slightly smaller */
+        height: auto;
+        display: block;
     }
     
     .overlay {
-        position: absolute; /* Position the overlay absolutely */
-        top: 60%; /* Center vertically */
-        left: 50%; /* Center horizontally */
-        transform: translate(-50%, -50%); /* Adjust to center */
-        color: #000; /* Text color */
-        text-align: center; /* Center the text */
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #000;
+        text-align: center;
+        width: 80%;
+    }
+    
+    @media (max-width: 768px) {
+        .overlay {
+            top: 52%;
+            width: 85%;
+        }
     }
 
     h2{
         color: #3A6088;
-        margin-top: 10%;
+        margin: 0.5rem 0;
         font-weight: 600;
         font-size: 115%;
+        line-height: 1.2;
+    }
+    
+    @media (max-width: 768px) {
+        h2 {
+            font-size: 100%;
+            margin: 0.3rem 0;
+        }
     }
     
     button {
@@ -254,17 +274,25 @@
     }
 
     .open-overlay-button {
-        margin-top: 20%; /* Space between text and button */
-        margin-left: auto;
-        margin-right: auto;
-        padding: 5% 10%; /* Button padding */
-        display: flex; /* Align text and icon */
-        justify-content: center; /* Center text and icon */
-
-        background-color: #FFA17A; /* Button background color */
-        color: #993300; /* Button text color */
-        border-radius: 5vh; /* Rounded corners */
-        font-weight: 600; /* Button text weight */
+        margin: 1rem auto 0;
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #FFA17A;
+        color: #993300;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    @media (max-width: 768px) {
+        .open-overlay-button {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+        }
     }
 
     .open-overlay-button:hover {

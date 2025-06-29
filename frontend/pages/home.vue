@@ -22,7 +22,6 @@
                         <img src="/assets/img/planning-icon.png" alt="Meal Planning" /> Meal Planning
                     </button>
                 </div>
-                
             </div>
             <div class="section1-quote">
                 <p class="quote-text">
@@ -32,9 +31,9 @@
         </div>
 
         <!-- section 2 -->
-        <div class="section flex items-center justify-center">
-            <div>
-                <img src="~/assets/img/main-landing-page-2-top-background.svg" style="transform: scale(0.8);"></img>
+        <div class="section flex flex-col items-center justify-start" style="padding-top: 3rem; min-height: 120vh;">
+            <div class="section-2-header">
+                <img src="~/assets/img/main-landing-page-2-top-background.svg" class="section-2-header-img"></img>
                 <div class="section-text">Today's Budget</div>
             </div>
             <div class="section-2-container-grid">
@@ -51,11 +50,11 @@
         <div class="section section-3">
             <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
             <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
-                <h2 class="text-white text-xl font-semibold mb-8 mt-5">Recommended For You</h2>
-                <div class="flex justify-between min-w-max pb-4">
-                    <div/>
-                    <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
-                    <div/>
+                <h2 class="text-white text-xl font-semibold mb-8 mt-5 section-3-title">Recommended For You</h2>
+                <div class="section-3-cards-container">
+                    <div class="section-3-cards-wrapper">
+                        <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -351,6 +350,11 @@ const getRecipeOfTheDay = async () => {
     font-family: 'Overpass', sans-serif;
 }
 
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
 /* Custom button text color */
 .text-custom-button-text {
     color: #993300;
@@ -367,24 +371,26 @@ html {
 }
 
 .scrollContainer {
-    scroll-snap-type: y mandatory;
     overflow-y: scroll;
+    overflow-x: hidden;
     height: 100vh;
+    width: 100vw;
 }
 
 .section {
-    scroll-snap-align: start;
-    height: 100%;
+    height: auto;
+    min-height: 100vh;
     width: 100%;
+    max-width: 100vw;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 /* Section 1 Styles */
 .section1-container {
     position: relative;
     height: 100vh;
-    scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -393,77 +399,38 @@ html {
 
 .section1-content {
     width: 100%;
-    min-height: 110vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     text-align: center;
     background-image: url('@/assets/img/topcurve.svg');
-    background-size: 120% auto;
+    background-size: 200% auto;
     background-repeat: no-repeat;
     background-position: center top;
-    background-attachment: fixed;
-    padding-bottom: 20vh;
+    padding: 15vh 1rem 5vh;
     color: white;
+    box-sizing: border-box;
 }
 
-@media (max-width: 1400px) {
+@media (min-width: 768px) {
     .section1-content {
-        padding-bottom: 15vh;
-        min-height: 94vh;
-        width: 100%;
-    }
-}
-
-@media (max-width: 1200px) {
-    .section1-content {
-        padding-bottom: 20vh;
-        min-height: 75vh;
-    }
-}
-@media (max-width: 1000px) {
-    .section1-content {
-        padding-bottom: 20vh;
-        min-height: 70vh;
-    }
-}
-@media (max-width: 800px) {
-    .section1-content {
-        padding-bottom: 35vh;
-        min-height:70vh;
-    }
-}
-
-@media (max-width: 468px) {
-    .section1-content {
-        padding-bottom: 45vh;
+        background-size: 120% auto;
+        padding-top: 15vh;
+        justify-content: center;
     }
 }
 
 .section1-heading {
-    font-size: 2rem;
+    font-size: clamp(2rem, 5vw, 4rem);
     margin-bottom: 1.5rem;
     font-weight: 600;
 }
 
-@media (min-width: 1024px) {
-    .section1-heading {
-        font-size: 4rem;
-        margin-bottom: 2rem;
-    }
-}
-
 .section1-subheading {
-    font-size: 1.125rem;
+    font-size: clamp(1.125rem, 3vw, 2.5rem);
     margin-bottom: 2.5rem;
-}
-
-@media (min-width: 1024px) {
-    .section1-subheading {
-        font-size: 3rem;
-        margin-bottom: 2.5rem;
-    }
 }
 
 .section1-buttons {
@@ -471,6 +438,16 @@ html {
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .section1-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -486,36 +463,21 @@ html {
 }
 
 .section1-quote {
-    display: flex;
-    justify-content: center;
     position: absolute;
-    bottom: 10%;
-}
-
-@media (min-width: 768px) {
-    .section1-quote {
-        display: flex;
-        justify-content: center;
-        padding-top: 2rem;
-        padding-bottom: 1rem;
-    }
-}
-
-@media (min-width: 1024px) {
-    .section1-quote {
-        display: flex;
-        justify-content: center;
-        padding-top: 2rem;
-        padding-bottom: 1rem;
-    }
+    bottom: 5vh;
+    left: 0;
+    right: 0;
+    padding: 2rem;
 }
 
 .quote-text {
     text-align: center;
-    font-size: 150%;
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
     font-style: italic;
     color: #000000;
     font-weight: 600;
+    max-width: 60ch;
+    margin: 0 auto;
 }
 
 @media (min-width: 768px) {
@@ -532,19 +494,31 @@ html {
     padding: 0.5rem 0.25rem; 
     display: flex;
     align-items: center;
+    justify-content: center;
     color: #993300; 
     font-size: 1rem; 
     font-weight: bold; 
     text-transform: uppercase; 
     margin-bottom: 0.75rem; 
     transition: background-color 0.2s ease-in-out;
+    min-width: 200px;
 }
 
 .custom-button:hover {
     background-color: #e5946b; 
 }
 
-@media (min-width: 468px) {
+@media (max-width: 768px) {
+    .custom-button {
+        width: 100%;
+        max-width: 280px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+}
+
+@media (min-width: 468px) and (min-width: 769px) {
     .custom-button {
         padding: 0.3rem 0.5rem; 
         font-size: 0.6rem; 
@@ -594,14 +568,50 @@ html {
         margin-right: 0.9rem; 
     }
 }
+ 
+.section-2-header {
+    position: relative;
+    z-index: 20;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.section-2-header-img {
+    transform: scale(1.2);
+}
 
 .section-text {
     position: absolute;
-    top: 112%; /* Adjust the distance from the top */
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%); /* Center the text horizontally */
-    font-size: 200%; /* Adjust the text size */
-    font-weight: bold; /* Make the text bold */
+    transform: translate(-50%, -50%);
+    font-size: 200%;
+    font-weight: bold;
+    z-index: 25;
+    color: #000;
+    text-shadow: 0 2px 4px rgba(255,255,255,0.8);
+}
+
+@media (max-width: 768px) {
+    .section-2-header-img {
+        transform: scale(0.9);
+    }
+    
+    .section-text {
+        font-size: 150%;
+    }
+    
+    .quote-text {
+        font-size: 100%;
+    }
+    
+    .section1-quote {
+        bottom: 30%;
+    }
+    
+    .section {
+        padding-top: 4rem !important;
+    }
 }
 
 .section-2-container-grid {
@@ -609,36 +619,139 @@ html {
     grid-template-columns: 1fr 1fr;
     grid-template-areas: "left right";
     width: 100%;
-    height: 70%;
+    max-width: 90vw;
+    height: auto;
+    margin: 3rem auto 0;
+    gap: 3rem;
+    position: relative;
+    z-index: 30;
+    align-items: flex-start;
+    justify-items: center;
+    overflow: hidden;
+    padding: 2rem 0 8rem 0;
+}
+
+@media (max-width: 768px) {
+    .section-2-container-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "left"
+            "right";
+        gap: 3rem;
+        height: auto;
+        padding: 1rem;
+        width: 95vw;
+        max-width: 95vw;
+        margin: 1rem auto 0;
+    }
+    
+    .section {
+        padding-top: 2rem !important;
+        overflow-x: hidden;
+    }
+    
+    .section-2-header {
+        margin-bottom: 0.5rem;
+    }
 }
 
 .section-2-container-left-grid {
     grid-area: left;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 35;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 :deep(.svg-container){
-    transform: scale(0.85);
+    transform: scale(0.75);
+    position: relative;
+    z-index: 40;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    :deep(.svg-container){
+        transform: scale(0.65);
+        margin-top: 0;
+    }
 }
 
 .section-2-container-right-grid {
     grid-area: right;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 35;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 :deep(.budget-container){
-    transform: scale(0.85);
+    transform: scale(0.75);
+    position: relative;
+    z-index: 40;
+    margin: 0 auto;
+    max-width: 100%;
+    margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+    :deep(.budget-container){
+        transform: scale(0.7);
+        margin-top: 2rem;
+    }
+}
+
+/* Fix for component overlap */
+@media (min-width: 769px) and (max-width: 1200px) {
+    .section-2-container-grid {
+        gap: 1rem;
+    }
+    
+    :deep(.svg-container) {
+        transform: scale(0.65);
+    }
+    
+    :deep(.budget-container) {
+        transform: scale(0.65);
+    }
+}
+
+@media (min-width: 1201px) and (max-width: 1400px) {
+    .section-2-container-grid {
+        gap: 2rem;
+    }
+    
+    :deep(.svg-container) {
+        transform: scale(0.7);
+    }
+}
+
+@media (min-width: 1401px) {
+    .section-2-container-grid {
+        gap: 4rem;
+        max-width: 80vw;
+    }
 }
 
 .section-3 {
-    position: relative; /* Establishes a positioning context */
-    z-index: 10; /* Places this element above others */
-    height: 100vh; /* Full height of the viewport */
-    display: flex; /* Enables flexbox layout */
-    flex-direction: column; /* Stacks children vertically */
-    justify-content: center; /* Centers items vertically */
-    align-items: center; /* Centers items horizontally */
-    text-align: center; /* Centers text within the element */
-    }
-
+    position: relative;
+    z-index: 15;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-top: 6rem;
+}
 
 .section-4 {
     width: 80%;
@@ -647,6 +760,62 @@ html {
     position: relative;
     margin: auto;
 }
+
+@media (max-width: 768px) {
+    .section-4 {
+        width: 95%;
+        height: auto;
+        padding: 1rem;
+    }
+}
+
+/* Section 3 Mobile Styles */
+.section-3-title {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .section-3-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+.section-3-cards-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.section-3-cards-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+    .section-3-cards-container {
+        width: 100vw;
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+    
+    .section-3-cards-wrapper {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0 1rem;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 0 1rem;
+    }
+    
+    .section-3-cards-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+}
 </style>
+
 
 

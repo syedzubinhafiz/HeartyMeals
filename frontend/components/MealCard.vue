@@ -1,23 +1,23 @@
 <template>
   <div class="meal-card-wrapper">
-    <div class="p-6 rounded-lg w-72 flex-shrink-0 flex flex-col items-center justify-between transition-all duration-300"
+    <div class="meal-card p-6 rounded-lg w-72 flex-shrink-0 flex flex-col items-center justify-between transition-all duration-300"
       @click="handleCardClick">
       <div class="relative w-full">
         <!-- Image, positioned absolutely to not affect layout -->
-        <img :src="cardInfo.image" alt="Meal Image" class="absolute w-20 h-20 object-cover rounded-full mb-4 z-10 left-1/2 transform -translate-x-1/2 -top-1" />
+        <img :src="cardInfo.image" alt="Meal Image" class="meal-card-image" />
         
         <!-- Card content -->
         <div 
-          class="bg-custom-bg-lightgreen p-6 rounded-lg w-full flex flex-col items-center justify-center text-center shadow-md mt-10 pt-14"
-          :style="cardStyle"
-          @mouseover="grow"
-          @mouseleave="shrink"
+          class="card-content"
+          :class="{ 'is-hovered': isHovered }"
+          @mouseover="isHovered = true"
+          @mouseleave="isHovered = false"
         >
           <!-- Title, shown only when not hovered -->
-          <h2 v-if="!isHovered" class="text-white text-lg font-semibold mb-4 text-center">{{ cardInfo.title }}</h2>
+          <h2 class="card-title">{{ cardInfo.title }}</h2>
 
           <!-- Description, shifted lower when hovered -->
-          <p v-if="isHovered" class="text-white" :class="hoveredDescriptionClass">{{ cardInfo.description }}</p>
+          <p class="card-description">{{ cardInfo.description }}</p>
         </div>
       </div>
     </div>
@@ -36,29 +36,9 @@ export default {
   data() {
     return {
       isHovered: false, // Track hover state
-      cardStyle: {
-        height: '15rem',
-        transition: 'all 0.3s ease',
-        overflow: 'hidden',
-        backgroundColor : '#427573', // Initial background color
-        transform: 'translateY(-20px)' // Move the card up slightly
-      },
-      hoveredDescriptionClass: '', // Class to handle the description shifting down
     };
   },
   methods: {
-    grow() {
-      this.cardStyle.height = '22rem'; // Increase height on hover
-      this.cardStyle.backgroundColor = '#366767'; // Change background color
-      this.isHovered = true; // Show description on hover, hide title
-      this.hoveredDescriptionClass = 'mt-8'; // Add margin-top to shift the description lower
-    },
-    shrink() {
-      this.cardStyle.height = '15rem'; // Reset height
-      this.cardStyle.backgroundColor = '#427573'; // Reset background color
-      this.isHovered = false; // Show title, hide description when not hovered
-      this.hoveredDescriptionClass = ''; // Remove the margin when not hovered
-    },
     async handleCardClick() {
       localStorage.setItem('educationalContentId', this.cardInfo.id);
       await navigateTo('/educational-content');
@@ -68,27 +48,112 @@ export default {
 </script>
 
 <style scoped>
-/* Adjust the image to sit above the card content */
-.meal-card-wrapper img {
-  z-index: 10;
-  position: absolute;
-  top: -5%; /* Adjust this if needed */
-  left: 50%;
-  transform: translateX(-50%);
+.meal-card-wrapper {
+  overflow: visible; /* Allow image to pop out */
+  scroll-snap-align: center;
+  padding-top: 2.5rem; /* Space for the image */
+  height: 22rem; /* Give wrapper a fixed height */
 }
 
-/* Ensure the card wrapper doesn't shrink */
-.meal-card-wrapper {
+.meal-card {
+  height: 100%;
+}
+
+.meal-card-image {
+  position: absolute;
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  border-radius: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -2.5rem; /* Position image half-way out */
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.card-content {
+  background-color: #427573;
+  padding: 3.5rem 1.5rem 1.5rem; /* More padding at the top for image */
+  border-radius: 0.5rem;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
   overflow: hidden;
 }
 
-/* Adjust the card position to be slightly elevated */
-.meal-card-wrapper .p-6 {
-  transform: translateY(0%); /* Adjust this value to control how much the card is moved up */
+.card-content.is-hovered {
+  background-color: #366767;
 }
 
-/* Additional styling for the description shift */
-.mt-8 {
-  margin-top: 0%; /* Increase this value to shift the description lower */
+.card-title,
+.card-description {
+  color: white;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.card-description {
+  font-size: 0.875rem;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-content.is-hovered .card-title {
+  transform: translateY(-200%); /* Move title out of view */
+  opacity: 0;
+}
+
+.card-content.is-hovered .card-description {
+  top: 0; /* Slide description into view */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .meal-card-wrapper {
+    height: 18rem;
+    padding-top: 2rem;
+  }
+  .meal-card {
+    width: 16rem; /* Smaller width on mobile: 256px */
+    min-width: 16rem;
+  }
+  
+  .meal-card-image {
+    width: 4rem;
+    height: 4rem;
+    top: -2rem;
+  }
+
+  .card-content {
+    padding-top: 2.5rem;
+  }
+}
+
+/* Medium screen sizes */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .meal-card {
+    width: 18rem;
+    min-width: 18rem;
+  }
 }
 </style>
