@@ -75,10 +75,12 @@ export default {
                 resetValues();
             } else {
                 nextTick(() => {
-                    selectedMealTime.value = props.mealInfo.type;
-                    portion.value = props.mealInfo.portion;
-                    originalMealTime.value = props.mealInfo.type;
-                    originalPortion.value = props.mealInfo.portion;
+                    if (props.mealInfo && typeof props.mealInfo === 'object') {
+                        selectedMealTime.value = props.mealInfo.type;
+                        portion.value = props.mealInfo.portion;
+                        originalMealTime.value = props.mealInfo.type;
+                        originalPortion.value = props.mealInfo.portion;
+                    }
                 });
             }
 

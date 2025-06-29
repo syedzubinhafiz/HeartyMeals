@@ -42,35 +42,35 @@
                 <div class="nutrient-label">
                   <label>Calories: </label>
                   <div>
-                    <span>{{parseFloat((meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(1))}}</span>
                     <label> cal</label>
                   </div>
                 </div>
                 <div class="nutrient-label">
                   <label>Carbs: </label>
                   <div>
-                    <span>{{parseFloat((meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
-                    <label> cal</label>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(1))}}</span>
+                    <label> g</label>
                   </div>
                 </div>
                 <div class="nutrient-label">
                   <label>Protein: </label>
                   <div>
-                    <span>{{parseFloat((meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(1))}}</span>
                     <label> g</label>
                   </div>
                 </div>
                 <div class="nutrient-label">
                   <label>Fats: </label>
                   <div>
-                    <span>{{parseFloat((meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(1))}}</span>
                     <label> g</label>
                   </div>
                 </div>
                 <div class="nutrient-label">
                   <label>Sodium: </label>
                   <div>
-                    <span>{{parseFloat((meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                    <span>{{parseFloat((meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(1))}}</span>
                     <label> mg</label>
                   </div>
                 </div>
@@ -149,17 +149,20 @@
 
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useNuxtApp, navigateTo } from "#app";
 import { useToast } from "vue-toast-notification";
 import leftBase from "@/assets/img/meal_logging/summary_left_base.svg";
 import rightBase from "@/assets/img/meal_logging/summary_right_base.svg";
 import NutritionBar from "~/components/Nutrient/NutritionBar.vue";
+import { useMealLoggingStore } from '@/stores/mealLogging.js';
+import usePersistMeals from '@/composables/persistMeals.js';
 
 const {$axios} = useNuxtApp();
 
 const isLoading = ref(false);
-const selectedMeals = ref([]);
+const mealStore = useMealLoggingStore();
+const selectedMeals = computed(() => mealStore.unsavedMealList); // reactive computed property
 const mealInfo = ref({});
 const userDailyBudget = ref({
   calories: 0,
@@ -251,6 +254,8 @@ const nutrients =  [
   const tooltips = ref([]);
   const activeTooltip = ref(null);
 
+const { saveUnsavedMeals } = usePersistMeals();
+
 definePageMeta({
 	layout: "emptylayout",
   middleware: ["auth"],
@@ -264,16 +269,21 @@ definePageMeta({
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
 
-  if (localStorage.getItem('selectedMeals')){
-    selectedMeals.value = JSON.parse(localStorage.getItem('selectedMeals'))
-    const nutrientList =  JSON.parse(localStorage.getItem('userNutrientsInfo')) 
-    mealInfo.value = JSON.parse(localStorage.getItem('mealInfo'))
+  console.log('[summary] onMounted - selectedMeals.value:', selectedMeals.value);
+  console.log('[summary] onMounted - selectedMeals.value.length:', selectedMeals.value?.length);
+
+  if (selectedMeals.value && selectedMeals.value.length > 0){
+    // Data already hydrated from Pinia cookie
+    // Ensure proper object creation from localStorage to avoid Pinia hydration issues
+    const parsedNutrientList = JSON.parse(localStorage.getItem('userNutrientsInfo') || '[]');
+    const nutrientList = parsedNutrientList.map(item => ({ ...item }));
+    const parsedMealInfo = JSON.parse(localStorage.getItem('mealInfo') || '{}');
+    mealInfo.value = { ...parsedMealInfo }
     userDailyBudget.value = nutrientList[0];
     userRemainingNutrients.value = nutrientList[1];
     userAfterMealNutrients.value = nutrientList[2];
 
     localStorage.removeItem('userNutrientsInfo')
-    localStorage.removeItem('selectedMeals')
   } else {
     useToast().error('No meals selected, redirecting to meal logging page')
           setTimeout(async () => {
@@ -343,10 +353,6 @@ const back = async () => {
   console.log('selectedMeals:', selectedMeals.value);
   console.log('mealInfo:', mealInfo.value);
   
-  localStorage.setItem('selectedMeals', JSON.stringify(selectedMeals.value))
-  // Restore mealInfo to localStorage for add-meals page
-  localStorage.setItem('mealInfo', JSON.stringify(mealInfo.value))
-  
   // Prevent "Leave site?" prompt
   window.removeEventListener('beforeunload', handleBeforeUnload);
   
@@ -370,19 +376,26 @@ function updateChanges(id=null, portion=null) {
   if (portion === "") {
     return ;
   }else if (portion != null){ 
-    const meal = selectedMeals.value.find((meal) => meal.id === id);
+    const meal = mealStore.unsavedMealList.value.find((meal) => meal.id === id);
     meal.portion = portion;
   }
     
-  userAfterMealNutrients.value = JSON.parse(JSON.stringify(userRemainingNutrients.value));
+  // Clone object with proper prototype chain to avoid Pinia hydration issues
+  userAfterMealNutrients.value = { ...userRemainingNutrients.value };
 
-  selectedMeals.value.forEach(existing_meal => {  
-    userAfterMealNutrients.value.calories -= existing_meal.recipe.nutrition_info.calories * (existing_meal.portion/existing_meal.recipe.serving_size);
-    userAfterMealNutrients.value.carbs -= existing_meal.recipe.nutrition_info.totalCarbohydrate * (existing_meal.portion/existing_meal.recipe.serving_size);
-    userAfterMealNutrients.value.protein -= existing_meal.recipe.nutrition_info.protein * (existing_meal.portion/existing_meal.recipe.serving_size);
-    userAfterMealNutrients.value.fat -= existing_meal.recipe.nutrition_info.fat * (existing_meal.portion/existing_meal.recipe.serving_size);
-    userAfterMealNutrients.value.sodium -= existing_meal.recipe.nutrition_info.sodium * (existing_meal.portion/existing_meal.recipe.serving_size);
-    userAfterMealNutrients.value.cholesterol -= existing_meal.recipe.nutrition_info.cholesterol * (existing_meal.portion/existing_meal.recipe.serving_size);
+  mealStore.unsavedMealList.value.forEach(existing_meal => {
+    // Safely access nutrition_info with null checks to avoid Pinia hydration issues
+    const nutritionInfo = existing_meal.recipe?.nutrition_info || {};
+    const portion = existing_meal.portion || 1;
+    const servingSize = existing_meal.recipe?.serving_size || 1;
+    const multiplier = portion / servingSize;
+    
+    userAfterMealNutrients.value.calories -= (nutritionInfo.calories || 0) * multiplier;
+    userAfterMealNutrients.value.carbs -= (nutritionInfo.totalCarbohydrate || 0) * multiplier;
+    userAfterMealNutrients.value.protein -= (nutritionInfo.protein || 0) * multiplier;
+    userAfterMealNutrients.value.fat -= (nutritionInfo.fat || 0) * multiplier;
+    userAfterMealNutrients.value.sodium -= (nutritionInfo.sodium || 0) * multiplier;
+    userAfterMealNutrients.value.cholesterol -= (nutritionInfo.cholesterol || 0) * multiplier;
   });
 
   // fix all value to 2 decimal places
@@ -404,7 +417,7 @@ function updateChanges(id=null, portion=null) {
 
 function removeSelectedMeal(id) {
   console.log("trigger remove meal in page");
-  selectedMeals.value = selectedMeals.value.filter((meal) => meal.id !== id);
+  mealStore.unsavedMealList.value = mealStore.unsavedMealList.value.filter((m) => m.id !== id);
   updateChanges();
 }
 
@@ -422,63 +435,24 @@ const today_date_time = () => {
             return formattedDate;
 };
 
-async function logMeal(){
-  console.log('Done button clicked - logMeal function called');
-  console.log('mealInfo:', mealInfo.value);
-  console.log('selectedMeals:', selectedMeals.value);
-  
+async function logMeal() {
+  console.log('Done button clicked - logMeal');
+  console.log('[summary] mealInfo.value:', mealInfo.value);
+  console.log('[summary] selectedMeals.value:', selectedMeals.value);
   isLoading.value = true;
-    // store data to db 
-  const token = localStorage.getItem("accessToken");  
-  console.log('Token exists:', !!token);
-  const meal_info = [];
+  const success = await saveUnsavedMeals(mealInfo.value);
+  isLoading.value = false;
+  console.log('[summary] saveUnsavedMeals success:', success);
 
-  selectedMeals.value.forEach((meal) => {
-    meal_info.push({
-      recipeId: meal.id,
-      portion: meal.portion,
-    });
-  });
-  ;                   
-
-  try{
-    const response = await $axios.post('/meal-log-summary/add', {
-        mealDate: mealInfo.value.logDate,
-        userLocalDateTime:today_date_time(),
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        recipeIdPortions: meal_info,
-        mealType: mealInfo.value.mealType,
-        isMealPlanning: mealInfo.value.logType === "planning"
-      },{
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-    })
-
-    console.log(response);
-    const successStatuses = [200, 201, 204];
-    if (successStatuses.includes(response.status)){
-      useToast().success("All meals have been logged!")
-      // Prevent "Leave site?" prompt
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      // navigate
-      if (mealInfo.value.logType === "planning"){
-        window.location.href = '/meal-planning';
-      } else {
-        window.location.href = '/meal-logging';
-      }
-    }
-  } catch(e){
-    console.error("Error logging meal", e);
-    // Handle error response
-    if (e.response && e.response.data && e.response.data.message) {
-      useToast().error(e.response.data.message)
+  if (success) {
+    // Prevent "Leave site?" prompt
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    // Navigate according to flow
+    if (mealInfo.value.logType === 'planning') {
+      window.location.href = '/meal-planning';
     } else {
-      useToast().error("Failed to log meals. Please try again.")
+      window.location.href = '/meal-logging';
     }
-  } finally {
-    isLoading.value = false;
   }
 }
 

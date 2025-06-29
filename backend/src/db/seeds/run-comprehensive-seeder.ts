@@ -1,3 +1,7 @@
+// Load environment variables first
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { dataSourceOptions } from '../data-source';

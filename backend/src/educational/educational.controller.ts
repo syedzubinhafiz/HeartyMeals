@@ -68,7 +68,8 @@ export class EducationController {
             search, 
             pagination,
             educationalContentId
-        )
+        );
+
         // Return the educational content list or educational content details based on the pagination
         if (page_number != 0 && page_size != 0){
             return {

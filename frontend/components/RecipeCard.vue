@@ -106,11 +106,12 @@ const props = defineProps({
   border-radius: 15px;
   width: 100%;
   max-width: 571px;
+  min-width: 280px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 15px;
   box-sizing: border-box;
-  position:relative;
-
+  position: relative;
+  overflow: hidden;
 }
 
 .top-section {
@@ -127,6 +128,7 @@ const props = defineProps({
 }
 
 .img {
+  width: 100%;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
@@ -135,6 +137,8 @@ const props = defineProps({
 .content {
   flex: 1;
   margin-left: 20px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .meal-name {
@@ -142,9 +146,13 @@ const props = defineProps({
   font-weight: 600;
   margin: 0;
   color: #000000;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  max-height: 2.6em;
 }
 
 .meal-description {

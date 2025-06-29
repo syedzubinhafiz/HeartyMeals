@@ -3,10 +3,11 @@ import { $fetch } from 'ofetch';
 export const useApi = async (request, method = "GET", body = null) => {
   // Get access token if it exists
   const token = process.client ? localStorage.getItem("accessToken") : null;
+  const config = useRuntimeConfig();
 
   try {
     const result = await $fetch(request, {
-      baseURL: "http://localhost:3001",
+      baseURL: config.public.apiBaseUrl,
       method,
       body: method !== "GET" ? body : undefined,
       headers: token

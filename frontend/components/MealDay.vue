@@ -46,6 +46,7 @@
           class="meal-card"
           @removeMeal="() => removeMeal('breakfastList', index)"
           @editMeal="() => openEditMealPopup(card)"
+          @mealConsumed="handleMealConsumed"
         />
       </Mealplanlist>
   
@@ -64,6 +65,7 @@
           class="meal-card"
           @removeMeal="() => removeMeal('lunchList', index)"
           @editMeal="() => openEditMealPopup(card)"
+          @mealConsumed="handleMealConsumed"
         />
       </Mealplanlist>
   
@@ -82,6 +84,7 @@
           class="meal-card"
           @removeMeal="() => removeMeal('dinnerList', index)"
           @editMeal="() => openEditMealPopup(card)"
+          @mealConsumed="handleMealConsumed"
         />
       </Mealplanlist>
   
@@ -100,6 +103,7 @@
           class="meal-card"
           @removeMeal="() => removeMeal('otherList', index)"
           @editMeal="() => openEditMealPopup(card)"
+          @mealConsumed="handleMealConsumed"
         />
       </Mealplanlist>
   
@@ -175,6 +179,9 @@ const nutritionInfo = ref({
 const editMealOverlayVisible = ref(false);
 const editMealInfo = ref(null);
 
+// Define emits
+const emit = defineEmits(['mealConsumed']);
+
 const removeMeal = (mealType, index) => {
   const list = props[mealType];
   if (Array.isArray(list) && list[index] !== undefined) {
@@ -240,6 +247,12 @@ const handleEditMeal = async (newValue) => {
   }
 
   editMealOverlayVisible.value = false;
+};
+
+const handleMealConsumed = (mealId) => {
+  console.log('Meal consumed in MealDay:', mealId);
+  // Emit the event up to the meal planning page
+  emit('mealConsumed', mealId);
 };
 
 // Helper to safely get nutrient value
@@ -391,18 +404,21 @@ watch(
   overflow-y: auto;  /* Enable vertical scrolling */
 }
 
-/* OPTIONAL: Custom scrollbar styling */
+/* Hidden Scrollbar for Clean Look */
+.meal-items-container {
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  position: relative;
+}
+
 .meal-items-container::-webkit-scrollbar {
-  width: 8px;
+  display: none; /* Chrome/Safari */
 }
 
-.meal-items-container::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
-}
-
-.meal-items-container::-webkit-scrollbar-track {
-  background-color: #e0e0e0;
+/* Clean layout without scroll indicators */
+.meal-day {
+  position: relative;
 }
 
 /* Mobile responsiveness */

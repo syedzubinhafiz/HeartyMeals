@@ -155,7 +155,11 @@ export class StorageService {
     
             write_stream.on('finish', async () => {
                 try {
-                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, file_path,transactionalEntityManager);
+                    // Convert local file path to HTTP URL
+                    const relative_path = file_path.replace(join(__dirname, '../../uploaded/'), '');
+                    const http_url = `${process.env.BACKEND_URL || 'http://localhost:8000'}/uploads/${relative_path}`;
+                    
+                    const storage_object = await this.saveToDatabase(file_path, file.fileType, buffer.length, http_url, transactionalEntityManager);
                     resolve(storage_object.storage_id);
                 } catch (e) {
                     reject(e);

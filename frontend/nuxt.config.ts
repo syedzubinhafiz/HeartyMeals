@@ -1,11 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  sourcemap: {
+    server: false,
+    client: false,
+  },
   vite: {
-    build: {
-      sourcemap: false
-    }
+    server: {
+      watch: {
+        usePolling: true,
+      },
+    },
   },
   css: ['~/assets/css/main.css', 'vue-toast-notification/dist/theme-sugar.css'],
   postcss: {
@@ -16,10 +24,12 @@ export default defineNuxtConfig({
   },
   modules: [
     "@nuxt/image",
+    "@pinia/nuxt",
   ],
   runtimeConfig: {
     public: {
-      baseURL: "http://localhost:8000",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+      baseURL: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
       webURL: "",
       isDebug: true,
       tinyMCEKey: "5xd0rqlwc0evl0pm1xyxcy0ztd40yr061ss8azv8um8694bu",

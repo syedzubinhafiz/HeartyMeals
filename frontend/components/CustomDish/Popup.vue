@@ -236,7 +236,7 @@
 
 </template>
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import SingleSelectionDropdown from '~/components/Dropdown/SingleSelectionDropdown.vue';
 import AddComponentPopup from '~/components/AddComponentPopup.vue';
 import { useNuxtApp } from '#app';
@@ -258,10 +258,6 @@ const emits = defineEmits(["close"]);
 const close = () => {
   emits('close');
 };
-
-definePageMeta({
-  layout: "emptylayout",
-});
 
 const { $axios } = useNuxtApp();
 
@@ -299,49 +295,51 @@ const fileDetails = ref({
 
 const tinymceComponent = ref(null);
 
-// Fetch data from the backend
-try {
-  const token = localStorage.getItem('accessToken');
-  const measuring_unit_response = await $axios.get('/component/measuring-units', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
+// Fetch data from the backend - Move inside onMounted to avoid SSR issues
+onMounted(async () => {
+  try {
+    const token = localStorage.getItem('accessToken');
+    const measuring_unit_response = await $axios.get('/component/measuring-units', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
 
-  // Transform the response data
-  const measuringUnitDropdownOptions = Object.entries(measuring_unit_response.data).map(([key, value]) => ({
-    id: value,
-    display: value
-  }));
+    // Transform the response data
+    const measuringUnitDropdownOptions = Object.entries(measuring_unit_response.data).map(([key, value]) => ({
+      id: value,
+      display: value
+    }));
 
-  // Save the transformed data
-  measuring_unit_dropdown_option.value = measuringUnitDropdownOptions;
+    // Save the transformed data
+    measuring_unit_dropdown_option.value = measuringUnitDropdownOptions;
 
-  const cuisine_response = await $axios.get('/cuisine', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
-  cuisine_response.data.forEach(cuisine => {
-    cuisine_dropdown_option.value.push({ id: cuisine.id, display: cuisine.name });
-  });
+    const cuisine_response = await $axios.get('/cuisine', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    cuisine_response.data.forEach(cuisine => {
+      cuisine_dropdown_option.value.push({ id: cuisine.id, display: cuisine.name });
+    });
 
-  const dietary_response = await $axios.get('/dietary', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    }
-  });
+    const dietary_response = await $axios.get('/dietary', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
 
-  dietary_response.data.forEach(dietary => {
-    dietary_dropdown_option.value.push({ id: dietary.id, display: dietary.name });
-  });
+    dietary_response.data.forEach(dietary => {
+      dietary_dropdown_option.value.push({ id: dietary.id, display: dietary.name });
+    });
 
-} catch (error) {
-  console.error('Error fetching data:', error);
-}
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
 
 // for updating selected visibility, cuisine and dietary
 const updateSelectedVisibility = (id) => {
@@ -608,7 +606,6 @@ const gatherRecipeData = async () => {
   };
 
   try {
-
     const token = localStorage.getItem('accessToken');
     const response = await $axios.post('/recipe/add', recipeData, {
       headers: {
@@ -616,14 +613,26 @@ const gatherRecipeData = async () => {
         'Content-Type': 'application/json',
       }
     });
-    if (response.data.status === 200) {
+    // Success – backend returns { statusCode: 200, message: '...' }
+    if (response.status === 200 || response.data?.statusCode === 200 || response.data?.status === 200) {
       useToast().success("Recipe added successfully!");
     }
   } catch (error) {
-    if (error.response && error.response.data.status === 400) {
-      useToast().error("Failed to add recipe");
+    // Log full response for debugging
+    console.error('Recipe add error:', error.response?.data || error);
+
+    if (error.response) {
+      // Prefer HTTP status first
+      const statusCode = error.response.status ?? error.response.data?.statusCode;
+      const backendMessage = error.response.data?.message ?? 'Failed to add recipe';
+
+      if (statusCode === 400) {
+        useToast().error(backendMessage);
+      } else {
+        useToast().error(`Error ${statusCode}: ${backendMessage}`);
+      }
     } else {
-        console.log(error)
+      // Network / unknown error
       useToast().error("An unexpected error occurred");
     }
   } finally {

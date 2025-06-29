@@ -20,7 +20,9 @@
     "vue": "^3.4.15",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.2.5",
-    "vue-toast-notification": "^3.1.2"
+    "vue-toast-notification": "^3.1.2",
+    "@pinia/nuxt": "^0.6.1",
+    "pinia": "^2.1.7"
   },
   "devDependencies": {
     "@nuxt/image": "^1.7.0",

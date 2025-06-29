@@ -90,8 +90,10 @@ export class EducationalService {
             const [result, no_of_results] = await query.orderBy("educational_content.created_at", "DESC").getManyAndCount();
 
             for (const edu_content of result){
-                // set the thumbnail link
-                edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+                // set the thumbnail link - only if it's not already a direct URL
+                if (edu_content.storage_links['thumbnail'] && !edu_content.storage_links['thumbnail'].startsWith('http')) {
+                    edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+                }
             }
 
             return [result, no_of_results]
@@ -102,8 +104,10 @@ export class EducationalService {
                 id: educationalContentId
             });
 
-            // set the thumbnail link
-            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            // set the thumbnail link - only if it's not already a direct URL
+            if (edu_content.storage_links['thumbnail'] && !edu_content.storage_links['thumbnail'].startsWith('http')) {
+                edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            }
             
             // post process to get all the links into the content array
             // get all the links first, loop all keys in the storage_ids to form an array
@@ -145,8 +149,10 @@ export class EducationalService {
         const result = await query.getMany();
 
         for (const edu_content of result){
-            // set the thumbnail link
-            edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            // set the thumbnail link - only if it's not already a direct URL
+            if (edu_content.storage_links['thumbnail'] && !edu_content.storage_links['thumbnail'].startsWith('http')) {
+                edu_content.storage_links['thumbnail'] = await this.storageService.getLink(edu_content.storage_links['thumbnail']);
+            }
         }
 
         return result;

@@ -50,6 +50,7 @@
                   :mealLogTime="currentDate"                  
                   @consume="consumeMeal"
                   @edit="openEditMealOverlay"
+                  @remove="openRemoveMealOverlay"
                   :visible="overlayVisibility[dish.id] || false"
                 />
               </div>
@@ -163,14 +164,14 @@
    
     <RemoveMealOverlay
       :visible="removeMealOverlayVisible"
-      :mealInfo="removeMealInfo"
+      :mealInfo="removeMealInfo || {}"
       @close="removeMealOverlayVisible = $event"
       @removeLogMeal="removeLogMeal"
     />
 
     <EditMealOverlay
       :visible="editMealOverlayVisible"
-      :mealInfo="editMealInfo"
+      :mealInfo="editMealInfo || {}"
       @update:visible="editMealOverlayVisible = $event"
       @editLogMeal="editLogMeal"
     />
@@ -183,7 +184,7 @@
 
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useNuxtApp, useRuntimeConfig } from '#app';
 import leftBase from '@/assets/img/meal_logging/summary_left_base.svg';
 import rightBase from '@/assets/img/meal_logging/summary_right_base.svg';
@@ -191,6 +192,7 @@ import { isSameDay } from 'date-fns';
 import RemoveMealOverlay from '~/components/Overlay/RemoveMealOverlay.vue';
 import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
+import { useUserBudget } from '~/composables/userBudget.js';
 
 definePageMeta({
   layout: "emptylayout",
@@ -224,32 +226,7 @@ const removeMealInfo= ref(null);
 const editMealOverlayVisible = ref(false);
 const editMealInfo = ref(null);
 
-const nutrients = ref([
-  {
-    calories: 0,
-    carbs: 0,
-    protein: 0,
-    fat: 0,
-    sodium: 0,
-    cholesterol: 0
-  },
-  {
-    calories: 0,
-    carbs: 0,
-    protein: 0,
-    fat: 0,
-    sodium: 0,
-    cholesterol: 0
-  },
-  {
-    calories: 0,
-    carbs: 0,
-    protein: 0,
-    fat: 0,
-    sodium: 0,
-    cholesterol: 0
-  }
-]);
+const { nutrients, refresh: getUserBudget } = useUserBudget();
 
 function toggleOverlayVisibility(dishId) {
  
@@ -301,7 +278,7 @@ async function goToPreviousDay() {
   } else {
     currentDate.value = newDate;
     await getMeals();
-    await getUserBudget();
+    await getUserBudget(currentDate.value);
   }
 }
 
@@ -319,7 +296,7 @@ async function goToNextDay() {
   } else {
     currentDate.value = newDate;
     await getMeals();
-    await getUserBudget();
+    await getUserBudget(currentDate.value);
   }
 }
 
@@ -367,24 +344,50 @@ async function getMeals() {
 
     //TODO: set budget here
     
-    const meals = response.data[formatDate(currentDate.value)].meals;
-    loggedBreakfast.value =  meals.Breakfast;
-    loggedLunch.value =  meals.Lunch;
-    loggedDinner.value =  meals.Dinner;
-    loggedOther.value =  meals.Other;
+    console.log('API Response:', response.data);
+    console.log('Looking for date:', formatDate(currentDate.value));
+    
+    const dateData = response.data[formatDate(currentDate.value)];
+    if (!dateData) {
+      console.log('No data found for date:', formatDate(currentDate.value));
+      console.log('Available dates:', Object.keys(response.data));
+      // Initialize empty meals if no data for this date
+      loggedBreakfast.value = [];
+      loggedLunch.value = [];
+      loggedDinner.value = [];
+      loggedOther.value = [];
+      overlayVisibility.value = {};
+      return;
+    }
+    
+    const meals = dateData.meals;
+    if (!meals) {
+      console.log('No meals found in date data');
+      loggedBreakfast.value = [];
+      loggedLunch.value = [];
+      loggedDinner.value = [];
+      loggedOther.value = [];
+      overlayVisibility.value = {};
+      return;
+    }
+
+    loggedBreakfast.value =  meals.Breakfast || [];
+    loggedLunch.value =  meals.Lunch || [];
+    loggedDinner.value =  meals.Dinner || [];
+    loggedOther.value =  meals.Other || [];
 
     // set all the overlay visibility to false
     const overlayVisibilityObj = {};
-    meals.Breakfast.forEach((meal) => {
+    (meals.Breakfast || []).forEach((meal) => {
       overlayVisibilityObj[String(meal.id)] = false;
     });
-    meals.Lunch.forEach((meal) => {
+    (meals.Lunch || []).forEach((meal) => {
       overlayVisibilityObj[String(meal.id)] = false;
     });
-    meals.Dinner.forEach((meal) => {
+    (meals.Dinner || []).forEach((meal) => {
       overlayVisibilityObj[String(meal.id)] = false;
     });
-    meals.Other.forEach((meal) => {
+    (meals.Other || []).forEach((meal) => {
       overlayVisibilityObj[String(meal.id)] = false;
     });
     overlayVisibility.value = overlayVisibilityObj;
@@ -414,7 +417,9 @@ async function consumeMeal(id){
         'Content-Type': 'application/json',
       },
     });
+    // Refresh both meal data and budget data to reflect consumed status
     await getMeals();
+    await getUserBudget(currentDate.value);
   } catch (error) {
     console.log(error);
   }
@@ -460,7 +465,7 @@ async function removeLogMeal(mealInfo){
     if (response.data.status === 200){
       useToast().success('Meal removed successfully');
       await getMeals();
-      await getUserBudget();
+      await getUserBudget(currentDate.value);
     } else {
       useToast().error(response.data.message);
     }
@@ -515,7 +520,7 @@ async function editLogMeal(newValue){
       if(response.data.status === 200){
         useToast().success('Meal updated successfully');
         await getMeals();
-        await getUserBudget();
+        await getUserBudget(currentDate.value);
 
       } else {
         useToast().error(response.data.message);
@@ -530,50 +535,58 @@ async function editLogMeal(newValue){
   }
 }
 
-const getUserBudget = async () => {
-    try {
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const token = localStorage.getItem('accessToken');
-        const response = await $axios.get(`/user/budget?startDate=${formatDate(currentDate.value)}&timeZone=${timeZone}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            }
-        });
-        if (response.status === 200) {
-            const userNutrition = response.data[formatDate(currentDate.value)];
-            for (let i = 0; i < 2; i++) {
-                if (i === 0) {
-                    nutrients.value[0].calories = userNutrition[i].calories;
-                    nutrients.value[0].carbs = userNutrition[i].carbs;
-                    nutrients.value[0].protein = userNutrition[i].protein;
-                    nutrients.value[0].fat = userNutrition[i].fat;
-                    nutrients.value[0].sodium = userNutrition[i].sodium;
-                    nutrients.value[0].cholesterol = userNutrition[i].cholesterol;
-                }
-                else {
-                    nutrients.value[2].calories = userNutrition[i].calories;
-                    nutrients.value[2].carbs = userNutrition[i].carbs;
-                    nutrients.value[2].protein = userNutrition[i].protein;
-                    nutrients.value[2].fat = userNutrition[i].fat;
-                    nutrients.value[2].sodium = userNutrition[i].sodium;
-                    nutrients.value[2].cholesterol = userNutrition[i].cholesterol;
-                }
-            }
-        }
-        else {
-            console.log(response);
-        }
-    }
-    catch (e) {
-        useToast().error("Failed to get user budget")
-    }
-  }
-
 onMounted(async () => {
   await getMeals();
-  await getUserBudget();
+  await getUserBudget(currentDate.value);
+  
+  // Add visibility change listener to refresh data when page becomes visible
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // Add focus listener to refresh data when window gains focus
+  window.addEventListener('focus', handleWindowFocus);
+  
+  // Listen for nutrition refresh events from other pages
+  window.addEventListener('storage', handleStorageChange);
 });
+
+onBeforeUnmount(() => {
+  // Clean up event listeners
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('focus', handleWindowFocus);
+  window.removeEventListener('storage', handleStorageChange);
+});
+
+const handleVisibilityChange = async () => {
+  if (!document.hidden) {
+    // Page became visible, refresh meal data
+    console.log('Page became visible, refreshing meal data...');
+    await getMeals();
+    await getUserBudget(currentDate.value);
+  }
+};
+
+const handleWindowFocus = async () => {
+  // Window gained focus, refresh meal data
+  console.log('Window gained focus, refreshing meal data...');
+  await getMeals();
+  await getUserBudget(currentDate.value);
+};
+
+// Storage event listener for cross-page nutrition refresh
+const handleStorageChange = async (event) => {
+  if (event.key === 'nutritionRefresh' && event.newValue) {
+    try {
+      const refreshEvent = JSON.parse(event.newValue);
+      if (refreshEvent.type === 'nutritionRefresh') {
+        console.log('Nutrition refresh triggered from another page:', refreshEvent.mealId);
+        await getMeals();
+        await getUserBudget(currentDate.value);
+      }
+    } catch (error) {
+      console.error('Error parsing nutrition refresh event:', error);
+    }
+  }
+};
 </script>
 
 

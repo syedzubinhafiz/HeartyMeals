@@ -5,13 +5,19 @@
             <img :src="icon" class="icon"/>
             <label class="label-grid-left">{{ label }}</label>
           </div>
-            <span :style="{ color: fontColor }" class="label-grid-right">{{ parseFloat((afterMealValue || 0).toFixed(2)) }}/{{ totalValue || 0 }}{{ unit }}</span>
+            <span :style="{ color: isOverBudget ? '#ef4444' : fontColor }" class="label-grid-right">{{ parseFloat((currentValue || 0).toFixed(2)) }}/{{ totalValue || 0 }}{{ unit }}</span>
         </div>
 
         <div class="progress-bar-container" :style="progressBarContainerStyle">
-            <div class="progress-bar max-nutrients" :style="{ width: maxPercentage + '%' , backgroundColor: maxColor}"></div>
-            <div class="progress-bar current-nutrients" :style="{ width: currentPercentage + '%' , backgroundColor: currentColor}"></div>
-            <div class="progress-bar after-meal-nutrients" :style="{ width: afterMealPercentage + '%' , backgroundColor: afterMealColor}"></div>
+            <div class="progress-bar max-nutrients" :style="{ width: maxPercentage + '%' , backgroundColor: maxColor}" :title="`Max: ${maxPercentage}%`"></div>
+            <div class="progress-bar current-nutrients" :style="{ 
+                width: currentPercentage + '%', 
+                backgroundColor: isOverBudget ? '#ef4444' : currentColor
+            }" :title="`Current: ${currentPercentage}%${isOverBudget ? ' (Over Budget!)' : ''}`"></div>
+            <div class="progress-bar after-meal-nutrients" :style="{ 
+                width: afterMealPercentage + '%', 
+                backgroundColor: isOverBudget ? '#dc2626' : afterMealColor
+            }" :title="`After: ${afterMealPercentage}%${isOverBudget ? ' (Over Budget!)' : ''}`"></div>
         </div>
     </div>
 </template>
@@ -38,18 +44,33 @@
   
   const maxPercentage = computed(() => {
     if (!props.totalValue) return 0;
-    return (props.totalValue / props.totalValue) * 100;
+    const max = (props.totalValue / props.totalValue) * 100;
+    console.log(`[NutritionBar] ${props.label} - maxPercentage: ${max}%, maxColor: ${props.maxColor}`);
+    return max;
   });
   
   const currentPercentage = computed(() => {
-    if (!props.totalValue || !props.currentValue) return 0;
-    return (props.currentValue / props.totalValue) * 100;
+    if (!props.totalValue) return 0;
+    const raw = (props.currentValue / props.totalValue) * 100;
+    // Cap at 100% to prevent overflow out of widget
+    const current = Math.min(raw, 100);
+    console.log(`[NutritionBar] ${props.label} - currentPercentage: ${current}% (capped from ${raw}%) (${props.currentValue}/${props.totalValue})`);
+    return current;
   });
   
   const afterMealPercentage = computed(() => {
-    if (!props.totalValue || !props.afterMealValue) return 0;
-    const value = (props.afterMealValue / props.totalValue) * 100;
-    return value < 0 ? 0 : value;
+    if (!props.totalValue) return 0;
+    const raw = (props.afterMealValue / props.totalValue) * 100;
+    const value = raw < 0 ? 0 : raw;
+    // Cap at 100% to prevent overflow out of widget
+    const afterMeal = Math.min(value, 100);
+    console.log(`[NutritionBar] ${props.label} - afterMealPercentage: ${afterMeal}% (capped from ${raw}%)`);
+    return afterMeal;
+  });
+  
+  // Determine if this nutrient is over budget for styling
+  const isOverBudget = computed(() => {
+    return props.currentValue > props.totalValue;
   });
 </script>
   
@@ -93,7 +114,7 @@
 
   .progress-bar-container {
     position: relative;
-    height: clamp(.8vh, 1vh, 1.5vh);
+    height: clamp(8px, 2vh, 20px);  /* Increased minimum height from .8vh to 8px */
     width: 100%;
     border-radius: 50px;
     background-color: #e0e0e0;

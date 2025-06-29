@@ -123,8 +123,9 @@ export class CommonService{
      * @returns list of dates in the format yyyy-MM-dd
      */
     listDatesWithTimezone(startDate: string, endDate: string, timeZone: string): string[] {
-        const start = fromZonedTime(startDate, timeZone);
-        const end = fromZonedTime(endDate, timeZone);
+        // Parse the dates as-is without timezone conversion
+        const start = new Date(startDate + 'T00:00:00');
+        const end = new Date(endDate + 'T00:00:00');
 
         const dates = eachDayOfInterval({ start, end }).map(date => {
             return formatInTimeZone(date, timeZone, 'yyyy-MM-dd')

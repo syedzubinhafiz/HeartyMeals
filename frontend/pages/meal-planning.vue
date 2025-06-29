@@ -39,6 +39,7 @@
           :isPast="day.isPast" 
           :isFuture="day.isFuture" 
           :mealOverbudget="day.mealOverbudget"
+          @mealConsumed="handleMealConsumed"
         />
       </div>
     </div>
@@ -49,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 
 // Initialize the starting date for the focused view (defaults to today)
 const startDate = ref(new Date());
@@ -172,7 +173,54 @@ function isToday(day) {
 onMounted(async () => {
   daysOfWeek.value = await generateFocusedMeals(startDate.value);
   useToast().info("note: please mark meals as consumed after eating them!");
+  
+  // Add visibility change listener to refresh data when page becomes visible
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // Add focus listener to refresh data when window gains focus
+  window.addEventListener('focus', handleWindowFocus);
 });
+
+onBeforeUnmount(() => {
+  // Clean up event listeners
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('focus', handleWindowFocus);
+});
+
+const handleVisibilityChange = async () => {
+  if (!document.hidden) {
+    // Page became visible, refresh meal data
+    console.log('Meal planning page became visible, refreshing meal data...');
+    daysOfWeek.value = await generateFocusedMeals(startDate.value);
+  }
+};
+
+const handleWindowFocus = async () => {
+  // Window gained focus, refresh meal data
+  console.log('Meal planning window gained focus, refreshing meal data...');
+  daysOfWeek.value = await generateFocusedMeals(startDate.value);
+};
+
+const handleMealConsumed = async (mealId) => {
+  console.log('Meal consumed, refreshing meal planning data:', mealId);
+  
+  // Refresh the meal planning data
+  daysOfWeek.value = await generateFocusedMeals(startDate.value);
+  
+  // Trigger a global nutrition refresh for other pages
+  // Use localStorage to trigger storage event on other tabs/pages
+  const nutritionRefreshEvent = {
+    type: 'nutritionRefresh',
+    timestamp: Date.now(),
+    mealId: mealId
+  };
+  localStorage.setItem('nutritionRefresh', JSON.stringify(nutritionRefreshEvent));
+  
+  // Remove the item immediately to allow future triggers
+  setTimeout(() => {
+    localStorage.removeItem('nutritionRefresh');
+  }, 100);
+};
 </script>
 
 <style scoped>
@@ -203,7 +251,11 @@ onMounted(async () => {
     padding: 20px 30px;
     max-width: 1500px;
     margin: 0 auto;
+    /* Hide main page scrollbar */
+    overflow: hidden;
   }
+
+  /* Completely hidden scrollbars for clean design */
 
   /* Mobile responsiveness */
   @media (max-width: 1024px) {

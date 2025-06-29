@@ -3,27 +3,27 @@
         <div class="nutrient-container">
             <div class="nutrient">
                 <img src="@/assets/icon/calories-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.calories * (dishInfo.portion/dishInfo.recipe.serving_size))}} cal</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.calories * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} cal</span>
             </div>
             <div class="nutrient">
                 <img src="@/assets/icon/carbs-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.totalCarbohydrate * (dishInfo.portion/dishInfo.recipe.serving_size))}} g</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.totalCarbohydrate * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} g</span>
             </div>
             <div class="nutrient">
                 <img src="@/assets/icon/protein-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.protein * (dishInfo.portion/dishInfo.recipe.serving_size))}} g</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.protein * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} g</span>
             </div>
             <div class="nutrient">
                 <img src="@/assets/icon/fat-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.fat * (dishInfo.portion/dishInfo.recipe.serving_size))}} g</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.fat * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} g</span>
             </div>
             <div class="nutrient">
                 <img src="@/assets/icon/sodium-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.sodium * (dishInfo.portion/dishInfo.recipe.serving_size))}} mg</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.sodium * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} mg</span>
             </div>
             <div class="nutrient">
                 <img src="@/assets/icon/cholesterol-icon.svg" alt="">
-                <span class="ml-2">{{Math.round(dishInfo.recipe.nutrition_info.cholesterol * (dishInfo.portion/dishInfo.recipe.serving_size))}} mg</span>
+                <span class="ml-2">{{(dishInfo.recipe.nutrition_info.cholesterol * (dishInfo.portion/dishInfo.recipe.serving_size)).toFixed(1)}} mg</span>
             </div>
         </div>
 

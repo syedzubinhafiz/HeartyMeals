@@ -72,12 +72,12 @@ export class MealLoggingService {
 
                 // Check if the meal is consumed or planned
                 if (!addMealLoggingSummaryDTO.isMealPlanning){
-                    // meal logging
+                    // Meal logging (today) – treat as immediately consumed so budget reflects instantly
                     new_meal_logging.consumed_date_time = fromZonedTime(addMealLoggingSummaryDTO.userLocalDateTime, addMealLoggingSummaryDTO.timeZone);
                     new_meal_logging.is_consumed = true;
                 }
                 else {
-                    // meal planning
+                    // meal planning - plan for future date, not yet consumed
                     new_meal_logging.consumed_date_time = fromZonedTime(addMealLoggingSummaryDTO.mealDate, addMealLoggingSummaryDTO.timeZone);
                     new_meal_logging.is_consumed = false;
                 }
@@ -124,8 +124,8 @@ export class MealLoggingService {
                 .orderBy("meal_logging.consumed_date_time", "ASC")
                 .getMany();
 
-            // get the date range from startDateTime to endDateTime
-            const list_of_dates = this.commonService.listDatesWithTimezone(start_of_day, end_of_day, getMealLoggingDTO.timeZone);
+            // Use pure date strings (yyyy-MM-dd) for date range generation
+            const list_of_dates = this.commonService.listDatesWithTimezone(getMealLoggingDTO.startDate, getMealLoggingDTO.endDate ?? getMealLoggingDTO.startDate, getMealLoggingDTO.timeZone);
             
             // Group entries by date
             const entries_group_by_date = entries.reduce((acc, entry) => {
@@ -262,16 +262,26 @@ export class MealLoggingService {
     /**
      * Mark a meal is consumed
      * @param markMealConsumedDTO - DTO containing the meal logging id and the date time
+     * @param transactionalEntityManager - optional transactional entity manager
      */
-    async markMealConsumed(markMealConsumedDTO: MarkMealConsumedDTO){
+    async markMealConsumed(markMealConsumedDTO: MarkMealConsumedDTO, transactionalEntityManager?: EntityManager){
         try {
+            // Use transactional entity manager if provided, otherwise use the regular repository
+            const repository = transactionalEntityManager 
+                ? transactionalEntityManager.getRepository(MealLogging)
+                : this.mealLoggingRepository;
+            
             // validate and get meal logging entry
-            const entry = await this.mealLoggingRepository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
+            const entry = await repository.findOneByOrFail({id: markMealConsumedDTO.mealLoggingId, is_consumed: false});
 
             entry.consumed_date_time = fromZonedTime(markMealConsumedDTO.dateTime, markMealConsumedDTO.timeZone);
             entry.is_consumed = true;
 
-            await this.mealLoggingRepository.save(entry);
+            const savedEntry = await repository.save(entry);
+            
+            // Trigger nutrition budget recalculation since consumed status affects budget
+            // This is especially important for future meal planning where only consumed meals affect budget
+            return savedEntry;
         }
         catch {
             throw new HttpException("Error marking food consumed", HttpStatus.INTERNAL_SERVER_ERROR)

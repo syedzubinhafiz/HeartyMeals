@@ -74,9 +74,11 @@
   </template>
   
   <script setup>
-    import { ref, computed } from 'vue';
+    import { ref, computed, watch } from 'vue';
     import SingleSelectionDropdown from '../Dropdown/SingleSelectionDropdown.vue';
+    import { useFluidLogging } from '~/composables/fluidLogging.js';
     const { $axios } = useNuxtApp();
+    const { refresh: refreshFluidLogging } = useFluidLogging();
     
     // Handle water filling
     const props = defineProps({
@@ -201,14 +203,13 @@
                     'Content-Type': 'application/json',
                 }
             });
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
                 remainingVolume.value -= parseFloat((intakeValueInMl).toFixed(2));
-                useToast().success("Fluid intake is logged!")
-                console.log('Intake logged');
+                useToast().success("Water intake logged successfully");
+                await refreshFluidLogging();
                 closeModal();
-            }
-            else {
-                console.log(response);
+            } else {
+                useToast().error("Failed to log water intake");
             }
         }
         catch (e) {
@@ -223,11 +224,11 @@
         position: relative; /* Set the position to relative to allow absolute positioning of overlay */
         width: 100%;
         height: auto;
-
-        svg {
-            margin-left:auto;
-            margin-right:auto;
-        }
+    }
+    
+    .svg-container svg {
+        margin-left:auto;
+        margin-right:auto;
     }
     
     .overlay {

@@ -61,14 +61,8 @@ export class MealLogSummaryService {
             ...mealLoggingIds
         ];
         
-        // set remaining nutrients
-        meal_logging_summary_entry.remaining_nutrients = await this.calculateNutritionSummary(
-            user_object, 
-            addMealLoggingSummaryDTO.mealDate, 
-            addMealLoggingSummaryDTO.timeZone,
-            addMealLoggingSummaryDTO.recipeIdPortions,
-            addMealLoggingSummaryDTO.mealType
-        );
+        // Recalculate nutrition budget using the new logic (only consumed meals affect budget)
+        await this.calculateNutritionBudget(user_object, meal_logging_summary_entry, transactionalEntityManager);
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
@@ -177,7 +171,8 @@ export class MealLogSummaryService {
         const end_of_day = `${deleteMealLoggingDTO.mealDate} 23:59:59`;
 
         // get meal logging summary entry
-        var meal_logging_summary_entry = await this.mealLogSummaryRepository.createQueryBuilder('meal_log_summary')
+        const meal_logging_summary_entry = await this.mealLogSummaryRepository
+            .createQueryBuilder('meal_log_summary')
             .where('user_id = :user_id', {user_id: user_id})
             .andWhere('date AT TIME ZONE :timeZone BETWEEN :startOfDay AND :endOfDay ', { timeZone: deleteMealLoggingDTO.timeZone, startOfDay: start_of_day, endOfDay: end_of_day })
             .getOne();
@@ -196,31 +191,37 @@ export class MealLogSummaryService {
             .where('mealLogging.id = :id', { id: deleteMealLoggingDTO.mealLoggingId })
             .getOne();
 
-        // find the meal logging id from the food consumed meal type
+        // find the meal logging id from the food consumed across all meal types
         var found = false;
-        for (const meal_logging_id of meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType]) {
-            if (meal_logging_id === deleteMealLoggingDTO.mealLoggingId) {
-                found = true;
-                break;
+        var actualMealType = null;
+        const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Other'];
+        
+        for (const mealType of mealTypes) {
+            for (const meal_logging_id of meal_logging_summary_entry.food_consumed[mealType]) {
+                if (meal_logging_id === deleteMealLoggingDTO.mealLoggingId) {
+                    found = true;
+                    actualMealType = mealType;
+                    break;
+                }
             }
+            if (found) break;
         }
-        if (!found){
-            throw new HttpException(`Meal logging id ${deleteMealLoggingDTO.mealLoggingId} not found in ${deleteMealLoggingDTO.mealType}`, HttpStatus.NOT_FOUND);
+        
+        // If ID is present in any meal type bucket, remove it; otherwise just log a warning.
+        if (found) {
+            meal_logging_summary_entry.food_consumed[actualMealType] = meal_logging_summary_entry.food_consumed[actualMealType].filter(id => id !== deleteMealLoggingDTO.mealLoggingId);
+        } else if (process.env.NODE_ENV !== 'production') {
+            /* eslint-disable no-console */
+            console.warn(`Meal logging id ${deleteMealLoggingDTO.mealLoggingId} not linked in food_consumed summary; performing full budget recalculation anyway.`);
         }
 
-        // remove the meal logging id from the food consumed
-        meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType] = meal_logging_summary_entry.food_consumed[deleteMealLoggingDTO.mealType].filter(meal_logging_id => meal_logging_id !== deleteMealLoggingDTO.mealLoggingId);
-
-        // Only restore nutrition budget if the meal was consumed
-        if (meal_logging_object.is_consumed) {
-            // add the nutrition to the remaining nutrients
-            meal_logging_summary_entry.remaining_nutrients["calories"] += parseFloat((meal_logging_object.recipe.nutrition_info["calories"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-            meal_logging_summary_entry.remaining_nutrients["carbs"] += parseFloat((meal_logging_object.recipe.nutrition_info["totalCarbohydrate"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-            meal_logging_summary_entry.remaining_nutrients["protein"] += parseFloat((meal_logging_object.recipe.nutrition_info["protein"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-            meal_logging_summary_entry.remaining_nutrients["fat"] += parseFloat((meal_logging_object.recipe.nutrition_info["fat"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-            meal_logging_summary_entry.remaining_nutrients["sodium"] += parseFloat((meal_logging_object.recipe.nutrition_info["sodium"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-            meal_logging_summary_entry.remaining_nutrients["cholesterol"] += parseFloat((meal_logging_object.recipe.nutrition_info["cholesterol"] * (meal_logging_object.portion / meal_logging_object.recipe.serving_size)).toFixed(2));
-        }
+        // Use the centralized nutrition budget calculation instead of manual calculation
+        // This ensures consistency with the new logic (only consumed meals affect budget)
+        await this.calculateNutritionBudget(
+            await this.userRepository.findOneByOrFail({ user_id: decodedHeaders['sub'] }),
+            meal_logging_summary_entry,
+            transactionalEntityManager
+        );
 
         try {
             await transactionalEntityManager.save(meal_logging_summary_entry);
@@ -309,20 +310,31 @@ export class MealLogSummaryService {
         
         // if there are meal logging ids after the update
         if (combined_meal_logging_ids.length > 0) {
-            // get all the recipe objects (only for consumed meals)
-            const meal_logging_objects = await transactionalEntityManager.createQueryBuilder(MealLogging, 'mealLogging')
-            .leftJoinAndSelect('mealLogging.recipe', 'recipe')
-            .select([
-                'mealLogging.id',
-                'mealLogging.portion',
-                'mealLogging.is_consumed',
-                'recipe.id',
-                'recipe.nutrition_info',
-                'recipe.serving_size'
-            ])
-            .where('mealLogging.id IN (:...ids)', { ids: combined_meal_logging_ids })
-            .andWhere('mealLogging.is_consumed = :is_consumed', { is_consumed: true })
-            .getMany();
+            // get all the recipe objects - for meals logged today, include all meals
+            // for future meal planning, only include consumed meals
+            const today = new Date();
+            const mealDate = new Date(mealLoggingSummaryEntry.date);
+            const isToday = mealDate.toDateString() === today.toDateString();
+            
+            let query = transactionalEntityManager.createQueryBuilder(MealLogging, 'mealLogging')
+                .leftJoinAndSelect('mealLogging.recipe', 'recipe')
+                .select([
+                    'mealLogging.id',
+                    'mealLogging.portion',
+                    'mealLogging.is_consumed',
+                    'recipe.id',
+                    'recipe.nutrition_info',
+                    'recipe.serving_size'
+                ])
+                .where('mealLogging.id IN (:...ids)', { ids: combined_meal_logging_ids });
+            
+            // Only include consumed meals in nutrition budget calculation
+            // This ensures that only meals that have actually been eaten affect the budget
+            query = query
+                .andWhere('mealLogging.is_consumed = :is_consumed', { is_consumed: true })
+                .andWhere('mealLogging.deleted_at IS NULL');
+            
+            const meal_logging_objects = await query.getMany();
 
             // get the recipe id and recipe nutrition info 
             const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {

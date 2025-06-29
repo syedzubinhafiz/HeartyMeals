@@ -5,6 +5,10 @@
                 <stop offset="0%" stop-color="#B8B396" />
                 <stop offset="100%" stop-color="#B8B396" />
             </linearGradient>
+            <linearGradient id="warning-gradient" x1="0" y1="0" x2="0" y2="100%">
+                <stop offset="0%" stop-color="#ef4444" />
+                <stop offset="100%" stop-color="#dc2626" />
+            </linearGradient>
 
             <g filter="url(#filter0_d_5105_2538)">
             <path d="M17 240C17 206.863 43.8629 180 77 180H515C548.137 180 575 206.863 575 240V666C575 699.137 548.137 726 515 726H77C43.8629 726 17 699.137 17 666V240Z" fill="#F3EADA"/>
@@ -42,9 +46,9 @@
         </svg>
 
         <div class="budget-curve-overlay">
-            <div class="calories-container">
+            <div class="calories-container" :class="{ 'over-budget': isOverBudget }">
                 <span class="calories-title">Calories</span>
-                <span>{{ remainingCalories }}/{{ maxCalories }}cal</span>
+                <span>{{ consumedCalories.toFixed(1) }}/{{ maxCalories.toFixed(0) }}cal</span>
             </div>
             <span class="budget-title">Today's Nutrition Budget</span>
         </div>
@@ -77,10 +81,25 @@
                 </div>
             </div>
         </div>
+
+        <!-- Warning Toast for Over Budget -->
+        <Transition name="slide-down">
+            <div v-if="showWarning" class="warning-toast">
+                <div class="warning-content">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-text">
+                        <h4>Oops! You've exceeded your daily calorie budget</h4>
+                        <p>Don't worry, tomorrow is a fresh start! Consider lighter meals for the rest of the day. 💪</p>
+                    </div>
+                    <button @click="dismissWarning" class="dismiss-btn">×</button>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import NutritionBar from './NutritionBar.vue';
 
     // Define props
@@ -174,8 +193,28 @@ import NutritionBar from './NutritionBar.vue';
     }
 
     const caloriesBar = ref(null);
-    const maxCalories = computed(() => props.nutrients[0]['calories']);
-    const remainingCalories = computed(() => props.nutrients[2]['calories']);
+    const maxCalories = computed(() => {
+        const max = props.nutrients[0]?.['calories'] || 0;
+        return max;
+    });
+    const consumedCalories = computed(() => {
+        const consumed = props.nutrients[1]?.['calories'] || 0;
+        return consumed;
+    });
+    const isOverBudget = computed(() => consumedCalories.value > maxCalories.value);
+    const warningDismissed = ref(false);
+    const showWarning = computed(() => isOverBudget.value && !warningDismissed.value);
+
+    const dismissWarning = () => {
+        warningDismissed.value = true;
+    };
+
+    // Reset warning dismissal when no longer over budget
+    watch(isOverBudget, (newValue) => {
+        if (!newValue) {
+            warningDismissed.value = false;
+        }
+    });
 
     onMounted(() => {
         nextTick(() => {
@@ -185,6 +224,7 @@ import NutritionBar from './NutritionBar.vue';
 
     // Watch for changes in the nutrients prop
     watch(() => props.nutrients, (newVal) => {
+            console.log('[NutritionWidgetCurve] Received nutrients prop:', newVal);
             if (newVal && newVal.length >= 3) {
                 // Update userNutritionBudget with nutrients from props
                 const userNutritionBudget = [];
@@ -201,23 +241,35 @@ import NutritionBar from './NutritionBar.vue';
 
                 // Update nutrientsList with new values
                 const nutrientsType = ['carbs', 'protein', 'fat', 'sodium', 'cholesterol'];
+                console.log('[NutritionWidgetCurve] Updating nutrient bars with budget:', userNutritionBudget);
                 for (let i = 0; i < nutrientsType.length; i++) {
                     const daily_budget = userNutritionBudget[0][nutrientsType[i]];
-                    const current_value = userNutritionBudget[1][nutrientsType[i]];
-                    const after_meal_value = userNutritionBudget[2][nutrientsType[i]];
+                    const consumed_value = userNutritionBudget[1][nutrientsType[i]];  // Now consumed instead of remaining
+                    const remaining_value = userNutritionBudget[2][nutrientsType[i]];  // Remaining nutrients
+
+                    console.log(`[NutritionWidgetCurve] ${nutrientsType[i]}: budget=${daily_budget}, consumed=${consumed_value}, remaining=${remaining_value}`);
 
                     nutrientsList.value[i].totalValue = daily_budget;
-                    nutrientsList.value[i].currentValue = current_value;
-                    nutrientsList.value[i].afterMealValue = after_meal_value;
+                    nutrientsList.value[i].currentValue = consumed_value;  // Display consumed amount
+                    nutrientsList.value[i].afterMealValue = consumed_value;  // Keep the same as current for now
                 }
+                console.log('[NutritionWidgetCurve] Updated nutrientsList:', nutrientsList.value);
 
-                // Calculate the fill percentage
-                const progress = remainingCalories.value / maxCalories.value;
+                // Calculate the fill percentage for consumed calories (cap at 100% to prevent overflow)
+                const rawProgress = consumedCalories.value / maxCalories.value;
+                const progress = Math.min(rawProgress, 1); // Cap at 100%
                 const strokeDashoffset = 511 * (1 - progress);
 
                 if (caloriesBar.value) {
-                    caloriesBar.value.style.transition = 'stroke-dashoffset 1s';
+                    caloriesBar.value.style.transition = 'stroke-dashoffset 1s, stroke 0.3s';
                     caloriesBar.value.style.strokeDashoffset = strokeDashoffset;
+                    
+                    // Update stroke color based on budget status
+                    if (isOverBudget.value) {
+                        caloriesBar.value.style.stroke = 'url(#warning-gradient)';
+                    } else {
+                        caloriesBar.value.style.stroke = 'url(#gradient)';
+                    }
                 }
 
             }
@@ -277,6 +329,16 @@ import NutritionBar from './NutritionBar.vue';
         font-size: 175%;
     }
 
+    .calories-container.over-budget {
+        color: #ef4444;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+
     .grey {
         stroke-width: 20;
         stroke-linecap: round;
@@ -300,7 +362,7 @@ import NutritionBar from './NutritionBar.vue';
         font-size: 200%;
         font-weight: 600;
         top: 25%;
-        left: 20%     
+        left: 20%;
     }
 
     .budget-bar-overlay{
@@ -315,7 +377,7 @@ import NutritionBar from './NutritionBar.vue';
         font-size: 115%;
     }
 
-    /deep/ .progress-bar{
+    :deep(.progress-bar) {
         height: 140%;
     }
 
@@ -355,16 +417,95 @@ import NutritionBar from './NutritionBar.vue';
         width: 50vh;
         cursor: initial;
 
-
-
         font-size: 100%;
         padding: 2vh;
-        opacity: 0;
-        transition: opacity 0.3s ease-in-out;
         opacity: 1; /* Tooltip is visible */
+        transition: opacity 0.3s ease-in-out;
     }
 
     .tooltip-container:hover .custom-tooltip {
         opacity: 1;
+    }
+
+    /* Warning Toast Styles */
+    .warning-toast {
+        position: fixed;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        background-color: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+        max-width: 500px;
+        min-width: 350px;
+        font-family: 'Overpass', sans-serif;
+    }
+
+    .warning-content {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px;
+        gap: 12px;
+    }
+
+    .warning-icon {
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .warning-text {
+        flex: 1;
+    }
+
+    .warning-text h4 {
+        margin: 0 0 4px 0;
+        color: #dc2626;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .warning-text p {
+        margin: 0;
+        color: #991b1b;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .dismiss-btn {
+        background: none;
+        border: none;
+        color: #dc2626;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+
+    .dismiss-btn:hover {
+        background-color: #fecaca;
+    }
+
+    /* Slide Down Animation */
+    .slide-down-enter-active {
+        transition: all 0.3s ease-out;
+    }
+
+    .slide-down-leave-active {
+        transition: all 0.3s ease-in;
+    }
+
+    .slide-down-enter-from {
+        transform: translate(-50%, -20px);
+        opacity: 0;
+    }
+
+    .slide-down-leave-to {
+        transform: translate(-50%, -20px);
+        opacity: 0;
     }
 </style>

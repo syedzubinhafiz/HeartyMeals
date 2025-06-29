@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useNuxtApp, navigateTo, useRuntimeConfig } from "#app";
 import { debounce } from "chart.js/helpers";
 import { useToast } from "vue-toast-notification";
@@ -128,6 +128,7 @@ import stomachIcon from "@/assets/icon/stomach-icon.svg";
 import leftBase from "@/assets/img/meal_logging/left_base.svg";
 import rightBase from "@/assets/img/meal_logging/right_base.svg";
 import CustomDishPopup from '~/components/CustomDish/Popup.vue';
+import { useMealLoggingStore } from '@/stores/mealLogging.js';
 
 
 definePageMeta({
@@ -177,7 +178,8 @@ const savedFilters = ref({
 
 // for stomach overlay
 const isStomachOverlayVisible = ref(false);
-const selectedMeals = ref([]);
+const mealStore = useMealLoggingStore();
+const selectedMeals = computed(() => mealStore.unsavedMealList); // reactive computed property from Pinia store
 
 // for add meal overlay
 const isAddMealOverlayVisible = ref(false);
@@ -243,7 +245,15 @@ async function fetchRecipes(filter = {}){
         return;
       }
 
-      searchResults.value = [...searchResults.value, ...data.data];
+      // Ensure proper object creation for each recipe to avoid Pinia hydration issues
+      const safeRecipes = data.data.map(recipe => ({
+        ...recipe,
+        nutrition_info: recipe.nutrition_info ? { ...recipe.nutrition_info } : {},
+        storage_links: recipe.storage_links ? { ...recipe.storage_links } : {},
+        recommended_meal_time: recipe.recommended_meal_time ? { ...recipe.recommended_meal_time } : {},
+        user: recipe.user ? { ...recipe.user } : null
+      }));
+      searchResults.value = [...searchResults.value, ...safeRecipes];
       totalPages.value = data.totalPages;
       pageNumber.value += 1;
       isLoading.value = false;
@@ -289,8 +299,9 @@ onMounted(() => {
   }
 
   if(localStorage.getItem("mealInfo")){
-    // check if expired 
-    mealInfo.value = JSON.parse(localStorage.getItem("mealInfo"));
+    // check if expired - ensure proper object creation
+    const parsedMealInfo = JSON.parse(localStorage.getItem("mealInfo"));
+    mealInfo.value = { ...parsedMealInfo };
     const currentTime = new Date().getTime();
     const expiryTime = mealInfo.value.expiryTime;
     if (currentTime > expiryTime){
@@ -307,15 +318,11 @@ onMounted(() => {
         }, 1500);
       }
     } else {
-    mealInfo.value = JSON.parse(localStorage.getItem("mealInfo"));
+    // Ensure proper object creation from localStorage
+    mealInfo.value = { ...parsedMealInfo };
     }
   } else {
     navigateTo("/meal-logging");
-  }
-
-  if(localStorage.getItem("selectedMeals")){
-    selectedMeals.value = JSON.parse(localStorage.getItem("selectedMeals"));
-    localStorage.removeItem("selectedMeals");
   }
 
   fetchRecipes(savedFilters.value);
@@ -323,6 +330,12 @@ onMounted(() => {
   setTimeout(() => {
     adjustSize();
   }, 100);
+
+  console.log('mealStore', mealStore)
+  console.log('unsavedMealList?', mealStore?.unsavedMealList)
+
+  // Clear unsaved meal list using proper store action
+  mealStore.clearUnsavedList()
 });
 
 onBeforeUnmount(() => {
@@ -393,13 +406,13 @@ function openStomachOverlay() {
 }
 
 function updatePortion(id, portion) {
-  const meal = selectedMeals.value.find((meal) => meal.id === id);
-  meal.portion = portion;
+  const meal = mealStore.unsavedMealList.value.find((m) => m.id === id);
+  if (meal) meal.portion = portion;
 }
 
 function removeSelectedMeal(id) {
-  console.log("trigger remove meal in page");
-  selectedMeals.value = selectedMeals.value.filter((meal) => meal.id !== id);
+  console.log('trigger remove meal in page');
+  mealStore.unsavedMealList.value = mealStore.unsavedMealList.value.filter((m) => m.id !== id);
 }
 
 function closeStomachOverlay() {
@@ -416,8 +429,9 @@ function openCustomRecipeOverlay() {
 }
 
 async function proceedToSummary(){
-
-  if(selectedMeals.value.length === 0){
+  console.log('[proceedToSummary] current unsaved list', selectedMeals.value);
+  const list = selectedMeals.value;
+  if(!Array.isArray(list) || list.length === 0){
     useToast().error("Please add meals to log");
     return;
   }
@@ -426,13 +440,60 @@ async function proceedToSummary(){
   mealInfo.value.expiryTime = new Date().getTime() + (5*60*1000);
   localStorage.setItem("mealInfo", JSON.stringify(mealInfo.value));
 
+  // store list length for future validation if needed
+  // Note: selectedMeals no longer passed via localStorage; summary page reads from Pinia.
 
-  //store the selected meal to local storage
-  localStorage.setItem("selectedMeals", JSON.stringify(selectedMeals.value));
+  if(userDailyNutrients.value === null){
 
-  localStorage.setItem("userNutrientsInfo", JSON.stringify([userDailyNutrients.value, userOriginalRemainingNutrients.value, userRemainingNutrients.value]));
+    const token = localStorage.getItem('accessToken');
+    const user_budget_response = await $axios.get('/user/budget', {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params:{
+        startDate: mealInfo.value.logDate,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      }
+    });
+    
+    // Ensure proper object creation to avoid Pinia hydration issues
+    userDailyNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][0] };
+    
+    if (userRemainingNutrients.value === null){
+      userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
+      userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
+    }
+    console.log(selectedMeals.value);
+    if (selectedMeals.value.length > 0){
+      selectedMeals.value.forEach((meal) => {
+        // Safely access nutrition_info with null checks
+        const nutritionInfo = meal.recipe?.nutrition_info || {};
+        const portion = meal.portion || 1;
+        const servingSize = meal.recipe?.serving_size || 1;
+        const multiplier = portion / servingSize;
+        
+        userRemainingNutrients.value = {
+          calories: parseFloat((userRemainingNutrients.value.calories - (nutritionInfo.calories || 0) * multiplier).toFixed(2)),
+          carbs: parseFloat((userRemainingNutrients.value.carbs - (nutritionInfo.totalCarbohydrate || 0) * multiplier).toFixed(2)),
+          protein: parseFloat((userRemainingNutrients.value.protein - (nutritionInfo.protein || 0) * multiplier).toFixed(2)),
+          fat: parseFloat((userRemainingNutrients.value.fat - (nutritionInfo.fat || 0) * multiplier).toFixed(2)),
+          sodium: parseFloat((userRemainingNutrients.value.sodium - (nutritionInfo.sodium || 0) * multiplier).toFixed(2)),
+          cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - (nutritionInfo.cholesterol || 0) * multiplier).toFixed(2)),
+        }
+      });
+    }
+  }
+  
+  // Save nutrition data to localStorage for summary page
+  const nutritionDataForSummary = [
+    userDailyNutrients.value,
+    userRemainingNutrients.value,
+    userRemainingNutrients.value  // userAfterMealNutrients starts as copy of remaining
+  ];
+  localStorage.setItem('userNutrientsInfo', JSON.stringify(nutritionDataForSummary));
+  
   await navigateTo("/summary");
-
 }
 
 async function openAddMealOverlay(id) {
@@ -449,7 +510,21 @@ async function openAddMealOverlay(id) {
       }
     });
 
-    recipeInfo.value = recipe_info_response.data;
+    // Ensure proper object creation to avoid Pinia hydration issues
+    const recipeData = recipe_info_response.data;
+    recipeInfo.value = {
+      ...recipeData,
+      recipe: recipeData.recipe ? {
+        ...recipeData.recipe,
+        nutrition_info: recipeData.recipe.nutrition_info ? { ...recipeData.recipe.nutrition_info } : {},
+        storage_links: recipeData.recipe.storage_links ? { ...recipeData.recipe.storage_links } : {},
+        serving_size: recipeData.recipe.serving_size || 1
+      } : {},
+      components: recipeData.components ? {
+        ingredients: recipeData.components.ingredients ? recipeData.components.ingredients.map(ing => ({ ...ing })) : [],
+        seasonings: recipeData.components.seasonings ? recipeData.components.seasonings.map(seas => ({ ...seas })) : []
+      } : { ingredients: [], seasonings: [] }
+    };
     if(userDailyNutrients.value === null){
 
       const user_budget_response = await $axios.get('/user/budget', {
@@ -463,22 +538,29 @@ async function openAddMealOverlay(id) {
         }
       });
       
-      userDailyNutrients.value = user_budget_response.data[mealInfo.value.logDate][0];
+      // Ensure proper object creation to avoid Pinia hydration issues
+      userDailyNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][0] };
       
       if (userRemainingNutrients.value === null){
-        userOriginalRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
-        userRemainingNutrients.value = user_budget_response.data[mealInfo.value.logDate][1];
+        userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
+        userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
       }
       console.log(selectedMeals.value);
       if (selectedMeals.value.length > 0){
         selectedMeals.value.forEach((meal) => {
+          // Safely access nutrition_info with null checks
+          const nutritionInfo = meal.recipe?.nutrition_info || {};
+          const portion = meal.portion || 1;
+          const servingSize = meal.recipe?.serving_size || 1;
+          const multiplier = portion / servingSize;
+          
           userRemainingNutrients.value = {
-            calories: parseFloat((userRemainingNutrients.value.calories - meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            carbs: parseFloat((userRemainingNutrients.value.carbs - meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            protein: parseFloat((userRemainingNutrients.value.protein - meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            fat: parseFloat((userRemainingNutrients.value.fat - meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            sodium: parseFloat((userRemainingNutrients.value.sodium - meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
-            cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2)),
+            calories: parseFloat((userRemainingNutrients.value.calories - (nutritionInfo.calories || 0) * multiplier).toFixed(2)),
+            carbs: parseFloat((userRemainingNutrients.value.carbs - (nutritionInfo.totalCarbohydrate || 0) * multiplier).toFixed(2)),
+            protein: parseFloat((userRemainingNutrients.value.protein - (nutritionInfo.protein || 0) * multiplier).toFixed(2)),
+            fat: parseFloat((userRemainingNutrients.value.fat - (nutritionInfo.fat || 0) * multiplier).toFixed(2)),
+            sodium: parseFloat((userRemainingNutrients.value.sodium - (nutritionInfo.sodium || 0) * multiplier).toFixed(2)),
+            cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - (nutritionInfo.cholesterol || 0) * multiplier).toFixed(2)),
           }
         });
       }
@@ -499,17 +581,28 @@ function closeAddMealOverlay() {
 }
 
 function addMeal(id, portion, afterAddingMeal) {
-  selectedMeals.value.push({
-    recipe: recipeInfo.value.recipe,
-    id: id,
-    portion: portion,
-  });
-  userRemainingNutrients.value = afterAddingMeal;
+  console.log('[add-meals] addMeal called with:', { id, portion, afterAddingMeal });
+  console.log('[add-meals] recipeInfo.value:', recipeInfo.value);
+  
+  // Ensure proper object structure for store
+  const mealToAdd = {
+    recipe: recipeInfo.value.recipe ? { ...recipeInfo.value.recipe } : {},
+    id,
+    portion,
+  };
+  
+  console.log('[add-meals] mealToAdd:', mealToAdd);
+  console.log('[add-meals] selectedMeals before:', selectedMeals.value);
+  
+  mealStore.addMeal(mealToAdd);
+  
+  console.log('[add-meals] selectedMeals after:', selectedMeals.value);
+  
+  userRemainingNutrients.value = { ...afterAddingMeal };
   mealId.value = "";
   recipeInfo.value = {};
   useToast().success("Meal added to the stomach");
   closeAddMealOverlay();
-
 }
 
 

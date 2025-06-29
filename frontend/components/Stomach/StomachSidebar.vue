@@ -25,32 +25,32 @@
                   <div class="nutrition-list-container">
                       <div class="nutrient-label">
                         <label>Calories: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.calories * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <span>{{getNutrientValue(meal, 'calories')}}</span>
                         <label> cal</label>
                       </div>
                       <div class="nutrient-label">
                         <label>Carbs: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.totalCarbohydrate * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
-                        <label> cal</label>
+                        <span>{{getNutrientValue(meal, 'totalCarbohydrate')}}</span>
+                        <label> g</label>
                       </div>
                       <div class="nutrient-label">
                         <label>Protein: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.protein * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <span>{{getNutrientValue(meal, 'protein')}}</span>
                         <label> g</label>
                       </div>
                       <div class="nutrient-label">
                         <label>Fats: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.fat * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <span>{{getNutrientValue(meal, 'fat')}}</span>
                         <label> g</label>
                       </div>
                       <div class="nutrient-label">
                         <label>Sodium: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.sodium * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <span>{{getNutrientValue(meal, 'sodium')}}</span>
                         <label> mg</label>
                       </div>
                       <div class="nutrient-label">
                         <label>Cholesterol: </label>
-                        <span>{{parseFloat((meal.recipe.nutrition_info.cholesterol * (meal.portion/meal.recipe.serving_size)).toFixed(2))}}</span>
+                        <span>{{getNutrientValue(meal, 'cholesterol')}}</span>
                         <label> mg</label>
                       </div>
                   </div>
@@ -119,6 +119,15 @@
       logMeal(){
         console.log('trigger log meal in sidebar');
         this.$emit('logMeal');
+      },
+      getNutrientValue(meal, nutrientKey) {
+        // Safely access nutrition_info with null checks to avoid Pinia hydration issues
+        const nutritionInfo = meal.recipe?.nutrition_info || {};
+        const portion = meal.portion || 1;
+        const servingSize = meal.recipe?.serving_size || 1;
+        const multiplier = portion / servingSize;
+        const nutrientValue = nutritionInfo[nutrientKey] || 0;
+        return parseFloat((nutrientValue * multiplier).toFixed(1));
       }
     },
   };

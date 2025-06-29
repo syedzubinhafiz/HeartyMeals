@@ -119,7 +119,14 @@ export default {
     },
     userDailyBudget: {
       type: Object,
-      required: true
+      default: () => ({
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        sodium: 0,
+        cholesterol: 0,
+      })
     },
     userRemainingNutrients: {
       type: Object,
@@ -136,7 +143,7 @@ export default {
   data() {
     return {
       portion: 1,
-      afterAddingMeal: this.userRemainingNutrients,
+      afterAddingMeal: { ...this.userRemainingNutrients },
       nutrients:[
         {
           key: 'calories',
@@ -222,16 +229,22 @@ export default {
     applyChanges() {
       if (this.portion === "") return;
       if (this.afterAddingMeal === null) {
-        this.afterAddingMeal = this.userRemainingNutrients;
+        this.afterAddingMeal = { ...this.userRemainingNutrients };
       }
       
+      // Safely access nutrition_info with null checks to avoid Pinia hydration issues
+      const nutritionInfo = this.meal.recipe?.nutrition_info || {};
+      const portion = this.portion || 1;
+      const servingSize = this.meal.recipe?.serving_size || 1;
+      const multiplier = portion / servingSize;
+      
       this.afterAddingMeal = {
-        calories: parseFloat((this.userRemainingNutrients.calories - this.meal.recipe.nutrition_info.calories * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
-        protein: parseFloat((this.userRemainingNutrients.protein - this.meal.recipe.nutrition_info.protein * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
-        carbs: parseFloat((this.userRemainingNutrients.carbs - this.meal.recipe.nutrition_info.totalCarbohydrate * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
-        fat: parseFloat((this.userRemainingNutrients.fat - this.meal.recipe.nutrition_info.fat * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
-        sodium: parseFloat((this.userRemainingNutrients.sodium - this.meal.recipe.nutrition_info.sodium * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
-        cholesterol: parseFloat((this.userRemainingNutrients.cholesterol - this.meal.recipe.nutrition_info.cholesterol * (this.portion/this.meal.recipe.serving_size)).toFixed(2)),
+        calories: parseFloat((this.userRemainingNutrients.calories - (nutritionInfo.calories || 0) * multiplier).toFixed(2)),
+        protein: parseFloat((this.userRemainingNutrients.protein - (nutritionInfo.protein || 0) * multiplier).toFixed(2)),
+        carbs: parseFloat((this.userRemainingNutrients.carbs - (nutritionInfo.totalCarbohydrate || 0) * multiplier).toFixed(2)),
+        fat: parseFloat((this.userRemainingNutrients.fat - (nutritionInfo.fat || 0) * multiplier).toFixed(2)),
+        sodium: parseFloat((this.userRemainingNutrients.sodium - (nutritionInfo.sodium || 0) * multiplier).toFixed(2)),
+        cholesterol: parseFloat((this.userRemainingNutrients.cholesterol - (nutritionInfo.cholesterol || 0) * multiplier).toFixed(2)),
       };
       
       console.log(this.meal.recipe);

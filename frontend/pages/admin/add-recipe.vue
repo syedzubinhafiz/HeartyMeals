@@ -628,13 +628,23 @@ const gatherRecipeData = async () => {
         'Content-Type': 'application/json',
       }
     });
-    if (response.data.status === 200) {
+    if (response.status === 200 || response.data?.statusCode === 200 || response.data?.status === 200) {
       useToast().success("Recipe added successfully!");
       window.location.reload();
     }
   } catch (error) {
-    if (error.response && error.response.data.status === 400) {
-      useToast().error("Failed to add recipe");
+    // Log full response for debugging
+    console.error('Recipe add error:', error.response?.data || error);
+
+    if (error.response) {
+      const statusCode = error.response.status ?? error.response.data?.statusCode;
+      const backendMessage = error.response.data?.message ?? 'Failed to add recipe';
+
+      if (statusCode === 400) {
+        useToast().error(backendMessage);
+      } else {
+        useToast().error(`Error ${statusCode}: ${backendMessage}`);
+      }
     } else {
       useToast().error("An unexpected error occurred");
     }

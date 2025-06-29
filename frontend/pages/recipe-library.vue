@@ -369,7 +369,8 @@ const handleClickOutside = (event) => {
   display: flex;
   align-items: center;
   background-color: white;
-  width: 50%;
+  width: 90%;
+  max-width: 600px;
   border: 1px solid #ccc;
   border-radius: 50px;
   padding: 2px 15px;
@@ -388,14 +389,17 @@ const handleClickOutside = (event) => {
 
 .search-result-item-display {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   grid-gap: 15px;
   padding: 15px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .search-result-text-display {
   height: 5%;
-  width: 60%;
+  width: 90%;
+  max-width: 1200px;
   display: flex;
   justify-content: flex-start;
   padding-left: 15px;
@@ -403,10 +407,12 @@ const handleClickOutside = (event) => {
 }
 
 .search-result-container {
-  width: 60%;
+  width: 90%;
+  max-width: 1200px;
   height: 65%;
   margin-top: 10px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .aligned-paragraph {

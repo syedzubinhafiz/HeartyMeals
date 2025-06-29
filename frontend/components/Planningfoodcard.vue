@@ -2,7 +2,7 @@
   <div>
     <div class="food-card flex items-center p-3 rounded-lg shadow-md relative" :class="{ 'consumed': is_consumed }">
       <!-- Food Image -->
-      <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" :class="{ 'consumed-image': is_consumed }" />
+      <img :src="getRecipeImage()" alt="Meal Image" class="food-image rounded-lg shadow-sm" :class="{ 'consumed-image': is_consumed }" />
 
       <!-- Food Name -->
       <div class="ml-2 flex-1">
@@ -130,7 +130,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['removeMeal', 'editMeal']);
+const emit = defineEmits(['removeMeal', 'editMeal', 'mealConsumed']);
 
 const showMiniCard = ref(false);
 const is_consumed = ref(props.cardInfo.is_consumed);
@@ -189,9 +189,25 @@ const toggleConsumed = async () => {
     is_consumed.value = true;
     useToast().success('Meal marked as consumed');
     closeMiniCard();
+    
+    // Emit event to notify parent components that nutrition data needs refresh
+    emit('mealConsumed', props.cardInfo.id);
   } else {
     useToast().error('Meal consumption failed');
   }
+};
+
+const getRecipeImage = () => {
+  // Try to get image from recipe storage_links, fallback to default
+  const storageLinks = props.cardInfo?.recipe?.storage_links;
+  if (storageLinks?.image) {
+    return storageLinks.image;
+  }
+  if (storageLinks?.thumbnail) {
+    return storageLinks.thumbnail;
+  }
+  // Fallback to default image
+  return '/assets/img/potato.svg';
 };
 
 // No need for document click listener since we use @click.self on overlay
@@ -264,6 +280,43 @@ const toggleConsumed = async () => {
   animation: slideUp 0.2s ease-out;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+/* Elegant Scrollbar for Modal */
+.meal-popover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.meal-popover::-webkit-scrollbar-track {
+  background: linear-gradient(to bottom, 
+    rgba(243, 234, 218, 0.1) 0%,
+    rgba(243, 234, 218, 0.3) 50%,
+    rgba(243, 234, 218, 0.1) 100%);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.meal-popover::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    rgba(1, 91, 89, 0.6) 0%,
+    rgba(1, 91, 89, 0.8) 50%,
+    rgba(1, 91, 89, 0.6) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(1, 91, 89, 0.1);
+  box-shadow: 
+    0 1px 3px rgba(1, 91, 89, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.meal-popover::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    rgba(1, 91, 89, 0.7) 0%,
+    rgba(1, 91, 89, 0.9) 50%,
+    rgba(1, 91, 89, 0.7) 100%);
+  box-shadow: 
+    0 2px 6px rgba(1, 91, 89, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 @keyframes fadeIn {

@@ -6,7 +6,7 @@
     </div>
 
     <!-- Food Image -->
-    <img :src="`/assets/img/potato.svg`" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
+    <img :src="getRecipeImage()" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
 
     <!-- Food Name -->
     <div class="ml-4 flex-1">
@@ -97,6 +97,19 @@ const toggleConsumed = async () => {
   } else {
     useToast().error("Meal consumption failed!");
   }
+};
+
+const getRecipeImage = () => {
+  // Try to get image from recipe storage_links, fallback to default
+  const storageLinks = props.cardInfo?.recipe?.storage_links;
+  if (storageLinks?.image) {
+    return storageLinks.image;
+  }
+  if (storageLinks?.thumbnail) {
+    return storageLinks.thumbnail;
+  }
+  // Fallback to default image
+  return '/assets/img/potato.svg';
 };
 </script>
 

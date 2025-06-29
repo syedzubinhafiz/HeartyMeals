@@ -216,6 +216,7 @@ async function navigateToRecipeLibrary() {
   width: 200px;
   border-radius: 10px;
   margin-bottom: 15%;
+  object-fit: cover;
 }
 
 .view-nutrition-info {

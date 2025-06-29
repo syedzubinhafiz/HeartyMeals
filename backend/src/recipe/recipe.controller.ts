@@ -122,7 +122,10 @@ export class RecipeController {
                 var recipe_list = recipes as Recipe[];
 
                 for (const recipe of recipe_list){
-                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    // Check if thumbnail is already a URL (from Pixabay) or a storage ID
+                    if (recipe.storage_links['thumbnail'] && !recipe.storage_links['thumbnail'].startsWith('http')) {
+                        recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    }
                     (recipe as any).instruction = undefined;
                 }
 
@@ -139,7 +142,10 @@ export class RecipeController {
 
                 // post processing to get thumbnail link and remove instruction
                 for (const recipe of recipe_list){
-                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    // Check if thumbnail is already a URL (from Pixabay) or a storage ID
+                    if (recipe.storage_links['thumbnail'] && !recipe.storage_links['thumbnail'].startsWith('http')) {
+                        recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                    }
                     (recipe as any).instruction = undefined;
                 }
 
@@ -149,8 +155,10 @@ export class RecipeController {
             }else {
                 const recipe = recipes as Recipe;
 
-                // get link for thumbnail
-                recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                // get link for thumbnail - check if it's already a URL (from Pixabay) or a storage ID
+                if (recipe.storage_links['thumbnail'] && !recipe.storage_links['thumbnail'].startsWith('http')) {
+                    recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+                }
 
                 // Loop through the storage links content and replace the instruction src index with the corresponding storage link
                 for (const [index, storage_id] of Object.entries(recipe.storage_links['content'])) {
@@ -165,10 +173,14 @@ export class RecipeController {
 
                 // get link for components
                 for (const component of recipe_component_list.ingredients){
-                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                    if (component.storage_links['thumbnail'] && !component.storage_links['thumbnail'].startsWith('http')) {
+                        component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                    }
                 }
                 for (const component of recipe_component_list.seasonings){
-                    component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                    if (component.storage_links['thumbnail'] && !component.storage_links['thumbnail'].startsWith('http')) {
+                        component.storage_links['thumbnail'] = await this.storageService.getLink(component.storage_links['thumbnail']);
+                    }
                 }
 
                 return {
@@ -251,7 +263,12 @@ export class RecipeController {
     async getRecipeOfTheDay(@Headers() headers: any) {
         const decoded = this.commonService.decodeHeaders(headers.authorization);
         const recipe = await this.recipeService.getRecipeOfTheDay(decoded);
-        recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+        
+        // Check if thumbnail is a Firebase storage ID that needs to be converted to a signed URL
+        if (recipe.storage_links['thumbnail'] && !recipe.storage_links['thumbnail'].startsWith('http')) {
+            recipe.storage_links['thumbnail'] = await this.storageService.getLink(recipe.storage_links['thumbnail']);
+        }
+        
         return recipe;
     }  
 

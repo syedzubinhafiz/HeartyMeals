@@ -5,14 +5,14 @@
       <!-- Clickable Header Section -->
       <div @click="toggleExpand" class="card-header flex justify-between items-center relative cursor-pointer py-2 px-2">
         <!-- Title and meal count -->
-        <div class="flex items-center">
+        <div class="flex items-center relative">
           <h3 class="text-sm font-semibold text-gray-800">{{ title }}</h3>
-          <span v-if="itemsCount > 0" class="ml-1 bg-gray-600 text-white text-xs px-1.5 py-0.5 rounded-full text-xs">{{ itemsCount }}</span>
+          <span v-if="itemsCount > 0" class="meal-count-badge">{{ itemsCount }}</span>
         </div>
 
         <!-- Chevron icon on the right -->
         <div :class="{'rotate-90': isExpanded}" class="p-1">
-          <i class="fas fa-chevron-right text-gray-600"></i>
+          <i class="fas fa-chevron-right text-custom-green"></i>
         </div>
       </div>
 
@@ -142,6 +142,38 @@ const onAddDishes = async () => {
   transform: rotate(90deg);
 }
 
+.text-custom-green {
+  color: #015B59;
+}
+
+.meal-count-badge {
+  position: absolute;
+  top: -8px;
+  right: -16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #015B59 0%, #068D8A 100%);
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 700;
+  border-radius: 50%;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1;
+  box-shadow: 
+    0 2px 8px rgba(1, 91, 89, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: scale(1);
+  transition: transform 0.2s ease;
+}
+
+.meal-count-badge:hover {
+  transform: scale(1.1);
+}
+
 .expand-enter-active,
 .expand-leave-active {
   transition: max-height 0.2s ease;
@@ -187,18 +219,49 @@ const onAddDishes = async () => {
   padding: 2px 0;
 }
 
-/* Custom scrollbar styling */
+/* Hidden Scrollbar with Scroll Indicators */
+.meal-items-container {
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
 .meal-items-container::-webkit-scrollbar {
-  width: 6px;
+  display: none; /* Chrome/Safari */
 }
 
-.meal-items-container::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
+/* Scroll Fade Indicators */
+.meal-items-container {
+  position: relative;
 }
 
-.meal-items-container::-webkit-scrollbar-track {
-  background-color: #e0e0e0;
+.meal-items-container::before,
+.meal-items-container::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.meal-items-container::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(243, 234, 218, 0.9), transparent);
+}
+
+.meal-items-container::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(243, 234, 218, 0.9), transparent);
+}
+
+/* Show fade indicators when scrollable */
+.meal-items-container.has-scroll::before,
+.meal-items-container.has-scroll::after {
+  opacity: 1;
 }
 
 /* Mobile responsiveness */

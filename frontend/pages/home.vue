@@ -136,13 +136,32 @@ onMounted(async() => {
     await getFluidData();
     await getUserBudget();
     await getEducationalContent();
+    
+    // Listen for nutrition refresh events from other pages
+    window.addEventListener('storage', handleStorageChange);
 });
+
+// Storage event listener for cross-page nutrition refresh
+const handleStorageChange = async (event) => {
+    if (event.key === 'nutritionRefresh' && event.newValue) {
+        try {
+            const refreshEvent = JSON.parse(event.newValue);
+            if (refreshEvent.type === 'nutritionRefresh') {
+                console.log('Nutrition refresh triggered from another page:', refreshEvent.mealId);
+                await getUserBudget();
+            }
+        } catch (error) {
+            console.error('Error parsing nutrition refresh event:', error);
+        }
+    }
+};
 
 // Cleanup event listeners when component unmounts
 onBeforeUnmount(() => {
     if (scrollContainer.value && handleWheel) {
         scrollContainer.value.removeEventListener('wheel', handleWheel);
     }
+    window.removeEventListener('storage', handleStorageChange);
 });
 
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
@@ -151,6 +170,8 @@ import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 import MealCard from '~/components/MealCard.vue';
 import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
+import { useUserBudget } from '~/composables/userBudget.js';
+import { useFluidLogging } from '~/composables/fluidLogging.js';
 
 /**
  * Section 1 code
@@ -185,137 +206,11 @@ import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
  * Section 2 code
  */
 
- // water budget
-const maxVolume = ref(0);
-const remainingVolume = ref(0);
+// water budget (Pinia store)
+const { maxVolume, remainingVolume, refresh: getFluidData } = useFluidLogging();
 
-// use api to get data
-const getFluidData = async () => {
-    try {
-        const today_date = () => {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-
-            const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-            return formattedDate;
-        };
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const token = localStorage.getItem('accessToken');
-        const response = await $axios.get(`/fluid-logging/get?dateTime=${today_date()}&timeZone=${timeZone}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            }
-        });
-        if (response.status === 200) {
-            maxVolume.value = response.data.logging_history[0].remaining_fluid;
-            remainingVolume.value = parseFloat((response.data.logging_history[response.data.logging_history.length - 1].remaining_fluid).toFixed(2));
-        }
-        else {
-            console.log(response);
-        }
-    }
-    catch (e) {
-        useToast().error("Failed to load fluid intake data")
-    }
-}
-
-// user daily budget, user remaining budget, and user after meal  budget
-const nutrients = ref([
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    },
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    },
-    {
-      calories: 0,
-      carbs: 0,
-      protein: 0,
-      fat: 0,
-      sodium: 0,
-      cholesterol: 0
-    }
-  ]);
-
-  const getUserBudget = async () => {
-    try {
-        const today_date = () => {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-
-            const formattedDate = `${year}-${month}-${day}`;
-            return formattedDate;
-        };
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const token = localStorage.getItem('accessToken');
-        const response = await $axios.get(`/user/budget?startDate=${today_date()}&timeZone=${timeZone}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            }
-        });
-        if (response.status === 200) {
-            const userNutrition = response.data[today_date()];
-            
-            // userNutrition contains: [daily_budget, remaining_nutrients, flag]
-            // We need: [daily_budget, current_consumed, remaining_nutrients]
-            
-            const dailyBudget = userNutrition[0];  // Total daily allowance
-            const remainingNutrients = userNutrition[1];  // What's left after consumption
-            
-            // Calculate consumed nutrients (daily_budget - remaining_nutrients)
-            const consumedNutrients = {
-                calories: dailyBudget.calories - remainingNutrients.calories,
-                carbs: dailyBudget.carbs - remainingNutrients.carbs,
-                protein: dailyBudget.protein - remainingNutrients.protein,
-                fat: dailyBudget.fat - remainingNutrients.fat,
-                sodium: dailyBudget.sodium - remainingNutrients.sodium,
-                cholesterol: dailyBudget.cholesterol - remainingNutrients.cholesterol
-            };
-            
-            // Set the nutrition widget data correctly:
-            // nutrients[0] = daily budget (total allowance)
-            nutrients.value[0] = { ...dailyBudget };
-            
-            // nutrients[1] = remaining nutrients (never show negative - cap at 0)
-            nutrients.value[1] = {
-                calories: Math.max(0, remainingNutrients.calories),
-                carbs: Math.max(0, remainingNutrients.carbs),
-                protein: Math.max(0, remainingNutrients.protein),
-                fat: Math.max(0, remainingNutrients.fat),
-                sodium: Math.max(0, remainingNutrients.sodium),
-                cholesterol: Math.max(0, remainingNutrients.cholesterol)
-            };
-            
-            // nutrients[2] = after meal prediction (same as remaining for now)
-            nutrients.value[2] = { ...nutrients.value[1] };
-        }
-        else {
-            console.log(response);
-        }
-    }
-    catch (e) {
-        useToast().error("Failed to load user budget")
-    }
-}
+// shared nutrients state
+const { nutrients, refresh: getUserBudget } = useUserBudget();
 
 /**
  * Section 3 code
@@ -366,24 +261,27 @@ const recipeNutrition = ref({
 const getRecipeOfTheDay = async () => {
     // get recipe of the day
     try {
-        const response = await $axios.get(`/recipe/recipe-of-the-day`);
-        if (response.status === 200){
-            // set recipe of the day
-            recipeName.value = response.data.name || "Sample Recipe";
-            recipeDescription.value = response.data.description || "A delicious recipe";
-            recipeImage.value = response.data.storage_links?.thumbnail || "";
-            recipeId.value = response.data.id || "";
+        const result = await useApi("/recipe/recipe-of-the-day", "GET");
+        if (!result.isError){
+            const response = { data: result.value };
+            if (response.data){
+                // set recipe of the day
+                recipeName.value = response.data.name || "Sample Recipe";
+                recipeDescription.value = response.data.description || "A delicious recipe";
+                recipeImage.value = response.data.storage_links?.thumbnail || "";
+                recipeId.value = response.data.id || "";
 
-            // Add null safety checks for nutrition info
-            const nutritionInfo = response.data.nutrition_info || {};
-            recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
-            recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
-            recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
-            recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
-            recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
-            recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
-        } else {
-            console.log(response);
+                // Add null safety checks for nutrition info
+                const nutritionInfo = response.data.nutrition_info || {};
+                recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
+                recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
+                recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
+                recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
+                recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
+                recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
+            } else {
+                console.log(response);
+            }
         }
     } catch (e) {
         console.log("No recipe of the day found, seeding sample data...");
@@ -400,26 +298,29 @@ const getRecipeOfTheDay = async () => {
             console.log("Sample recipes seeded successfully!");
             
             // Try to get recipe of the day again after seeding
-            const response = await $axios.get(`/recipe/recipe-of-the-day`);
-            if (response.status === 200){
-                recipeName.value = response.data.name || "Sample Recipe";
-                recipeDescription.value = response.data.description || "A delicious recipe";
-                recipeImage.value = response.data.storage_links?.thumbnail || "";
-                recipeId.value = response.data.id || "";
+            const result = await useApi("/recipe/recipe-of-the-day", "GET");
+            if (!result.isError){
+                const response = { data: result.value };
+                if (response.data){
+                    recipeName.value = response.data.name || "Sample Recipe";
+                    recipeDescription.value = response.data.description || "A delicious recipe";
+                    recipeImage.value = response.data.storage_links?.thumbnail || "";
+                    recipeId.value = response.data.id || "";
 
-                // Add null safety checks for nutrition info
-                const nutritionInfo = response.data.nutrition_info || {};
-                recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
-                recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
-                recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
-                recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
-                recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
-                recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
-                
-                useToast().success("Sample data loaded successfully!");
-            } else {
-                console.log("Recipe of the day still not available after seeding");
-                useToast().warning("Sample data seeded but recipe not available");
+                    // Add null safety checks for nutrition info
+                    const nutritionInfo = response.data.nutrition_info || {};
+                    recipeNutrition.value.calories = (nutritionInfo.calories || 0).toFixed(2);
+                    recipeNutrition.value.fat = (nutritionInfo.fat || 0).toFixed(2);
+                    recipeNutrition.value.sodium = (nutritionInfo.sodium || 0).toFixed(2);
+                    recipeNutrition.value.cholesterol = (nutritionInfo.cholesterol || 0).toFixed(2);
+                    recipeNutrition.value.protein = (nutritionInfo.protein || 0).toFixed(2);
+                    recipeNutrition.value.carbohydrates = (nutritionInfo.totalCarbohydrate || 0).toFixed(2);
+                    
+                    useToast().success("Sample data loaded successfully!");
+                } else {
+                    console.log("Recipe of the day still not available after seeding");
+                    useToast().warning("Sample data seeded but recipe not available");
+                }
             }
         } catch (seedError) {
             console.error("Failed to seed sample data:", seedError);
