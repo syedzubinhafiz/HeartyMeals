@@ -4,19 +4,24 @@
       <Header></Header>
     </header>
     
-    <div class="left-base">
-        <img :src="leftBase">
+    <!-- Background images - hidden on mobile -->
+    <div class="left-base hidden lg:block">
+        <img :src="leftBase" class="w-full h-auto">
     </div>    
-    <div class="right-base">
-        <img :src="rightBase">
+    <div class="right-base hidden lg:block">
+        <img :src="rightBase" class="w-full h-auto">
     </div>
 
-    <div class="body">
-      <div class="date-nav-container">
-        <label class="date-nav-label" @click="goToPreviousDay">
-          <
-        </label>
-        <label class="current-date-label">
+    <div class="body px-4 lg:px-8 pt-6 lg:pt-0">
+      <div class="date-nav-container flex items-center justify-center py-6 lg:py-8">
+        <button 
+          class="date-nav-label bg-custom-bg-green text-white rounded-full w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center min-w-touch min-h-touch" 
+          @click="goToPreviousDay"
+          aria-label="Previous day"
+        >
+          &lt;
+        </button>
+        <div class="current-date-label text-lg lg:text-xl font-semibold px-6 lg:px-8 text-center">
           {{
             currentDate.toLocaleDateString('en-GB', {
               day: '2-digit',
@@ -24,35 +29,37 @@
               year: 'numeric',
             })
           }}
-        </label>
-        <label class="date-nav-label" @click="goToNextDay">
-          >
-        </label>
+        </div>
+        <button 
+          class="date-nav-label bg-custom-bg-green text-white rounded-full w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center min-w-touch min-h-touch" 
+          @click="goToNextDay"
+          aria-label="Next day"
+        >
+          &gt;
+        </button>
       </div>
 
-      <div class="meal-type-list-container">
-        <div class="meal-type-container">
+      <!-- Main content area with responsive layout -->
+      <div class="main-content grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+        <!-- Meals section -->
+        <div class="meal-type-list-container space-y-4 lg:space-y-6">
+          <div class="meal-type-container bg-custom-overlay-brown rounded-lg shadow-md overflow-hidden">
           <div class="meal-type-header" @click="toggleDropdown('breakfast')">
             <label>Breakfast</label>
             <span> {{loggedBreakfast.length }} items</span>
             <img :class="{ rotated: breakfastDropdown }" src="@/assets/icon/black-arrow-icon.svg">
           </div>
           <div v-if="breakfastDropdown" class="meal-logged-items">
-            <div class="meal-card-container">
-              <div v-for="dish in loggedBreakfast" :key="dish.id" class="meal-card">
-                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
-                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
-                <span>{{ dish.recipe.name }}</span>
-                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
-                <MealLoggingMoreOverlay
-                  style="position:absolute; right:0; top:65%"
-                  :dishInfo="dish"
-                  :mealLogTime="currentDate"                  
-                  @consume="consumeMeal"
-                  @edit="openEditMealOverlay"
-                  @remove="openRemoveMealOverlay"
-                  :visible="overlayVisibility[dish.id] || false"
-                />
+            <div class="meal-card-container grid grid-cols-1 lg:grid-cols-2 gap-3 w-full p-3 overflow-y-auto">
+              <div v-for="dish in loggedBreakfast" :key="dish.id" class="meal-card" :class="{ 'consumed': dish.is_consumed, 'planned': !dish.is_consumed }">                
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image" :class="{ 'consumed-image': dish.is_consumed }">
+                <div class="meal-info">
+                  <span class="meal-name" :class="dish.is_consumed ? 'text-gray-600' : 'text-gray-800'">{{ dish.recipe.name }}</span>
+                  <p class="meal-status" :class="dish.is_consumed ? 'text-green-600' : 'text-orange-600'">
+                    {{ dish.is_consumed ? 'Consumed' : 'Planned' }}
+                  </p>
+                </div>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click.stop="openPopover(dish)">
               </div>
             </div>
             <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Breakfast')">
@@ -62,28 +69,23 @@
           </div>
         </div>
 
-        <div class="meal-type-container">
+        <div class="meal-type-container bg-custom-overlay-brown rounded-lg shadow-md overflow-hidden">
           <div class="meal-type-header" @click="toggleDropdown('lunch')">
             <label>Lunch</label>
             <span> {{loggedLunch.length }} items</span>
             <img :class="{ rotated: lunchDropdown }" src="@/assets/icon/black-arrow-icon.svg">
           </div>
           <div v-if="lunchDropdown" class="meal-logged-items">
-            <div class="meal-card-container">
-              <div v-for="dish in loggedLunch" :key="dish.id" class="meal-card">
-                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
-                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
-                <span>{{ dish.recipe.name }}</span>
-                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
-                <MealLoggingMoreOverlay
-                  style="position:absolute; right:0; top:65%"
-                  :dishInfo="dish"
-                  :mealLogTime="currentDate"                  
-                  @consume="consumeMeal"
-                  @edit="openEditMealOverlay"
-                  @remove="openRemoveMealOverlay"
-                  :visible="overlayVisibility[dish.id] || false"
-                />
+            <div class="meal-card-container grid grid-cols-1 lg:grid-cols-2 gap-3 w-full p-3 overflow-y-auto">
+              <div v-for="dish in loggedLunch" :key="dish.id" class="meal-card" :class="{ 'consumed': dish.is_consumed, 'planned': !dish.is_consumed }">                
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image" :class="{ 'consumed-image': dish.is_consumed }">
+                <div class="meal-info">
+                  <span class="meal-name" :class="dish.is_consumed ? 'text-gray-600' : 'text-gray-800'">{{ dish.recipe.name }}</span>
+                  <p class="meal-status" :class="dish.is_consumed ? 'text-green-600' : 'text-orange-600'">
+                    {{ dish.is_consumed ? 'Consumed' : 'Planned' }}
+                  </p>
+                </div>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click.stop="openPopover(dish)">
               </div>
             </div>
             <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Lunch')">
@@ -93,28 +95,23 @@
           </div>
         </div>
 
-        <div class="meal-type-container">
+        <div class="meal-type-container bg-custom-overlay-brown rounded-lg shadow-md overflow-hidden">
           <div class="meal-type-header" @click="toggleDropdown('dinner')">
             <label>Dinner</label>
             <span> {{loggedDinner.length }} items</span>
             <img :class="{ rotated: dinnerDropdown }" src="@/assets/icon/black-arrow-icon.svg">
           </div>
           <div v-if="dinnerDropdown" class="meal-logged-items">
-            <div class="meal-card-container">
-              <div v-for="dish in loggedDinner" :key="dish.id" class="meal-card">
-                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
-                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
-                <span>{{ dish.recipe.name }}</span>
-                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
-                <MealLoggingMoreOverlay
-                  style="position:absolute; right:0; top:65%"
-                  :dishInfo="dish"
-                  :mealLogTime="currentDate"                  
-                  @consume="consumeMeal"
-                  @edit="openEditMealOverlay"
-                  @remove="openRemoveMealOverlay"
-                  :visible="overlayVisibility[dish.id] || false"
-                />
+            <div class="meal-card-container grid grid-cols-1 lg:grid-cols-2 gap-3 w-full p-3 overflow-y-auto">
+              <div v-for="dish in loggedDinner" :key="dish.id" class="meal-card" :class="{ 'consumed': dish.is_consumed, 'planned': !dish.is_consumed }">                
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image" :class="{ 'consumed-image': dish.is_consumed }">
+                <div class="meal-info">
+                  <span class="meal-name" :class="dish.is_consumed ? 'text-gray-600' : 'text-gray-800'">{{ dish.recipe.name }}</span>
+                  <p class="meal-status" :class="dish.is_consumed ? 'text-green-600' : 'text-orange-600'">
+                    {{ dish.is_consumed ? 'Consumed' : 'Planned' }}
+                  </p>
+                </div>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click.stop="openPopover(dish)">
               </div>
             </div>
             <Button :class="['add-button', {'disabled': !isToday()}]" @click="addDish('Dinner')">
@@ -124,28 +121,23 @@
           </div>
         </div>
 
-        <div class="meal-type-container">
+        <div class="meal-type-container bg-custom-overlay-brown rounded-lg shadow-md overflow-hidden">
           <div class="meal-type-header" @click="toggleDropdown('other')">
             <label>Other</label>
             <span> {{loggedOther  .length }} items</span>
             <img :class="{ rotated: otherDropdown }" src="@/assets/icon/black-arrow-icon.svg">
           </div>
           <div v-if="otherDropdown" class="meal-logged-items">
-            <div class="meal-card-container">
-              <div v-for="dish in loggedOther" :key="dish.id" class="meal-card">
-                <div v-if="!dish.is_consumed" class="not-consumed-container">Not Consumed</div>
-                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image">
-                <span>{{ dish.recipe.name }}</span>
-                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click="toggleOverlayVisibility(dish.id)">
-                <MealLoggingMoreOverlay
-                  style="position:absolute; right:0; top:65%"
-                  :dishInfo="dish"
-                  :mealLogTime="currentDate"                  
-                  @consume="consumeMeal"
-                  @edit="openEditMealOverlay"
-                  @remove="openRemoveMealOverlay"
-                  :visible="overlayVisibility[dish.id] || false"
-                />
+            <div class="meal-card-container grid grid-cols-1 lg:grid-cols-2 gap-3 w-full p-3 overflow-y-auto">
+              <div v-for="dish in loggedOther" :key="dish.id" class="meal-card" :class="{ 'consumed': dish.is_consumed, 'planned': !dish.is_consumed }">                
+                <img :src="dish.recipe.storage_links.thumbnail" :alt="dish.recipe.name" class="recipe-image" :class="{ 'consumed-image': dish.is_consumed }">
+                <div class="meal-info">
+                  <span class="meal-name" :class="dish.is_consumed ? 'text-gray-600' : 'text-gray-800'">{{ dish.recipe.name }}</span>
+                  <p class="meal-status" :class="dish.is_consumed ? 'text-green-600' : 'text-orange-600'">
+                    {{ dish.is_consumed ? 'Consumed' : 'Planned' }}
+                  </p>
+                </div>
+                <img src="@/assets/icon/more-icon.svg" alt="more" class="more-image" @click.stop="openPopover(dish)">
               </div>
             </div>
             <Button :class="['add-button', {'disabled': !isToday()}]"  @click="addDish('Other')">
@@ -154,10 +146,12 @@
             </Button>      
           </div>
         </div>
-      </div>
+        </div>
 
-      <div class="nutrition-budget">
-        <NutritionWidgetCurve :nutrients="nutrients"/>
+        <!-- Nutrition budget section -->
+        <div class="nutrition-budget-container">
+          <NutritionWidgetCurve :nutrients="nutrients"/>
+        </div>
       </div>
 
     </div>
@@ -176,6 +170,16 @@
       @editLogMeal="editLogMeal"
     />
 
+    <MealPopover
+      :visible="popoverVisible"
+      :mealInfo="selectedMeal || {}"
+      :mealLogTime="currentDate"
+      @update:visible="popoverVisible = $event"
+      @consume="consumeMeal"
+      @edit="openEditMealOverlay"
+      @remove="openRemoveMealOverlay"
+    />
+
     <footer class="footer">
       <Footer></Footer>
     </footer>
@@ -192,6 +196,7 @@ import { isSameDay } from 'date-fns';
 import RemoveMealOverlay from '~/components/Overlay/RemoveMealOverlay.vue';
 import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
+import MealPopover from '~/components/MealPopover.vue';
 import { useUserBudget } from '~/composables/userBudget.js';
 
 definePageMeta({
@@ -217,7 +222,7 @@ const dinnerDropdown = ref(false);
 const loggedOther = ref([]);
 const otherDropdown = ref(false);
 
-const overlayVisibility = ref({});
+
 
 const removeMealOverlayVisible = ref(false);
 const removeMealInfo= ref(null);
@@ -225,32 +230,16 @@ const removeMealInfo= ref(null);
 
 const editMealOverlayVisible = ref(false);
 const editMealInfo = ref(null);
+const popoverVisible = ref(false);
+const selectedMeal = ref(null);
 
 const { nutrients, refresh: getUserBudget } = useUserBudget();
 
-function toggleOverlayVisibility(dishId) {
- 
-  Object.keys(overlayVisibility.value).forEach((key) => {
-    overlayVisibility.value[key] = false;
-  });
-
-  if (overlayVisibility.value[dishId] !== undefined) {
-    overlayVisibility.value[dishId] = !overlayVisibility.value[dishId];
-  } else {
-    overlayVisibility.value = { ...overlayVisibility.value, [dishId]: true };
-  }
-}
-
-function updateVisibility(visible, dishId) {
-  if (overlayVisibility.value[dishId] !== visible) {
-    overlayVisibility.value[dishId] = visible;
-  }
-}
-
 function toggleDropdown(mealType) {
-  Object.keys(overlayVisibility.value).forEach((key) => {
-    overlayVisibility.value[key] = false;
-  });
+  // Close the popover if it's open
+  popoverVisible.value = false;
+  selectedMeal.value = null;
+  
   if (mealType === 'breakfast') {
     breakfastDropdown.value = !breakfastDropdown.value;
   } else if (mealType === 'lunch') {
@@ -376,22 +365,9 @@ async function getMeals() {
     loggedDinner.value =  meals.Dinner || [];
     loggedOther.value =  meals.Other || [];
 
-    // set all the overlay visibility to false
-    const overlayVisibilityObj = {};
-    (meals.Breakfast || []).forEach((meal) => {
-      overlayVisibilityObj[String(meal.id)] = false;
-    });
-    (meals.Lunch || []).forEach((meal) => {
-      overlayVisibilityObj[String(meal.id)] = false;
-    });
-    (meals.Dinner || []).forEach((meal) => {
-      overlayVisibilityObj[String(meal.id)] = false;
-    });
-    (meals.Other || []).forEach((meal) => {
-      overlayVisibilityObj[String(meal.id)] = false;
-    });
-    overlayVisibility.value = overlayVisibilityObj;
-    console.log(overlayVisibility.value);
+    // Reset the popover
+    popoverVisible.value = false;
+    selectedMeal.value = null;
   } catch (error) {
     console.log(error);
   }
@@ -535,6 +511,11 @@ async function editLogMeal(newValue){
   }
 }
 
+function openPopover(dish) {
+  selectedMeal.value = dish;
+  popoverVisible.value = true;
+}
+
 onMounted(async () => {
   await getMeals();
   await getUserBudget(currentDate.value);
@@ -600,237 +581,278 @@ const handleStorageChange = async (event) => {
 .page-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
 }
 
 .header {
-  position: fixed;
+  position: sticky; /* Use sticky instead of fixed for better mobile compatibility */
   top: 0;
   width: 100%;
   z-index: 40;
 }
 
-
-.body {
-  overflow:hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.footer {
   width: 100%;
-  height: 100%;
 }
 
-.left-base{
+/* Mobile-first responsive layout */
+.body {
+  width: 100%;
+  max-width: 100%;
+  position: relative; /* Ensure body is a stacking context */
+  z-index: 2; /* Place above background blobs */
+  flex-grow: 1; /* Allow body to grow and push footer down */
+  padding-bottom: 2rem; /* Add space above the footer */
+}
+
+.left-base, .right-base {
+  display: block; /* Restore background images */
   position: absolute;
+  z-index: 1;
+}
+
+.left-base {
   top: 20%;
   left: 0;
 }
 
-.right-base{
-  position: absolute;
+.right-base {
   top: 9%;
   right: 0;
 }
 
-.footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 40;
-}
-
-.date-nav-container{
-  position: absolute;
-  top: 12%;
-  left: 44%;
-  width: 20%;
-
-}
-
-.current-date-label{
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #000;
-  text-align: center;
-  margin: 0;
-  padding: 0 2.5%;
-  width: 100%;
-}
-
-.date-nav-label{
-  font-size: 1.5rem;
-  font-weight: bolder;
-  color: #015B59;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  cursor: pointer;
-}
-
-.nutrition-budget {
-  position: absolute;
-  top: 12.5%;
-  right: 0%;
-  width: 45%;
-  height: 60%;
-  transform: scale(0.85);
-}
-
-.meal-type-list-container{
-  position: absolute;
-  top: 20%;
-  left: 5%;
-  width: 45%;
-  height: 60%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  row-gap: 5%;
-}
-
+/* Meal type containers */
 .meal-type-container {
-  min-height: 10%;
-  max-height: 60%;
   background-color: #F3EADA;
   border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.meal-type-header {
+  padding: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem; /* Ensure adequate height on mobile */
+}
+
+.meal-type-header label {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #000;
+  flex: 1;
+  margin: 0;
+}
+
+.meal-type-header span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  margin: 0 0.75rem 0 0.5rem;
+  flex-shrink: 0;
+}
+
+.meal-type-header img {
+  height: 1.5rem;
+  width: 1.5rem;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.rotated {
+  transform: rotate(90deg);
+}
+
+.meal-logged-items {
+  padding: 0 1rem 1rem 1rem;
+}
+
+.meal-card {
+  background-color: rgba(218, 194, 168, 0.5);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  min-height: 5rem;
+}
+
+/* Enhanced styling for consumed meals */
+.meal-card.consumed {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Enhanced styling for planned meals */
+.meal-card.planned {
+  background-color: rgba(251, 146, 60, 0.1);
+  border: 2px solid rgba(251, 146, 60, 0.3);
+}
+
+.recipe-image {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: 8px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
-.meal-type-header {
-  padding-top: 2%;
+.consumed-image {
+  opacity: 0.7;
+  filter: grayscale(20%);
+}
+
+.more-image {
+  width: 1.5rem;
+  height: 1.5rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
+  flex-shrink: 0;
 }
 
-.meal-type-header label {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #000;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  text-align: left;
-  padding-left: 2.5%;
-  width: 30%;
+.meal-info {
+  flex: 1;
+  padding: 0 0.75rem;
+  min-width: 0; /* Allows text truncation */
 }
 
-.meal-type-header span {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #000;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  text-align: left;
-  padding-left: 2.5%;
-}
-
-.meal-type-header img {
-  height: 50%;
-  margin-right: 2.5%;
-  transition: transform 0.3s ease; /* Smooth transition for rotation */
-}
-
-.rotated {
-  transform: rotate(90deg); /* Rotate 90 degrees */
-}
-
-.meal-logged-items {
-  padding-bottom: 2%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 85%;
-}
-
-
-.add-button{
-
-  display: flex;
-  grid-template-columns: repeat(2, max-content);
-  column-gap: 2.5%;
-  width: 80%;
-  justify-content: center;
-  align-items: center;
-
-}
-
-.add-button.disabled{
-  background-color: #d3d3d3;
-  cursor: not-allowed;
-  pointer-events: none;
-
-} 
-
-
-.meal-card {
-  position: relative;
-  background-color: rgba(218, 194, 168, 0.5);
-  border-radius: 10px;
-  margin-left: 5%;
-  margin-right: 5%;
-  margin-bottom: 5%;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-}
-
-.recipe-image{
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin:2.5%;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-}
-
-.more-image{
-  width: 20px;
-  height: 20px;
-  object-fit: cover;
-  margin:2.5%;
-  cursor: pointer;
-}
-
-.meal-card span {
+.meal-name {
   font-size: 1rem;
   font-weight: bold;
   color: #000;
   margin: 0;
-  padding: 0;
-  width: 100%;
   text-align: left;
-  padding-left: 2.5%;
+  white-space: normal; /* Allow text to wrap */
+  word-break: break-word; /* Break long words to prevent overflow */
 }
 
-.meal-card-container{
-  margin-bottom: 2%;
-  margin-top: 2%;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  width: 90%;
-  height: 30%;
-  overflow-y: auto;
+.meal-status {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0.25rem 0 0 0;
+  letter-spacing: 0.2px;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 12rem;
+  margin: 0.75rem auto 0 auto;
+  padding: 0.75rem 1rem;
+  min-height: 2.75rem;
+}
+
+.add-button.disabled {
+  background-color: #d3d3d3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Hide background images on mobile */
+@media (max-width: 1024px) {
+  .left-base, .right-base {
+    display: none !important;
+  }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .meal-type-header {
+    padding: 1.25rem 1rem;
+    min-height: 4.5rem;
+  }
   
+  .meal-type-header label {
+    font-size: 1.375rem;
+    font-weight: 700;
+  }
+  
+  .meal-type-header span {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  /* Fix overflow when meals are expanded */
+  .meal-card-container {
+    max-height: 15rem; /* Limit height to prevent overflow */
+  }
+  
+  /* Ensure main content doesn't overflow */
+  .main-content {
+    overflow-x: hidden;
+  }
+  
+  .body {
+    padding-bottom: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+  }
+}
+
+/* Nutrition widget container */
+.nutrition-budget-container {
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+}
+
+/* Mobile-specific nutrition widget styles */
+@media (max-width: 768px) {
+  .body {
+    padding-bottom: 0;
   }
 
-
-.not-consumed-container{
-  position: absolute;
-  top: 0;
-  background-color: red;
-  padding: 2%;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: bold;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  .nutrition-budget-container {
+    width: 100%;
+    margin: 0 auto; /* Centered with auto margin */
+    padding: 0 1rem; /* Add horizontal padding */
+    max-width: 500px; /* Max-width for larger mobile */
+  }
+  
+  /* Give the nutrition widget more breathing room on mobile */
+  .main-content {
+    margin-bottom: 2rem; /* Add some space above the footer */
+    row-gap: 1.5rem;
+  }
 }
+
+/* Scale down widget on large desktops for better balance */
+@media (min-width: 1024px) {
+  .nutrition-budget-container {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}
+
+/* Smaller phones */
+@media (max-width: 425px) {
+  .nutrition-budget-container {
+    padding: 0 0.5rem; /* Reduce padding for very small phones */
+  }
+}
+
+/* Very small phones */
+@media (max-width: 375px) {
+  .nutrition-budget-container {
+    padding: 0; /* No padding on the smallest screens */
+  }
+}
+</style>
+
+<style>
+  html, body {
+    background-color: #DAC2A8;
+  }
 </style>

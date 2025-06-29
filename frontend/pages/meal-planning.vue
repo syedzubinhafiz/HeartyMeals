@@ -1,30 +1,41 @@
 <template>
-  <div class="relative w-screen z-40 bg-custom-bg">
+  <div class="relative w-full min-h-screen z-40 bg-custom-bg">
     <Header />
-    <div class="meal-planning">
+    <div class="meal-planning px-4 lg:px-8">
       <!-- Header with Date Navigation -->
-      <div class="flex items-center justify-center py-10">
-        <button @click="previousPeriod" class="text-custom-bg-green px-2">
-          <i class="bi bi-chevron-left"></i> <!-- Larger arrow icon -->
+      <div class="flex items-center justify-center py-6 lg:py-10">
+        <button 
+          @click="previousPeriod" 
+          class="text-custom-bg-green p-2 min-w-touch min-h-touch flex items-center justify-center"
+          aria-label="Previous period"
+        >
+          <i class="bi bi-chevron-left text-lg lg:text-xl"></i>
         </button>
     
         <!-- Date Range Display -->
-        <span class="text-2xl font-semibold px-8">{{ dateRange }}</span> 
+        <span class="text-lg lg:text-2xl font-semibold px-4 lg:px-8 text-center">{{ dateRange }}</span> 
     
-        <button @click="nextPeriod" class="text-custom-bg-green px-2">
-          <i class="bi bi-chevron-right"></i> <!-- Larger arrow icon -->
+        <button 
+          @click="nextPeriod" 
+          class="text-custom-bg-green p-2 min-w-touch min-h-touch flex items-center justify-center"
+          aria-label="Next period"
+        >
+          <i class="bi bi-chevron-right text-lg lg:text-xl"></i>
         </button>
       </div>
       
       <!-- View Toggle -->
-      <div class="flex justify-center mb-8">
-        <button @click="goToToday" class="bg-custom-bg-green text-white px-6 py-3 rounded-lg hover:opacity-80 transition-opacity font-medium">
+      <div class="flex justify-center mb-6 lg:mb-8">
+        <button 
+          @click="goToToday" 
+          class="bg-custom-bg-green text-white px-6 py-3 rounded-lg hover:opacity-80 transition-opacity font-medium min-h-touch"
+        >
           Go to Today
         </button>
       </div>
   
       <!-- Meal Days (Monday to Sunday) -->
-      <div class="meal-days-grid">
+      <div class="meal-days-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
         <MealDay 
           v-for="(day, index) in daysOfWeek" 
           :key="index" 

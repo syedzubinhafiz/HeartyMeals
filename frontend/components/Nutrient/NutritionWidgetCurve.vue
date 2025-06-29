@@ -1,6 +1,6 @@
 <template>
     <div class="budget-container">
-        <svg width="592" height="747" viewBox="0 0 592 747" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 592 747" fill="none" xmlns="http://www.w3.org/2000/svg">
             <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="100%">
                 <stop offset="0%" stop-color="#B8B396" />
                 <stop offset="100%" stop-color="#B8B396" />
@@ -282,11 +282,11 @@ import NutritionBar from './NutritionBar.vue';
 <style scoped>
     .budget-container {
         position: relative; /* Set the position to relative to allow absolute positioning of overlay */
-        width: 592px;
-        height: 747px;
+        width: 100%; /* Make width responsive */
+        max-width: 592px; /* Set a max-width to maintain aspect ratio */
+        height: auto; /* Adjust height automatically */
         margin-left: auto;
         margin-right: auto;
-        top: -5%;
     }
 
     .budget-container svg {
@@ -300,7 +300,6 @@ import NutritionBar from './NutritionBar.vue';
         top: 0%;
         position: absolute;
         pointer-events: all; /* Enable interaction with labels */
-
         font-weight: 600;
     }
 
@@ -321,12 +320,15 @@ import NutritionBar from './NutritionBar.vue';
         flex-direction: column;
         text-align: center;
         width: 100%;
-
         font-weight: 600;
     }
 
     .calories-title{
-        font-size: 175%;
+        font-size: 1.75rem; /* Responsive font size */
+    }
+
+    .calories-container span:last-child {
+        font-size: 1rem;
     }
 
     .calories-container.over-budget {
@@ -359,26 +361,33 @@ import NutritionBar from './NutritionBar.vue';
 
     .budget-title{
         position: absolute;
-        font-size: 200%;
+        font-size: 1.5rem; /* Responsive font size */
         font-weight: 600;
-        top: 25%;
-        left: 20%;
+        top: 28%; /* Adjusted from 25% to lower the title */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        text-align: center;
     }
 
     .budget-bar-overlay{
-        width: 461px;
-        height: 474px;
+        width: auto; /* Adjust width automatically */
+        height: auto; /* Adjust height automatically */
         top: 33%;
         left: 12%;
+        right: 12%; /* Use left and right for responsive width */
+        bottom: 15%; /* Use top and bottom for responsive height */
         position: absolute;
         pointer-events: all; /* Enable interaction with labels */
-
         font-weight: 600;
-        font-size: 115%;
+        font-size: 1rem; /* Base font size */
     }
 
     :deep(.progress-bar) {
         height: 140%;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0%;
     }
 
     .view-nutrition {
@@ -404,23 +413,25 @@ import NutritionBar from './NutritionBar.vue';
     .tooltip-container {
         position: relative;
         cursor: initial;
+        width: 100%; /* Ensure full width */
     }
 
     .custom-tooltip {
         position: absolute;
         top: -100%; /* Adjust based on your layout */
-        left: 75%;
+        left: 50%; /* Center the tooltip */
         transform: translateX(-50%);
         background-color: #E3D4BE;
-        border-radius: 3vh;
+        border-radius: 1rem; /* Use rem for scalability */
         z-index: 10;
-        width: 50vh;
+        width: 80vw; /* Use viewport width for responsiveness */
+        max-width: 300px; /* Set a max-width */
         cursor: initial;
-
-        font-size: 100%;
-        padding: 2vh;
+        font-size: 0.875rem; /* Responsive font size */
+        padding: 1rem; /* Use rem for scalable padding */
         opacity: 1; /* Tooltip is visible */
         transition: opacity 0.3s ease-in-out;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     .tooltip-container:hover .custom-tooltip {
@@ -507,5 +518,40 @@ import NutritionBar from './NutritionBar.vue';
     .slide-down-leave-to {
         transform: translate(-50%, -20px);
         opacity: 0;
+    }
+    
+    /* Media Queries for Responsiveness */
+    @media (max-width: 768px) {
+        .budget-title {
+            font-size: 1.25rem;
+            top: 27%; /* Adjusted for tablets */
+        }
+        .calories-title {
+            font-size: 1.5rem;
+        }
+        .budget-bar-overlay {
+            font-size: 0.875rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .budget-title {
+            font-size: 1rem;
+            top: 26%; /* Adjusted for mobile */
+        }
+        .calories-title {
+            font-size: 1.25rem;
+        }
+        .calories-container span:last-child {
+            font-size: 0.875rem;
+        }
+        .budget-bar-overlay {
+            top: 30%;
+            bottom: 18%;
+            font-size: 0.75rem;
+        }
+        .custom-tooltip {
+            width: 90vw;
+        }
     }
 </style>

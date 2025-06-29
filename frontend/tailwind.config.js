@@ -9,6 +9,16 @@ export default {
     "./error.vue",
   ],
   theme: {
+    screens: {
+      'xs': '320px',     // mobile-small
+      'sm': '375px',     // mobile
+      'md': '425px',     // mobile-large
+      'lg': '768px',     // tablet
+      'xl': '1024px',    // laptop
+      '2xl': '1440px',   // desktop
+      '3xl': '1920px',   // desktop-large
+      '4xl': '2560px',   // desktop-4k
+    },
     extend: {
       colors: {
         'custom-bg-green': '#015B59',
@@ -22,6 +32,18 @@ export default {
         'custom-text-orange': '#993300',
         'custom-sidebar-yellow': '#B8B396'
       },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      minHeight: {
+        'touch': '44px', // Minimum touch target size
+      },
+      minWidth: {
+        'touch': '44px', // Minimum touch target size
+      }
     },
   },
   plugins: [],

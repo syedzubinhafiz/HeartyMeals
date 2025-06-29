@@ -1,16 +1,24 @@
 <template>
-  <div class="food-card flex items-center p-3 rounded-lg shadow-md relative">
-    <!-- Banner for Not Consumed -->
-    <div v-if="!is_consumed" class="not-consumed-banner absolute top-0 left-0 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-br-lg">
-      Not Consumed
+  <div class="food-card flex items-center p-3 rounded-lg shadow-md relative" :class="{ 'consumed': is_consumed, 'planned': !is_consumed }">
+    <!-- Enhanced Status Badge -->
+    <div v-if="is_consumed" class="status-badge consumed-badge">
+      <span class="text-white font-bold">✓</span>
+    </div>
+    <div v-else class="status-badge planned-badge">
+      <span class="text-white font-bold">⏰</span>
     </div>
 
     <!-- Food Image -->
-    <img :src="getRecipeImage()" alt="Meal Image" class="food-image rounded-lg shadow-sm" />
+    <img :src="getRecipeImage()" alt="Meal Image" class="food-image rounded-lg shadow-sm" :class="{ 'consumed-image': is_consumed }" />
 
     <!-- Food Name -->
     <div class="ml-4 flex-1">
-      <h3 class="text-lg font-semibold">{{ cardInfo.recipe.name }}</h3>
+      <h3 class="text-lg font-semibold" :class="is_consumed ? 'text-gray-600' : 'text-gray-800'">{{ cardInfo.recipe.name }}</h3>
+      <!-- Status text indicator -->
+      <p class="text-sm mt-1 font-medium" :class="is_consumed ? 'text-green-600' : 'text-orange-600'">
+        <span class="mr-1">{{ is_consumed ? '✅' : '⏰' }}</span>
+        {{ is_consumed ? 'Consumed' : 'Planned' }}
+      </p>
     </div>
 
     <!-- More Options Icon -->
@@ -117,28 +125,73 @@ const getRecipeImage = () => {
 .food-card {
   background-color: #F3EADA; /* Use your preferred background color */
   position: relative; /* Ensure the position is relative so that the child absolute element is positioned relative to this parent */
+  transition: all 0.2s ease;
+  overflow: visible;
+}
+
+/* Enhanced styling for consumed meals */
+.food-card.consumed {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Enhanced styling for planned meals */
+.food-card.planned {
+  background-color: rgba(251, 146, 60, 0.1);
+  border: 2px solid rgba(251, 146, 60, 0.3);
 }
 
 .food-image {
   width: 50px;
   height: 50px;
   object-fit: cover;
+  transition: all 0.2s ease;
+}
+
+.consumed-image {
+  opacity: 0.7;
+  filter: grayscale(20%);
 }
 
 .food-card:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Add a hover effect */
+  transform: translateY(-1px);
 }
 
-.not-consumed-banner {
-  /* Banner styles for "Not Consumed" */
-  background-color: #e3342f; /* Red color */
-  color: white;
-  font-size: 0.75rem; /* Small text */
-  font-weight: bold;
-  padding: 4px 8px;
+/* Status Badge Styles */
+.status-badge {
   position: absolute;
-  top: 0;
-  left: 0;
-  border-bottom-right-radius: 5px; /* Rounded corner for bottom-right */
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+}
+
+.status-badge span {
+  line-height: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.75rem;
+  margin: 0;
+  padding: 0;
+}
+
+.consumed-badge {
+  background-color: #22c55e;
+}
+
+.planned-badge {
+  background-color: #f59e0b;
 }
 </style>

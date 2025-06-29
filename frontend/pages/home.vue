@@ -1,8 +1,8 @@
 <template>
-    <div class="absolute w-screen z-40">
+    <div class="absolute w-full z-40">
         <Header/>
     </div>
-    <div ref="scrollContainer" class="scrollContainer relative">
+    <div ref="scrollContainer" class="scrollContainer relative w-full">
         <!-- section 1 -->
         <div class="section1-container">
             <div class="section1-content">

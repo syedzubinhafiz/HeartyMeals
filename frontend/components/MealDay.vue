@@ -401,7 +401,6 @@ watch(
 /* Scrollable Meal Items Container */
 .meal-items-container {
   max-height: 50vh; /* Set maximum height for the dropdown */
-  overflow-y: auto;  /* Enable vertical scrolling */
 }
 
 /* Hidden Scrollbar for Clean Look */

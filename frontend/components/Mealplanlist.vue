@@ -103,6 +103,7 @@ const onAddDishes = async () => {
   background-color: #F3EADA;
   transition: all 0.3s ease;
   border-color: rgba(139, 107, 85, 0.3);
+  overflow: visible;
 }
 
 .prev-list {
@@ -215,8 +216,8 @@ const onAddDishes = async () => {
 /* Scrollable Meal Items Container */
 .meal-items-container {
   max-height: 200px;
-  overflow-y: auto;
-  padding: 2px 0;
+  padding: 8px;
+  overflow: visible;
 }
 
 /* Hidden Scrollbar with Scroll Indicators */
@@ -224,10 +225,6 @@ const onAddDishes = async () => {
   /* Hide scrollbar but keep functionality */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
-}
-
-.meal-items-container::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
 }
 
 /* Scroll Fade Indicators */

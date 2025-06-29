@@ -3,9 +3,11 @@
         <div class="label-grid">
           <div class="label-icon-container">
             <img :src="icon" class="icon"/>
-            <label class="label-grid-left">{{ label }}</label>
+            <!-- Use full label on desktop, shortened on mobile -->
+            <label class="label-grid-left desktop-only">{{ label }}</label>
+            <label class="label-grid-left mobile-only">{{ shortLabel }}</label>
           </div>
-            <span :style="{ color: isOverBudget ? '#ef4444' : fontColor }" class="label-grid-right">{{ parseFloat((currentValue || 0).toFixed(2)) }}/{{ totalValue || 0 }}{{ unit }}</span>
+            <span :style="{ color: isOverBudget ? '#ef4444' : fontColor }" class="label-grid-right">{{ displayValue }}/{{ displayTotal }}{{ unit }}</span>
         </div>
 
         <div class="progress-bar-container" :style="progressBarContainerStyle">
@@ -72,6 +74,40 @@
   const isOverBudget = computed(() => {
     return props.currentValue > props.totalValue;
   });
+
+  // Compute a shortened label for mobile screens
+  const shortLabel = computed(() => {
+    const labelMap = {
+      'Carbohydrates': 'Carbs',
+      'Protein': 'Protein',
+      'Sodium': 'Sodium',
+      'Cholesterol': 'Chol',
+      'Calories': 'Cal'
+    };
+    
+    return labelMap[props.label] || props.label;
+  });
+
+  // Compute values for display with proper formatting
+  const displayValue = computed(() => {
+    if (props.currentValue === null || props.currentValue === undefined) return '0';
+    // For large values like sodium, round to nearest integer
+    if (props.totalValue >= 100) {
+      return Math.round(props.currentValue);
+    }
+    // For smaller values like macros, keep decimal places
+    return parseFloat(props.currentValue.toFixed(1));
+  });
+
+  const displayTotal = computed(() => {
+    if (props.totalValue === null || props.totalValue === undefined) return '0';
+    // For large values like sodium, round to nearest integer
+    if (props.totalValue >= 100) {
+      return Math.round(props.totalValue);
+    }
+    // For smaller values like macros, keep decimal places
+    return parseFloat(props.totalValue.toFixed(1));
+  });
 </script>
   
 <style scoped>
@@ -85,11 +121,12 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    max-width: 100%; /* Ensure it doesn't exceed container width */
   }
 
   .label-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr ;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas: "label-grid-left label-grid-right";
     justify-content: space-between;
     align-items: center;
@@ -104,12 +141,16 @@
     grid-area: label-grid-left;
     text-align: left;
     font-size: 110%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .label-grid-right {
     grid-area: label-grid-right;
     text-align: right;
     font-size: 90%;
+    white-space: nowrap;
   }
 
   .progress-bar-container {
@@ -118,6 +159,7 @@
     width: 100%;
     border-radius: 50px;
     background-color: #e0e0e0;
+    overflow: hidden; /* Prevent bars from overflowing container */
   }
 
   .progress-bar {
@@ -125,12 +167,78 @@
     height: 100%;
     border-radius: 50vh;
     box-shadow: 0px 4px 16.2px -1px rgba(0,0,0,0.1);
+    /* Ensure bars don't overflow even with large values */
+    max-width: 100%;
   }
   
-  .icon{
+  .icon {
     width: 15px;
+    height: 15px;
     margin-right: 5%;
+    flex-shrink: 0;
   }
 
+  /* Default hide mobile-only content */
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+
+  /* Mobile-specific adjustments */
+  @media (max-width: 768px) {
+    .nutrition-bar {
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    
+    /* Switch label display */
+    .mobile-only {
+      display: block;
+    }
+    
+    .desktop-only {
+      display: none;
+    }
+    
+    .label-grid-left {
+      font-size: 95%;
+      max-width: 100%;
+      font-weight: 500;
+    }
+    
+    .label-grid-right {
+      font-size: 85%;
+    }
+    
+    .progress-bar-container {
+      height: 8px; /* Fixed height on mobile */
+      margin-top: 4px;
+    }
+    
+    .icon {
+      width: 12px;
+      height: 12px;
+      margin-right: 3px;
+    }
+  }
+  
+  /* Very small screens */
+  @media (max-width: 360px) {
+    .label-grid-left {
+      font-size: 90%;
+    }
+    
+    .label-grid-right {
+      font-size: 80%;
+    }
+    
+    .nutrition-bar {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+  }
 </style>
   
