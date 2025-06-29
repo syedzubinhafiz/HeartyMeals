@@ -3,46 +3,45 @@
     <img src="@/assets/img/Texture.svg" alt="Hearty Meal" class="recipe-of-the-day-bg">
 
     <div class="recipe-of-the-day-overlay">
-      <div class="recipe-of-the-day-title">
-        <h2>Recipe of the Day</h2>
-      </div>      
+      <h2 class="recipe-of-the-day-title">Recipe of the Day</h2>
+      
       <div class="recipe-of-the-day-content">
-        <div class="recipe-of-the-day-column-left">
-          <p class="recipe-description">
-            {{ recipeDescription }}
-          </p>
-          <div class="items-center justify-center flex flex-col" @click="navigateToRecipeLibrary()" style="cursor: pointer">
-            <img src="@/assets/img/IconGetRecipe.png" alt="Hearty Meal" class="w-fit h-fit z-0">
-            <p class="-translate-y-3">Get Recipe</p>
-          </div>
-        </div>
-        <div class="recipe-of-the-day-column-right">
+        <div class="recipe-image-container">
           <img :src="recipeImage" alt="Hearty Meal" class="recipe-image">
-          <h2 class="text-justify -translate-y-6">{{ recipeName }}</h2>
+        </div>
+        <div class="recipe-details">
+          <h3 class="recipe-name">{{ recipeName }}</h3>
+          <p class="recipe-description">{{ recipeDescription }}</p>
         </div>
       </div>
-      <div 
-        class="view-nutrition-info"
-        @mouseover="showNutrition = true" 
-        @mouseleave="showNutrition = false"
-      >
-        <p>View nutritional information</p>
-        <img src="@/assets/img/Info_alt_light.png" alt="Hearty Meal" class="w-6 h-6 z-0">
+
+      <div class="recipe-of-the-day-footer">
+        <div class="get-recipe-button" @click="navigateToRecipeLibrary()">
+          <img src="@/assets/img/IconGetRecipe.png" alt="Get Recipe" class="get-recipe-icon">
+          <span>Get Recipe</span>
+        </div>
         <div 
-          v-if="showNutrition" 
-          class="absolute bottom-10 right-0 bg-white text-black p-4 rounded-lg shadow-lg nutrition-info-container"
-          style="display: flex; column-gap: 15%; align-items: center; width: 35vh;"
+          class="view-nutrition-info"
+          @mouseover="showNutrition = true" 
+          @mouseleave="showNutrition = false"
         >
-        <div>
-          <p>Calories: {{ recipeNutrition.calories }}cal</p>
-          <p>Sodium: {{ recipeNutrition.sodium }}mg</p>
-          <p>Carbohydrates: {{ recipeNutrition.carbohydrates }}g</p>
-        </div>
-        <div>
-          <p>Fat: {{ recipeNutrition.fat }}g</p>
-          <p>Protein: {{ recipeNutrition.protein }}g</p>
-          <p>Cholesterol: {{ recipeNutrition.cholesterol }}mg</p>
-        </div>
+          <span>View nutritional information</span>
+          <img src="@/assets/img/Info_alt_light.png" alt="Info" class="info-icon">
+          <div 
+            v-if="showNutrition" 
+            class="nutrition-info-container"
+          >
+            <div>
+              <p>Calories: {{ recipeNutrition.calories }}cal</p>
+              <p>Sodium: {{ recipeNutrition.sodium }}mg</p>
+              <p>Carbohydrates: {{ recipeNutrition.carbohydrates }}g</p>
+            </div>
+            <div>
+              <p>Fat: {{ recipeNutrition.fat }}g</p>
+              <p>Protein: {{ recipeNutrition.protein }}g</p>
+              <p>Cholesterol: {{ recipeNutrition.cholesterol }}mg</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -139,192 +138,157 @@ async function navigateToRecipeLibrary() {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
-  * {
-      font-family: 'Overpass', sans-serif;
-  }
-/* Tailwind CSS handles most styling; no additional CSS is required */
+* {
+  font-family: 'Overpass', sans-serif;
+  box-sizing: border-box;
+}
+
 .recipe-of-the-day-container {
   position: relative;
-  width: 90vh;
-  height: 90vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin: 0 auto; 
-}
-
-@media (max-width: 768px) {
-  .recipe-of-the-day-container {
-    width: 95vw;
-    height: 70vh;
-    min-height: 500px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1200px) {
-  .recipe-of-the-day-container {
-    width: 75vh;
-    height: 75vh;
-  }
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
 .recipe-of-the-day-bg {
-  object-fit: cover;
-  max-width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }
 
 .recipe-of-the-day-overlay {
-  position: absolute; /* Overlay content */
-  width: 90vh; /* Full width */
-  height: 55vh; /* Full height */
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  text-align: center;
   color: white;
+  gap: 1.5rem;
+  padding: 1.5rem;
 }
-
-@media (max-width: 768px) {
-  .recipe-of-the-day-overlay {
-    width: 95vw;
-    height: 65vh;
-    padding: 1rem;
-  }
-}
-
 
 .recipe-of-the-day-title {
-  font-size: 1.5rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 600;
-  margin-top: 4%;
 }
 
 .recipe-of-the-day-content {
-  display: flex; /* Flex container for left and right columns */
-  width: 100%; /* Full width */
-  height: 50%; 
-  flex: 1; /* Make it fill available space */
-  align-items: center; /* Center items vertically */
-  justify-content: center; /* Center items horizontally */
-}
-
-@media (max-width: 768px) {
-  .recipe-of-the-day-content {
-    flex-direction: column;
-    height: auto;
-    gap: 1rem;
-  }
-}
-
-
-.recipe-of-the-day-column-left  {
-  width: 60%; /* Each column takes up half the space */
   display: flex;
-  flex-direction: column; /* Stack content vertically within each column */
-  align-items: center; /* Center items in each column */
-  justify-content: center; /* Center items in each column */
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
 }
 
-@media (max-width: 768px) {
-  .recipe-of-the-day-column-left {
-    width: 100%;
-    order: 2;
-  }
+.recipe-image-container {
+  width: 100%;
+  max-width: 200px;
 }
 
-.recipe-of-the-day-column-right {
-  width: 40%; /* Each column takes up half the space */
-  display: flex;
-  flex-direction: column; /* Stack content vertically within each column */
-  align-items: center; /* Center items in each column */
-  justify-content: center; /* Center items in each column */
-}
-
-@media (max-width: 768px) {
-  .recipe-of-the-day-column-right {
-    width: 100%;
-    order: 1;
-  }
-}
-
-.recipe-description {
-  font-size: 100%;
-  width: 400px;
-  height: fit-content;
-  max-height: 200px;
-  overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .recipe-description {
-    width: 100%;
-    max-width: 350px;
-    font-size: 0.9rem;
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-}
-
-.recipe-image{
-  height: 200px; 
-  width: 200px;
-  border-radius: 10px;
-  margin-bottom: 15%;
+.recipe-image {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.75rem;
   object-fit: cover;
 }
 
-@media (max-width: 768px) {
-  .recipe-image {
-    height: 150px;
-    width: 150px;
-    margin-bottom: 0.5rem;
-  }
+.recipe-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recipe-name {
+  font-size: clamp(1.125rem, 3vw, 1.25rem);
+  font-weight: 600;
+}
+
+.recipe-description {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+  line-height: 1.4;
+  max-width: 45ch;
+}
+
+.recipe-of-the-day-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.get-recipe-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: clamp(1rem, 3vw, 1.125rem);
+}
+
+.get-recipe-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: 0.5rem;
 }
 
 .view-nutrition-info {
-  position: absolute;
-  bottom: 5%;
-  right: 9%;
+  position: relative;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  padding-right: 12px;
-  width: 100%;
-  font-size: 0.75rem;
+  gap: 0.5rem;
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
-  .view-nutrition-info {
-    position: relative;
-    bottom: auto;
-    right: auto;
-    justify-content: center;
-    width: auto;
-    margin-top: 1rem;
-    padding-right: 0;
-  }
+.info-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.nutrition-info-container p {
-  margin-bottom: 2.5%;
+.nutrition-info-container {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: black;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  z-index: 10;
+  text-align: left;
 }
 
-@media (max-width: 768px) {
-  .nutrition-info-container {
-    width: 90vw !important;
-    max-width: 300px;
-    bottom: auto !important;
-    top: 100%;
-    right: 50% !important;
-    transform: translateX(50%);
-    font-size: 0.8rem;
+@media (min-width: 768px) {
+  .recipe-name {
+    font-size: clamp(1.125rem, 3vw, 1.5rem);
   }
-  
-  .recipe-of-the-day-title {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
+  .recipe-of-the-day-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .recipe-image-container {
+    width: 45%;
+    order: 2; /* Image on the right */
+  }
+
+  .recipe-details {
+    width: 55%;
+    order: 1; /* Text on the left */
+    align-items: flex-start;
+    text-align: left;
   }
 }
 </style>

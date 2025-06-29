@@ -409,7 +409,7 @@ html {
     background-size: 200% auto;
     background-repeat: no-repeat;
     background-position: center top;
-    padding: 15vh 1rem 5vh;
+    padding: 10vh 1rem 5vh;
     color: white;
     box-sizing: border-box;
 }
@@ -418,7 +418,7 @@ html {
     .section1-content {
         background-size: 120% auto;
         padding-top: 15vh;
-        justify-content: center;
+        justify-content: flex-start;
     }
 }
 
