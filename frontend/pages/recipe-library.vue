@@ -16,8 +16,8 @@
     <div class="image-container">
       <img src="@/assets/img/recipe_lib/bg.svg" class="background-image"/>
       <div class="text-overlay">
-        <h2 class="text-white text-3xl font-bold text-center">Recipe Library</h2>
-        <p class="mt-[15px] text-white text-xl text-center italic">Because healthy food should be tasty too.</p>
+        <h2 class="text-white text-2xl sm:text-3xl font-bold text-center">Recipe Library</h2>
+        <p class="mt-[15px] text-white text-lg sm:text-xl text-center italic">Because healthy food should be tasty too.</p>
       </div>
     </div>
 
@@ -319,8 +319,14 @@ const handleClickOutside = (event) => {
 .page-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  padding-top: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    padding-top: 5rem;
+  }
 }
 
 .header {
@@ -333,6 +339,7 @@ const handleClickOutside = (event) => {
 .image-container {
   position: relative;
   width: 100%;
+  height: 200px;
 }
 
 .background-image {
@@ -344,18 +351,21 @@ const handleClickOutside = (event) => {
 .text-overlay {
   position: absolute;
   width: 100%;
-  top: 60%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
+  padding: 0 1rem;
 }
 
 .body {
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  padding: 0 1rem 10rem;
+  margin-top: -50px;
+  z-index: 10;
 }
 
 .footer {
@@ -369,12 +379,13 @@ const handleClickOutside = (event) => {
   display: flex;
   align-items: center;
   background-color: white;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
   border: 1px solid #ccc;
   border-radius: 50px;
-  padding: 2px 15px;
-  position: relative; /* Add this to position the filter overlay */
+  padding: 8px 15px;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .search-input {
@@ -392,25 +403,26 @@ const handleClickOutside = (event) => {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   grid-gap: 15px;
   padding: 15px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1200px;
   box-sizing: border-box;
 }
 
 .search-result-text-display {
-  height: 5%;
-  width: 90%;
+  height: auto;
+  width: 100%;
   max-width: 1200px;
   display: flex;
   justify-content: flex-start;
   padding-left: 15px;
-  padding-bottom: 2.5%;
+  padding-bottom: 10px;
+  margin-top: 20px;
 }
 
 .search-result-container {
-  width: 90%;
+  width: 100%;
   max-width: 1200px;
-  height: 65%;
-  margin-top: 10px;
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -432,6 +444,6 @@ const handleClickOutside = (event) => {
 
 .filter-button {
   cursor: pointer;
-  height: 70%;
+  height: 24px;
 }
 </style>

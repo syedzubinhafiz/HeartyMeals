@@ -424,6 +424,12 @@ export class MealLogSummaryService {
                 // date exists
                 const meal_logging_summary_entry = entries_grouped_by_date[date];
 
+                // Calculate consumed nutrients
+                const consumed_nutrients = {};
+                for (const key in daily_budget) {
+                    consumed_nutrients[key] = daily_budget[key] - meal_logging_summary_entry.remaining_nutrients[key];
+                }
+
                 // check if any of the nutrients are negative
                 var flag = false;
                 for (const key in meal_logging_summary_entry.remaining_nutrients) {
@@ -433,7 +439,7 @@ export class MealLogSummaryService {
                     }
                 }
 
-                output[date] = [daily_budget, meal_logging_summary_entry.remaining_nutrients, flag];
+                output[date] = [daily_budget, consumed_nutrients, meal_logging_summary_entry.remaining_nutrients, flag];
             }
         }
 

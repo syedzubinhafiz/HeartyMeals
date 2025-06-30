@@ -8,7 +8,7 @@ export class Storage{
     storage_id: string;
 
     // path
-    @Column({type: 'varchar'})
+    @Column({type: 'varchar', nullable: true})
     file_path: string;
 
     @Column({
@@ -21,6 +21,9 @@ export class Storage{
     size: number
 
     // link
-    @Column({type: 'varchar'})
+    @Column({type: 'varchar', nullable: true})
     link: string;
+
+    @Column({type: 'bytea', nullable: true})
+    data: Buffer;
 }

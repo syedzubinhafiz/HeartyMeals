@@ -195,6 +195,18 @@ export class ImageService {
       .trim();
   }
 
+  async downloadImageAsBuffer(url: string): Promise<Buffer> {
+    try {
+      const response = await axios.get(url, {
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error: any) {
+      console.error(`❌ Failed to download image from ${url}:`, error.message);
+      throw error;
+    }
+  }
+
   /**
    * Batch fetch images with rate limiting and error handling
    */

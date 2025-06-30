@@ -198,6 +198,7 @@ import EditMealOverlay from '~/components/Overlay/EditMealOverlay.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
 import MealPopover from '~/components/MealPopover.vue';
 import { useUserBudget } from '~/composables/userBudget.js';
+import { useUserBudgetStore } from '@/stores/userBudget';
 
 definePageMeta({
   layout: "emptylayout",
@@ -393,9 +394,25 @@ async function consumeMeal(id){
         'Content-Type': 'application/json',
       },
     });
-    // Refresh both meal data and budget data to reflect consumed status
+
+    // The response now contains the updated budget, so we can use it directly
+    if (response.data && response.data.daily_budget) {
+        const dailyBudget = response.data.daily_budget;
+        const consumed = response.data.consumed_nutrients;
+        const remaining = response.data.remaining_nutrients;
+
+        // Manually update the Pinia store
+        const store = useUserBudgetStore();
+        store.nutrients[0] = { ...dailyBudget };
+        store.nutrients[1] = { ...consumed };
+        store.nutrients[2] = { ...remaining };
+    }
+
+    // Still refresh the meal list to update the "Consumed" status visually
     await getMeals();
-    await getUserBudget(currentDate.value);
+    
+    // Notify other pages (like home) to refresh their nutrition data
+    localStorage.setItem('nutritionRefresh', JSON.stringify({ type: 'nutritionRefresh', mealId: id, timestamp: new Date().getTime() }));
   } catch (error) {
     console.log(error);
   }

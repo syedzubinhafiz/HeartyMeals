@@ -188,6 +188,20 @@ export class StorageService {
         return transactionalEntityManager.save(new_storage);
     }
 
+    async saveFileToDb(
+        file: { fileName: string, fileType: StorageType, buffer: Buffer },
+        transactionalEntityManager: EntityManager
+    ): Promise<Storage> {
+        const new_storage = new Storage();
+        new_storage.file_path = file.fileName;
+        new_storage.type = file.fileType;
+        new_storage.size = file.buffer.length;
+        new_storage.data = file.buffer;
+        new_storage.link = null;
+
+        return transactionalEntityManager.save(new_storage);
+    }
+
     private async updateStorageLinks(storageLinks: Object, entry: any, repository: any, transactionalEntityManager: EntityManager) {
         try {
             entry.storage_links = storageLinks;
@@ -198,43 +212,36 @@ export class StorageService {
         }
     }
 
+    async getFileFromDb(storageId: string): Promise<Storage> {
+        return this.storageRepository.findOneBy({ storage_id: storageId });
+    }
+
     /**
      * Get a public file link from firebase storage by retriving entry from databases
      * @param storageId - storage id to get the file in an array
      * @returns a list of download urls of the files
      */
     async getLink(storageId: string | string[]){
-        // data validation. if storage id is valid it will run, else it will throw error.
-        try {
-            // if storage id a string
-            if (!Array.isArray(storageId)) {
-                var entry = await this.storageRepository.findOneBy({
-                    storage_id: storageId
-                });
-
-                if (entry == null || entry == undefined) {
-                    throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
-                }
-
-                return entry.link;
-            }
-            else {
-                // storage id is an array of st ring
-                var entries = await this.storageRepository.find({
-                    where: {
-                        storage_id: In(storageId)
-                    }
-                });
-
-                if (entries.length === 0) {
-                    throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
-                }
-
-                return entries;
-            }
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+        
+        if (!Array.isArray(storageId)) {
+            return `${backendUrl}/storage/${storageId}`;
         }
-        catch (e){
-            throw e;
+        else {
+            const entries = await this.storageRepository.find({
+                where: {
+                    storage_id: In(storageId)
+                }
+            });
+
+            if (entries.length === 0) {
+                throw new HttpException('No entries found for the given storage IDs.', HttpStatus.BAD_REQUEST);
+            }
+
+            return entries.map(entry => {
+                entry.link = `${backendUrl}/storage/${entry.storage_id}`;
+                return entry;
+            });
         }
     }
     

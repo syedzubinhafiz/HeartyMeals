@@ -56,16 +56,18 @@ export const useUserBudgetStore = defineStore('userBudget', () => {
       }
 
       const dailyBudget = userNutrition[0];
-      const remainingNutrients = userNutrition[1];
+      const consumedNutrients = userNutrition[1];
+      const remainingNutrients = userNutrition[2];
 
-      // Calculate consumed nutrients = daily – remaining (ensure non-negative)
+      // Values are already calculated by the backend.
+      // The only thing to do is ensure no negative values slip through.
       const consumed = {
-        calories: Math.max(0, dailyBudget.calories - remainingNutrients.calories),
-        carbs: Math.max(0, dailyBudget.carbs - remainingNutrients.carbs),
-        protein: Math.max(0, dailyBudget.protein - remainingNutrients.protein),
-        fat: Math.max(0, dailyBudget.fat - remainingNutrients.fat),
-        sodium: Math.max(0, dailyBudget.sodium - remainingNutrients.sodium),
-        cholesterol: Math.max(0, dailyBudget.cholesterol - remainingNutrients.cholesterol),
+        calories: Math.max(0, consumedNutrients.calories),
+        carbs: Math.max(0, consumedNutrients.carbs),
+        protein: Math.max(0, consumedNutrients.protein),
+        fat: Math.max(0, consumedNutrients.fat),
+        sodium: Math.max(0, consumedNutrients.sodium),
+        cholesterol: Math.max(0, consumedNutrients.cholesterol),
       };
 
       // Ensure proper object creation to avoid Pinia hydration issues

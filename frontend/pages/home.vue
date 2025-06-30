@@ -47,28 +47,28 @@
         </div>
 
         <!-- section 3 -->
-        <div class="section section-3">
-            <img :src="backgroundImage" alt="Background" class="absolute w-full z-0" style="height: 80%">
-            <div class="w-full mx-auto relative z-20 px-4 flex flex-col justify-center items-center" style="height: 70%;">
-                <h2 class="text-white text-xl font-semibold mb-8 mt-5 section-3-title">Recommended For You</h2>
-                <div class="section-3-cards-container">
-                    <div class="section-3-cards-wrapper">
-                        <MealCard v-for="(card, index) in cardData" :key="index" :cardInfo="card" />
+        <div 
+            class="section section-3"
+            :style="{ backgroundImage: `url(${backgroundImage})` }"
+        >
+            <div class="container mx-auto px-4 relative">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="w-full">
+                        <RecipeOfTheDay 
+                            :recipeName="recipeName"
+                            :recipeDescription="recipeDescription"
+                            :recipeImage="recipeImage"
+                            :recipeId="recipeId"
+                            :recipeNutrition="recipeNutrition"
+                        />
+                    </div>
+                    <div class="w-full">
+                        <EducationalContentCarousel :articles="cardData" />
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- section 4 -->
-        <div class="section section-4">
-            <RecipeOfTheDay 
-            :recipeName="recipeName"
-            :recipeDescription="recipeDescription"
-            :recipeImage="recipeImage"
-            :recipeId="recipeId"
-            :recipeNutrition="recipeNutrition"
-            />
-        </div>
         <Footer/>
     </div>
 
@@ -167,7 +167,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useToast } from 'vue-toast-notification';
 import WaterDroplet from '~/components/WaterTank/WaterDroplet.vue';
 import NutritionWidgetCurve from '~/components/Nutrient/NutritionWidgetCurve.vue';
-import MealCard from '~/components/MealCard.vue';
+import EducationalContentCarousel from '~/components/EducationalContentCarousel.vue';
 import backgroundImage from '/assets/img/LandingPage/landingpage3-bg.png';
 import { useUserBudget } from '~/composables/userBudget.js';
 import { useFluidLogging } from '~/composables/fluidLogging.js';
@@ -218,27 +218,28 @@ const { nutrients, refresh: getUserBudget } = useUserBudget();
 const cardData = ref([]);
 
 const getEducationalContent = async () => {
-    // get educational content
     try {
-        const response = await $axios.get(`/education/get/random`);
-        if (response.status === 200){
-            const educationalContent = response.data;
-
-            for (let i = 0; i < educationalContent.length; i++) {
-                cardData.value.push({
-                    id: educationalContent[i].id,
-                    title: educationalContent[i].title,
-                    description: educationalContent[i].summary,
-                    image: educationalContent[i].storage_links.thumbnail
-                });
+        const token = localStorage.getItem('accessToken');
+        const response = await $axios.get('/education/get/random', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
             }
-        } else {
-            console.log(response);
+        });
+
+        if (response.status === 200) {
+            cardData.value = response.data.map(item => ({
+                id: item.id,
+                title: item.title,
+                description: item.summary,
+                image: item.storage_links.thumbnail,
+            }));
         }
-    } catch (e) {
-        useToast().error("Failed to get educational content")
     }
-}
+    catch (e) {
+        useToast().error("Failed to get educational content");
+    }
+};
 
 /**
  * Section 4 code
@@ -661,7 +662,7 @@ html {
     justify-content: center;
     align-items: center;
     position: relative;
-    z-index: 35;
+    z-index: 36;
     width: 100%;
     max-width: 100%;
     overflow: hidden;
@@ -670,7 +671,7 @@ html {
 :deep(.svg-container){
     transform: scale(0.75);
     position: relative;
-    z-index: 40;
+    z-index: 41;
     margin: 0 auto;
 }
 
@@ -742,78 +743,14 @@ html {
 }
 
 .section-3 {
-    position: relative;
-    z-index: 15;
-    height: 100vh;
+    padding: 0.5rem 0; /* Adjust this padding to control the height */
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    text-align: center;
-    margin-top: 6rem;
-}
-
-.section-4 {
-    width: 80%;
-    height: 80%;
-    display: flex;
-    position: relative;
-    margin: auto;
-}
-
-@media (max-width: 768px) {
-    .section-4 {
-        width: 95%;
-        height: auto;
-        padding: 1rem;
-    }
-}
-
-/* Section 3 Mobile Styles */
-.section-3-title {
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    .section-3-title {
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-}
-
-.section-3-cards-container {
-    width: 100%;
-    overflow: hidden;
-}
-
-.section-3-cards-wrapper {
-    display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    padding: 0 1rem;
-}
-
-@media (max-width: 768px) {
-    .section-3-cards-container {
-        width: 100vw;
-        margin-left: -1rem;
-        margin-right: -1rem;
-    }
-    
-    .section-3-cards-wrapper {
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding: 0 1rem;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        scroll-snap-type: x mandatory;
-        scroll-padding: 0 1rem;
-    }
-    
-    .section-3-cards-wrapper::-webkit-scrollbar {
-        display: none;
-    }
+    position: relative;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%; /* Stretch to fill container */
 }
 </style>
 

@@ -24,12 +24,24 @@ import * as bcrypt from 'bcrypt';
 import seedFoodCategory from '../../food-category/food-category.seeder';
 import seedCuisine from '../../cuisine/cuisine.seeder';
 import { ImageService, PixabayImage } from './image.service';
+import { StorageService } from "src/storage/storage.service";
+import { FileUploadDTO } from "src/storage/dto/file-upload-dto";
+import { FileFormatDTO } from "src/storage/dto/file-format-dto";
+import { StorageType } from "src/storage/enum/storage.enum";
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export class ComprehensiveMockDataSeeder {
   private imageService: ImageService;
+  private storageService: StorageService;
 
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    storageService: StorageService,
+  ) {
     this.imageService = new ImageService();
+    this.storageService = storageService;
   }
 
   async seed() {
@@ -103,8 +115,8 @@ export class ComprehensiveMockDataSeeder {
     const educationalContent = await this.createEducationalContent(educationalRepo);
     
     // 6.1 Fetch Images for Educational Content
-    console.log('📸 Fetching images for educational content using Pixabay API');
-    await this.fetchAndUpdateEducationalImages(educationalRepo, educationalContent);
+    console.log('📸 Fetching and storing images for educational content...');
+    await this.fetchAndStoreEducationalImages(educationalRepo, educationalContent);
 
     console.log('✅ Mock data seeding completed successfully!');
   }
@@ -1023,7 +1035,7 @@ export class ComprehensiveMockDataSeeder {
         content: [item.content], // store as array to fit text[] type
         visibility: Visibility.PUBLIC,
         storage_links: {
-          thumbnail: item.thumbnail,
+          thumbnail: null,
           content: {}
         }
       });
@@ -1132,8 +1144,8 @@ export class ComprehensiveMockDataSeeder {
   /**
    * Fetch and update educational content images using Pixabay API
    */
-  private async fetchAndUpdateEducationalImages(educationalRepo: any, educationalContent: EducationalContent[]): Promise<void> {
-    console.log(`🖼️  Fetching images for ${educationalContent.length} educational content items...`);
+  private async fetchAndStoreEducationalImages(educationalRepo: any, educationalContent: EducationalContent[]): Promise<void> {
+    console.log(`🖼️  Fetching and storing images for ${educationalContent.length} educational content items...`);
 
     // Define search terms for each educational content type
     const searchTermsMap = {
@@ -1155,29 +1167,45 @@ export class ComprehensiveMockDataSeeder {
     );
 
     // Update educational content with image URLs
-    const updatedContent: EducationalContent[] = [];
-    
     for (const content of educationalContent) {
-      const image = educationalImages.get(content);
-      if (image) {
-        const existingLinks = content.storage_links as any || {};
-        const newStorageLinks = {
-          thumbnail: image.url,
-          content: existingLinks.content || {},
-          image: image.url,
-          image_small: image.smallUrl,
-          attribution: image.attribution,
-          photographer: image.photographer,
-          photographer_profile: image.photographerProfile
-        };
-        (content.storage_links as any) = newStorageLinks;
-        updatedContent.push(content);
+        const image = educationalImages.get(content);
+        if (image) {
+          try {
+            await this.dataSource.transaction(async transactionalEntityManager => {
+                // 1. Download image from Pixabay URL
+                console.log(`⬇️  Downloading image for "${content.title}"...`);
+                const imageBuffer = await this.imageService.downloadImageAsBuffer(image.url);
+    
+                // 2. Prepare for upload
+                const fileExtension = image.url.split('.').pop()?.split('?')[0] || 'jpg';
+                const fileName = `${content.id}.${fileExtension}`;
+                const fileType = `image/${fileExtension === 'jpg' ? 'jpeg' : fileExtension}`;
+    
+                // 3. Save to DB via StorageService
+                console.log(`💾  Saving image for "${content.title}" to database...`);
+                const savedStorage = await this.storageService.saveFileToDb({
+                    fileName,
+                    fileType: fileType as StorageType,
+                    buffer: imageBuffer
+                }, transactionalEntityManager);
+    
+                // 4. Update entity with new storage_id
+                const newStorageLinks = {
+                    thumbnail: savedStorage.storage_id, // This is the storage_id
+                    content: {},
+                    attribution: image.attribution,
+                    photographer: image.photographer,
+                    photographer_profile: image.photographerProfile
+                };
+    
+                content.storage_links = newStorageLinks as any;
+                await transactionalEntityManager.save(EducationalContent, content);
+                console.log(`✅ Stored image for "${content.title}" with storage ID: ${savedStorage.storage_id}`);
+            });
+          } catch (error) {
+            console.error(`❌ Failed to process and store image for "${content.title}":`, error.message);
+          }
+        }
       }
-    }
-
-    if (updatedContent.length > 0) {
-      await educationalRepo.save(updatedContent);
-      console.log(`✅ Updated ${updatedContent.length} educational content items with images`);
-    }
   }
-} 
+}

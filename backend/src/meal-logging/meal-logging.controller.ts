@@ -311,9 +311,9 @@ export class MealLoggingController {
     async markConsume(@Headers() headers: any, @Body() payload: MarkMealConsumedDTO){
         const decoded_headers = this.commonService.decodeHeaders(headers.authorization);
         try {
-            await this.entityManager.transaction(async transactionalEntityManager => {
+            const result = await this.entityManager.transaction(async transactionalEntityManager => {
                 // Mark meal as consumed
-                const updatedMeal = await this.mealLoggingService.markMealConsumed(payload, transactionalEntityManager);
+                await this.mealLoggingService.markMealConsumed(payload, transactionalEntityManager);
                 
                 // Get the meal details to find which summary entry to update
                 const mealEntry = await transactionalEntityManager.findOne(MealLogging, {
@@ -344,11 +344,19 @@ export class MealLoggingController {
                             summaryEntry, 
                             transactionalEntityManager
                         );
+                        // Return the updated summary entry
+                        return summaryEntry;
                     }
                 }
+                // Return null if no summary was found or updated
+                return null;
             });
 
-            return new HttpException("Meal is consumed.", HttpStatus.OK);
+            if (result) {
+                return result;
+            }
+
+            return new HttpException("Meal is consumed, but no summary was updated.", HttpStatus.OK);
         }
         catch (e){
             return new HttpException(e.message, e.status);

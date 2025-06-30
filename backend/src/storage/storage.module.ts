@@ -6,11 +6,12 @@ import { User } from 'src/user/user.entity';
 import { Country } from 'src/country/country.entity';
 import { Dietary } from 'src/dietary/dietary.entity';
 import { Ethnicity } from 'src/ethnicity/ethnicity.entity';
-
+import { StorageController } from './storage.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Storage, User, Country, Dietary, Ethnicity])],
-    controllers: [],
-    providers: [StorageService]
+    controllers: [StorageController],
+    providers: [StorageService],
+    exports: [StorageService]
 })
 export class StorageModule {}
