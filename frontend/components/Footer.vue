@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-custom-bg-green text-white rounded-t-2xl p-4 lg:p-6">
+  <div class="bg-custom-bg-green text-white p-4 lg:p-6">
     <div class="container mx-auto flex flex-wrap justify-between items-center">
       
       <!-- Left side: Links -->

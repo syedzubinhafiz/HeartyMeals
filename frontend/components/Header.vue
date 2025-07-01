@@ -5,7 +5,7 @@
   <!-- header -->
   <div class="relative z-10">
       <!-- Header Image with Clickable Area -->
-      <div class="relative w-full bg-custom-bg-green rounded-b-2xl h-16 lg:h-20 shadow-lg flex justify-center items-center px-4">
+      <div class="relative w-full bg-custom-bg-green h-16 lg:h-20 shadow-lg flex justify-center items-center px-4">
         <button 
           @click="toggleSidebar" 
           class="absolute top-1/2 left-4 lg:left-8 transform -translate-y-1/2 text-white min-w-touch min-h-touch flex items-center justify-center"

@@ -1,11 +1,11 @@
 <template>
-    <div class="meal-day meal-items-container"
+    <div class="meal-day"
           :class="{
             'today-day': isToday,
             'past-day': isPast,
             'future-day': isFuture
           }">
-      <!-- Day of the week and date display -->
+      <!-- Day of the week and date display (fixed header) -->
       <div
         class="day-header"
         :class="{
@@ -29,6 +29,9 @@
         />
       </div>
       </div>
+      
+      <!-- Scrollable meal lists container -->
+      <div class="meal-lists-container">
   
       <!-- Meal card lists (Breakfast, Lunch, Dinner, and Other) -->
       <Mealplanlist 
@@ -106,6 +109,7 @@
           @mealConsumed="handleMealConsumed"
         />
       </Mealplanlist>
+      </div>
   
       <!-- Edit Meal Overlay -->
       <EditMealOverlay
@@ -329,15 +333,30 @@ watch(
   padding: 10px;
   border-radius: 5px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  z-index: 1000; /* Increased z-index to prevent overlap */
   min-width: 150px;
+  max-width: 250px; /* Added max-width to prevent overflow */
 }
 
+/* Desktop: Fixed height cards with internal scrolling */
 .meal-day {
   padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background-clip: padding-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%; /* Ensure consistent width */
+  min-width: 0; /* Allow content to shrink */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Desktop specific styling */
+@media (min-width: 769px) {
+  .meal-day {
+    height: 100%; /* Use full available height on desktop */
+  }
 }
 
 .meal-list {
@@ -362,12 +381,13 @@ watch(
 
 .day-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   background: linear-gradient(to bottom, #F3EADA 50%, #8A6B55 50%);
   border-radius: 12px;
   position: relative;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(139, 107, 85, 0.2);
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .today-header {
@@ -397,27 +417,71 @@ watch(
   font-weight: 500;
 }
 
+/* Scrollable meal lists container */
+.meal-lists-container {
+  flex: 1;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Desktop: Enable scrolling within cards */
+@media (min-width: 769px) {
+  .meal-lists-container {
+    overflow-y: auto; /* Enable vertical scrolling on desktop */
+  }
+}
+
 /* MAIN ADDITION FOR SCROLLABLE LIST */
 /* Scrollable Meal Items Container */
 .meal-items-container {
-  max-height: 50vh; /* Set maximum height for the dropdown */
-}
-
-/* Hidden Scrollbar for Clean Look */
-.meal-items-container {
-  /* Hide scrollbar but keep functionality */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  overflow-y: visible; /* Let the parent handle scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   position: relative;
 }
 
-.meal-items-container::-webkit-scrollbar {
+/* Completely Hidden Scrollbars for all devices */
+.meal-lists-container {
+  /* Hide scrollbars completely while keeping functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.meal-lists-container::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
 
+/* Ensure hidden scrollbars on desktop too */
+@media (min-width: 769px) {
+  .meal-lists-container::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Clean layout without scroll indicators */
-.meal-day {
-  position: relative;
+
+/* Tablet responsiveness (maintain desktop-like behavior) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .meal-day {
+    padding: 10px;
+    border-radius: 14px;
+    height: 100%; /* Maintain full height on tablets */
+    width: 100%; /* Ensure consistent width on tablets */
+  }
+
+  .day-header {
+    margin-bottom: 0.8rem;
+    border-radius: 11px;
+  }
+
+  .meal-lists-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: none; /* Let it use available space */
+  }
+
+  .meal-lists-container::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Mobile responsiveness */
@@ -425,10 +489,14 @@ watch(
   .meal-day {
     padding: 8px;
     border-radius: 12px;
+    height: auto; /* Allow natural height on mobile */
+    min-height: 300px; /* Ensure minimum content visibility */
+    max-height: none; /* Remove height limit to allow natural expansion */
+    width: 100%; /* Ensure consistent width on mobile */
   }
 
   .day-header {
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.5rem;
     border-radius: 10px;
   }
 
@@ -446,8 +514,16 @@ watch(
     margin-bottom: 8px;
   }
 
-  .meal-items-container {
-    max-height: 35vh;
+  .meal-lists-container {
+    flex: 1; /* Take remaining space on mobile */
+    min-height: 200px; /* Ensure minimum height for content */
+    max-height: 400px; /* Limit height to maintain card scrolling */
+    overflow-y: auto; /* Restore card scrolling on mobile */
+  }
+
+  /* Keep scrollbars hidden on mobile too */
+  .meal-lists-container::-webkit-scrollbar {
+    display: none;
   }
 }
 

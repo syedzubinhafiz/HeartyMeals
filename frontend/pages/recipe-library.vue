@@ -14,7 +14,7 @@
     
 
     <div class="image-container">
-      <img src="@/assets/img/recipe_lib/bg.svg" class="background-image"/>
+      <img src="/assets/img/backGround.svg" class="background-image"/>
       <div class="text-overlay">
         <h2 class="text-white text-2xl sm:text-3xl font-bold text-center">Recipe Library</h2>
         <p class="mt-[15px] text-white text-lg sm:text-xl text-center italic">Because healthy food should be tasty too.</p>
@@ -130,6 +130,7 @@ const savedFilters = ref({
 watch(query, (newQuery) => {
   if (newQuery === '') {
     pageNumber.value = 1;
+    totalPages.value = 1;
     searchResults.value = [];
     fetchData(savedFilters.value);
   }
@@ -139,7 +140,7 @@ async function fetchData(filters = {}) {
   console.log('fetchData called with filters:', filters); // Debug log
 
   if (
-    isLoading.value 
+    isLoading.value || pageNumber.value > totalPages.value
   )
     return;
 
@@ -217,6 +218,7 @@ async function verifyAdmin(){
 
 const debouncedOnInput = debounce(async () => {
   pageNumber.value = 1;
+  totalPages.value = 1;
   searchResults.value = [];
   await fetchData(savedFilters.value);
 
@@ -319,13 +321,15 @@ const handleClickOutside = (event) => {
 .page-container {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  padding-top: 4rem;
+  height: 100dvh;
+  overflow: hidden;
+  --header-height: 4rem;
+  padding-top: var(--header-height);
 }
 
 @media (min-width: 1024px) {
   .page-container {
-    padding-top: 5rem;
+    --header-height: 5rem;
   }
 }
 
@@ -337,9 +341,12 @@ const handleClickOutside = (event) => {
 }
 
 .image-container {
-  position: relative;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
   width: 100%;
   height: 200px;
+  z-index: 5;
 }
 
 .background-image {
@@ -363,9 +370,10 @@ const handleClickOutside = (event) => {
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 0 1rem 10rem;
+  padding: 200px 1rem 0;
   margin-top: -50px;
   z-index: 10;
+  overflow: hidden;
 }
 
 .footer {
@@ -408,6 +416,12 @@ const handleClickOutside = (event) => {
   box-sizing: border-box;
 }
 
+@media (min-width: 1024px) {
+  .search-result-item-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .search-result-text-display {
   height: auto;
   width: 100%;
@@ -425,6 +439,7 @@ const handleClickOutside = (event) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: 10rem;
 }
 
 .aligned-paragraph {

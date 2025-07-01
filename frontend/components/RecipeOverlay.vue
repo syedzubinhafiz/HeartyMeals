@@ -1,9 +1,9 @@
 <template>
   <div class="overlay" v-if="visible" @click.self="closeOverlay">
-    <!-- Back button -->
-    <button class="back-button" @click="closeOverlay">← Back</button>
-    
-    <div class="overlay-content">
+    <div class="overlay-content" @click.stop>
+      <!-- Back button -->
+      <button class="back-button" @click="closeOverlay">←</button>
+      
       <div class="left-section">
         <h2>{{ meal.recipe.name }}</h2>
         <img :src="meal.recipe.storage_links.thumbnail" alt="Meal Image" />
@@ -50,11 +50,7 @@
             </div>
             <p class="preparation-time">* Preparation time: {{ meal.recipe.preparation_time }}</p>
           </div>
-          <div v-if="activeTab === 'recipe'">
-            <!-- Recipe Content -->
-            <div v-for="(htmlString, index) in instruction" :key="index" v-html="htmlString"></div>
-            <!-- Add more recipe details here -->
-          </div>
+          <div v-if="activeTab === 'recipe'" v-html="instruction"></div>
           <div v-if="activeTab === 'ingredients'">
             <!-- Ingredients Content -->
             <div class="card-grid">
@@ -115,140 +111,132 @@ export default {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   z-index: 50;
+  overflow-y: auto;
+  padding: 1rem;
 }
 
 .overlay-content {
-  background: #DAC2A8; /* Set to brown */
-  padding: 20px;
+  background: #DAC2A8;
+  padding: 1rem;
   border-radius: 15px;
   display: flex;
-  flex-direction: row;
-  width: 70vw; /* 70% of the viewport width */
-  height: 70vh; /* 70% of the viewport height */
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
   position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  height: calc(100dvh - 2rem);
 }
 
 .back-button {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: none;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.7);
   border: none;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  line-height: 1;
   color: #333;
   cursor: pointer;
-  z-index: 100; /* Ensure it stays on top */
+  z-index: 100;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .left-section {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Center meal name relative to the image */
 }
 
 .left-section h2 {
-  font-size: 2rem; /* Larger font size for the meal name */
-  font-weight: bold; /* Make the meal name bold */
-  margin-bottom: 20px;
-  text-align: center; /* Center the text */
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 45px;
+  margin-bottom: 1rem;
 }
 
 .left-section img {
-  height: 300px;
+  width: 100%;
+  max-height: 300px;
   object-fit: cover;
   border-radius: 10px;
+  flex: 1;
+  min-height: 0;
 }
 
 .right-section {
-  flex: 1.2; /* slightly wider for better readability */
-  padding-left: 20px;
-  background: #F3EADA; /* Light background color */
-  border-radius: 15px; /* Maintain rounded corners */
-  padding: 20px;
+  width: 100%;
+  margin-top: 1rem;
+  background: #F3EADA;
+  border-radius: 15px;
+  padding: 1rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 3; /* Keep the right section above the corner mask */
-  overflow: hidden; /* Ensures the pseudo-element doesn't overflow */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
-
-
 .tabs {
-  margin-top: -20px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-around;
   position: relative;
+  border-bottom: 1px solid #D3D3D3;
+  flex-shrink: 0;
 }
 
 .tabs button {
   background: none;
   border: none;
-  padding: 10px 20px;
+  padding: 10px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 1.2rem; /* Increase font size */
-  color: #8A8A8A; /* Default color */
+  font-size: 0.9rem;
+  color: #8A8A8A;
   position: relative;
   transition: color 0.3s ease;
-  border-radius: 10px; /* Make buttons rounded */
+  border-radius: 0;
+  flex: 1;
+  text-align: center;
 }
 
 .tabs button:not(:last-child) {
-  margin-right: 20px; /* Add margin between the tabs */
-}
-
-/* Vertical line to the right of the Nutrition Information button */
-.tabs button:nth-child(1)::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: -15px; /* Move the line farther to the right */
-  transform: translateY(-50%);
-  width: 2px;
-  height: 50%;
-  background-color: #D3D3D3; /* Light grey color for the separator */
-}
-
-/* Vertical line to the right of the Recipe button */
-.tabs button:nth-child(2)::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: -15px; /* Ensure this line is aligned properly */
-  transform: translateY(-50%);
-  width: 2px;
-  height: 50%;
-  background-color: #D3D3D3; /* Light grey color for the separator */
+  margin-right: 0;
 }
 
 .tabs button.active {
-  color: #333; /* Darker color for active tab */
+  color: #333;
 }
 
 .tabs button.active::before {
   content: '';
   position: absolute;
-  top: 0; /* Move the line to the top */
+  bottom: -1px;
   left: 0;
   width: 100%;
   height: 3px;
   background: #6B705C;
-  border-radius: 3px 3px 0 0;
-  box-shadow: 0 -4px 4px rgba(0, 0, 0, 0.2); /* Shadow to indicate active tab */
 }
-
 
 .tab-content {
   padding: 10px 0;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .nutrition-content {
@@ -278,22 +266,19 @@ export default {
 }
 
 .nutrition-label img {
-  margin-right: 10px; /* Adjusts space between icon and text */
-
+  margin-right: 10px;
 }
 
 .card-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px; /* Adjust the gap between cards as needed */
-  max-height: 100vh; /* Set a fixed height for the container */
+  gap: 16px;
 }
 
 .scrollable-content {
-  overflow-y: auto; /* Enable vertical scrolling */
-  overflow-x: hidden; /* Disable horizontal scrolling */
-  word-wrap: break-word; /* Wrap long words */
-  max-height: 95%; /* Set a fixed height for the content */
+  overflow-y: visible;
+  overflow-x: hidden;
+  word-wrap: break-word;
 }
 
 .card {
@@ -304,17 +289,18 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  flex: 1 1 100%;
 }
 
 .horizontal-card {
-  flex-direction: row; /* Arrange content horizontally */
-  width: 100%; /* Full width for horizontal layout */
+  flex-direction: row;
+  width: 100%;
 }
 
 .card img {
-  max-width: 100px; /* Adjust the image size as needed */
+  max-width: 100px;
   border-radius: 4px;
-  margin-right: 16px; /* Space between image and text */
+  margin-right: 16px;
 }
 
 .card-content {
@@ -323,13 +309,44 @@ export default {
 }
 
 .card-title {
-  font-size: 1em; /* Larger text for the title */
+  font-size: 1em;
   margin: 0;
-  font-weight: bold; /* Bold title for better readability */
+  font-weight: bold;
 }
 
 .card-details {
-  font-size: 1em; /* Smaller text for the details */
-  margin: 4px 0 0; /* Adjust margin as needed */
+  font-size: 1em;
+  margin: 4px 0 0;
+}
+
+@media (min-width: 768px) {
+  .overlay-content {
+    flex-direction: row;
+    padding: 2rem;
+    height: auto;
+  }
+  .back-button {
+    top: 20px;
+    left: 20px;
+  }
+  .left-section {
+    flex: 1;
+    margin-right: 2rem;
+    justify-content: center;
+  }
+  .left-section h2 {
+    font-size: 2rem;
+    margin-top: 0;
+  }
+  .right-section {
+    flex: 1.2;
+    margin-top: 0;
+  }
+  .tabs button {
+    font-size: 1.2rem;
+  }
+  .card {
+    flex-basis: calc(50% - 8px);
+  }
 }
 </style>

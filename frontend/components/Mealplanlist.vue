@@ -18,11 +18,17 @@
 
       <!-- Expanded Content (Scrollable meal list) -->
       <transition name="expand">
-        <div v-if="isExpanded" class="meal-items-container mt-3">
-          <!-- Add Meal button only for valid dates (today or within the next 7 days) -->
-          <div v-if="!isPast && !isTooFarInFuture" class="button-container">
-            <button class="add-dishes-button" @click="onAddDishes">
-              <i class="fas fa-plus mr-2"></i>Add Meal
+        <div v-if="isExpanded" class="meal-items-container mt-3" :key="title">
+          <!-- Add Meal button - always reserve space for consistent layout -->
+          <div v-if="!isPast" class="button-container">
+            <button 
+              class="add-dishes-button" 
+              :class="{ 'disabled-button': isTooFarInFuture }"
+              :disabled="isTooFarInFuture"
+              @click="onAddDishes">
+              <i class="fas fa-plus mr-2"></i>
+              <span v-if="!isTooFarInFuture">Add Meal</span>
+              <span v-else>Too Far Ahead</span>
             </button>
           </div>
 
@@ -35,7 +41,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
   title: {
@@ -73,6 +79,12 @@ const isTooFarInFuture = computed(() => {
 // Set the section to be expanded by default
 const isExpanded = ref(true);
 
+// Force expanded state on mobile
+onMounted(() => {
+  // Ensure sections are expanded on mount, especially on mobile
+  isExpanded.value = true;
+});
+
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
@@ -103,7 +115,10 @@ const onAddDishes = async () => {
   background-color: #F3EADA;
   transition: all 0.3s ease;
   border-color: rgba(139, 107, 85, 0.3);
-  overflow: visible;
+  overflow: hidden; /* Changed from visible to hidden to prevent content overflow */
+  position: relative; /* Ensure proper positioning context */
+  width: 100%; /* Ensure consistent width */
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
 .prev-list {
@@ -177,13 +192,20 @@ const onAddDishes = async () => {
 
 .expand-enter-active,
 .expand-leave-active {
-  transition: max-height 0.2s ease;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
-.expand-enter,
+.expand-enter-from,
 .expand-leave-to {
   max-height: 0;
+  opacity: 0;
   overflow: hidden;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  max-height: 1000px; /* Allow enough space for content */
+  opacity: 1;
 }
 
 .button-container {
@@ -206,58 +228,76 @@ const onAddDishes = async () => {
   transition: background-color 0.3s ease;
   margin-top: 4px;
   margin-bottom: 12px;
+  box-sizing: border-box; /* Include padding in width */
+  min-width: 0; /* Allow button to shrink if needed */
 }
 
-.add-dishes-button:hover {
+.add-dishes-button:hover:not(:disabled) {
   background-color: #6d8b71;
+}
+
+.disabled-button {
+  background-color: rgba(176, 172, 165, 0.5) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.disabled-button:hover {
+  background-color: rgba(176, 172, 165, 0.5) !important;
 }
 
 /* MAIN ADDITION FOR SCROLLABLE LIST */
 /* Scrollable Meal Items Container */
 .meal-items-container {
-  max-height: 200px;
+  max-height: none; /* Remove height limit to use available space */
   padding: 8px;
-  overflow: visible;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  position: relative;
+  flex: 1; /* Take up available space */
+  width: 100%; /* Ensure consistent width */
+  box-sizing: border-box; /* Include padding in width */
 }
 
-/* Hidden Scrollbar with Scroll Indicators */
+/* Completely Hidden Scrollbars */
 .meal-items-container {
-  /* Hide scrollbar but keep functionality */
+  /* Hide scrollbars completely while keeping functionality */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
 }
 
-/* Scroll Fade Indicators */
-.meal-items-container {
-  position: relative;
+.meal-items-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
+/* Scroll Fade Indicators */
 .meal-items-container::before,
 .meal-items-container::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 8px;
+  right: 8px;
   height: 12px;
   pointer-events: none;
-  z-index: 10;
+  z-index: 5;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .meal-items-container::before {
-  top: 0;
+  top: 8px;
   background: linear-gradient(to bottom, rgba(243, 234, 218, 0.9), transparent);
 }
 
 .meal-items-container::after {
-  bottom: 0;
+  bottom: 8px;
   background: linear-gradient(to top, rgba(243, 234, 218, 0.9), transparent);
 }
 
-/* Show fade indicators when scrollable */
-.meal-items-container.has-scroll::before,
-.meal-items-container.has-scroll::after {
+/* Show fade indicators when content is scrollable */
+.meal-items-container:hover::before,
+.meal-items-container:hover::after {
   opacity: 1;
 }
 
@@ -266,6 +306,7 @@ const onAddDishes = async () => {
   .card-container {
     padding: 0.6rem;
     margin-bottom: 0.8rem;
+    min-height: auto; /* Ensure container can expand */
   }
 
   .card-header h3 {
@@ -283,7 +324,56 @@ const onAddDishes = async () => {
   }
 
   .meal-items-container {
-    max-height: 220px;
+    max-height: none; /* Remove height limit on mobile */
+    min-height: 50px; /* Ensure minimum visible height */
+    overflow-y: auto;
+    flex: 1; /* Take available space on mobile */
+    display: block; /* Ensure visibility */
+  }
+
+  /* Keep scrollbars hidden on mobile too */
+  .meal-items-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Adjust fade indicators for mobile */
+  .meal-items-container::before,
+  .meal-items-container::after {
+    left: 4px;
+    right: 4px;
+    height: 8px;
+  }
+
+  /* Ensure expanded content is visible on mobile */
+  .expand-enter-active,
+  .expand-leave-active {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+  }
+
+  .expand-enter-from,
+  .expand-leave-to {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .expand-enter-to,
+  .expand-leave-from {
+    max-height: 500px; /* Allow enough space for content */
+    opacity: 1;
+  }
+
+  /* Force visibility of meal content on mobile */
+  .meal-items-container {
+    display: block !important;
+    visibility: visible !important;
+    height: auto !important;
+  }
+
+  /* Ensure buttons are visible */
+  .add-dishes-button {
+    display: block !important;
+    visibility: visible !important;
   }
 }
 </style>

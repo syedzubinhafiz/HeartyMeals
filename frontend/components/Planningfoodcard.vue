@@ -4,11 +4,11 @@
     <img :src="getRecipeImage()" alt="Meal Image" class="food-image rounded-lg shadow-sm" :class="{ 'consumed-image': is_consumed }" />
 
     <!-- Food Name -->
-    <div class="ml-2 flex-1">
-      <h3 class="text-xs font-medium leading-tight" :class="is_consumed ? 'text-gray-500' : 'text-gray-800'">{{ cardInfo.recipe.name }}</h3>
-      <p class="text-xs mt-0.5" :class="is_consumed ? 'text-gray-400' : 'text-gray-600'">{{ cardInfo.portion }}g</p>
+    <div class="ml-2 flex-1 min-w-0">
+      <h3 class="text-xs font-medium leading-tight truncate" :class="is_consumed ? 'text-gray-500' : 'text-gray-800'">{{ cardInfo.recipe.name }}</h3>
+      <p class="text-xs mt-0.5 truncate" :class="is_consumed ? 'text-gray-400' : 'text-gray-600'">{{ cardInfo.portion }}g</p>
       <!-- Status text indicator -->
-      <p class="text-xs mt-1 font-medium" :class="is_consumed ? 'text-green-600' : 'text-orange-600'">
+      <p class="text-xs mt-1 font-medium truncate" :class="is_consumed ? 'text-green-600' : 'text-orange-600'">
         {{ is_consumed ? 'Consumed' : 'Planned' }}
       </p>
     </div>
@@ -121,7 +121,10 @@ const getRecipeImage = () => {
   border: 1px solid rgba(218, 194, 168, 0.8);
   position: relative;
   transition: all 0.2s ease;
-  overflow: visible;
+  overflow: hidden; /* Prevent content overflow */
+  width: calc(100% - 12px); /* Account for margin */
+  box-sizing: border-box; /* Include padding and border in width */
+  min-width: 0; /* Allow flex items to shrink */
 }
 
 .food-image {
@@ -131,26 +134,27 @@ const getRecipeImage = () => {
   flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
-  .food-image {
-    width: 38px;
-    height: 38px;
-  }
+  @media (max-width: 768px) {
+    .food-image {
+      width: 38px;
+      height: 38px;
+    }
 
-  .food-card {
-    padding: 0.6rem;
-    margin: 6px 8px;
-  }
+    .food-card {
+      padding: 0.6rem;
+      margin: 6px 8px;
+      width: calc(100% - 16px); /* Account for larger margin on mobile */
+    }
 
-  .food-card h3 {
-    font-size: 0.8rem;
-    line-height: 1.2;
-  }
+    .food-card h3 {
+      font-size: 0.8rem;
+      line-height: 1.2;
+    }
 
-  .food-card p {
-    font-size: 0.7rem;
+    .food-card p {
+      font-size: 0.7rem;
+    }
   }
-}
 
 .food-card:hover {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);

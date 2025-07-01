@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full min-h-screen z-40 bg-custom-bg">
+  <div class="relative w-full z-40 bg-custom-bg main-container">
     <Header />
     <div class="meal-planning px-4 lg:px-8">
       <!-- Header with Date Navigation -->
@@ -35,7 +35,7 @@
       </div>
   
       <!-- Meal Days (Monday to Sunday) -->
-      <div class="meal-days-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
+      <div class="meal-days-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 flex-1">
         <MealDay 
           v-for="(day, index) in daysOfWeek" 
           :key="index" 
@@ -54,9 +54,7 @@
         />
       </div>
     </div>
-    <div class="section flex flex-col justify-end fixed-footer">
-      <Footer />
-    </div>
+    <Footer />
   </div>
 </template>
 
@@ -240,40 +238,80 @@ const handleMealConsumed = async (mealId) => {
     font-family: 'Overpass', sans-serif;
   }
 
-  .meal-planning {
-    padding: 0 30px 150px;
-    min-height: calc(100vh - 200px);
-  }
-
-  @media (max-width: 768px) {
-    .meal-planning {
-      padding: 0 10px 120px;
-    }
-  }
-
   .bg-custom-bg {
     background-color: #DAC2A8;
   }
 
+  /* Desktop: Non-scrollable layout */
+  .main-container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meal-planning {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* Mobile: Scrollable layout */
+  @media (max-width: 768px) {
+    .main-container {
+      height: auto;
+      min-height: 100vh;
+      overflow: visible;
+      display: block;
+    }
+
+    .meal-planning {
+      overflow: visible;
+      height: auto;
+      min-height: calc(100vh - 140px); /* Account for header and footer */
+      padding-bottom: 20px; /* Extra space before footer */
+    }
+  }
+
+  /* Desktop grid - fixed height, no page scroll */
   .meal-days-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
-    padding: 20px 30px;
+    padding: 20px 30px 30px 30px;
     max-width: 1500px;
     margin: 0 auto;
-    /* Hide main page scrollbar */
     overflow: hidden;
+    min-height: 0;
+    width: 100%; /* Ensure full width usage */
+    box-sizing: border-box; /* Include padding in width */
+  }
+
+  /* Desktop specific - ensure flex behavior */
+  @media (min-width: 769px) {
+    .meal-days-grid {
+      flex: 1;
+      height: 100%; /* Use full available height */
+    }
+    
+    /* Ensure equal column widths */
+    .meal-days-grid > * {
+      min-width: 0; /* Allow grid items to shrink */
+      max-width: 100%; /* Prevent grid items from expanding beyond their column */
+    }
   }
 
   /* Completely hidden scrollbars for clean design */
 
   /* Mobile responsiveness */
-  @media (max-width: 1024px) {
+  @media (max-width: 1024px) and (min-width: 769px) {
     .meal-days-grid {
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
-      padding: 20px 15px;
+      padding: 20px 15px 25px 15px; /* Added bottom padding */
+      flex: 1;
+      overflow: hidden; /* Keep desktop behavior for tablets */
     }
   }
 
@@ -281,7 +319,10 @@ const handleMealConsumed = async (mealId) => {
     .meal-days-grid {
       grid-template-columns: 1fr;
       gap: 16px;
-      padding: 20px 12px;
+      padding: 20px 12px 20px 12px; /* Added bottom padding */
+      height: auto; /* Allow natural height on mobile */
+      overflow: visible; /* Allow content to flow naturally */
+      flex: none; /* Remove flex constraint */
     }
   }
 
@@ -289,7 +330,10 @@ const handleMealConsumed = async (mealId) => {
     .meal-days-grid {
       grid-template-columns: 1fr;
       gap: 12px;
-      padding: 15px 8px;
+      padding: 15px 8px 15px 8px; /* Added bottom padding */
+      height: auto; /* Allow natural height on mobile */
+      overflow: visible; /* Allow content to flow naturally */
+      flex: none; /* Remove flex constraint */
     }
   }
 
@@ -301,11 +345,6 @@ const handleMealConsumed = async (mealId) => {
     background-color: #015B59;
   }
 
-  .fixed-footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    z-index: 1000;
-    background-color: inherit;
-  }
+
 </style>
+
