@@ -20,50 +20,44 @@
               <div class="meal-image-container">
                 <img :src="meal.recipe.storage_links.thumbnail" >
               </div>
-              <div style="display: grid; grid-template-rows: 42.5% 55%; row-gap: 2.5%;">
-                  <span style="font-weight: bold; font-size:100%; align-self: center;">{{ meal.recipe.name }}</span>
+              <div class="meal-info">
+                  <span class="meal-name">{{ meal.recipe.name }}</span>
                   <div class="nutrition-list-container">
                       <div class="nutrient-label">
                         <label>Calories: </label>
-                        <span>{{getNutrientValue(meal, 'calories')}}</span>
-                        <label> cal</label>
+                        <span>{{getNutrientValue(meal, 'calories')}} cal</span>
                       </div>
                       <div class="nutrient-label">
                         <label>Carbs: </label>
-                        <span>{{getNutrientValue(meal, 'totalCarbohydrate')}}</span>
-                        <label> g</label>
+                        <span>{{getNutrientValue(meal, 'totalCarbohydrate')}} g</span>
                       </div>
                       <div class="nutrient-label">
                         <label>Protein: </label>
-                        <span>{{getNutrientValue(meal, 'protein')}}</span>
-                        <label> g</label>
+                        <span>{{getNutrientValue(meal, 'protein')}} g</span>
                       </div>
                       <div class="nutrient-label">
                         <label>Fats: </label>
-                        <span>{{getNutrientValue(meal, 'fat')}}</span>
-                        <label> g</label>
+                        <span>{{getNutrientValue(meal, 'fat')}} g</span>
                       </div>
                       <div class="nutrient-label">
                         <label>Sodium: </label>
-                        <span>{{getNutrientValue(meal, 'sodium')}}</span>
-                        <label> mg</label>
+                        <span>{{getNutrientValue(meal, 'sodium')}} mg</span>
                       </div>
                       <div class="nutrient-label">
                         <label>Cholesterol: </label>
-                        <span>{{getNutrientValue(meal, 'cholesterol')}}</span>
-                        <label> mg</label>
+                        <span>{{getNutrientValue(meal, 'cholesterol')}} mg</span>
                       </div>
                   </div>
               </div>
-              <div style="width: 100%; align-self: center; padding-right: 10%;">
-                <input 
+              <div class="serving-input-container">
+                <input
                   class="serving-input"
-                  type="number" 
-                  v-model="meal.portion" 
-                  @input="updatePortion(meal.id, meal.portion)" 
-                  min="0.5" 
+                  type="number"
+                  v-model="meal.portion"
+                  @input="updatePortion(meal.id, meal.portion)"
+                  min="0.5"
                   step="0.5"
-                  placeholder="Serving"
+                  placeholder="Serv."
                   >
               </div>
 
@@ -105,6 +99,18 @@
         default: ""
       }
     },
+    watch: {
+      visible(newVal) {
+        if (newVal) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
+        }
+      }
+    },
+    beforeUnmount() {
+      document.body.style.overflow = '';
+    },
     methods: {
       closeSidebar() {
         this.$emit('closeSidebar');
@@ -135,7 +141,7 @@
   
 <style scoped>
   .sidebar {
-    position: absolute;
+    position: fixed; /* Prevent page scroll */
     background-color: #F3EADA;
     width: 30%;
     height: 100%;
@@ -148,7 +154,10 @@
 
   .sidebar-header{
     position: relative;
-    height: 10%;
+    height: 15%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .sidebar-footer{
     position: absolute;
@@ -165,7 +174,7 @@
   }
 
   .greyed-bg {
-    position: absolute;
+    position: fixed; /* Cover full viewport */
     background-color: rgba(0, 0, 0, 0.5);
     width: 100%;
     height: 100%;
@@ -176,59 +185,67 @@
 
   .close-button{
     position: absolute;
-    top: 10%;
-    right: 5%;
-    font-size: 2rem;
+    top: 15px;
+    right: 15px;
+    font-size: 1.8rem;
+    z-index: 10;
   }
 
   .logo{
-    position:absolute;
-    top: 20%;
-    left: 45%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
   }
 
   .logo img{
-    width: 80%;
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
   }
 
   .logo p{
     font-size: 1rem;
-    padding-top: 5%;
+    margin: 8px 0 0 0;
     font-weight: bold;
   }
 
  .counter {
     position: absolute;
-    top: 60%;
-    left: 65%;
+    top: -5px;
+    right: -8px;
     background-color: red;
     color: white;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     border-radius: 50%; 
     width: 20px; 
     height: 20px; 
-    text-align: center; 
-    line-height: 17px; 
-    transform: translate(-50%, -50%); 
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+ }
 
 
   .sidebar-header hr{
     position: absolute;
-    top: 130%;
+    bottom: 0;
     width: 90%;
-    left: 5%;;
+    left: 5%;
     border: 0.124rem solid #000000;
+    margin: 0;
   }
 
   .body{
     position: absolute;
-    top: 16%;
+    top: 15%;
     left: 5%;
     width: 90%;
-    height: 67%;
+    height: 65%;
     overflow-y: scroll;
   }
 
@@ -236,13 +253,17 @@
     position: relative;
     left:2.5%;
     width: 95%;
-    height: 25%;
+    height: auto;
     border-radius: 10px;
     background-color: #FFF;
-    margin-top: 5%;
+    margin-top: 4%;
+    padding: 8px;
+    box-sizing: border-box;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
     display: grid;
-    grid-template-columns: 25% 55% 20%;
+    grid-template-columns: 70px 1fr 70px;
+    column-gap: 8px;
+    align-items: center;
   }
 
   .meal-image-container {
@@ -251,34 +272,70 @@
   }
 
   .meal-image-container img{
-    width:120px;
-    height: 120px;
+    width:70px;
+    height: 70px;
     object-fit: cover;
-    border-radius: 20px;
+    border-radius: 10px;
     padding: 5%;
   }
 
-  .nutrition-list-container {
-    width: 100%;
-    height: 100%;
-    column-count: 2;    
+  .meal-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px; /* A little space between name and nutrients */
+    min-width: 0; /* Prevents overflow in flex children */
   }
-  .nutrient-label{
-    height: 20%;
-  }
-  .nutrient-label span {
-    font-size: x-small;
-  }
-  
-  .nutrient-label label {
-    font-size: x-small;
+
+  .meal-name {
     font-weight: bold;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Use ellipsis for long names */
   }
+
+  .nutrition-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .nutrient-label{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+  }
+
+  .nutrient-label span {
+    font-size: 0.75rem;
+  }
+
+  .nutrient-label label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+
+  .serving-input-container {
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+  }
+
   .serving-input{
-     width: 100%; 
-     border: 1px solid #ccc; 
-     border-radius: 10px; 
+     width: 100%;               /* Fill the column without overflow */
+     box-sizing: border-box;
      text-align: center;
+     border: 1px solid #A8A8A8;
+     border-radius: 5px;
+  }
+
+  .serving-input::placeholder {
+    font-size: 0.8rem;
+    color: #888;
+    text-overflow: ellipsis;
   }
 
   .remove-item{
@@ -286,6 +343,95 @@
     right: 5%;
     top: 5%;
     font-size:1.2rem;
+  }
+
+  /* ----------------------------
+     Mobile responsiveness tweaks
+     ---------------------------- */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100vw;              /* Take full width on mobile */
+      overflow-x: hidden;        /* Prevent horizontal scroll */
+      border-top-left-radius: 0; /* Remove rounded corners for full-width modal */
+      border-bottom-left-radius: 0;
+    }
+
+    .sidebar-header {
+      height: 120px;             /* Fixed height for mobile */
+      padding: 15px 0;
+    }
+
+    .close-button {
+      font-size: 1.5rem;         /* Slightly smaller close button */
+      top: 10px;
+      right: 10px;
+    }
+
+    .logo {
+      position: relative;        /* Keep relative positioning */
+      padding-top: 15px;
+    }
+
+    .logo img {
+      width: 50px;               /* Smaller logo for mobile */
+      height: 50px;
+    }
+
+    .counter {
+      top: -3px;                /* Adjust for smaller logo */
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+    }
+
+    .sidebar-header hr {
+      bottom: 0;                 /* Keep at bottom of header */
+    }
+
+    .body {
+      top: 120px;               /* Match header height */
+      height: calc(100% - 200px); /* Account for header and footer */
+      left: 0;                  /* Remove horizontal offset */
+      width: 100%;              /* Use full width */
+      padding: 0 4%;            /* Small horizontal padding */
+      overflow-x: hidden;       /* Remove horizontal scroll */
+    }
+
+    .meal {
+      height: auto;              /* Let meal card height grow */
+      left: 0;                   /* Reset relative offset */
+      width: 100%;               /* Full width inside body */
+      margin-top: 4%;
+      grid-template-columns: 28% 57% 15%; /* Provide more space for middle column */
+      column-gap: 2%;            /* Add small gap between columns */
+    }
+
+    .meal-image-container img {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+    }
+
+    .nutrition-list-container {
+      width: 100%;
+    }
+
+    .serving-input{
+      width: 80%;                /* Smaller input so it doesn't overflow */
+    }
+
+    .sidebar-footer {
+      position: fixed;           /* Keep summary button fixed at bottom */
+      bottom: 3%;
+      left: 50%;
+      transform: translateX(-50%);
+      top: auto;                 /* Override previous top value */
+    }
+
+    .summary-button {
+      padding: 10px 20px;
+    }
   }
 </style>
   

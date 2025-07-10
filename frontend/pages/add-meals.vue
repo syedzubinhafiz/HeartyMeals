@@ -7,35 +7,51 @@
     <div class="image-container">
       <img src="@/assets/img/recipe_lib/bg.svg" class="background-image"/>
       <div class="text-overlay">
-        <h2 class="text-white text-3xl font-bold text-center">Add Meals</h2>
+        <h2 class="hero-title">Add Meals</h2>
       </div>
     </div>
 
     <div class="body">
-
       <div class="left-base">
-        <img :src="leftBase" style="width: 85%;">
+        <img :src="leftBase" class="left-decoration">
       </div>
       
-      <div class="right-base" >
-        <img :src="rightBase" >
+      <div class="right-base">
+        <img :src="rightBase" class="right-decoration">
       </div>
 
+      <!-- Desktop positioning (original) -->
       <div class="back-button">
-        <ButtonOrange @click="back">Back</ButtonOrange>
+        <ButtonOrange @click="back" class="back-btn">
+          <span class="back-text">Back</span>
+        </ButtonOrange>
       </div>
       
-
       <div class="stomach-button-container">
-        <div class="counter">{{selectedMeals.length}}</div>
+        <div v-if="selectedMeals.length > 0" class="counter">{{selectedMeals.length}}</div>
         <button @click="openStomachOverlay" class="shadow-md stomach-button">
-          <img :src="stomachIcon" alt="" style="padding-right: 10%;">
-          <p style="position:relative; top: 15%">Stomach</p>
+          <img :src="stomachIcon" alt="Stomach" class="stomach-icon">
+          <p class="stomach-text">Stomach</p>
         </button>
       </div>
 
+      <!-- Mobile Controls Header -->
+      <div class="mobile-controls">
+        <ButtonOrange @click="back" class="back-btn mobile-back-btn">
+          <span class="back-text">Back</span>
+        </ButtonOrange>
+        
+        <div class="mobile-stomach-container">
+          <div v-if="selectedMeals.length > 0" class="counter">{{selectedMeals.length}}</div>
+          <button @click="openStomachOverlay" class="stomach-button mobile-stomach-btn">
+            <img :src="stomachIcon" alt="Stomach" class="stomach-icon">
+            <span class="stomach-text">Stomach</span>
+          </button>
+        </div>
+      </div>
+
       <div class="search-bar" ref="searchBar">
-        <img src="../assets/icon/Search_Icon.svg" alt="Search Icon">
+        <img src="../assets/icon/Search_Icon.svg" alt="Search Icon" class="search-icon">
         <input
           type="text"
           v-model="query"
@@ -49,42 +65,41 @@
           v-show="isFilterOverlayVisible" 
           @hideOverlay="isFilterOverlayVisible = false" 
           @applyFilters="applyFilters"
-          @clearFilters ="clearFilters"
+          @clearFilters="clearFilters"
          />
       </div>
 
       <div class="search-result-text-display">
-        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="query">Search Result of "{{ query }}"</p>
-        <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="!query">Recently Added</p>
+        <p class="aligned-paragraph" v-if="query">Search Result of "{{ query }}"</p>
+        <p class="aligned-paragraph" v-if="!query">Recently Added</p>
       </div>
 
       <div class="search-result-container" @scroll="onScroll">
         <div class="search-result-item-display">
-
-          <div class="custom-recipe-card" id="follower" @click="openCustomRecipeOverlay" >
-              <img src="@/assets/icon/round-add-icon.svg" alt="">
-              Customize Your Own Recipe 
+          <div class="custom-recipe-card" id="follower" @click="openCustomRecipeOverlay">
+            <img src="@/assets/icon/round-add-icon.svg" alt="Add" class="custom-add-icon">
+            Customize Your Own Recipe 
           </div>          
           <RecipeCard 
-          id="reference"
-          v-for="(recipe, index) in searchResults" 
-          :key="index"
-          :meal-id="recipe.id" 
-          :meal-name="recipe.name"
-          :meal-description="recipe.description"
-          :labels="recipe.recommended_meal_time ?? {}"
-          :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
-          :is-admin-approved="recipe.is_approved"
-          :image-src="recipe.storage_links.thumbnail"
-          @click.native="openAddMealOverlay(recipe.id)"     
-          style="cursor: pointer;"
+            id="reference"
+            v-for="(recipe, index) in searchResults" 
+            :key="index"
+            :meal-id="recipe.id" 
+            :meal-name="recipe.name"
+            :meal-description="recipe.description"
+            :labels="recipe.recommended_meal_time ?? {}"
+            :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
+            :is-admin-approved="recipe.is_approved"
+            :image-src="recipe.storage_links.thumbnail"
+            @click.native="openAddMealOverlay(recipe.id)"     
+            class="recipe-card-item"
           />
           <div v-if="isLoading" class="loading-indicator">Loading...</div>
         </div>
       </div>
     </div>
     
-    <CustomDishPopup v-model:isPopupOpen="isCustomRecipeOverlayVisible"  @close="closeCustomRecipeOverlay" class="text-black"/>
+    <CustomDishPopup v-model:isPopupOpen="isCustomRecipeOverlayVisible" @close="closeCustomRecipeOverlay" class="text-black"/>
 
     <StomachSidebar
       :visible="isStomachOverlayVisible"
@@ -130,7 +145,6 @@ import rightBase from "@/assets/img/meal_logging/right_base.svg";
 import CustomDishPopup from '~/components/CustomDish/Popup.vue';
 import { useMealLoggingStore } from '@/stores/mealLogging.js';
 
-
 definePageMeta({
   layout: "emptylayout",
   middleware: ["auth"],
@@ -143,14 +157,11 @@ definePageMeta({
   },
 });
 
-
 const {$axios} = useNuxtApp();
 const config = useRuntimeConfig();
 
 // for saving meal info 
 const mealInfo = ref({});
-
-
 
 // for search query
 const isLoading = ref(false);
@@ -189,7 +200,6 @@ const userDailyNutrients = ref(null);
 const userOriginalRemainingNutrients = ref(null);
 const userRemainingNutrients = ref(null);
 
-
 // for custom recipe overlay
 const isCustomRecipeOverlayVisible = ref(false);
 
@@ -202,14 +212,12 @@ watch(query, (newQuery) => {
 })
 
 async function fetchRecipes(filter = {}){
-
     if (isLoading.value) return;
 
     isLoading.value = true;
     const token = localStorage.getItem("accessToken");
     
     try {
-
       const suffix =  '/recipe/get';
       let meal_type = [];
 
@@ -276,6 +284,7 @@ function onScroll(event) {
     fetchRecipes(savedFilters.value);
   }
 }
+
 function handleBeforeUnload(e) {
   const confirmationMessage = 'Your selected meal won\'t be logged or saved if you leave this page.';
   e.returnValue = confirmationMessage; // Gecko, Trident, Chrome 34+
@@ -339,37 +348,43 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    document.removeEventListener("click", handleClickOutside);
-    window.removeEventListener('load', adjustSize);
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('load', adjustSize);
   window.removeEventListener('resize', adjustSize);
+  document.removeEventListener("click", handleClickOutside);
 });
 
-const toggleFilterOverlay = () => {
-    isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
-}
-
-const applyFilters =  async (filters) => {
-  savedFilters.value = filters;
-  if (filterOn()) {
-    filter_on.value = true;
-  } else {
-    filter_on.value = false;
+function adjustSize() {
+  const follower = document.getElementById('follower');
+  const reference = document.getElementById('reference');
+  
+  if (follower && reference) {
+    follower.style.width = `${reference.offsetWidth}px`;
   }
-  debouncedOnInput();
 }
 
-function filterOn() {
-  if (savedFilters.value.cuisine.length > 0) return true;
-  if (savedFilters.value.dietary.length > 0) return true;
-  if (savedFilters.value.foodCategory.length > 0) return true;
-  if (savedFilters.value.recommended_meal_time.Breakfast) return true;
-  if (savedFilters.value.recommended_meal_time.Lunch) return true;
-  if (savedFilters.value.recommended_meal_time.Dinner) return true;
-  if (savedFilters.value.recommended_meal_time.Other) return true;
+function handleClickOutside(event) {
+  if (searchBar.value && !searchBar.value.contains(event.target)) {
+    isFilterOverlayVisible.value = false;
+  }
 }
 
-const clearFilters = () => {
+async function toggleFilterOverlay() {
+  isFilterOverlayVisible.value = !isFilterOverlayVisible.value;
+}
+
+async function applyFilters(filters) {
+  pageNumber.value = 1;
+  searchResults.value = [];
+  savedFilters.value = filters;
+  filter_on.value = true;
+  isFilterOverlayVisible.value = false;
+  await fetchRecipes(filters);
+}
+
+async function clearFilters() {
+  pageNumber.value = 1;
+  searchResults.value = [];
   savedFilters.value = {
     cuisine: [],
     dietary: [],
@@ -380,120 +395,18 @@ const clearFilters = () => {
       Dinner: false,
       Other: false,
     }
-  }
+  };
   filter_on.value = false;
-  debouncedOnInput();
-}
-
-const handleClickOutside = (event) => {
-    if (searchBar.value && !searchBar.value.contains(event.target)) {
-        isFilterOverlayVisible.value = false;
-    }
-}
-
-const back = async () => {
-  localStorage.removeItem("mealInfo");
-  if (mealInfo.value.logType === "planning") {
-    await navigateTo("/meal-planning");
-  } else{
-    await navigateTo("/meal-logging");
-  }
+  isFilterOverlayVisible.value = false;
+  await fetchRecipes(savedFilters.value);
 }
 
 function openStomachOverlay() {
   isStomachOverlayVisible.value = true;
-  console.log(selectedMeals.value);
-}
-
-function updatePortion(id, portion) {
-  const meal = mealStore.unsavedMealList.value.find((m) => m.id === id);
-  if (meal) meal.portion = portion;
-}
-
-function removeSelectedMeal(id) {
-  console.log('trigger remove meal in page');
-  mealStore.unsavedMealList.value = mealStore.unsavedMealList.value.filter((m) => m.id !== id);
 }
 
 function closeStomachOverlay() {
   isStomachOverlayVisible.value = false;
-}
-
-async function closeCustomRecipeOverlay() {
-  isCustomRecipeOverlayVisible.value = false;
-  await fetchRecipes(savedFilters.value);
-}
-
-function openCustomRecipeOverlay() {
-  isCustomRecipeOverlayVisible.value = true;
-}
-
-async function proceedToSummary(){
-  console.log('[proceedToSummary] current unsaved list', selectedMeals.value);
-  const list = selectedMeals.value;
-  if(!Array.isArray(list) || list.length === 0){
-    useToast().error("Please add meals to log");
-    return;
-  }
-
-  // Increase the expire time by 5min in local storage
-  mealInfo.value.expiryTime = new Date().getTime() + (5*60*1000);
-  localStorage.setItem("mealInfo", JSON.stringify(mealInfo.value));
-
-  // store list length for future validation if needed
-  // Note: selectedMeals no longer passed via localStorage; summary page reads from Pinia.
-
-  if(userDailyNutrients.value === null){
-
-    const token = localStorage.getItem('accessToken');
-    const user_budget_response = await $axios.get('/user/budget', {
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      params:{
-        startDate: mealInfo.value.logDate,
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      }
-    });
-    
-    // Ensure proper object creation to avoid Pinia hydration issues
-    userDailyNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][0] };
-    
-    if (userRemainingNutrients.value === null){
-      userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
-      userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
-    }
-    console.log(selectedMeals.value);
-    if (selectedMeals.value.length > 0){
-      selectedMeals.value.forEach((meal) => {
-        // Safely access nutrition_info with null checks
-        const nutritionInfo = meal.recipe?.nutrition_info || {};
-        const portion = meal.portion || 1;
-        const servingSize = meal.recipe?.serving_size || 1;
-        const multiplier = portion / servingSize;
-        
-        userRemainingNutrients.value = {
-          calories: parseFloat((userRemainingNutrients.value.calories - (nutritionInfo.calories || 0) * multiplier).toFixed(2)),
-          carbs: parseFloat((userRemainingNutrients.value.carbs - (nutritionInfo.totalCarbohydrate || 0) * multiplier).toFixed(2)),
-          protein: parseFloat((userRemainingNutrients.value.protein - (nutritionInfo.protein || 0) * multiplier).toFixed(2)),
-          fat: parseFloat((userRemainingNutrients.value.fat - (nutritionInfo.fat || 0) * multiplier).toFixed(2)),
-          sodium: parseFloat((userRemainingNutrients.value.sodium - (nutritionInfo.sodium || 0) * multiplier).toFixed(2)),
-          cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - (nutritionInfo.cholesterol || 0) * multiplier).toFixed(2)),
-        }
-      });
-    }
-  }
-  
-  // Save nutrition data to localStorage for summary page
-  const nutritionDataForSummary = [
-    userDailyNutrients.value,
-    userRemainingNutrients.value,
-    userRemainingNutrients.value  // userAfterMealNutrients starts as copy of remaining
-  ];
-  localStorage.setItem('userNutrientsInfo', JSON.stringify(nutritionDataForSummary));
-  
-  await navigateTo("/summary");
 }
 
 async function openAddMealOverlay(id) {
@@ -542,8 +455,8 @@ async function openAddMealOverlay(id) {
       userDailyNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][0] };
       
       if (userRemainingNutrients.value === null){
-        userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
-        userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][1] };
+        userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][2] };
+        userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][2] };
       }
       console.log(selectedMeals.value);
       if (selectedMeals.value.length > 0){
@@ -580,6 +493,102 @@ function closeAddMealOverlay() {
   isAddMealOverlayVisible.value = false;
 }
 
+function openCustomRecipeOverlay() {
+  isCustomRecipeOverlayVisible.value = true;
+}
+
+async function closeCustomRecipeOverlay() {
+  isCustomRecipeOverlayVisible.value = false;
+  await fetchRecipes(savedFilters.value);
+}
+
+async function back() {
+  localStorage.removeItem("mealInfo");
+  if (mealInfo.value.logType === "planning") {
+    await navigateTo("/meal-planning");
+  } else {
+    await navigateTo("/meal-logging");
+  }
+}
+
+function updatePortion(id, portion) {
+  const meal = mealStore.unsavedMealList.value.find((m) => m.id === id);
+  if (meal) meal.portion = portion;
+}
+
+function removeSelectedMeal(id) {
+  console.log('trigger remove meal in page');
+  mealStore.unsavedMealList.value = mealStore.unsavedMealList.value.filter((m) => m.id !== id);
+}
+
+async function proceedToSummary(){
+  console.log('[proceedToSummary] current unsaved list', selectedMeals.value);
+  const list = selectedMeals.value;
+  if(!Array.isArray(list) || list.length === 0){
+    useToast().error("Please add meals to log");
+    return;
+  }
+
+  // Increase the expire time by 5min in local storage
+  mealInfo.value.expiryTime = new Date().getTime() + (5*60*1000);
+  localStorage.setItem("mealInfo", JSON.stringify(mealInfo.value));
+
+  // store list length for future validation if needed
+  // Note: selectedMeals no longer passed via localStorage; summary page reads from Pinia.
+
+  if(userDailyNutrients.value === null){
+
+    const token = localStorage.getItem('accessToken');
+    const user_budget_response = await $axios.get('/user/budget', {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      params:{
+        startDate: mealInfo.value.logDate,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      }
+    });
+    
+    // Ensure proper object creation to avoid Pinia hydration issues
+    userDailyNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][0] };
+    
+    if (userRemainingNutrients.value === null){
+      userOriginalRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][2] };
+      userRemainingNutrients.value = { ...user_budget_response.data[mealInfo.value.logDate][2] };
+    }
+    console.log(selectedMeals.value);
+    if (selectedMeals.value.length > 0){
+      selectedMeals.value.forEach((meal) => {
+        // Safely access nutrition_info with null checks
+        const nutritionInfo = meal.recipe?.nutrition_info || {};
+        const portion = meal.portion || 1;
+        const servingSize = meal.recipe?.serving_size || 1;
+        const multiplier = portion / servingSize;
+        
+        userRemainingNutrients.value = {
+          calories: parseFloat((userRemainingNutrients.value.calories - (nutritionInfo.calories || 0) * multiplier).toFixed(2)),
+          carbs: parseFloat((userRemainingNutrients.value.carbs - (nutritionInfo.totalCarbohydrate || 0) * multiplier).toFixed(2)),
+          protein: parseFloat((userRemainingNutrients.value.protein - (nutritionInfo.protein || 0) * multiplier).toFixed(2)),
+          fat: parseFloat((userRemainingNutrients.value.fat - (nutritionInfo.fat || 0) * multiplier).toFixed(2)),
+          sodium: parseFloat((userRemainingNutrients.value.sodium - (nutritionInfo.sodium || 0) * multiplier).toFixed(2)),
+          cholesterol: parseFloat((userRemainingNutrients.value.cholesterol - (nutritionInfo.cholesterol || 0) * multiplier).toFixed(2)),
+        }
+      });
+    }
+  }
+  
+  // Save nutrition data to localStorage for summary page
+  const nutritionDataForSummary = [
+    userDailyNutrients.value,
+    userOriginalRemainingNutrients.value,  // Remaining budget BEFORE selected meal
+    userRemainingNutrients.value           // Remaining budget AFTER selected meal(s)
+  ];
+  localStorage.setItem('userNutrientsInfo', JSON.stringify(nutritionDataForSummary));
+  
+  await navigateTo("/summary");
+}
+
 function addMeal(id, portion, afterAddingMeal) {
   console.log('[add-meals] addMeal called with:', { id, portion, afterAddingMeal });
   console.log('[add-meals] recipeInfo.value:', recipeInfo.value);
@@ -604,24 +613,17 @@ function addMeal(id, portion, afterAddingMeal) {
   useToast().success("Meal added to the stomach");
   closeAddMealOverlay();
 }
-
-
-function adjustSize() {
-  const follower = document.getElementById('follower');
-  const reference = document.getElementById('reference');
-  
-  follower.style.width = `${reference.offsetWidth}px`;
-}
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
-*{
+* {
     font-family: 'Overpass', sans-serif;
 }
+
+/* Desktop-first styles (original layout) */
 .page-container {
   display: flex;
   flex-direction: column;
@@ -655,8 +657,16 @@ function adjustSize() {
   transform: translate(-50%, -50%);
 }
 
+.hero-title {
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 .body {
-  overflow:hidden;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -664,16 +674,24 @@ function adjustSize() {
   height: 100%;
 }
 
-.left-base{
+.left-base {
   position: absolute;
   top: 42%;
   left: 0;
 }
 
-.right-base{
+.left-decoration {
+  width: 85%;
+}
+
+.right-base {
   position: absolute;
   top: 35%;
   right: 0;
+}
+
+.right-decoration {
+  width: 100%;
 }
 
 .footer {
@@ -689,16 +707,37 @@ function adjustSize() {
   left: 5%;
 }
 
-.stomach-button-container{
+.back-btn {
+  background-color: #FFA17A;
+  color: #993300;
+  font-weight: 600;
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.back-btn:hover {
+  background-color: #E5946B;
+}
+
+.back-text {
+  font-size: 1rem;
+}
+
+.stomach-button-container {
   position: absolute;
-  right : 5%;
-  top:30%
+  right: 5%;
+  top: 30%;
 }
 
 .counter {
   position: absolute;
   left: 125%;
-  top:5%;
+  top: 5%;
   background-color: red;
   color: white;
   font-weight: bold;
@@ -707,7 +746,7 @@ function adjustSize() {
   width: 25px; 
   height: 25px; 
   text-align: center; 
-  line-height: 28px; 
+  line-height: 25px; 
   transform: translate(-50%, -50%);
   z-index: 1; 
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
@@ -715,18 +754,31 @@ function adjustSize() {
 
 .stomach-button {
   background-color: #FFA17A;
-  display: grid;
+  display: flex;
+  align-items: center;
   color: #993300;
-  font-weight:600;
-  grid-template-columns: max-content max-content;
-  padding: 10% 15%;
-  border-radius: 10%;
-  column-gap: 5%;
+  font-weight: 600;
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  gap: 8px;
 }
 
 .stomach-button:hover {
   background-color: #E5946B;
 }
+
+.stomach-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.stomach-text {
+  margin: 0;
+  font-size: 1rem;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -735,24 +787,29 @@ function adjustSize() {
   border: 1px solid #ccc;
   border-radius: 50px;
   padding: 2px 15px;
-  position: relative; /* Add this to position the filter overlay */
+  position: relative;
+  margin-top: 2%;
+}
+
+.search-icon {
+  height: 20px;
+  width: 20px;
+  margin-right: 10px;
 }
 
 .search-input {
   width: 100%;
-  align-self: center;
-  padding: 5px;
-}
-
-.search-input:focus {
+  padding: 8px;
+  border: none;
   outline: none;
+  font-size: 1rem;
 }
 
-.search-result-item-display {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 15px;
-  padding: 15px;
+.filter-button {
+  cursor: pointer;
+  height: 20px;
+  width: 20px;
+  margin-left: 10px;
 }
 
 .search-result-text-display {
@@ -762,12 +819,7 @@ function adjustSize() {
   justify-content: flex-start;
   padding-left: 15px;
   padding-bottom: 2.5%;
-}
-
-.search-result-container {
-  width: 60%;
-  height: 65%;
-  overflow-y: auto;
+  margin-top: 2%;
 }
 
 .aligned-paragraph {
@@ -777,32 +829,492 @@ function adjustSize() {
   margin-top: 10px;
   font-weight: bold;
   color: #333;
+  font-size: 15px;
+}
+
+.search-result-container {
+  width: 60%;
+  height: 65%;
+  overflow-y: auto;
+}
+
+.search-result-item-display {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 15px;
+  padding: 15px;
+}
+
+.custom-recipe-card {
+  background-color: #FFFEF1;
+  border-radius: 15px;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Source Code Pro", monospace;
+  font-weight: 700;
+  font-size: 1.2rem;
+  gap: 8px;
+  cursor: pointer;
+  padding: 15px;
+}
+
+.custom-add-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.recipe-card-item {
+  cursor: pointer;
 }
 
 .loading-indicator {
   text-align: center;
   font-size: 18px;
   margin-top: 20px;
+  color: #666;
+  grid-column: 1 / -1;
 }
 
-.filter-button {
-  cursor: pointer;
-  height: 70%;
+/* Hide mobile controls on desktop */
+.mobile-controls {
+  display: none;
 }
 
-.custom-recipe-card{
-  background-color: #FFFEF1;
-  border-radius: 15px;
-  width: 1fr;
-  height: 100%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family:  "Source Code Pro", monospace;
-  font-weight: 700;
-  font-size: 1.2rem;
-  column-gap: 3%;
-  cursor: pointer;
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .page-container {
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    padding-bottom: 120px; /* Ensure content doesn't get cut by footer */
+    box-sizing: border-box;
+  }
+
+  .image-container {
+    position: relative;
+    width: 100%;
+    height: 200px; /* Ensure adequate height on mobile */
+  }
+
+  .background-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .text-overlay {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+    line-height: 2.5rem;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .left-base,
+  .right-base {
+    display: none; /* Hide decorative elements on mobile */
+  }
+
+  /* Hide desktop controls on mobile */
+  .back-button,
+  .stomach-button-container {
+    display: none !important;
+  }
+
+  .body {
+    padding: 0;
+    gap: 0;
+    overflow-x: hidden;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Mobile Controls Header */
+  .mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #D4C0A1; /* Beige background to match page */
+    position: relative;
+    z-index: 30;
+    width: 100%;
+    box-sizing: border-box;
+    order: 1; /* Place after hero section */
+  }
+
+  .mobile-back-btn {
+    padding: 8px 12px;
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-stomach-container {
+    position: relative;
+  }
+
+  .mobile-stomach-container .counter {
+    position: absolute;
+    left: 100%;
+    top: -5px;
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-stomach-btn {
+    background-color: #FFA17A;
+    display: flex;
+    align-items: center;
+    color: #993300;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    gap: 6px;
+    min-height: 44px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .mobile-stomach-btn:hover {
+    background-color: #E5946B;
+  }
+
+  .mobile-stomach-btn .stomach-icon {
+    height: 20px;
+    width: 20px;
+  }
+
+  .mobile-stomach-btn .stomach-text {
+    font-size: 0.875rem;
+  }
+
+  .search-bar {
+    width: calc(100% - 2rem);
+    margin: 1rem;
+    margin-top: 0;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    order: 2; /* Place after mobile controls */
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    position: relative;
+  }
+
+  .search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0 10px;
+  }
+
+  .search-icon,
+  .filter-button {
+    height: 20px;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  .filter-button {
+    cursor: pointer;
+    margin-left: 10px;
+  }
+
+  .search-result-text-display {
+    width: 100%;
+    padding: 0 1rem;
+    margin-top: 1rem;
+    box-sizing: border-box;
+    order: 3; /* Place after search bar */
+  }
+
+  .search-result-container {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    margin-bottom: 120px; /* Increased space for footer */
+    overflow-x: hidden;
+    overflow-y: auto;
+    order: 4; /* Place last */
+    min-height: 400px; /* Ensure minimum height */
+  }
+
+  .search-result-item-display {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column on mobile */
+    grid-gap: 1rem;
+    padding: 1rem;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .custom-recipe-card {
+    min-height: 80px;
+    font-size: 1rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 15px;
+    background-color: #FFFEF1;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-family: 'Source Code Pro', monospace;
+    font-weight: 600;
+  }
+
+  .recipe-card-item {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Mobile-specific recipe card styles */
+  .recipe-card-item .card {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    min-height: 140px;
+    padding: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .recipe-card-item .top-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .recipe-card-item .image-container {
+    width: 100px;
+    min-width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .recipe-card-item .img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    background-color: #f5f5f5;
+  }
+
+  .recipe-card-item .img[src=""],
+  .recipe-card-item .img:not([src]),
+  .recipe-card-item .img[src*="undefined"] {
+    display: none;
+  }
+
+  .recipe-card-item .image-container::after {
+    content: "🍽️";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: #ccc;
+    z-index: 1;
+  }
+
+  .recipe-card-item .img:not([src=""]):not([src*="undefined"]) + ::after {
+    display: none;
+  }
+
+  .recipe-card-item .content {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0;
+  }
+
+  .recipe-card-item .meal-name {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 4px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .recipe-card-item .meal-description {
+    font-size: 0.75rem;
+    line-height: 1.3;
+    margin: 0 0 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .recipe-card-item .labels {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .recipe-card-item .label {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    border-radius: 16px;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .recipe-card-item .custom-tag {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+
+  .recipe-card-item .top-right {
+    top: 8px;
+    right: 8px;
+  }
+
+  .recipe-card-item .top-right img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .search-bar {
+    width: 70%;
+  }
+
+  .search-result-text-display,
+  .search-result-container {
+    width: 80%;
+  }
+
+  .search-result-item-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Very Small Mobile (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .mobile-controls {
+    padding: 0.75rem;
+  }
+
+  .mobile-back-btn,
+  .mobile-stomach-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .mobile-stomach-btn .stomach-text {
+    display: none; /* Hide stomach text on very small screens */
+  }
+
+  .search-bar {
+    padding: 10px 14px;
+    margin: 0.75rem;
+    width: calc(100% - 1.5rem);
+  }
+
+  .custom-recipe-card {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  .search-result-item-display {
+    padding: 0.75rem;
+    grid-gap: 0.75rem;
+  }
+
+  .recipe-card-item .card {
+    padding: 10px;
+  }
+
+  .recipe-card-item .image-container {
+    width: 90px;
+    min-width: 90px;
+    height: 90px;
+  }
+
+  .recipe-card-item .img {
+    height: 100%;
+  }
+
+  .recipe-card-item .meal-name {
+    font-size: 0.9rem;
+  }
+
+  .recipe-card-item .meal-description {
+    font-size: 0.7rem;
+  }
+
+  .recipe-card-item .label {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+    min-height: 20px;
+  }
+}
+
+/* Large Desktop Styles */
+@media (min-width: 1440px) {
+  .search-result-item-display {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 </style>

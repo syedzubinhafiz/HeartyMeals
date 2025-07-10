@@ -387,7 +387,8 @@ import NutritionBar from './NutritionBar.vue';
     }
 
     :deep(.progress-bar) {
-        height: 140%;
+        /* Use full height of the container so the bar is not clipped */
+        height: 100%;
         display: flex;
         flex-direction: column;
         margin-bottom: 0%;

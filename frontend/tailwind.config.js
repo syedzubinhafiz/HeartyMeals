@@ -37,12 +37,32 @@ export default {
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'safe-left': 'env(safe-area-inset-left)',
         'safe-right': 'env(safe-area-inset-right)',
+        '18': '4.5rem',
+        '88': '22rem',
+        '92': '23rem',
+        '96': '24rem',
       },
       minHeight: {
         'touch': '44px', // Minimum touch target size
+        'screen-safe': 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
       },
       minWidth: {
         'touch': '44px', // Minimum touch target size
+      },
+      maxWidth: {
+        'mobile': '425px',
+        'tablet': '768px',
+      },
+      fontSize: {
+        'xs-mobile': ['0.75rem', { lineHeight: '1rem' }],
+        'sm-mobile': ['0.875rem', { lineHeight: '1.25rem' }],
+        'base-mobile': ['1rem', { lineHeight: '1.5rem' }],
+        'lg-mobile': ['1.125rem', { lineHeight: '1.75rem' }],
+      },
+      gridTemplateColumns: {
+        'mobile-cards': '1fr',
+        'tablet-cards': 'repeat(2, 1fr)',
+        'desktop-cards': 'repeat(3, 1fr)',
       }
     },
   },

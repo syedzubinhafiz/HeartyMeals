@@ -127,7 +127,7 @@ async function navigateToRecipeLibrary() {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0.5rem;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 .recipe-of-the-day-bg {
@@ -153,7 +153,7 @@ async function navigateToRecipeLibrary() {
   transition: transform 0.2s ease;
   min-height: 200px;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 .recipe-of-the-day-overlay:hover {
@@ -222,6 +222,8 @@ async function navigateToRecipeLibrary() {
   margin: 0;
   line-height: 1.2;
   text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .recipe-description {
@@ -231,6 +233,8 @@ async function navigateToRecipeLibrary() {
   margin: 0;
   text-align: center;
   opacity: 0.95;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .view-nutrition-info {

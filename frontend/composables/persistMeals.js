@@ -66,7 +66,8 @@ export default function usePersistMeals () {
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         recipeIdPortions,
         mealType: mealInfo.mealType,
-        isMealPlanning: true, // Always save as planned, users must manually mark as consumed
+        // If the flow is "planning" we create planned meals; otherwise they are immediately logged as consumed
+        isMealPlanning: mealInfo?.logType === 'planning',
       }, {
         headers: {
           Authorization: `Bearer ${token}`,

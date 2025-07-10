@@ -9,7 +9,7 @@
                 <h1 class="section1-heading">Welcome back, {{userName}}</h1>
                 <p class="section1-subheading">What do you want to do today?</p>
 
-                <div class="section1-buttons">
+                <div class="section1-buttons flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                     <button class="custom-button" @click="async () => await navigateTo('/recipe-library')">
                         <img src="/assets/img/recipe-icon.png" alt="Recipe Library" /> Recipe Library
                     </button>
@@ -29,9 +29,10 @@
                 </p>
             </div>
         </div>
-
+        <!-- Decorative Beige Blob -->
+        <img src="~/assets/img/LandingPage/rightBlob.svg" alt="decorative blob" class="decor-blob" />
         <!-- section 2 -->
-        <div class="section flex flex-col items-center justify-start" style="padding-top: 3rem; min-height: 120vh;">
+        <div class="section flex flex-col items-center justify-start relative" style="padding-top: 3rem; min-height: 120vh; overflow: visible;">
             <div class="section-2-header">
                 <img src="~/assets/img/main-landing-page-2-top-background.svg" class="section-2-header-img"></img>
                 <div class="section-text">Today's Budget</div>
@@ -52,7 +53,7 @@
             :style="{ backgroundImage: `url(${backgroundImage})` }"
         >
             <div class="container mx-auto px-4 relative">
-                <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="grid gap-8 items-center xl:grid-cols-2">
                     <div class="w-full">
                         <RecipeOfTheDay 
                             :recipeName="recipeName"
@@ -69,6 +70,7 @@
             </div>
         </div>
 
+        <div class="footer-spacer"></div>
         <Footer/>
     </div>
 
@@ -400,7 +402,7 @@ html {
 
 .section1-content {
     width: 100%;
-    min-height: 100vh;
+    min-height: calc(100vh - 4rem);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -519,7 +521,7 @@ html {
     }
 }
 
-@media (min-width: 468px) and (min-width: 769px) {
+@media (min-width: 468px) and (max-width: 768px) {
     .custom-button {
         padding: 0.3rem 0.5rem; 
         font-size: 0.6rem; 
@@ -677,8 +679,9 @@ html {
 
 @media (max-width: 768px) {
     :deep(.svg-container){
-        transform: scale(0.65);
-        margin-top: 0;
+        transform: none !important;
+        width: 90%;
+        max-width: 350px;
     }
 }
 
@@ -705,8 +708,17 @@ html {
 
 @media (max-width: 768px) {
     :deep(.budget-container){
-        transform: scale(0.7);
+        transform: none !important;
+        width: 100%;
+        max-width: 380px;
         margin-top: 2rem;
+    }
+}
+
+@media (min-width: 769px) {
+    :deep(.svg-container),
+    :deep(.budget-container) {
+        transform: none !important;
     }
 }
 
@@ -743,14 +755,53 @@ html {
 }
 
 .section-3 {
-    padding: 0.5rem 0; /* Adjust this padding to control the height */
+    padding: 2rem 0; 
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 100% 100%; /* Stretch to fill container */
+    background-size: cover; 
+}
+
+/* Spacer to keep beige background visible between curve and footer */
+.footer-spacer {
+    width: 100%;
+    height: 15rem;
+    background-color: #DAC2A8; /* beige tone matching page background */
+}
+
+@media (max-width: 768px) {
+    .section-3 {
+        min-height: auto; 
+        padding: 2rem 0; 
+    }
+}
+
+/* Decorative blob positioning */
+.decor-blob {
+    position: absolute;
+    right: -140px; /* push further so full curve visible */
+    top: 35%;
+    width: 250px;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5; /* behind water/nutrition widgets */
+}
+
+@media (max-width: 1024px) {
+   .decor-blob {
+       right: -120px;
+       width: 180px; /* Adjusted for better visibility while preventing overflow */
+   }
+}
+
+@media (max-width: 640px) {
+  .decor-blob {
+      display: none; /* hide on small phones to save space */
+  }
 }
 </style>
 

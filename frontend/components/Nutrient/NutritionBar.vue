@@ -122,6 +122,7 @@
     flex-direction: column;
     width: 100%;
     max-width: 100%; /* Ensure it doesn't exceed container width */
+    overflow: hidden; /* Prevent any overflow */
   }
 
   .label-grid {
@@ -160,6 +161,7 @@
     border-radius: 50px;
     background-color: #e0e0e0;
     overflow: hidden; /* Prevent bars from overflowing container */
+    box-sizing: border-box; /* Ensure padding is included in width calculations */
   }
 
   .progress-bar {
