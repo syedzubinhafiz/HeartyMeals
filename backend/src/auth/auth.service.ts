@@ -120,4 +120,30 @@ export class AuthService {
     }
     return this.sanitizeUser(user);
   }
+
+  async refreshTokens(refresh_token: string): Promise<{ message: string; user: any; access_token: string; refresh_token: string; expires_in: number }> {
+    try {
+      // Verify the refresh token and extract payload
+      const payload = this.jwtService.verify<JwtPayload>(refresh_token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+
+      // Ensure the user still exists
+      const user = await this.userService.findById(payload.sub);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Generate a fresh pair of tokens
+      const tokens = await this.generateTokens(user);
+
+      return {
+        message: 'Token refreshed successfully',
+        user: this.sanitizeUser(user),
+        ...tokens,
+      };
+    } catch (error) {
+      throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+    }
+  }
 }
