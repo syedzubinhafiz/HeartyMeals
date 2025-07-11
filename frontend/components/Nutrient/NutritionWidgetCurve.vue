@@ -368,22 +368,24 @@ import NutritionBar from './NutritionBar.vue';
         transform: translateX(-50%);
         width: 80%;
         text-align: center;
+        padding-bottom: 15px; /* Add padding at the bottom */
     }
 
     .budget-bar-overlay{
         width: auto; /* Adjust width automatically */
-        height: auto; /* Adjust height automatically */
-        top: 33%;
-        left: 12%;
-        right: 12%; /* Use left and right for responsive width */
-        bottom: 15%; /* Use top and bottom for responsive height */
+        height: 58%; /* Slightly reduced height */
+        top: 36%; /* Moved down to create more space from title */
+        left: 10%;
+        right: 10%; /* Use left and right for responsive width */
         position: absolute;
         pointer-events: all; /* Enable interaction with labels */
         font-weight: 600;
         font-size: 1rem; /* Base font size */
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
+        justify-content: space-between; /* Distribute evenly with tighter spacing */
+        overflow: visible; /* Allow cholesterol bar to show */
+        box-sizing: border-box;
     }
 
     :deep(.progress-bar) {
@@ -411,7 +413,8 @@ import NutritionBar from './NutritionBar.vue';
         position: relative;
         display: flex;
         flex-direction: column;
-        margin-bottom: 0%;
+        flex: 0 0 auto; /* Don't flex, use natural size */
+        margin: 0; /* Remove all margins for even spacing */
     }
 
     .tooltip-container {

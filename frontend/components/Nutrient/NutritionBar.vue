@@ -116,13 +116,15 @@
     font-family: 'Overpass', sans-serif;
 }
   .nutrition-bar {
-    margin-top: clamp(0.5%, 3.5%, 35%);
+    margin-top: 0; /* Remove top margin for tighter spacing */
+    margin-bottom: 0; /* Remove bottom margin for tighter spacing */
     justify-content: center;
     display: flex;
     flex-direction: column;
     width: 100%;
     max-width: 100%; /* Ensure it doesn't exceed container width */
     overflow: hidden; /* Prevent any overflow */
+    flex-shrink: 1; /* Allow bars to shrink to fit */
   }
 
   .label-grid {
@@ -156,12 +158,14 @@
 
   .progress-bar-container {
     position: relative;
-    height: clamp(8px, 2vh, 20px);  /* Increased minimum height from .8vh to 8px */
+    height: 12px; /* Fixed smaller height for compactness */
     width: 100%;
     border-radius: 50px;
     background-color: #e0e0e0;
     overflow: hidden; /* Prevent bars from overflowing container */
     box-sizing: border-box; /* Ensure padding is included in width calculations */
+    margin-top: 2px; /* Small margin for spacing */
+    margin-bottom: 2px;
   }
 
   .progress-bar {

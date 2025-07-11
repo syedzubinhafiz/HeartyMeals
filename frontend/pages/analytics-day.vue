@@ -35,17 +35,17 @@
     <!-- Main Content -->
     <div class="container-main">
       <!-- Left Column: Meal Cards -->
-      <div class="col-span-2 grid grid-cols-2 gap-6">
+      <div class="meal-cards-grid">
         <AnalyticsDayCard :mode="breakfastList.length>0 ? 0 : 2" mealType="Breakfast" :totalNutrition="breakfastTotal" :mealList="breakfastList"/>
         <AnalyticsDayCard :mode="lunchList.length>0 ? 0 : 2" mealType="Lunch" :totalNutrition="lunchTotal" :mealList="lunchList"/>
         <AnalyticsDayCard :mode="dinnerList.length>0 ? 0 : 2" mealType="Dinner" :totalNutrition="dinnerTotal" :mealList="dinnerList"/>
         <AnalyticsDayCard :mode="otherList.length>0 ? 0 : 2" mealType="Other" :totalNutrition="otherTotal" :mealList="otherList"/>
       </div>
       <!-- Right Column: Nutrient Widget -->
-    </div>
-      <div style="position: absolute; top: 7.5%; right: 2.5%; transform: scale(0.7);">
-          <NutritionWidgetCurve :nutrients="nutrients"/>
+      <div class="nutrition-widget-container">
+        <NutritionWidgetCurve :nutrients="nutrients"/>
       </div>
+    </div>
   </div>
   <!-- Footer -->
    <footer>
@@ -177,6 +177,7 @@ const getData = async () => {
   otherTotal.value = analyticsData.value.data.Other_total
   otherList.value = analyticsData.value.data.Other
 
+  // Set daily budget (index 0)
   nutrients.value[0].calories = analyticsData.value.data.daily_budget.calories;
   nutrients.value[0].carbs = analyticsData.value.data.daily_budget.carbohydrates;
   nutrients.value[0].protein = analyticsData.value.data.daily_budget.protein;
@@ -184,6 +185,15 @@ const getData = async () => {
   nutrients.value[0].sodium = analyticsData.value.data.daily_budget.sodium;
   nutrients.value[0].cholesterol = analyticsData.value.data.daily_budget.cholesterol;
 
+  // Calculate consumed nutrients (index 1) = daily_budget - remaining_budget
+  nutrients.value[1].calories = analyticsData.value.data.daily_budget.calories - analyticsData.value.data.remaining_budget.calories;
+  nutrients.value[1].carbs = analyticsData.value.data.daily_budget.carbohydrates - analyticsData.value.data.remaining_budget.carbohydrates;
+  nutrients.value[1].protein = analyticsData.value.data.daily_budget.protein - analyticsData.value.data.remaining_budget.protein;
+  nutrients.value[1].fat = analyticsData.value.data.daily_budget.fat - analyticsData.value.data.remaining_budget.fat;
+  nutrients.value[1].sodium = analyticsData.value.data.daily_budget.sodium - analyticsData.value.data.remaining_budget.sodium;
+  nutrients.value[1].cholesterol = analyticsData.value.data.daily_budget.cholesterol - analyticsData.value.data.remaining_budget.cholesterol;
+
+  // Set remaining budget (index 2)
   nutrients.value[2].calories = analyticsData.value.data.remaining_budget.calories;
   nutrients.value[2].carbs = analyticsData.value.data.remaining_budget.carbohydrates;
   nutrients.value[2].protein = analyticsData.value.data.remaining_budget.protein;
@@ -245,11 +255,38 @@ footer {
 
 .container-main {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
   margin: 0 auto;
   margin-top: 1%;
   width: 90%;
-  grid-template-rows: 70%;
+  max-width: 1400px;
+  align-items: start;
+}
+
+.meal-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.nutrition-widget-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+  padding: 0.5rem 1rem 2rem;
+  overflow: hidden;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nutrition-widget-container > * {
+  transform: scale(1.0);
+  transform-origin: top center;
+  max-width: 100%;
+  width: 100%;
 }
 
 .content-wrapper {
