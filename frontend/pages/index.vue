@@ -5,7 +5,7 @@
         </div>
         <div class="w-3/5 flex items-center">
             <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
-            <img src="../assets/img/BrownBlob.svg" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+            <img src="../assets/img/brownBlob.svg" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
             <div class="w-fit flex justify-center grow">
                 <div class="space-y-5 m-9 z-10 container">
                     <H1 class="">Login to your account</H1>
