@@ -1,8 +1,8 @@
 <template>
   <div class="overlay" v-if="visible" @click.self="closeOverlay">
     <div class="overlay-content" @click.stop>
-      <!-- Back button -->
-      <button class="back-button" @click="closeOverlay">←</button>
+      <!-- Close button -->
+      <button class="close-button" @click="closeOverlay">×</button>
       
       <div class="left-section">
         <h2>{{ meal.recipe.name }}</h2>
@@ -135,23 +135,34 @@ export default {
   height: calc(100dvh - 2rem);
 }
 
-.back-button {
+.close-button {
   position: absolute;
   top: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.7);
+  right: 10px;
+  background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   line-height: 1;
   color: #333;
   cursor: pointer;
   z-index: 100;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.close-button:active {
+  transform: translateY(0);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .left-section {

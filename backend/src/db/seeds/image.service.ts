@@ -73,35 +73,44 @@ export class ImageService {
       return null;
     }
 
-    try {
-      // Clean up ingredient name for better search results
-      const searchTerm = this.cleanIngredientName(ingredientName);
-      
-      const url = `${this.baseUrl}?key=${this.pixabayApiKey}&q=${encodeURIComponent(searchTerm)}&category=food&image_type=photo&orientation=horizontal&safesearch=true&per_page=3&min_width=640`;
-      
-      console.log(`🔍 Searching Pixabay for: "${searchTerm}"`);
-      
-      const data = await this.rateLimitedRequest(url);
-      
-      if (data.hits && data.hits.length > 0) {
-        const image = data.hits[0]; // Take the first (most relevant) result
+    // Prepare multiple search terms in order of preference
+    const searchTerms = this.getIngredientSearchTerms(ingredientName);
+
+    for (const searchTerm of searchTerms) {
+      try {
+        const url = `${this.baseUrl}?key=${this.pixabayApiKey}&q=${encodeURIComponent(searchTerm)}&category=food&image_type=photo&orientation=horizontal&safesearch=true&per_page=3&min_width=640`;
         
-        return {
-          url: image.webformatURL,
-          smallUrl: image.previewURL,
-          attribution: `Photo by ${image.user} on Pixabay`,
-          photographer: image.user,
-          photographerProfile: `https://pixabay.com/users/${image.user}-${image.user_id}/`,
-          tags: image.tags
-        };
+        console.log(`🔍 Searching Pixabay for: "${searchTerm}"`);
+        
+        const data = await this.rateLimitedRequest(url);
+        
+        if (data.hits && data.hits.length > 0) {
+          const image = data.hits[0]; // Take the first (most relevant) result
+          
+          console.log(`✅ Found image for "${searchTerm}" (from "${ingredientName}")`);
+          return {
+            url: image.webformatURL,
+            smallUrl: image.previewURL,
+            attribution: `Photo by ${image.user} on Pixabay`,
+            photographer: image.user,
+            photographerProfile: `https://pixabay.com/users/${image.user}-${image.user_id}/`,
+            tags: image.tags
+          };
+        }
+        
+        console.log(`❌ No images found for: ${searchTerm}`);
+        
+        // Small delay between search attempts to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (error: any) {
+        console.error(`❌ Error searching for "${searchTerm}":`, error.message);
+        continue; // Try next search term
       }
-      
-      console.log(`❌ No images found for: ${searchTerm}`);
-      return null;
-    } catch (error: any) {
-      console.error(`❌ Error fetching image for ${ingredientName}:`, error.message);
-      return null;
     }
+
+    console.log(`❌ No images found for any variation of: ${ingredientName}`);
+    return null;
   }
 
   async getRecipeImage(recipeName: string): Promise<PixabayImage | null> {
@@ -110,35 +119,44 @@ export class ImageService {
       return null;
     }
 
-    try {
-      // Clean up recipe name for better search results
-      const searchTerm = this.cleanRecipeName(recipeName);
-      
-      const url = `${this.baseUrl}?key=${this.pixabayApiKey}&q=${encodeURIComponent(searchTerm)}&category=food&image_type=photo&orientation=horizontal&safesearch=true&per_page=3&min_width=640`;
-      
-      console.log(`🔍 Searching Pixabay for recipe: "${searchTerm}"`);
-      
-      const data = await this.rateLimitedRequest(url);
-      
-      if (data.hits && data.hits.length > 0) {
-        const image = data.hits[0];
+    // Prepare multiple search terms in order of preference
+    const searchTerms = this.getRecipeSearchTerms(recipeName);
+
+    for (const searchTerm of searchTerms) {
+      try {
+        const url = `${this.baseUrl}?key=${this.pixabayApiKey}&q=${encodeURIComponent(searchTerm)}&category=food&image_type=photo&orientation=horizontal&safesearch=true&per_page=3&min_width=640`;
         
-        return {
-          url: image.webformatURL,
-          smallUrl: image.previewURL,
-          attribution: `Photo by ${image.user} on Pixabay`,
-          photographer: image.user,
-          photographerProfile: `https://pixabay.com/users/${image.user}-${image.user_id}/`,
-          tags: image.tags
-        };
+        console.log(`🔍 Searching Pixabay for recipe: "${searchTerm}"`);
+        
+        const data = await this.rateLimitedRequest(url);
+        
+        if (data.hits && data.hits.length > 0) {
+          const image = data.hits[0];
+          
+          console.log(`✅ Found image for "${searchTerm}" (from "${recipeName}")`);
+          return {
+            url: image.webformatURL,
+            smallUrl: image.previewURL,
+            attribution: `Photo by ${image.user} on Pixabay`,
+            photographer: image.user,
+            photographerProfile: `https://pixabay.com/users/${image.user}-${image.user_id}/`,
+            tags: image.tags
+          };
+        }
+        
+        console.log(`❌ No images found for: ${searchTerm}`);
+        
+        // Small delay between search attempts
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (error: any) {
+        console.error(`❌ Error searching for "${searchTerm}":`, error.message);
+        continue; // Try next search term
       }
-      
-      console.log(`❌ No images found for recipe: ${searchTerm}`);
-      return null;
-    } catch (error: any) {
-      console.error(`❌ Error fetching image for recipe ${recipeName}:`, error.message);
-      return null;
     }
+
+    console.log(`❌ No images found for any variation of recipe: ${recipeName}`);
+    return null;
   }
 
   async getEducationalImage(searchTerm: string): Promise<PixabayImage | null> {
@@ -175,6 +193,47 @@ export class ImageService {
     }
   }
 
+  private getIngredientSearchTerms(ingredientName: string): string[] {
+    const searchTerms: string[] = [];
+    
+    // Extract content from parentheses (often English names)
+    const parenthesesMatch = ingredientName.match(/\(([^)]+)\)/);
+    if (parenthesesMatch) {
+      const englishName = parenthesesMatch[1].trim();
+      searchTerms.push(englishName);
+      
+      // Also try with additional food-related keywords
+      searchTerms.push(`${englishName} food`);
+    }
+    
+    // Try cleaned ingredient name (without parentheses)
+    const cleanedName = this.cleanIngredientName(ingredientName);
+    if (cleanedName && cleanedName !== ingredientName) {
+      searchTerms.push(cleanedName);
+    }
+    
+    // Try original ingredient name
+    searchTerms.push(ingredientName);
+    
+    // Add generic fallbacks based on ingredient type
+    const lowerName = ingredientName.toLowerCase();
+    if (lowerName.includes('bean')) {
+      searchTerms.push('beans', 'legumes');
+    } else if (lowerName.includes('rice')) {
+      searchTerms.push('rice grain');
+    } else if (lowerName.includes('fish')) {
+      searchTerms.push('fish seafood');
+    } else if (lowerName.includes('meat') || lowerName.includes('chicken') || lowerName.includes('beef')) {
+      searchTerms.push('meat protein');
+    } else {
+      // Generic food fallback
+      searchTerms.push('healthy food ingredients');
+    }
+    
+    // Remove duplicates and empty strings
+    return [...new Set(searchTerms.filter(term => term && term.trim().length > 0))];
+  }
+
   private cleanIngredientName(name: string): string {
     return name
       .replace(/\(.*?\)/g, '') // Remove parentheses content
@@ -187,11 +246,70 @@ export class ImageService {
       .trim();
   }
 
+  private getRecipeSearchTerms(recipeName: string): string[] {
+    const searchTerms: string[] = [];
+    
+    // Primary search: cleaned recipe name
+    const cleanedName = this.cleanRecipeName(recipeName);
+    if (cleanedName) {
+      searchTerms.push(cleanedName);
+    }
+    
+    // Secondary searches: extract key ingredients/cooking methods
+    const lowerName = recipeName.toLowerCase();
+    
+    if (lowerName.includes('steam')) {
+      if (lowerName.includes('fish') || lowerName.includes('ikan')) {
+        searchTerms.push('steamed fish', 'fish steamed ginger', 'asian steamed fish');
+      }
+      searchTerms.push('steamed food', 'steamed asian dish');
+    }
+    
+    if (lowerName.includes('curry')) {
+      searchTerms.push('fish curry', 'asian curry', 'malaysian curry');
+    }
+    
+    if (lowerName.includes('sambal')) {
+      searchTerms.push('spicy tofu', 'tempeh dish', 'indonesian food');
+    }
+    
+    if (lowerName.includes('nasi') || lowerName.includes('rice')) {
+      searchTerms.push('herb rice', 'asian rice dish', 'coconut rice');
+    }
+    
+    if (lowerName.includes('sayur') || lowerName.includes('vegetables')) {
+      searchTerms.push('stir fried vegetables', 'asian greens', 'chinese vegetables');
+    }
+    
+    // Tertiary fallbacks: generic terms
+    if (lowerName.includes('fish') || lowerName.includes('ikan')) {
+      searchTerms.push('fish dish', 'cooked fish');
+    }
+    
+    if (lowerName.includes('healthy') || lowerName.includes('heart')) {
+      searchTerms.push('healthy food', 'nutritious meal');
+    }
+    
+    // Final fallback
+    searchTerms.push('asian food', 'healthy meal');
+    
+    // Remove duplicates and empty strings
+    return [...new Set(searchTerms.filter(term => term && term.trim().length > 0))];
+  }
+
   private cleanRecipeName(name: string): string {
     return name
       .replace(/Heart-Healthy/gi, '') // Remove heart-healthy prefix
       .replace(/Malaysian/gi, '') // Remove Malaysian prefix for broader search
       .replace(/\(.*?\)/g, '') // Remove parentheses content
+      // Replace Malaysian terms with English equivalents for better Pixabay search
+      .replace(/\bIkan\b/gi, 'fish') // Ikan = fish
+      .replace(/\bAyam\b/gi, 'chicken') // Ayam = chicken
+      .replace(/\bDaging\b/gi, 'beef') // Daging = beef
+      .replace(/\bSayur\b/gi, 'vegetables') // Sayur = vegetables
+      .replace(/\bNasi\b/gi, 'rice') // Nasi = rice
+      .replace(/\bSambal\b/gi, 'chili sauce') // Sambal = chili sauce
+      .replace(/\bTempeh\b/gi, 'fermented soy') // For broader search
       .trim();
   }
 

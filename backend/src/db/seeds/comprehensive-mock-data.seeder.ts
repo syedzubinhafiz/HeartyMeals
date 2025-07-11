@@ -610,6 +610,14 @@ export class ComprehensiveMockDataSeeder {
   }
 
   private async createRecipes(recipeRepo: any, users: User[], cuisines: Cuisine[], dietaries: Dietary[], components: Component[]): Promise<Recipe[]> {
+    // Check if recipes already exist to prevent duplicates
+    const existingRecipes = await recipeRepo.find();
+    const existingRecipeNames = new Set(existingRecipes.map(r => r.name));
+    
+    if (existingRecipeNames.size > 0) {
+      console.log(`📋 Found ${existingRecipes.length} existing recipes, preventing duplicates`);
+    }
+
     const recipes: Recipe[] = [];
 
     const getCategoryIds = (categoryNames: string[]) => {
@@ -726,6 +734,12 @@ export class ComprehensiveMockDataSeeder {
     ];
 
     for (const recipeItem of recipeData) {
+      // Skip if recipe already exists
+      if (existingRecipeNames.has(recipeItem.name)) {
+        console.log(`⏭️  Skipping existing recipe: "${recipeItem.name}"`);
+        continue;
+      }
+
       const creator = users.find(u => u.user_role === UserRole.ADMIN) || users[0];
       const cuisine = cuisines.find(c => c.name === recipeItem.cuisine_type) || cuisines[0];
       const dietary = dietaries[Math.floor(Math.random() * dietaries.length)];
@@ -754,7 +768,14 @@ export class ComprehensiveMockDataSeeder {
       recipes.push(recipe);
     }
 
-    return await recipeRepo.save(recipes);
+    if (recipes.length > 0) {
+      const savedRecipes = await recipeRepo.save(recipes);
+      console.log(`✅ Created ${savedRecipes.length} new recipes`);
+      return savedRecipes;
+    } else {
+      console.log(`ℹ️  No new recipes to create, returning existing recipes`);
+      return existingRecipes;
+    }
   }
 
   private async createRecipeComponents(recipeComponentRepo: any, recipes: Recipe[], components: Component[]): Promise<void> {

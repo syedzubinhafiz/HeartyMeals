@@ -46,21 +46,23 @@
         <p class="aligned-paragraph" style="font-size: 15px; margin-top: 20px;" v-if="!query">Recently Added</p>
       </div>
 
-      <div class="search-result-container" @scroll="onScroll">
-        <div class="search-result-item-display">
-          <RecipeCard 
-          v-for="(recipe, index) in searchResults" 
-          :key="index"
-          :meal-id="recipe.id" 
-          :meal-name="recipe.name"
-          :meal-description="recipe.description"
-          :labels="recipe.recommended_meal_time ?? {}"
-          :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
-          :is-admin-approved="recipe.is_approved"
-          :image-src="recipe.storage_links.thumbnail"
-          @click.native="openOverlay(recipe)"     
-          />
-          <div v-if="isLoading" class="loading-indicator">Loading...</div>
+      <div class="search-result-wrapper">
+        <div class="search-result-container" @scroll="onScroll">
+          <div class="search-result-item-display">
+            <RecipeCard 
+            v-for="(recipe, index) in searchResults" 
+            :key="index"
+            :meal-id="recipe.id" 
+            :meal-name="recipe.name"
+            :meal-description="recipe.description"
+            :labels="recipe.recommended_meal_time ?? {}"
+            :is-custom-recipe="recipe.user && recipe.user.user_id != null && recipe.user.user_id !== undefined"
+            :is-admin-approved="recipe.is_approved"
+            :image-src="recipe.storage_links.thumbnail"
+            @click.native="openOverlay(recipe)"     
+            />
+            <div v-if="isLoading" class="loading-indicator">Loading...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -324,12 +326,14 @@ const handleClickOutside = (event) => {
   height: 100dvh;
   overflow: hidden;
   --header-height: 4rem;
+  --footer-height: 6rem;
   padding-top: var(--header-height);
 }
 
 @media (min-width: 1024px) {
   .page-container {
     --header-height: 5rem;
+    --footer-height: 7rem;
   }
 }
 
@@ -370,10 +374,11 @@ const handleClickOutside = (event) => {
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 200px 1rem 0;
+  padding: 200px 1rem calc(var(--footer-height) + 2rem);
   margin-top: -50px;
   z-index: 10;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .footer {
@@ -433,14 +438,33 @@ const handleClickOutside = (event) => {
   margin-top: 20px;
 }
 
-.search-result-container {
+.search-result-wrapper {
   width: 100%;
   max-width: 1200px;
-  flex: 1;
+  /* Set a fixed height that ends before footer */
+  height: calc(100vh - var(--header-height) - 200px - var(--footer-height) - 6rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.search-result-container {
+  width: 100%;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 10rem;
+  /* Add padding to prevent cards from touching */
+  padding-bottom: 2rem;
+  box-sizing: border-box;
+  /* Hide default scrollbar and create custom one */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.search-result-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Remove the custom scrollbar indicator completely */
 
 .aligned-paragraph {
   text-align: left;
