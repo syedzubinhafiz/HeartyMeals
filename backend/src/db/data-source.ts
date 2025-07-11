@@ -6,6 +6,8 @@ const isTsNode = !!process.env.TS_NODE || process.argv.some(arg => arg.includes(
 export const dataSourceOptions: DataSourceOptions = {
   type: "postgres",
   url: process.env.POSTGRES_URL,
+  // SSL configuration for production (Supabase requires SSL)
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   // prevents auto sync since we are using migration
   synchronize: false,
   entities: isTsNode
