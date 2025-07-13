@@ -1,104 +1,126 @@
 <template>
-  <div class="page-background">
-    <img src="@/assets/img/sign-in-logo.svg" class="logo">
-    
-    <div class="container">
-    <h1>Create an account</h1>
-    
-    <div class="form">
-      <form @submit.prevent="handleRegister">
-        <div class="input-container">
-          <label for="firstName">First Name</label>
-          <input 
-            v-model="registerForm.firstName" 
-            type="text" 
-            id="firstName"
-            placeholder="Enter your first name"
-            required
-            class="from-input-box"
-          />
-        </div>
-        
-        <div class="input-container">
-          <label for="lastName">Last Name</label>
-          <input 
-            v-model="registerForm.lastName" 
-            type="text" 
-            id="lastName"
-            placeholder="Enter your last name"
-            required
-            class="from-input-box"
-          />
-        </div>
-        
-        <div class="input-container">
-          <label for="email">Email</label>
-          <input 
-            v-model="registerForm.email" 
-            type="email" 
-            id="email"
-            placeholder="Enter your email"
-            required
-            class="from-input-box"
-          />
-        </div>
-        
-        <div class="input-container">
-          <label for="password">Password</label>
-          <input 
-            v-model="registerForm.password" 
-            type="password" 
-            id="password"
-            placeholder="Enter your password (min 8 characters)"
-            required
-            class="from-input-box"
-          />
-          <small style="color: #666; font-size: 0.8rem;">
-            Password must be at least 8 characters long
-          </small>
-        </div>
-        
-        <div class="input-container">
-          <label for="confirmPassword">Confirm Password</label>
-          <input 
-            v-model="registerForm.confirmPassword" 
-            type="password" 
-            id="confirmPassword"
-            placeholder="Confirm your password"
-            required
-            class="from-input-box"
-          />
-        </div>
-        
-        <div class="input-container">
-          <label for="role">Account Type</label>
-          <select 
-            v-model="registerForm.role" 
-            id="role"
-            class="from-input-box"
-          >
-            <option value="Patient">Patient</option>
-            <option value="Dietitian">Dietitian</option>
-          </select>
-        </div>
-        
-        <div class="button-next" @click="handleRegister" :disabled="loading || !isFormValid">
-          {{ loading ? 'Creating Account...' : 'Create Account' }}
-        </div>
-        
-        <div v-if="errorMessage" style="color: red; text-align: center; margin-top: 10px;">
-          {{ errorMessage }}
-        </div>
-        
-        <div style="text-align: center; margin-top: 15px; margin-bottom: 10px;">
-          <p style="margin-bottom: 8px;">Already have an account?</p>
-                      <button type="button" @click="async () => await navigateTo('/sign-in')" class="link-button">
-            Sign in here
-          </button>
-        </div>
-      </form>
+  <div class="auth-layout">
+    <!-- Logo Section - Hidden on mobile, visible on desktop -->
+    <div class="logo-section">
+      <img src="@/assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal" class="logo-image">
     </div>
-  </div>
+    
+    <!-- Mobile Logo - Only visible on mobile -->
+    <div class="mobile-logo">
+      <img src="@/assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal">
+    </div>
+    
+    <!-- Form Section -->
+    <div class="form-section">
+      <img src="@/assets/img/GreenCurve.png" class="curve-decoration" alt="Green Curve Decor">
+      <img src="@/assets/img/brownBlob.svg" class="blob-decoration" alt="Brown Blob Decor">
+      
+      <div class="form-container">
+        <div class="form-card">
+          <H1>Create an account</H1>
+          
+          <form @submit.prevent="handleRegister" class="space-y-4">
+            <div class="form-row">
+              <div class="input-group">
+                <label for="firstName" class="form-label">First Name</label>
+                <Input 
+                  v-model="registerForm.firstName" 
+                  type="text" 
+                  id="firstName"
+                  placeholder="Enter your first name"
+                  required
+                  class="mt-1"
+                />
+              </div>
+              
+              <div class="input-group">
+                <label for="lastName" class="form-label">Last Name</label>
+                <Input 
+                  v-model="registerForm.lastName" 
+                  type="text" 
+                  id="lastName"
+                  placeholder="Enter your last name"
+                  required
+                  class="mt-1"
+                />
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label for="email" class="form-label">Email</label>
+              <Input 
+                v-model="registerForm.email" 
+                type="email" 
+                id="email"
+                placeholder="Enter your email"
+                required
+                class="mt-1"
+              />
+            </div>
+            
+            <div class="input-group">
+              <label for="password" class="form-label">Password</label>
+              <Input 
+                v-model="registerForm.password" 
+                type="password" 
+                id="password"
+                placeholder="Enter your password (min 8 characters)"
+                required
+                class="mt-1"
+              />
+              <small class="password-hint">
+                Password must be at least 8 characters long
+              </small>
+            </div>
+            
+            <div class="input-group">
+              <label for="confirmPassword" class="form-label">Confirm Password</label>
+              <Input 
+                v-model="registerForm.confirmPassword" 
+                type="password" 
+                id="confirmPassword"
+                placeholder="Confirm your password"
+                required
+                class="mt-1"
+              />
+            </div>
+            
+            <div class="input-group">
+              <label for="role" class="form-label">Account Type</label>
+              <select 
+                v-model="registerForm.role" 
+                id="role"
+                class="form-select"
+              >
+                <option value="Patient">Patient</option>
+                <option value="Dietitian">Dietitian</option>
+              </select>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+              <ButtonOrange 
+                type="submit" 
+                :disabled="loading || !isFormValid"
+                class="register-button"
+              >
+                {{ loading ? 'Creating Account...' : 'Create Account' }}
+              </ButtonOrange>
+            </div>
+          </form>
+          
+          <div v-if="errorMessage" class="text-red-600 text-center">
+            {{ errorMessage }}
+          </div>
+          
+          <div class="text-center">
+            <P style="margin-bottom: 10px;">Already have an account?</P>
+            <button @click="async () => await navigateTo('/sign-in')" class="link-button">
+              Sign in here
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -174,108 +196,298 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.page-background {
-  background-color: #F3EADA;
+/* =================================== */
+/*        RESPONSIVE AUTH LAYOUT        */
+/* =================================== */
+
+.auth-layout {
+  display: flex;
   min-height: 100vh;
-  width: 100%;
   position: relative;
 }
 
-.logo {
-  height: 100vh;
+/* Desktop Layout */
+@media (min-width: 768px) {
+  .auth-layout {
+    flex-direction: row;
+  }
+  
+  .logo-section {
+    display: flex;
+    width: 40%;
+    background: #015B59;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .logo-image {
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+  }
+  
+  .mobile-logo {
+    display: none;
+  }
+  
+  .form-section {
+    width: 60%;
+    position: relative;
+    background: #DAC2A8;
+  }
+}
+
+/* Mobile Layout */
+@media (max-width: 767px) {
+  .auth-layout {
+    flex-direction: column;
+  }
+  
+  .logo-section {
+    display: none;
+  }
+  
+  .mobile-logo {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 1rem 1rem;
+    background: #015B59;
+  }
+  
+  .mobile-logo img {
+    max-width: 200px;
+    width: 80%;
+    height: auto;
+  }
+  
+  .form-section {
+    flex: 1;
+    background: #DAC2A8;
+    position: relative;
+  }
+}
+
+/* =================================== */
+/*           DECORATIVE ELEMENTS        */
+/* =================================== */
+
+.curve-decoration {
   position: absolute;
-  top: 0;
   left: 0;
+  top: 0;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 }
 
-.container{
+.blob-decoration {
   position: absolute;
-  top: 15%;
-  right: 10%;
-  width: 30%;
-  height: 70%;
+  bottom: 0;
+  right: 0;
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+  object-position: 220px 120px;
+  z-index: 1;
 }
 
-.container h1{
-  font-size: 2rem;
-  font-weight: bold;
+/* Mobile decorations */
+@media (max-width: 767px) {
+  .curve-decoration {
+    display: none;
+  }
+  
+  .blob-decoration {
+    width: 200px;
+    height: 200px;
+    opacity: 0.6;
+  }
+}
+
+/* =================================== */
+/*            FORM CONTAINER           */
+/* =================================== */
+
+.form-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem 1rem;
+}
+
+@media (max-width: 767px) {
+  .form-container {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+}
+
+.form-card {
+  background: #F3EADA;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .form-card {
+    padding: 1.5rem;
+    margin: 0;
+    border-radius: 12px;
+    max-width: none;
+    gap: 1.25rem;
+  }
+}
+
+/* =================================== */
+/*              FORM STYLES            */
+/* =================================== */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-}
-
-.form{
-  margin-top: 5%;
   width: 100%;
-  min-height: 92%;
-  border-radius: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-  background-color: #e4d6c0;
-  padding: 20px 0;
-  overflow: hidden;
 }
 
-.input-container{
-  margin-left: 10%;
-  margin-bottom: 2%;
-  width: 80%;
-  align-items: left;
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  align-self: flex-start;
 }
 
-.input-container label{
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.from-input-box{
+.input-group :deep(input) {
   width: 100%;
-  height: 40px;
-  border-radius: 15px;
-  border: 1px solid #ccc;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-  padding: 10px 15px;
+  max-width: 400px;
+}
+
+.form-select {
+  width: 100%;
+  max-width: 400px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   background-color: white;
   font-size: 14px;
+  transition: border-color 0.2s ease;
 }
 
-.button-next{
-  margin-left: 10%;
-  width: 80%;
-  height: 50px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-  padding: 5px;
-  background-color: #FFA17A;
-  color: #993300;
-  text-align: center;
-  align-content: center;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 20px;
+.form-select:focus {
+  outline: none;
+  border-color: #83BBBE;
+  box-shadow: 0 0 0 3px rgba(131, 187, 190, 0.1);
 }
 
-.button-next:hover{
-  background-color: #E5946B;
+@media (max-width: 767px) {
+  .form-select {
+    font-size: 16px;
+  }
 }
 
-.button-next:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.password-hint {
+  color: #6b7280;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 }
 
 .link-button {
   background-color: #015B59;
   color: white;
   border: none;
-  padding: 8px 20px;
-  border-radius: 20px;
+  padding: 12px 24px;
+  border-radius: 24px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 44px;
 }
 
 .link-button:hover {
   background-color: #3a7b70;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+  .link-button {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+}
+
+/* =================================== */
+/*           RESPONSIVE FORM           */
+/* =================================== */
+
+@media (max-width: 767px) {
+  :deep(input) {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  
+  :deep(button) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  
+  :deep(h1) {
+    font-size: 1.75rem;
+    text-align: center;
+  }
+}
+
+/* =================================== */
+/*            ACCESSIBILITY            */
+/* =================================== */
+
+.link-button:focus {
+  outline: 2px solid #83BBBE;
+  outline-offset: 2px;
+}
+
+@media (prefers-contrast: high) {
+  .form-select {
+    border-width: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-button {
+    transition: none;
+  }
+  
+  .link-button:hover {
+    transform: none;
+  }
 }
 </style> 

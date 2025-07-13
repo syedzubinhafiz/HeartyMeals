@@ -1,10 +1,34 @@
 <template>
-    <img src="@/assets/img/sign-in-logo.svg" class="logo">
+  <div class="auth-layout">
+    <!-- Logo Section - Hidden on mobile, visible on desktop -->
+    <div class="logo-section">
+      <img src="@/assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal" class="logo-image">
+    </div>
     
-    <div class="container">
-        <h1>Create an account</h1>
+    <!-- Mobile Logo - Only visible on mobile -->
+    <div class="mobile-logo">
+      <img src="@/assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal">
+    </div>
+    
+    <!-- Form Section -->
+    <div class="form-section">
+      <img src="@/assets/img/GreenCurve.png" class="curve-decoration" alt="Green Curve Decor">
+      <img src="@/assets/img/brownBlob.svg" class="blob-decoration" alt="Brown Blob Decor">
+      
+      <div class="form-container">
+        <div class="form-card">
+          <H1>Complete Your Profile</H1>
+          
+          <!-- Progress Indicator -->
+          <div class="progress-container">
+            <div class="progress-step" :class="{ active: section_one }">1</div>
+            <div class="progress-line" :class="{ completed: section_two || section_three }"></div>
+            <div class="progress-step" :class="{ active: section_two, completed: section_three }">2</div>
+            <div class="progress-line" :class="{ completed: section_three }"></div>
+            <div class="progress-step" :class="{ active: section_three }">3</div>
+          </div>
 
-        <div class="form">
+          <div class="form-sections">
             <div v-if="section_one" class="section">
                 <div class="input-container" style="margin-top: 5%;">
                     <label for="age">Age</label>
@@ -186,8 +210,11 @@
                 </div>
                 
             </div>   
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 <script setup>
 import SingleSelectionWSearchbarDropdown from "@/components/Dropdown/SingleSelectionWSearchBarDropdown.vue";
@@ -547,212 +574,454 @@ async function signUp(){
 
 
 <style scoped>
-    .logo{
-        height:100vh;
-        position: absolute;
-        top: 0;
-        left: 0;
-        }
+/* =================================== */
+/*        RESPONSIVE AUTH LAYOUT        */
+/* =================================== */
 
-    .header{
-        position: absolute;
-        top: 15%;
-        right: 18%;
-        font-size: 2rem;
-        font-weight: bold;
-        text-align: center;
-    }
+.auth-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
 
-    .container{
-        position: absolute;
-        top: 15%;
-        right: 10%;
-        width: 30%;
-        height: 70%;
-    }
+/* Desktop Layout */
+@media (min-width: 768px) {
+  .auth-layout {
+    flex-direction: row;
+  }
+  
+  .logo-section {
+    display: flex;
+    width: 40%;
+    background: #015B59;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .logo-image {
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+  }
+  
+  .mobile-logo {
+    display: none;
+  }
+  
+  .form-section {
+    width: 60%;
+    position: relative;
+    background: #DAC2A8;
+  }
+}
 
-    .container h1{
-        font-size: 2rem;
-        font-weight: bold;
-        text-align: center;
-    }
+/* Mobile Layout */
+@media (max-width: 767px) {
+  .auth-layout {
+    flex-direction: column;
+  }
+  
+  .logo-section {
+    display: none;
+  }
+  
+  .mobile-logo {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 1rem 1rem;
+    background: #015B59;
+  }
+  
+  .mobile-logo img {
+    max-width: 200px;
+    width: 80%;
+    height: auto;
+  }
+  
+  .form-section {
+    flex: 1;
+    background: #DAC2A8;
+    position: relative;
+  }
+}
 
-    .form{
-        margin-top: 5%;
-        width: 100%;
-        height: 92%;
-        border-radius: 10px;
-        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-        background-color: #e4d6c0;
-    }
+/* =================================== */
+/*           DECORATIVE ELEMENTS        */
+/* =================================== */
 
-    .section{
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        row-gap: 0;
-    }
+.curve-decoration {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
 
-    .input-container{
-        margin-left: 10%;
-        margin-bottom: 3%;
-        width: 80%;
-        align-items: left;
-    }
+.blob-decoration {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+  object-position: 220px 120px;
+  z-index: 1;
+}
 
-    .input-container label{
-        font-size: 1rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
+@media (max-width: 767px) {
+  .curve-decoration {
+    display: none;
+  }
+  
+  .blob-decoration {
+    width: 200px;
+    height: 200px;
+    opacity: 0.6;
+  }
+}
 
+/* =================================== */
+/*            FORM CONTAINER           */
+/* =================================== */
 
-    .from-input-box{
-        width: 100%;
-        height: 65%;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-        padding: 5px;
-        background-color: #fefef1;
-    }
+.form-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem 1rem;
+}
 
-    .radio-group{
-        display: flex;
-        flex-direction: row;
-        justify-content:space-around;
-        margin-top: 2.5%;
-    }
+@media (max-width: 767px) {
+  .form-container {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+}
 
-    .radio{
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-    }
+.form-card {
+  background: #F3EADA;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 85vh;
+  overflow-y: auto;
+}
 
-    .radio input{
-        margin-right: 5px;
-        box-shadow: none;        
-    }
+@media (max-width: 767px) {
+  .form-card {
+    padding: 1.5rem;
+    margin: 0;
+    border-radius: 12px;
+    max-width: none;
+    gap: 1.25rem;
+    max-height: none;
+  }
+}
 
-    .radio label{
-        font-size: .8rem;
-        font-weight: bold;
-        padding: 0;
-        margin:0;
-    }
+/* =================================== */
+/*          PROGRESS INDICATOR         */
+/* =================================== */
 
-    .range-slider{
-        margin-left: 5%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        width: 100%;
-    }
+.progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0;
+  gap: 0.5rem;
+}
 
-    .range-slider span{
-        margin-left: 5%;
-        width: 20%;
-        font-weight: bold;
-        font-size: 0.8rem;
-    }
+.progress-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #d1d5db;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
 
-    .slider{
-        -webkit-appearance: none;
-        appearance: none;
-        width: 80%;
-        border-radius: 20px;
-    }
+.progress-step.active {
+  background: #015B59;
+  color: white;
+}
 
-    .slider::-webkit-slider-runnable-track{
-        width: 100%;
-        height: 5px;
-        cursor: pointer;
-        animate: 0.2s;
-        box-shadow: 0px 0px 0px #000000;
-        background: #fefef1;
-        border-radius: 20px;
-    }
+.progress-step.completed {
+  background: #83BBBE;
+  color: white;
+}
 
-    .slider::-webkit-slider-thumb{
-        box-shadow: 0px 0px 0px #000000;
-        margin-top: -5px;
-        height: 15px;
-        width: 15px;
-        border-radius: 50px;
-        background: #FFA17A;
-        cursor: pointer;
-        -webkit-appearance: none;
-    }
+.progress-line {
+  width: 40px;
+  height: 2px;
+  background: #d1d5db;
+  transition: all 0.3s ease;
+}
 
-   .nutrient-text-input{
-        width: 12%;
-        height: 100%;
-        margin-left: 2%;
-        margin-right: 2%;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-        background-color: #fefef1;
-        text-align: center;
-        font-size: 1rem;
-   }
-    
-    .nutrient-total-container{
-        margin-left: 15%;
-        display: flex;
-        flex-direction: column;
-    }
+.progress-line.completed {
+  background: #83BBBE;
+}
 
-    .nutrient-total{
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
+/* =================================== */
+/*              FORM STYLES            */
+/* =================================== */
 
-    .nutrient-total-message{
-        font-size: 0.8rem;
-        font-weight: bold;
-        color: red;
-    }   
+.form-sections {
+  min-height: 400px;
+}
 
-    .button-back{
-        margin-top: 5%;
-        margin-bottom: 4%;
-        margin-left: 5%;
-        width: 15%;
-        height: 6%;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-        padding: 5px;
-        background-color: #FFA17A;
-        color: #993300;
-        text-align: center;
-        align-content: center;
-        font-size: 1rem;
-        font-weight: bold;
-    }
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-    .button-next{
-        margin-left: 10%;
-        width: 80%;
-        height: 7%;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
-        padding: 5px;
-        background-color: #FFA17A;
-        color: #993300;
-        text-align: center;
-        align-content: center;
-        font-size: 1rem;
-        font-weight: bold;
-    }
-    
-    .button-back:hover,
-    .button-next:hover{
-        background-color: #E5946B;
-        cursor: pointer;
-    }
+.input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.input-container label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  align-self: flex-start;
+}
+
+.from-input-box {
+  width: 100%;
+  max-width: 400px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.from-input-box:focus {
+  outline: none;
+  border-color: #83BBBE;
+  box-shadow: 0 0 0 3px rgba(131, 187, 190, 0.1);
+}
+
+@media (max-width: 767px) {
+  .from-input-box {
+    font-size: 16px;
+  }
+}
+
+/* Radio Groups */
+.radio-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio input {
+  margin: 0;
+  accent-color: #83BBBE;
+}
+
+.radio label {
+  font-size: 14px;
+  font-weight: normal;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Range Sliders */
+.range-slider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.slider {
+  flex: 1;
+  height: 6px;
+  background: #d1d5db;
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #015B59;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #015B59;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.nutrient-text-input {
+  width: 80px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+.nutrient-total-container {
+  padding: 1rem;
+  background: rgba(131, 187, 190, 0.1);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.nutrient-total {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.nutrient-total-message {
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+  margin-top: 0.25rem;
+}
+
+/* Buttons */
+.button-back {
+  align-self: flex-start;
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.button-back:hover {
+  background: #4b5563;
+}
+
+.button-next {
+  background: #015B59;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.button-next:hover {
+  background: #3a7b70;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+  .button-back,
+  .button-next {
+    font-size: 16px;
+    padding: 14px 24px;
+  }
+}
+
+/* =================================== */
+/*           RESPONSIVE FORM           */
+/* =================================== */
+
+@media (max-width: 767px) {
+  :deep(h1) {
+    font-size: 1.75rem;
+    text-align: center;
+  }
+  
+  .radio-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .range-slider {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .nutrient-text-input {
+    width: 100px;
+    align-self: center;
+  }
+}
+
+/* =================================== */
+/*            ACCESSIBILITY            */
+/* =================================== */
+
+.button-back:focus,
+.button-next:focus {
+  outline: 2px solid #83BBBE;
+  outline-offset: 2px;
+}
+
+@media (prefers-contrast: high) {
+  .from-input-box,
+  .nutrient-text-input {
+    border-width: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-next,
+  .progress-step,
+  .progress-line {
+    transition: none;
+  }
+  
+  .button-next:hover {
+    transform: none;
+  }
+}
 </style>
