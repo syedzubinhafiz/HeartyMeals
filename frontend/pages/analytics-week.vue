@@ -414,6 +414,25 @@ const metrics = computed(() => {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  layout: {
+    padding: {
+      left: 10,
+      right: 10,
+      top: 10,
+      bottom: 40 /* Increased bottom padding for better aesthetics */
+    }
+  },
+  scales: {
+    x: {
+      ticks: {
+        maxRotation: 45,
+        minRotation: 0,
+        font: {
+          size: 10
+        }
+      }
+    }
+  },
   plugins: {
     legend: {
       display: true
@@ -436,6 +455,28 @@ const chartOptions = {
   align-items: center;
   /* margin-bottom: 0.5rem; */
   width: 50%;
+}
+
+/* Mobile: Center title and selector */
+@media (max-width: 768px) {
+  .top-section {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .title {
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .content-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
 }
 .analytics-container {
   display: flex;
@@ -491,6 +532,42 @@ const chartOptions = {
   font-weight: normal;
 }
 
+/* Mobile: Center date navigation */
+@media (max-width: 768px) {
+  .main-content {
+    text-align: center; /* Center everything in main content */
+  }
+  
+  .date-navigation {
+    justify-content: center !important;
+    margin: 1rem auto !important;
+    text-align: center !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .nav-arrow {
+    font-size: 24px;
+    padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .date-range {
+    font-size: 1.2rem !important;
+    margin: 0 1rem !important;
+    text-align: center !important;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .nav-arrow {
   background: none;
   border: none;
@@ -536,6 +613,14 @@ const chartOptions = {
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-bottom: 0.25rem;
+}
+
+/* Mobile: Single column metrics grid */
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
 }
 
 .metric-card {
@@ -614,6 +699,14 @@ const chartOptions = {
   margin-bottom: 0.5rem;
 }
 
+/* Mobile: Responsive chart title */
+@media (max-width: 768px) {
+  .chart-title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+}
+
 .chart-legend {
   display: flex;
   justify-content: center;
@@ -622,7 +715,31 @@ const chartOptions = {
   width: 450px;
   border-radius: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
 
+/* Mobile: Responsive chart legend */
+@media (max-width: 768px) {
+  .chart-legend {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .legend-item {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .legend-item.active {
+    background-color: #87A98D !important; /* Force correct green color on mobile */
+    color: white !important;
+  }
 }
 
 
@@ -660,6 +777,37 @@ const chartOptions = {
     position: fixed;
     width: 100%;
     bottom: 0;
+}
+
+/* Mobile: Make footer non-fixed to prevent content overlap */
+@media (max-width: 768px) {
+  .fixed-footer {
+    position: relative;
+    margin-top: 2rem;
+  }
+  
+  .analytics-container {
+    padding-bottom: 12rem; /* Increased bottom padding */
+  }
+  
+  .chart-section {
+    height: auto; /* Auto height to accommodate legend */
+    margin-bottom: 1rem;
+    padding: 0 1rem; /* Add horizontal padding to prevent overflow */
+    /* Removed overflow: hidden to show legend buttons */
+  }
+  
+  .chart-container {
+    height: 450px; /* Increased height for more space below x-axis */
+    padding: 1rem 0.5rem 2rem 0.5rem; /* More bottom padding for x-axis space */
+    /* Removed overflow: hidden to show all chart content */
+  }
+  
+  .chart-legend-wrapper {
+    margin-bottom: 6rem; /* Much more space before footer area */
+    padding: 0 1rem; /* Add horizontal padding */
+    margin-top: 1rem; /* Space above legend */
+  }
 }
 
 /* Color classes for metric cards */

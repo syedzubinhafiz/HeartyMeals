@@ -3,6 +3,7 @@ backend/.vscode/settings.json
 .DS_Store
 .context
 .env.copy
-
 # Firebase service account keys
 *firebase-adminsdk*.json
+.mcp.json
+

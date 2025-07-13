@@ -335,6 +335,8 @@ export class MealLogSummaryService {
                 .andWhere('mealLogging.deleted_at IS NULL');
             
             const meal_logging_objects = await query.getMany();
+            console.log(`[MealLogSummary] Found ${meal_logging_objects.length} consumed meals for budget calculation:`, 
+                meal_logging_objects.map(m => ({ name: m.recipe?.name, is_consumed: m.is_consumed })));
 
             // get the recipe id and recipe nutrition info 
             const recipe_nutrition_portion = meal_logging_objects.map(meal_logging_object => {

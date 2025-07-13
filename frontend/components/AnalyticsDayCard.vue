@@ -15,9 +15,6 @@
                     @mouseleave="hideTooltip()"
                 />
                 </div>
-                <h3 class="text-gray-800 mt-1">
-                {{ mealList.length > 0 ? mealList[0].name : ""  }}
-                </h3>
                 <!-- Tooltip (shown on hover) -->
                 <div
                 v-if="tooltipVisible"
@@ -28,23 +25,27 @@
                     v-for="meal in reformattedMealList"
                     :key="meal.name"
                     class="bg-card-beige rounded-lg p-2 shadow-card mb-2"
+                    :class="{ 'opacity-60': !meal.is_consumed }"
                 >
                     <div class="flex justify-between items-start mb-2">
                     <div>
-                        <h3 class="font-bold text-black text-md leading-normal">{{ meal.name }}</h3>
+                        <h3 class="font-bold text-black text-md leading-normal">
+                          {{ meal.name }}
+                          <span v-if="!meal.is_consumed" class="text-xs text-gray-500 font-normal">(Planned)</span>
+                        </h3>
                     </div>
                     <div class="bg-calories-yellow text-black px-2 py-1 rounded-lg text-xs shadow-sm">
                         Calories <span class="font-bold">{{ +meal.calories.toFixed(2) }}kcal</span>
                     </div>
                     </div>
                     <!-- Nutrition Info Grid -->
-                    <div class="grid grid-cols-5 gap-0 text-xs">
+                    <div class="grid grid-cols-5 sm:grid-cols-5 gap-0 text-xs tooltip-nutrition-grid">
                     <div
                         v-for="(value, key) in meal.nutrition"
                         :key="key" 
                         :class="['nutrition-item', nutrientBgClass(key), 'p-1', 'text-center']"
                     >
-                        <p class="text-gray-800">{{ key }}</p>
+                        <p class="text-gray-800">{{ getDisplayName(key) }}</p>
                         <p class="font-bold text-black">
                         {{ formatNutrientValue(value, key) }}
                         </p>
@@ -58,13 +59,13 @@
             </div>
             </div>
             <!-- Nutrition Info Grid -->
-            <div class="grid grid-cols-5 gap-0 text-md">
+            <div class="grid grid-cols-5 sm:grid-cols-5 gap-1 text-md mt-3 analytics-nutrition-grid">
             <div
                 v-for="nutrient in nutrientOrder"
                 :key="nutrient"
-                :class="['nutrition-item', nutrientBgClass(nutrient), 'p-1', 'text-center']"
+                :class="['nutrition-item', nutrientBgClass(nutrient), 'p-2', 'text-center', 'rounded']"
             >
-                <p class="text-gray-800">{{ nutrient }}</p>
+                <p class="text-gray-800">{{ getDisplayName(nutrient) }}</p>
                 <p class="font-bold text-black">
                 {{ formatNutrientValue(totalNutrition[nutrient] || 0, nutrient) }}
                 </p>
@@ -130,6 +131,7 @@ const reformattedMealList = computed({
     return props.mealList.map((meal) => {return {
       name: meal.name,
       calories: meal.calories,
+      is_consumed: meal.is_consumed,
       nutrition: {
           carbohydrates: meal.carbohydrates,
           cholesterol: meal.cholesterol,
@@ -157,6 +159,19 @@ function formatNutrientValue(value, nutrient) {
   // }
   return `${+value.toFixed(2)}${unit}`;
 }
+
+// Function to get display name for nutrients
+function getDisplayName(nutrient) {
+  const displayMap = {
+    'carbohydrates': 'carbs',
+    'cholesterol': 'cholesterol', 
+    'fat': 'fat',
+    'protein': 'protein',
+    'sodium': 'sodium'
+  };
+  return displayMap[nutrient] || nutrient;
+}
+
 const nutrientOrder = ['carbohydrates', 'cholesterol', 'fat', 'protein', 'sodium'];
 
 
@@ -199,3 +214,58 @@ function hideTooltip() {
 //   return result;
 // });
 </script>
+
+<style scoped>
+/* Mobile responsiveness for nutrition grids */
+@media (max-width: 480px) {
+  .analytics-nutrition-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem;
+  }
+  
+  .tooltip-nutrition-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.25rem;
+  }
+  
+  .nutrition-item {
+    padding: 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .nutrition-item p {
+    font-size: 0.7rem !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+  .analytics-nutrition-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.75rem;
+  }
+  
+  .tooltip-nutrition-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.5rem;
+  }
+  
+  .nutrition-item {
+    padding: 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+  .meal-card {
+    min-height: 44px;
+  }
+  
+  .bg-calories-yellow {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+</style>

@@ -50,8 +50,10 @@ export class AnalyticsService {
     async getDailyAnalytics(decodedHeaders: any, payload: getDailyAnalyticsDTO) {
 
         try{
+            console.log(`[Analytics] Fetching daily analytics for user: ${decodedHeaders['sub']}, date: ${payload.date}, timezone: ${payload.timeZone}`);
 
             const user =  await this.userRepository.findOneByOrFail({user_id: decodedHeaders['sub']});
+            console.log(`[Analytics] User daily budget:`, user.daily_budget);
             
             const start_of_date =  `${payload.date} 00:00:00`;
             const end_of_date =  `${payload.date} 23:59:59`;
@@ -60,6 +62,11 @@ export class AnalyticsService {
                 .where('meal_log_summary.date AT TIME ZONE :timeZone BETWEEN :start_of_day AND :end_of_day', { timeZone: payload.timeZone, start_of_day: start_of_date, end_of_day: end_of_date })
                 .andWhere('meal_log_summary.user_id = :user_id', {user_id: decodedHeaders['sub']})
                 .getOne();
+                
+            console.log(`[Analytics] Meal logging summary found:`, meal_logging_summary ? 'YES' : 'NO');
+            if (meal_logging_summary) {
+                console.log(`[Analytics] Summary data:`, meal_logging_summary);
+            }
 
 
             if (meal_logging_summary == null) {
@@ -235,17 +242,14 @@ export class AnalyticsService {
                         const meal_log =  meal_logging_map[log] as MealLogging;
                         
                         if (meal_log == undefined) {
-                            throw new Error(`Log ${log} is not found in the database.`);
-                        }
-                        
-                        // Only count nutrition for consumed meals
-                        if (!meal_log.is_consumed) {
-                            return; // Skip non-consumed meals
+                            console.warn(`[Analytics] Skipping orphaned meal log ID: ${log} - record not found in meal_logging table`);
+                            // TODO: Clean up orphaned reference from meal_log_summary.food_consumed
+                            return; // Skip this meal instead of crashing
                         }
                         
                         // Get the nutrition and calories for each of the log meal 
                         const multiplier = Number(meal_log.portion) / Number(meal_log.recipe.serving_size);
-                        data.push({
+                        const mealItem = {
                             "name": meal_log.recipe.name,
                             "calories": parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[0][2]] * multiplier).toFixed(2)),
                             "protein": parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[1][2]] * multiplier).toFixed(2)),
@@ -253,27 +257,42 @@ export class AnalyticsService {
                             "fat" : parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[3][2]] * multiplier).toFixed(2)),
                             "cholesterol" : parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[4][2]] * multiplier).toFixed(2)),
                             "sodium" : parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[5][2]] * multiplier).toFixed(2)),
-                        })
+                            "is_consumed": meal_log.is_consumed
+                        };
                         
-                        // Update the total consumption of the meal type
-                        total_consumption["calories"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[0][2]] * multiplier).toFixed(2));
-                        total_consumption["protein"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[1][2]] * multiplier).toFixed(2));
-                        total_consumption["carbohydrates"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[2][2]] * multiplier).toFixed(2));
-                        total_consumption["fat"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[3][2]] * multiplier).toFixed(2));
-                        total_consumption["cholesterol"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[4][2]] * multiplier).toFixed(2));
-                        total_consumption["sodium"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[5][2]] * multiplier).toFixed(2));
+                        data.push(mealItem);
+                        
+                        // Only count nutrition for consumed meals in totals
+                        if (meal_log.is_consumed) {
+                            // Update the total consumption of the meal type
+                            total_consumption["calories"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[0][2]] * multiplier).toFixed(2));
+                            total_consumption["protein"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[1][2]] * multiplier).toFixed(2));
+                            total_consumption["carbohydrates"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[2][2]] * multiplier).toFixed(2));
+                            total_consumption["fat"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[3][2]] * multiplier).toFixed(2));
+                            total_consumption["cholesterol"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[4][2]] * multiplier).toFixed(2));
+                            total_consumption["sodium"] += parseFloat((meal_log.recipe.nutrition_info[DATA_LIST[5][2]] * multiplier).toFixed(2));
+                        }
                     });
                     
                     
                     // Update the result with the meal type
                     result[mealType] = data;
                     result[mealType + "_total"] = total_consumption;
+                    
+                    // Final meal type data processed
                 })
             
                 return result;
             }
         } catch (e){
-            console.log(e)
+            console.error(`[Analytics] Error in getDailyAnalytics:`, e);
+            console.error(`[Analytics] Error details:`, {
+                message: e.message,
+                stack: e.stack,
+                userId: decodedHeaders?.['sub'],
+                date: payload?.date,
+                timeZone: payload?.timeZone
+            });
             throw new Error(e.message);
         }
 

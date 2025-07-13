@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as dotenv from 'dotenv';
+import { SupabaseStorageService } from '../../storage/supabase-storage.service';
 
 // Ensure environment variables are loaded
 dotenv.config();
@@ -16,6 +17,7 @@ export interface PixabayImage {
 export class ImageService {
   private readonly pixabayApiKey: string;
   private readonly baseUrl = 'https://pixabay.com/api/';
+  private supabaseStorage: SupabaseStorageService;
   
   // Rate limiting: Pixabay allows 100 requests per 60 seconds = 6,000/hour
   private requestCount = 0;
@@ -24,6 +26,7 @@ export class ImageService {
 
   constructor() {
     this.pixabayApiKey = process.env.PIXABAY_ACCESS_KEY || '';
+    this.supabaseStorage = new SupabaseStorageService();
     if (!this.pixabayApiKey) {
       console.warn('⚠️  PIXABAY_ACCESS_KEY not found in environment variables');
     }
@@ -326,6 +329,77 @@ export class ImageService {
   }
 
   /**
+   * Gets an ingredient image and uploads it to Supabase Storage
+   */
+  async getIngredientImagePermanent(ingredientName: string): Promise<string | null> {
+    try {
+      const pixabayImage = await this.getIngredientImage(ingredientName);
+      
+      if (!pixabayImage || !pixabayImage.url) {
+        console.log(`❌ No Pixabay image found for ingredient: ${ingredientName}`);
+        return null;
+      }
+
+      console.log(`📥 Downloading and storing image for ingredient: ${ingredientName}`);
+      
+      const uploadResult = await this.supabaseStorage.downloadAndUploadImage(
+        pixabayImage.url,
+        this.generateFileName(ingredientName, 'ingredient')
+      );
+
+      console.log(`✅ Stored ingredient image in Supabase: ${ingredientName}`);
+      return uploadResult.publicUrl;
+
+    } catch (error: any) {
+      console.error(`❌ Failed to process ingredient image for ${ingredientName}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Gets a recipe image and uploads it to Supabase Storage
+   */
+  async getRecipeImagePermanent(recipeName: string): Promise<string | null> {
+    try {
+      const pixabayImage = await this.getRecipeImage(recipeName);
+      
+      if (!pixabayImage || !pixabayImage.url) {
+        console.log(`❌ No Pixabay image found for recipe: ${recipeName}`);
+        return null;
+      }
+
+      console.log(`📥 Downloading and storing image for recipe: ${recipeName}`);
+      
+      const uploadResult = await this.supabaseStorage.downloadAndUploadImage(
+        pixabayImage.url,
+        this.generateFileName(recipeName, 'recipe')
+      );
+
+      console.log(`✅ Stored recipe image in Supabase: ${recipeName}`);
+      return uploadResult.publicUrl;
+
+    } catch (error: any) {
+      console.error(`❌ Failed to process recipe image for ${recipeName}:`, error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Generate a consistent filename for storage
+   */
+  private generateFileName(name: string, type: 'recipe' | 'ingredient'): string {
+    const cleanName = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 50);
+    
+    const timestamp = Date.now();
+    return `${type}-${cleanName}-${timestamp}.jpg`;
+  }
+
+  /**
    * Batch fetch images with rate limiting and error handling
    */
   async batchFetchImages<T>(
@@ -361,6 +435,44 @@ export class ImageService {
     }
     
     console.log(`✅ Successfully fetched ${results.size}/${items.length} images`);
+    return results;
+  }
+
+  /**
+   * Batch process images with permanent Supabase storage
+   */
+  async batchFetchPermanentImages<T>(
+    items: T[],
+    fetchImageFn: (item: T) => Promise<string | null>,
+    batchSize: number = 5,
+    delayBetweenBatches: number = 2000
+  ): Promise<Map<T, string>> {
+    const results = new Map<T, string>();
+    
+    console.log(`📦 Processing ${items.length} items for permanent storage in batches of ${batchSize}`);
+    
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      
+      console.log(`🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)}`);
+      
+      const promises = batch.map(async (item) => {
+        const imageUrl = await fetchImageFn(item);
+        if (imageUrl) {
+          results.set(item, imageUrl);
+        }
+        return { item, imageUrl };
+      });
+      
+      await Promise.all(promises);
+      
+      if (i + batchSize < items.length) {
+        console.log(`⏳ Waiting ${delayBetweenBatches}ms before next batch...`);
+        await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
+      }
+    }
+    
+    console.log(`✅ Successfully processed and stored ${results.size}/${items.length} images in Supabase`);
     return results;
   }
 } 

@@ -256,8 +256,14 @@ import NutritionBar from './NutritionBar.vue';
                 console.log('[NutritionWidgetCurve] Updated nutrientsList:', nutrientsList.value);
 
                 // Calculate the fill percentage for consumed calories (cap at 100% to prevent overflow)
-                const rawProgress = consumedCalories.value / maxCalories.value;
-                const progress = Math.min(rawProgress, 1); // Cap at 100%
+                let progress = 0;
+                if (maxCalories.value > 0) {
+                    const rawProgress = consumedCalories.value / maxCalories.value;
+                    progress = Math.min(rawProgress, 1); // Cap at 100%
+                } else {
+                    // If max calories is 0, progress should be 0
+                    progress = 0;
+                }
                 const strokeDashoffset = 511 * (1 - progress);
 
                 if (caloriesBar.value) {
@@ -517,6 +523,7 @@ import NutritionBar from './NutritionBar.vue';
         transition: all 0.3s ease-in;
     }
 
+    
     .slide-down-enter-from {
         transform: translate(-50%, -20px);
         opacity: 0;
