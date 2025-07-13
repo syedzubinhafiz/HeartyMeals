@@ -25,7 +25,9 @@
     "seed:demo": "npm run build && node dist/db/seeds/run-comprehensive-seeder.js",
     "cleanup:orphaned-meals": "node src/scripts/run-cleanup.js",
     "migrate:images": "npm run build && npx ts-node -r tsconfig-paths/register src/scripts/migrate-images-to-supabase.ts",
-    "migrate:storage": "npm run build && npx ts-node -r tsconfig-paths/register src/scripts/migrate-storage-to-supabase.ts"
+    "migrate:storage": "npm run build && npx ts-node -r tsconfig-paths/register src/scripts/migrate-storage-to-supabase.ts",
+    "migrate:external-urls": "npm run build && npx ts-node -r tsconfig-paths/register src/scripts/migrate-external-urls-to-supabase.ts",
+    "migrate:unsplash": "npm run build && npx ts-node -r tsconfig-paths/register src/scripts/migrate-to-unsplash.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.10",

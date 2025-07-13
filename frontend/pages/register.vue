@@ -1,7 +1,8 @@
 <template>
-  <img src="@/assets/img/sign-in-logo.svg" class="logo">
-  
-  <div class="container">
+  <div class="page-background">
+    <img src="@/assets/img/sign-in-logo.svg" class="logo">
+    
+    <div class="container">
     <h1>Create an account</h1>
     
     <div class="form">
@@ -98,6 +99,7 @@
       </form>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -172,6 +174,13 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+.page-background {
+  background-color: #F3EADA;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
 .logo {
   height: 100vh;
   position: absolute;

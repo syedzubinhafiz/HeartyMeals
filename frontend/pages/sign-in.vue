@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-row min-h-screen">
-    <div class="w-2/5 bg-custom-bg-green grow flex items-center justify-center">
+  <div class="flex flex-row min-h-screen relative">
+    <div class="w-2/5 bg-custom-bg-green flex items-center justify-center">
       <img src="../assets/img/HeartyMealLargeLogo.svg" alt="Hearty Meal">
     </div>
-    <div class="w-3/5 flex items-center">
-      <img src="../assets/img/GreenCurve.png" class="h-screen" alt="Green Curve Decor">
-              <img src="../assets/img/brownBlob.svg" class="w-80 h-80 absolute bottom-0 right-0" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
-      <div class="w-fit flex justify-center grow">
+    <div class="w-3/5 relative flex items-center justify-center bg-custom-bg-beige">
+      <img src="../assets/img/GreenCurve.png" class="absolute left-0 h-full object-cover" alt="Green Curve Decor">
+      <img src="../assets/img/brownBlob.svg" class="absolute bottom-0 right-0 w-80 h-80" style="object-fit: cover; object-position: 220px 120px;" alt="Brown Blob Decor">
+      <div class="relative z-10 w-full max-w-md px-8">
         <div class="space-y-5 m-9 z-10 container">
           <H1>Sign in to your account</H1>
           <H2>Welcome back 👋</H2>
